@@ -167,14 +167,14 @@ const Reports = () => {
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
-                        tickFormatter={(value) => `₹${value}`}
+                        tickFormatter={(value) => `LKR ${value}`}
                       />
                       <ChartTooltip
                         content={({ active, payload }) => (
                           <ChartTooltipContent
                             active={active}
                             payload={payload}
-                            formatter={(value) => [`₹${value}`, "Sales"]}
+                            formatter={(value) => [`LKR ${value}`, "Sales"]}
                           />
                         )}
                       />
@@ -268,14 +268,14 @@ const Reports = () => {
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(value) => `₹${value}`}
+                      tickFormatter={(value) => `LKR ${value}`}
                     />
                     <ChartTooltip
                       content={({ active, payload }) => (
                         <ChartTooltipContent
                           active={active}
                           payload={payload}
-                          formatter={(value) => [`₹${value}`, "Sales"]}
+                          formatter={(value) => [`LKR ${value}`, "Sales"]}
                         />
                       )}
                     />
@@ -384,7 +384,7 @@ const Reports = () => {
                       fontSize={12}
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(value) => `₹${value}`}
+                      tickFormatter={(value) => `LKR ${value}`}
                     />
                     <YAxis
                       dataKey="name"
@@ -399,7 +399,7 @@ const Reports = () => {
                         <ChartTooltipContent
                           active={active}
                           payload={payload}
-                          formatter={(value) => [`₹${value.toLocaleString('en-IN')}`, 'Sales']}
+                          formatter={(value) => [`LKR ${value.toLocaleString('en-IN')}`, 'Sales']}
                         />
                       )}
                     />

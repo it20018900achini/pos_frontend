@@ -52,14 +52,14 @@ const SalesChart = () => {
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `₹${value}`}
+                tickFormatter={(value) => `LKR ${value}`}
               />
               <ChartTooltip
                 content={({ active, payload }) => (
                   <ChartTooltipContent
                     active={active}
                     payload={payload}
-                    formatter={(value) => [`₹${value}`, "Sales"]}
+                    formatter={(value) => [`LKR ${value}`, "Sales"]}
                   />
                 )}
               />

@@ -44,7 +44,7 @@ const DiscountSection = () => {
               className="flex-1"
               onClick={() => setDiscount({ ...discount, type: "fixed" })}
             >
-              ₹
+              LKR 
             </Button>
           </div>
         </div>
