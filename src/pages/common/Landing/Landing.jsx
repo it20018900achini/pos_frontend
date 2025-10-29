@@ -34,43 +34,43 @@ function Landing() {
       <Header />
 
       {/* Hero Section */}
-      <HeroSection />
+      {/* <HeroSection /> */}
 
       {/* Trusted Logos Section */}
-      <TrustedLogos />
+      {/* <TrustedLogos /> */}
 
       {/* Key Features Section */}
-      <KeyFeaturesSection />
+      {/* <KeyFeaturesSection /> */}
 
       {/* Why Choose Us Section */}
-      <WhyChooseUsSection />
+      {/* <WhyChooseUsSection /> */}
 
       {/* Live Demo Section */}
-      <LiveDemoSection />
+      {/* <LiveDemoSection /> */}
 
       {/* Testimonials Section */}
-      <TestimonialCarousel />
+      {/* <TestimonialCarousel /> */}
 
       {/* Pricing Section */}
-      <PricingSection />
+      {/* <PricingSection /> */}
 
       {/*<PricingCalculator /> */}
-      <PricingCalculator />
+      {/* <PricingCalculator /> */}
 
       {/* Feature Comparison Section */}
-      <FeatureComparisonSection />
+      {/* <FeatureComparisonSection /> */}
 
       {/* Mobile App Showcase */}
-      <MobileAppShowcase />
+      {/* <MobileAppShowcase /> */}
 
       {/* FAQ Section */}
-      <FAQSection />
+      {/* <FAQSection /> */}
 
       {/* Contact Section */}
-      <ContactSection id="contact" />
+      {/* <ContactSection id="contact" /> */}
 
       {/* Footer */}
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }
