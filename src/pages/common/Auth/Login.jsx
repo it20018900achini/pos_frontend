@@ -9,7 +9,8 @@ import {
   Lock, 
   ShoppingCart, 
   ArrowLeft,
-  CheckCircle
+  CheckCircle,
+  ChefHat
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -145,12 +146,12 @@ const Login = () => {
          
           <div className="flex items-center justify-center space-x-2 mb-4">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <ShoppingCart className="w-6 h-6 text-primary-foreground" />
+              <ChefHat className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-2xl font-bold text-foreground">POS Pro</span>
+            <span className="text-2xl font-bold text-foreground">Wijesiri Bakery</span>
           </div>
           <h1 className="text-2xl font-bold text-foreground">
-            {showForgotPassword ? 'Reset Password' : 'Welcome Back'}
+            {showForgotPassword ? 'Reset Password' : ''}
           </h1>
           <p className="text-muted-foreground mt-2">
             {showForgotPassword 

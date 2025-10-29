@@ -91,7 +91,7 @@ const Header = () => {
             <div className="hidden md:flex items-center space-x-4">
               <ThemeToggle />
               <Button onClick={handleLoginButtonClick} variant="outline" className="font-medium">Sign In</Button>
-              <Button className="font-medium shadow-md hover:shadow-lg transition-shadow">Request Demo</Button>
+              {/* <Button className="font-medium shadow-md hover:shadow-lg transition-shadow"  onClick={()=>navigate('/auth/onboarding')}>Request Demo</Button> */}
             </div>
 
             {/* Mobile menu button */}
@@ -155,7 +155,7 @@ const Header = () => {
                 
                 <div className="flex flex-col space-y-3 p-4">
                   <Button onClick={handleLoginButtonClick} variant="outline" className="w-full">Sign In</Button>
-                  <Button className="w-full">Request Demo</Button>
+                  <Button className="w-full" onClick={()=>navigate('/auth/onboarding')}>Request Demo</Button>
                 </div>
               </nav>
             </div>

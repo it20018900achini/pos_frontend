@@ -405,33 +405,8 @@ const Settings = () => {
                   />
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <label htmlFor="accept-upi" className="text-sm font-medium">
-                    Accept UPI Payments
-                  </label>
-                  <Switch
-                    id="accept-upi"
-                    checked={paymentSettings.acceptUPI}
-                    onCheckedChange={(checked) =>
-                      handlePaymentSettingsChange("acceptUPI", checked)
-                    }
-                  />
-                </div>
+             
 
-                {paymentSettings.acceptUPI && (
-                  <div className="space-y-2 pl-6 border-l-2 border-gray-100">
-                    <label htmlFor="upi-id" className="text-sm font-medium">
-                      Branch UPI ID
-                    </label>
-                    <Input
-                      id="upi-id"
-                      value={paymentSettings.upiId}
-                      onChange={(e) =>
-                        handlePaymentSettingsChange("upiId", e.target.value)
-                      }
-                    />
-                  </div>
-                )}
 
                 <div className="flex items-center justify-between">
                   <label htmlFor="accept-card" className="text-sm font-medium">
