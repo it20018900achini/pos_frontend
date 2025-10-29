@@ -39,7 +39,7 @@ export const CURRENCY_OPTIONS = [
   { value: "GBP", label: "GBP - British Pound" },
   { value: "CAD", label: "CAD - Canadian Dollar" },
   { value: "AUD", label: "AUD - Australian Dollar" },
-  { value: "INR", label: "INR - Indian Rupee" },
+  { value: "LKR", label: "LKR - Indian Rupee" },
 ];
 
 // Timezone options
