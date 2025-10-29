@@ -29,6 +29,7 @@ import OrderDetails from "./OrderDetails/OrderDetails";
 
 import OrderTable from "./OrderTable";
 import { handleDownloadOrderPDF } from "./pdf/pdfUtils";
+import POSHeader from "../components/POSHeader";
 
 const OrderHistoryPage = () => {
   const dispatch = useDispatch();
@@ -107,6 +108,7 @@ const OrderHistoryPage = () => {
 
   return (
     <div className="h-full flex flex-col">
+      <POSHeader />
       <div className="p-4 bg-card border-b flex justify-between items-center">
         <h1 className="text-2xl font-bold">Order History</h1>
         <Button

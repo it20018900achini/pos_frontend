@@ -9,6 +9,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { getOrdersByBranch } from "../../../Redux Toolkit/features/order/orderThunks";
 import OrderTable from "./components/OrderTable";
+import POSHeader from "../components/POSHeader";
 
 // Return reasons
 
@@ -36,6 +37,7 @@ const ReturnOrderPage = () => {
 
   return (
     <div className="h-full flex flex-col">
+      <POSHeader />
       <div className="p-4 bg-card border-b">
         <h1 className="text-2xl font-bold">Return / Refund</h1>
       </div>

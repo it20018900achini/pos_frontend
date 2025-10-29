@@ -45,8 +45,7 @@ const OrderTable = ({
             <TableCell>{(order.paymentType)}</TableCell>
             <TableCell>
               <Badge
-                variant={getStatusBadgeVariant(order.status)}
-                className="capitalize"
+                className={order.status=="REFUNDED"?"bg-red-500":""}
               >
                 {order.status || "COMPLETE"}
               </Badge>

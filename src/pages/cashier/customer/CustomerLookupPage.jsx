@@ -24,6 +24,7 @@ import {
 } from "./components";
 import { clearCustomerOrders } from "../../../Redux Toolkit/features/order/orderSlice";
 import CustomerForm from "./CustomerForm";
+import POSHeader from "../components/POSHeader";
 
 const CustomerLookupPage = () => {
   const dispatch = useDispatch();
@@ -134,6 +135,7 @@ const CustomerLookupPage = () => {
 
   return (
     <div className="h-full flex flex-col">
+      <POSHeader />
       <div className="p-4 bg-card border-b">
         <h1 className="text-2xl font-bold">Customer Management</h1>
       </div>

@@ -43,10 +43,9 @@ const ReturnItemsSection = ({ selectedOrder, setShowReceiptDialog }) => {
   const [returnReason, setReturnReason] = useState("");
   const [otherReason, setOtherReason] = useState("");
   const [refundMethod, setRefundMethod] = useState("");
-
+const [loading, setLoading] = useState(false);
   const processRefund = async () => {
     // setShowRefundDialog(false);
-    setShowReceiptDialog(true);
 
     // Prepare refundDTO for API
     const refundDTO = {
@@ -59,11 +58,15 @@ const ReturnItemsSection = ({ selectedOrder, setShowReceiptDialog }) => {
         refundMethod === "original" ? selectedOrder.paymentType : refundMethod,
     };
     try {
+      setLoading(true);
       await dispatch(createRefund(refundDTO)).unwrap();
       toast({
         title: "Refund Processed",
         description: `Refund of LKR ${selectedOrder.totalAmount} processed via ${refundDTO.refundMethod}`,
       });
+      setLoading(false);
+      
+    setShowReceiptDialog(true);
     } catch (error) {
       toast({
         title: "Refund Failed",
@@ -136,9 +139,17 @@ const ReturnItemsSection = ({ selectedOrder, setShowReceiptDialog }) => {
                 <span>LKR {selectedOrder.totalAmount}</span>
               </div>
             </div>
-            <Button className="w-full" onClick={processRefund}>
+            {
+              loading ? (
+            <Button disabled className="w-full">
+              Processing...
+            </Button>
+              ) : <Button className="w-full" onClick={processRefund}>
               Process Refund
             </Button>
+
+            }
+            
           </div>
         </CardContent>
       </Card>

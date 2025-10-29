@@ -15,6 +15,7 @@ import {
 import { getCurrentShiftProgress, endShift } from '../../../Redux Toolkit/features/shiftReport/shiftReportThunks';
 import { logout } from '../../../Redux Toolkit/features/user/userThunks';
 import { useNavigate } from 'react-router';
+import POSHeader from '../components/POSHeader';
 
 const ShiftSummaryPage = () => {
   const dispatch = useDispatch();
@@ -53,6 +54,7 @@ const ShiftSummaryPage = () => {
 
   return (
     <div className="h-full flex flex-col">
+      <POSHeader />
       <ShiftHeader 
         onPrintClick={() => setShowPrintDialog(true)}
         onEndShiftClick={() => setShowLogoutConfirmDialog(true)}
