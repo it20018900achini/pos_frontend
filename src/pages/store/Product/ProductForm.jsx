@@ -27,7 +27,6 @@ const validationSchema = Yup.object({
   name: Yup.string().required("Product name is required"),
   sku: Yup.string().required("SKU is required"),
   mrp: Yup.number()
-    .required("MRP is required")
     .positive("MRP must be positive"),
   sellingPrice: Yup.number()
     .required("Selling price is required")
