@@ -271,13 +271,13 @@ const Login = () => {
             </div>
 
             {/* Demo Account Info */}
-            <div className="mt-6 p-4 bg-muted rounded-lg">
+            {/* <div className="mt-6 p-4 bg-muted rounded-lg">
               <p className="text-sm text-muted-foreground text-center">
                 <strong>Demo Account:</strong><br />
                 Email: demo@pospro.com<br />
                 Password: demo123
               </p>
-            </div>
+            </div> */}
           </div>
         )}
 
