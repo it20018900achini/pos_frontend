@@ -138,7 +138,7 @@ export const selectSubtotal = (state) => {
 
 export const selectTax = (state) => {
   const subtotal = selectSubtotal(state);
-  return subtotal * 0.18; // 18% GST
+  return subtotal * 0.00; // 18% GST
 };
 
 export const selectDiscountAmount = (state) => {

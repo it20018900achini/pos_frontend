@@ -22,7 +22,7 @@ const CartSummary = () => {
           <span>LKR {subtotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between">
-          <span>Tax (18% GST):</span>
+          <span>Tax :</span>
           <span>LKR {tax.toFixed(2)}</span>
         </div>
         <div className="flex justify-between">
