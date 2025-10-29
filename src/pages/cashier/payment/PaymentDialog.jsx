@@ -39,7 +39,7 @@ const PaymentDialog = ({
   const total = useSelector(selectTotal);
 
   const note = useSelector(selectNote);
-
+const [loading, setLoading] = React.useState(false);
   
 
   const processPayment = async () => {
@@ -62,6 +62,7 @@ const PaymentDialog = ({
     }
 
     try {
+      setLoading(true);
       // Prepare order data according to OrderDTO structure
       const orderData = {
         totalAmount: total,
@@ -85,12 +86,15 @@ const PaymentDialog = ({
       dispatch(setCurrentOrder(createdOrder));
 
       setShowPaymentDialog(false);
+
       setShowReceiptDialog(true);
 
       toast({
         title: "Order Created Successfully",
         description: `Order #${createdOrder.id} created and payment processed`,
       });
+      
+      setLoading(false);
     } catch (error) {
       console.error("Failed to create order:", error);
       toast({
@@ -136,7 +140,12 @@ const PaymentDialog = ({
           <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
             Cancel
           </Button>
-          <Button onClick={processPayment}>Complete Payment</Button>
+          {loading ? (
+            <Button disabled>
+              Processing...
+            </Button>
+          ) : (<Button onClick={processPayment}>Complete Payment</Button>)}
+          
         </DialogFooter>
       </DialogContent>
     </Dialog>
