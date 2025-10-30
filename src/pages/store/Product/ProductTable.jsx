@@ -112,7 +112,7 @@ const ProductTable = ({ products, loading, onEdit, onView }) => {
             </TableCell>
             <TableCell>
               <div className="flex items-center gap-1">
-                <DollarSign className="h-4 w-4 text-gray-400" />
+                {/* <DollarSign className="h-4 w-4 text-gray-400" /> */} LKR
                 {product.price?.toFixed ? product.price.toFixed(2) : product.sellingPrice}
               </div>
             </TableCell>
