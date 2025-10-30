@@ -64,11 +64,11 @@ const navLinks = [
     path: "/store/reports",
     icon: <FileText className="w-5 h-5" />,
   },
-  {
-    name: "Upgrade Plan",
-    path: "/store/upgrade",
-    icon: <BadgeDollarSign className="w-5 h-5" />,
-  },
+  // {
+  //   name: "Upgrade Plan",
+  //   path: "/store/upgrade",
+  //   icon: <BadgeDollarSign className="w-5 h-5" />,
+  // },
   {
     name: "Settings",
     path: "/store/settings",
