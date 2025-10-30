@@ -22,10 +22,10 @@ export default function StoreTopbar() {
         <ThemeToggle />
         
         {/* Notifications */}
-        <button className="relative">
+        {/* <button className="relative">
           <Bell className="text-muted-foreground w-6 h-6" />
           <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full px-1">3</span>
-        </button>
+        </button> */}
         
         {/* Profile Dropdown */}
         <div className="flex items-center gap-2 cursor-pointer">
