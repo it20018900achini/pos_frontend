@@ -28,18 +28,19 @@ const ProductSection = ({searchInputRef}) => {
   } = useSelector((state) => state.product);
 
   const { toast } = useToast();
-
    
 
   const getDisplayProducts = () => {
     if (searchTerm.trim() && searchResults.length > 0) {
       return searchResults;
     }
+    // setPload(false)
     return products || [];
   };
-
+const [pload, setPload] = useState(true);
   // Fetch products when component mounts or when branch changes
   useEffect(() => {
+    
     const fetchProducts = async () => {
       console.log("Fetching products...", { branch, userProfile });
 
@@ -50,6 +51,7 @@ const ProductSection = ({searchInputRef}) => {
           await dispatch(
             getProductsByStore(branch.storeId)
           ).unwrap();
+           setPload(false)
         } catch (error) {
           console.error("Failed to fetch products:", error);
           toast({
@@ -82,8 +84,11 @@ const ProductSection = ({searchInputRef}) => {
         }
       }
     };
+    
 
     fetchProducts();
+       
+
   }, [dispatch, branch, userProfile, toast]);
 
   // Debounced search function
@@ -187,7 +192,10 @@ const ProductSection = ({searchInputRef}) => {
           </div>
         </div>
       </div>
-
+{pload?              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
+        <Loader2 className="animate-spin h-8 w-8 mb-4" />
+        <p>Loading products...</p>
+      </div>:""}
       {/* Products Grid */}
       <div className="flex-1 overflow-y-auto p-4">
         {loading ? (
