@@ -32,9 +32,9 @@ const POSHeader = () => {
         </div>
         <div>
           <h1 className="text-2xl font-bold text-foreground"> <ChefHat className="inline mb-1 mr-1 w-4 h-4"/> Wijesiri Bakery</h1>
-          <p className="text-sm text-muted-foreground">
+          {/* <p className="text-sm text-muted-foreground">
            
-            Create new order</p>
+            Create new order</p> */}
         </div>
         <div className="flex items-center space-x-2">
           {/* <Badge variant="outline" className="text-xs">

@@ -181,7 +181,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-4 p-4 border rounded-lg">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <div className="flex-1">
-                <p className="text-sm font-medium">New store "Zosh Mart" registered</p>
+                <p className="text-sm font-medium">New store registered</p>
                 <p className="text-xs text-muted-foreground">2 minutes ago</p>
               </div>
             </div>
