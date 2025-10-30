@@ -10,6 +10,8 @@ import {
 
 const OrderItemTable = ({ selectedOrder }) => {
   return (
+    <>
+    
     <Table>
       <TableHeader>
         <TableRow>
@@ -21,6 +23,7 @@ const OrderItemTable = ({ selectedOrder }) => {
         </TableRow>
       </TableHeader>
       <TableBody>
+     {/* <pre> {JSON.stringify(selectedOrder, null, 2)}</pre>   */}
         {selectedOrder.items?.map((item) => (
           <TableRow key={item.id}>
             <TableCell className="">
@@ -32,6 +35,7 @@ const OrderItemTable = ({ selectedOrder }) => {
                     className="w-10 h-10 object-cover rounded-md "
                   />
                 ) : null}
+                {/* {JSON.stringify(item)} */}
                 {(!item.product?.image || item.product?.image === "") && (
                   <div className="w-12 h-12 bg-gray-100 rounded-md border flex items-center justify-center">
                     <span className="text-xs text-gray-500 font-medium">
@@ -69,7 +73,7 @@ const OrderItemTable = ({ selectedOrder }) => {
           </TableRow>
         ))}
       </TableBody>
-    </Table>
+    </Table></>
   );
 };
 
