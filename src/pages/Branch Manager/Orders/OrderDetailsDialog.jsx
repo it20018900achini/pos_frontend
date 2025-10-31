@@ -96,6 +96,7 @@ const OrderDetailsDialog = ({
             {/* Order Items */}
             <div className="font-semibold mb-1">Order Items</div>
             <div className="overflow-x-auto">
+              test
               <OrderItemTable selectedOrder={selectedOrder} />
             </div>
             <DialogClose asChild>
