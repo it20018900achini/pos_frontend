@@ -115,7 +115,7 @@ export const PerformanceDialog = ({
       open={isPerformanceDialogOpen}
       onOpenChange={setIsPerformanceDialogOpen}
     >
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="bg-white max-h-screen overflow-y-scroll max-w-[800px]">
         <DialogHeader>
           <DialogTitle>
             Performance Summary - {selectedEmployee.name}

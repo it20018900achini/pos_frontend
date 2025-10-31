@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import {
@@ -20,7 +20,7 @@ const OrderItemTable = ({ selectedOrder }) => {
     event.preventDefault();
 
     const quantity = returnQuantityRef.current[item.id] || 0;
-    const reason = returnReasonRef.current[item.id] || "Damaged item";
+    const reason = returnReasonRef.current[item.id] || "";
 
     const payload = {
       returned: true,
@@ -42,7 +42,7 @@ const OrderItemTable = ({ selectedOrder }) => {
         throw new Error("Network response was not ok");
       }
 
-      const data = await response.json();
+      const data = await response.text();
       console.log("Return successful:", data);
       alert(`Return submitted successfully for Item ID: ${item.id}`);
       
@@ -52,7 +52,7 @@ const OrderItemTable = ({ selectedOrder }) => {
 
     } catch (error) {
       console.error("Error submitting return:", error);
-      alert(`Error submitting return for Item ID: ${item.id}`);
+      // alert(`Error submitting return for Item ID: ${item.id}`);
     }
   };
 
@@ -71,7 +71,7 @@ const OrderItemTable = ({ selectedOrder }) => {
 
         <TableBody>
           {selectedOrder.items?.map((item) => (
-            <>
+            <Fragment key={item?.id}>
               {/* Main Row */}
               <TableRow
                 className={item.returned ? "bg-red-200 hover:bg-red-300" : ""}
@@ -132,6 +132,8 @@ const OrderItemTable = ({ selectedOrder }) => {
                         </Badge>
                       )}
                     </div>
+                    {/* <pre></pre>
+{JSON.stringify(item,null,2)} */}
 
                     <div className="flex items-center gap-2">
                       {item.id}
@@ -174,7 +176,7 @@ const OrderItemTable = ({ selectedOrder }) => {
                   </div>
                 </TableCell>
               </TableRow>
-            </>
+            </Fragment >
           ))}
         </TableBody>
       </Table>

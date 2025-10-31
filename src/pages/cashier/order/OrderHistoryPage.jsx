@@ -236,7 +236,7 @@ const OrderHistoryPage = () => {
         onOpenChange={setShowOrderDetailsDialog}
       >
         {selectedOrder && (
-          <DialogContent className="max-w-3xl">
+          <DialogContent className="bg-white max-h-screen overflow-y-scroll max-w-[800px]">
             <DialogHeader>
               <DialogTitle>Order Details - Invoice</DialogTitle>
             </DialogHeader>
