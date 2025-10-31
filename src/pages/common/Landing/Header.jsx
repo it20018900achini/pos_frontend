@@ -111,51 +111,13 @@ const Header = () => {
             <div className="md:hidden py-4 border-t border-border bg-background">
               <nav className="flex flex-col">
                 {/* Mobile Features Dropdown */}
-                <div className="py-2 border-b border-border">
-                  <button 
-                    onClick={() => toggleDropdown('mobile-features')} 
-                    className="flex items-center justify-between w-full px-4 py-2 text-muted-foreground hover:text-primary"
-                  >
-                    <span>Features</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === 'mobile-features' ? 'rotate-180' : ''}`} />
-                  </button>
-                  {activeDropdown === 'mobile-features' && (
-                    <div className="mt-2 pl-8 space-y-2">
-                      <a href="#features" className="block py-2 text-sm text-muted-foreground hover:text-primary">Overview</a>
-                      <a href="#" className="block py-2 text-sm text-muted-foreground hover:text-primary">Inventory Management</a>
-                      <a href="#" className="block py-2 text-sm text-muted-foreground hover:text-primary">Billing & Checkout</a>
-                      <a href="#" className="block py-2 text-sm text-muted-foreground hover:text-primary">Analytics & Reports</a>
-                    </div>
-                  )}
-                </div>
-                
-                <a href="#pricing" className="px-4 py-4 text-muted-foreground hover:text-primary border-b border-border">Pricing</a>
-                <a href="#testimonials" className="px-4 py-4 text-muted-foreground hover:text-primary border-b border-border">Testimonials</a>
-                
-                {/* Mobile Resources Dropdown */}
-                <div className="py-2 border-b border-border">
-                  <button 
-                    onClick={() => toggleDropdown('mobile-resources')} 
-                    className="flex items-center justify-between w-full px-4 py-2 text-muted-foreground hover:text-primary"
-                  >
-                    <span>Resources</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === 'mobile-resources' ? 'rotate-180' : ''}`} />
-                  </button>
-                  {activeDropdown === 'mobile-resources' && (
-                    <div className="mt-2 pl-8 space-y-2">
-                      <a href="#" className="block py-2 text-sm text-muted-foreground hover:text-primary">Help Center</a>
-                      <a href="#" className="block py-2 text-sm text-muted-foreground hover:text-primary">Documentation</a>
-                      <a href="#" className="block py-2 text-sm text-muted-foreground hover:text-primary">API Reference</a>
-                      <a href="#" className="block py-2 text-sm text-muted-foreground hover:text-primary">Blog</a>
-                    </div>
-                  )}
-                </div>
-                
+               
+             
+                <a href="#home" className="px-4 py-4 text-muted-foreground hover:text-primary border-b border-border">Home</a>
                 <a href="#contact" className="px-4 py-4 text-muted-foreground hover:text-primary border-b border-border">Contact</a>
                 
                 <div className="flex flex-col space-y-3 p-4">
                   <Button onClick={handleLoginButtonClick} variant="outline" className="w-full">Sign In</Button>
-                  <Button className="w-full" onClick={()=>navigate('/auth/onboarding')}>Request Demo</Button>
                 </div>
               </nav>
             </div>

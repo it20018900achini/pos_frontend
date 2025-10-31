@@ -11,7 +11,7 @@ import {
 const OrderItemTable = ({ selectedOrder }) => {
   return (
     <>
-    
+   <pre> {JSON.stringify(selectedOrder, null, 2)}</pre> 
     <Table>
       <TableHeader>
         <TableRow>
