@@ -87,14 +87,14 @@ const OrderItemTable = ({ selectedOrder }) => {
                   <div className="bg-red-200 w-full border-b border-red-400  p-1 flex justify-between items-between">
                     <div className="w-full">
                       {item.returned ? (
-                        <Badge className={`text-[8px]  py-0 px-1 bg-red-500`}>
+                        <Badge className={`text-[8px]  py-0 px-1`}>
                           RETURNED
                         </Badge>
                       ) : (
                         ""
                       )}
                     </div>
-                    <div>
+                    <div>{item?.id}
                       <Button className={`px-2`} size={'xs'}>RETURN</Button>
                     </div>
                   </div>
