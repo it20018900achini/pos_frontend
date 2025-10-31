@@ -82,7 +82,7 @@ const Orders = () => {
       <OrdersFilters />
 
       {/* Orders Table */}
-      {loading?"a":"b"}
+      
       <OrdersTable
         orders={orders}
         loading={loading}

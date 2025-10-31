@@ -44,7 +44,7 @@ const InvoiceDialog = ({ showInvoiceDialog, setShowInvoiceDialog }) => {
   return (
     <Dialog open={showInvoiceDialog} onOpenChange={setShowInvoiceDialog}>
       {selectedOrder && (
-        <DialogContent className="w-5xl">
+        <DialogContent className="bg-white max-h-screen overflow-y-scroll max-w-[800px]">
           <DialogHeader>
             <DialogTitle>Order Details - Invoice</DialogTitle>
           </DialogHeader>
