@@ -88,7 +88,7 @@ const CustomerDialog = ({
                     <TableCell>{customer.phone}</TableCell>
                     <TableCell>{customer.email}</TableCell>
                     <TableCell>
-                      <Button size="sm" onClick={() => handleCustomerSelect(customer)}>
+                      <Button className="absolute" size="sm" onClick={() => handleCustomerSelect(customer)}>
                         Select
                       </Button>
                     </TableCell>

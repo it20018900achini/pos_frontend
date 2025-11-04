@@ -13,6 +13,7 @@ import Onboarding from "./pages/onboarding/Onboarding";
 import { getStoreByAdmin } from "./Redux Toolkit/features/store/storeThunks";
 import SuperAdminRoutes from "./routes/SuperAdminRoutes";
 import PageNotFound from "./pages/common/PageNotFound";
+import {  useNavigate } from 'react-router'
 
 const App = () => {
   const dispatch = useDispatch();
@@ -25,8 +26,12 @@ const App = () => {
       dispatch(getUserProfile(jwt));
     }
   }, [dispatch]);
+  const navigate = useNavigate()
 
   useEffect(() => {
+if (!userProfile) {
+  navigate('/')
+}
     if (userProfile && userProfile.role === "ROLE_STORE_ADMIN") {
       dispatch(getStoreByAdmin(userProfile.jwt));
     }
