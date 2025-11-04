@@ -28,6 +28,23 @@ const employeeSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+
+
+
+      .addCase(findStoreEmployees.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(findStoreEmployees.fulfilled, (state, action) => {
+        state.loading = false;
+        state.employees = action.payload;
+      })
+      .addCase(findStoreEmployees.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+
+
       .addCase(createStoreEmployee.pending, (state) => {
         state.loading = true;
       })
@@ -67,9 +84,9 @@ const employeeSlice = createSlice({
         state.employee = action.payload;
       })
 
-      .addCase(findStoreEmployees.fulfilled, (state, action) => {
-        state.employees = action.payload;
-      })
+      // .addCase(findStoreEmployees.fulfilled, (state, action) => {
+      //   state.employees = action.payload;
+      // })
 
       .addCase(findBranchEmployees.fulfilled, (state, action) => {
         state.employees = action.payload;

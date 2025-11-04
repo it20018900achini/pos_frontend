@@ -21,7 +21,7 @@ import { storeAdminRole } from "../../../utils/userRole";
 
 export default function StoreEmployees() {
   const dispatch = useDispatch();
-  const { employees } = useSelector((state) => state.employee);
+  const { employees, loading, error  } = useSelector((state) => state.employee);
   const {store}=useSelector(state=>state.store)
 
   useEffect(() => {
@@ -131,9 +131,15 @@ export default function StoreEmployees() {
           </DialogContent>
         </Dialog>
       </div>
+{/* {loading && <div>Loading employees...</div>} */}
 
+
+      {error && (
+        <div className="mb-4 text-red-600">{error}</div>
+      )}
       <EmployeeTable
         employees={employees}
+        loading={loading}
         onEdit={openEditDialog}
         onDelete={handleDeleteEmployee}
       />
