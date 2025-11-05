@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/use-toast";
 import { ThemeProvider } from "@/components/theme-provider";
 
 createRoot(document.getElementById("root")).render(
+  
   <StrictMode>
     <BrowserRouter>
       <Provider store={globleState}>

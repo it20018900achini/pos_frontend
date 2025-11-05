@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router";
+import { Routes, Route, Navigate, useLocation } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 
 // Auth and Store Routes
@@ -17,7 +17,7 @@ import {  useNavigate } from 'react-router'
 
 const App = () => {
   const dispatch = useDispatch();
-  const { userProfile } = useSelector((state) => state.user);
+  const { userProfile,loading,error } = useSelector((state) => state.user);
   const { store } = useSelector((state) => state.store);
 
   useEffect(() => {
@@ -27,11 +27,14 @@ const App = () => {
     }
   }, [dispatch]);
   const navigate = useNavigate()
+  const location = useLocation();
 
   useEffect(() => {
 if (!userProfile) {
   navigate('/')
 }
+
+  navigate(location.pathname)
     if (userProfile && userProfile.role === "ROLE_STORE_ADMIN") {
       dispatch(getStoreByAdmin(userProfile.jwt));
     }

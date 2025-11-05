@@ -30,7 +30,6 @@ const employeeSlice = createSlice({
     builder
 
 
-
       .addCase(findStoreEmployees.pending, (state) => {
         state.loading = true;
       })

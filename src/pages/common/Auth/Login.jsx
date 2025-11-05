@@ -139,7 +139,7 @@ const Login = () => {
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
-      
+      {/* {JSON.stringify(error, null, 2)} */}
       <div className="w-full max-w-md">
         {/* Logo and Back Button */}
         <div className="text-center mb-8">

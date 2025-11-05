@@ -9,8 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/ui/table";
+import { useNavigate } from "react-router";
 
 const OrderItemTable = ({ selectedOrder }) => {
+  
+  const navigate = useNavigate()
   // Store return values per item
   const returnQuantityRef = useRef({});
   const returnReasonRef = useRef({});
@@ -30,7 +33,7 @@ const OrderItemTable = ({ selectedOrder }) => {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/order-items/${item.id}/return`,
+        `https://pos-dsxh.onrender.com/order-items/${item.id}/return`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -39,11 +42,24 @@ const OrderItemTable = ({ selectedOrder }) => {
       );
 
       if (!response.ok) {
+        
+      const response = await fetch(
+        `https://pos-dsxh.onrender.com/api/orders/${item.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+      
+
         throw new Error("Network response was not ok");
       }
 
       const data = await response.text();
       console.log("Return successful:", data);
+              navigate(0);
+
       alert(`Return submitted successfully for Item ID: ${item.id}`);
       
       // ✅ Optionally clear input fields after submit

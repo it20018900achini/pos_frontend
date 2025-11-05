@@ -58,10 +58,27 @@ const orderSlice = createSlice({
         state.orders = action.payload;
       })
 
-      .addCase(getOrdersByCashier.fulfilled, (state, action) => {
-        state.orders = action.payload;
-        console.log("get order by cashier ", action.payload);
+
+
+
+      .addCase(getOrdersByCashier.pending, (state) => {
+        state.loading = true;
       })
+      .addCase(getOrdersByCashier.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orders = action.payload;
+      })
+      .addCase(getOrdersByCashier.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+
+
+      // .addCase(getOrdersByCashier.fulfilled, (state, action) => {
+      //   state.orders = action.payload;
+      //   console.log("get order by cashier ", action.payload);
+      // })
 
       .addCase(getTodayOrdersByBranch.fulfilled, (state, action) => {
         state.todayOrders = action.payload;
