@@ -140,15 +140,17 @@ const PaymentDialog = ({
                 {method.key === "CASH" ? (
                   <div className="">
                     <div className="mb-2">
-                      CASH AMOUNT
+                      CREDIT AMOUNT
                     <div className="w-full flex items-center gap-2 ">
                       <Input
                         type={`text`}
                         value={value}
                         onChange={handleChange}
                       />
-                      <span className="text-center border px-2 rounded-md bg-red-100">
-                        <span className="text-xs">CREDIT</span>
+                      <span className={`text-center border px-2 rounded-md ${
+                        total - value < 0 ? 'bg-red-200 text-red-800 border-red-400' : 'bg-green-200 text-green-800 border-green-400'
+                      }`}>
+                        <span className="text-xs">CASH</span>
                         <br />
                         {(total - value).toFixed(2)}
                       </span>
