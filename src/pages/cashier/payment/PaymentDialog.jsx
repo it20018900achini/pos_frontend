@@ -126,7 +126,7 @@ const PaymentDialog = ({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Payment| {paymentMethod}</DialogTitle>
+          <DialogTitle>Payment</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
