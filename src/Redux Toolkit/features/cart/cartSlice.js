@@ -5,7 +5,7 @@ const initialState = {
   selectedCustomer: null,
   note: "",
   discount: { type: "percentage", value: 0 },
-  paymentMethod: "cash",
+  paymentMethod: "CASH",
   heldOrders: [],
   currentOrder: null,
 };

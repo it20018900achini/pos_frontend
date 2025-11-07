@@ -113,17 +113,20 @@ const PaymentDialog = ({
   function handleChange(e) {
     setValue(e.target.value);
   }
+  
+  
   return (
     <Dialog
       open={showPaymentDialog}
       onOpenChange={(showPaymentDialog) => {
         setShowPaymentDialog(showPaymentDialog);
         setValue(total);
+        ()=>dispatch(setPaymentMethod("CASH"))
       }}
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Payment</DialogTitle>
+          <DialogTitle>Payment| {paymentMethod}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -137,20 +140,21 @@ const PaymentDialog = ({
           <div className="space-y-2">
             {paymentMethods.map((method) => (
               <div key={method.key}>
-                {method.key === "CASH" ? (
+                {method.key == "CASH" ? (
                   <div className="">
                     <div className="mb-2">
-                      CREDIT AMOUNT
+                      CASH AMOUNT
                     <div className="w-full flex items-center gap-2 ">
                       <Input
                         type={`text`}
+                        className={`border-green-500`}
                         value={value}
                         onChange={handleChange}
                       />
                       <span className={`text-center border px-2 rounded-md ${
-                        total - value < 0 ? 'bg-red-200 text-red-800 border-red-400' : 'bg-green-200 text-green-800 border-green-400'
+                        (total - value) <= 0 ?  'bg-green-200 text-green-800 border-green-400': 'bg-red-200 text-red-800 border-red-400'
                       }`}>
-                        <span className="text-xs">CASH</span>
+                        <span className="text-xs">CREDIT</span>
                         <br />
                         {(total - value).toFixed(2)}
                       </span>
