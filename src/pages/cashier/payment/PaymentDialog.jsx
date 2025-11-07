@@ -69,8 +69,8 @@ const PaymentDialog = ({
 
       // Prepare order data according to OrderDTO structure
       const orderData = {
-        cash: parseFloat(value),
-        credit: total - value,
+        cash: parseFloat(value).toFixed(2),
+        credit: parseFloat(total - value).toFixed(2),
         totalAmount: total,
         branchId: branch.id,
         cashierId: userProfile.id,
