@@ -240,6 +240,7 @@ const OrderHistoryPage = () => {
             <DialogHeader>
               <DialogTitle>Order Details - Invoice</DialogTitle>
             </DialogHeader>
+           {/* <pre>{JSON.stringify(selectedOrder,null,2)}</pre>  */}
             <OrderDetails selectedOrder={selectedOrder} />
 
             <DialogFooter className="gap-2 sm:gap-0 space-x-3">

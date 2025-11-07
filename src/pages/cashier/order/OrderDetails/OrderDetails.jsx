@@ -15,6 +15,7 @@ const OrderDetails = ({ selectedOrder }) => {
        <Card>
         <CardContent className="p-4">
           <h3 className="font-semibold mb-2">Order Items</h3>
+      {/* <pre>{JSON.stringify(selectedOrder, null, 2)}</pre>     */}
           <OrderItemTable selectedOrder={selectedOrder} />
         </CardContent>
       </Card>
