@@ -32,6 +32,8 @@ export const createOrder = createAsyncThunk(
       console.log('✅ Order created successfully:', {
         orderId: res.data.id,
         totalAmount: res.data.totalAmount,
+        cash: res.data.cash,
+        credit: res.data.credit,
         customer: res.data.customer,
         response: res.data
       });
