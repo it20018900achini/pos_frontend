@@ -222,7 +222,7 @@ const OrderItemTable = ({ selectedOrder }) => {
                               className="bg-white border border-gray-300 rounded px-1 py-0.5 w-16"
                             />
                             {/* Reason Input */}
-                            R:{" "}
+                            R:{" "}{item?.reason}
                             <input
                               type="text"
                               min={1}

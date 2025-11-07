@@ -13,6 +13,7 @@ import { CircleX, CreditCard, Cross, CrosshairIcon } from "lucide-react";
 import { Pause } from "lucide-react";
 
 const PaymentSection = ({ setShowPaymentDialog }) => {
+  
   const cartItems = useSelector(selectCartItems);
   const selectedCustomer = useSelector(selectSelectedCustomer);
 
@@ -63,6 +64,7 @@ const PaymentSection = ({ setShowPaymentDialog }) => {
   };
   return (
     <div className="flex-1 p-4 flex flex-col justify-end">
+      
       <div className="space-y-4">
         <div className="text-center">
           <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
