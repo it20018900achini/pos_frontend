@@ -250,7 +250,6 @@ const OrderItemTable = ({ selectedOrder }) => {
                             className={`px-2`}
                             id={item?.id}
                             onClick={(e) => {
-                              alert(e.target.id + "" + item.id);
                                setShowReturnForm(e.target.id);
                             }}
                           >SHOW RETURN</Button>}
