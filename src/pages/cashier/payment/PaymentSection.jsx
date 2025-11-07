@@ -9,7 +9,7 @@ import {
   selectTotal,
 } from "../../../Redux Toolkit/features/cart/cartSlice";
 import { Button } from "../../../components/ui/button";
-import { CreditCard } from "lucide-react";
+import { CircleX, CreditCard, Cross, CrosshairIcon } from "lucide-react";
 import { Pause } from "lucide-react";
 
 const PaymentSection = ({ setShowPaymentDialog }) => {
@@ -73,11 +73,13 @@ const PaymentSection = ({ setShowPaymentDialog }) => {
 
         <div className="space-y-2">
           <Button
-            className="w-full py-3 text-lg font-semibold "
+            className={`w-full py-3 text-lg font-semibold `}
             onClick={handlePayment}
             disabled={cartItems.length === 0}
           >
-            <CreditCard className="w-5 h-5 mr-2" />
+            {selectedCustomer?<CreditCard className="w-5 h-5 mr-2" />:  <CircleX  className="w-5 h-5 mr-2 text-red-500" />}
+            
+          
             Process Payment
           </Button>
 

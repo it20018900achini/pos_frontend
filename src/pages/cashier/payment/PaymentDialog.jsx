@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,7 @@ import { useToast } from "../../../components/ui/use-toast";
 import { useDispatch } from "react-redux";
 import { createOrder } from "../../../Redux Toolkit/features/order/orderThunks";
 import { paymentMethods } from "./data";
+import { Input } from "../../../components/ui/input";
 
 const PaymentDialog = ({
   showPaymentDialog,
@@ -106,7 +107,10 @@ const [loading, setLoading] = React.useState(false);
   };
 
   const handlePaymentMethod = (method) => dispatch(setPaymentMethod(method));
-
+    const [value, setValue] = useState(0);
+    function handleChange(e) {
+        setValue(e.target.value);
+    }
   return (
     <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
       <DialogContent>
@@ -124,7 +128,13 @@ const [loading, setLoading] = React.useState(false);
 
           <div className="space-y-2">
             {paymentMethods.map((method) => (
-              <Button
+              
+              <div key={method.key}>
+                {method.key==='CASH'?<div className="">
+                  <div className="w-full flex items-center gap-2 mb-2"><Input type={`text`}  value={value} onChange={handleChange}/>
+              <span>CREADIT AMOUNT :{(total-value).toFixed(2)}</span>
+              </div>
+                  <Button
                 key={method.key}
                 variant={paymentMethod === method.key ? "default" : "outline"}
                 className="w-full justify-start"
@@ -132,6 +142,17 @@ const [loading, setLoading] = React.useState(false);
               >
                 {method.label}
               </Button>
+              
+              
+              </div>:<Button
+                key={method.key}
+                variant={paymentMethod === method.key ? "default" : "outline"}
+                className="w-full justify-start"
+                onClick={() => handlePaymentMethod(method.key)}
+              >
+                {method.label}
+              </Button>}
+              </div>
             ))}
           </div>
         </div>
