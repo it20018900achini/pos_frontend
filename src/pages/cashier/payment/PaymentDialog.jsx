@@ -66,6 +66,8 @@ const [loading, setLoading] = React.useState(false);
       setLoading(true);
       // Prepare order data according to OrderDTO structure
       const orderData = {
+        cash:value,
+        creadit: total - value,
         totalAmount: total,
         branchId: branch.id,
         cashierId: userProfile.id,
