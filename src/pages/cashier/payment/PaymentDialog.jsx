@@ -28,10 +28,12 @@ const PaymentDialog = ({
   setShowPaymentDialog,
   setShowReceiptDialog,
 }) => {
-      const [value, setValue] = useState(total);
+  
+  const total = useSelector(selectTotal);
+  const [value, setValue] = useState(total);
 
   const paymentMethod = useSelector(selectPaymentMethod);
-  const {toast} = useToast();
+  const { toast } = useToast();
   const cart = useSelector(selectCartItems);
   const branch = useSelector((state) => state.branch);
   const { userProfile } = useSelector((state) => state.user);
@@ -39,14 +41,11 @@ const PaymentDialog = ({
 
   const selectedCustomer = useSelector(selectSelectedCustomer);
 
-  const total = useSelector(selectTotal);
 
   const note = useSelector(selectNote);
-const [loading, setLoading] = React.useState(false);
-  
+  const [loading, setLoading] = React.useState(false);
 
   const processPayment = async () => {
-    
     if (cart.length === 0) {
       toast({
         title: "Empty Cart",
@@ -67,10 +66,10 @@ const [loading, setLoading] = React.useState(false);
 
     try {
       setLoading(true);
-      
+
       // Prepare order data according to OrderDTO structure
       const orderData = {
-        cash:value,
+        cash: value,
         credit: total - value,
         totalAmount: total,
         branchId: branch.id,
@@ -100,7 +99,7 @@ const [loading, setLoading] = React.useState(false);
         title: "Order Created Successfully",
         description: `Order #${createdOrder.id} created and payment processed`,
       });
-      
+
       setLoading(false);
     } catch (error) {
       console.error("Failed to create order:", error);
@@ -113,11 +112,17 @@ const [loading, setLoading] = React.useState(false);
   };
 
   const handlePaymentMethod = (method) => dispatch(setPaymentMethod(method));
-    function handleChange(e) {
-        setValue(e.target.value);
-    }
+  function handleChange(e) {
+    setValue(e.target.value);
+  }
   return (
-    <Dialog open={showPaymentDialog} onOpenChange={(showPaymentDialog)=>{setShowPaymentDialog(showPaymentDialog);setValue(total)}}>
+    <Dialog
+      open={showPaymentDialog}
+      onOpenChange={(showPaymentDialog) => {
+        setShowPaymentDialog(showPaymentDialog);
+        setValue(total);
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Payment</DialogTitle>
@@ -133,30 +138,44 @@ const [loading, setLoading] = React.useState(false);
 
           <div className="space-y-2">
             {paymentMethods.map((method) => (
-              
               <div key={method.key}>
-                {method.key==='CASH'?<div className="">
-                  <div className="w-full flex items-center gap-2 mb-2"><Input type={`text`}  value={value} onChange={handleChange}/>
-              <span className="text-center"><span className="text-xs">CREDIT</span><br/>{(total-value).toFixed(2)}</span>
-              </div>
+                {method.key === "CASH" ? (
+                  <div className="">
+                    <div className="w-full flex items-center gap-2 mb-2">
+                      <Input
+                        type={`text`}
+                        value={value}
+                        onChange={handleChange}
+                      />
+                      <span className="text-center">
+                        <span className="text-xs">CREDIT</span>
+                        <br />
+                        {(total - value).toFixed(2)}
+                      </span>
+                    </div>
+                    <Button
+                      key={method.key}
+                      variant={
+                        paymentMethod === method.key ? "default" : "outline"
+                      }
+                      className="w-full justify-start"
+                      onClick={() => handlePaymentMethod(method.key)}
+                    >
+                      {method.label}
+                    </Button>
+                  </div>
+                ) : (
                   <Button
-                key={method.key}
-                variant={paymentMethod === method.key ? "default" : "outline"}
-                className="w-full justify-start"
-                onClick={() => handlePaymentMethod(method.key)}
-              >
-                {method.label}
-              </Button>
-              
-              
-              </div>:<Button
-                key={method.key}
-                variant={paymentMethod === method.key ? "default" : "outline"}
-                className="w-full justify-start"
-                onClick={() => handlePaymentMethod(method.key)}
-              >
-                {method.label}
-              </Button>}
+                    key={method.key}
+                    variant={
+                      paymentMethod === method.key ? "default" : "outline"
+                    }
+                    className="w-full justify-start"
+                    onClick={() => handlePaymentMethod(method.key)}
+                  >
+                    {method.label}
+                  </Button>
+                )}
               </div>
             ))}
           </div>
@@ -167,11 +186,10 @@ const [loading, setLoading] = React.useState(false);
             Cancel
           </Button>
           {loading ? (
-            <Button disabled>
-              Processing...
-            </Button>
-          ) : (<Button onClick={processPayment}>Complete Payment</Button>)}
-          
+            <Button disabled>Processing...</Button>
+          ) : (
+            <Button onClick={processPayment}>Complete Payment</Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
