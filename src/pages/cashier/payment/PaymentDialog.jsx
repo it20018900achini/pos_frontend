@@ -132,7 +132,7 @@ const [loading, setLoading] = React.useState(false);
               <div key={method.key}>
                 {method.key==='CASH'?<div className="">
                   <div className="w-full flex items-center gap-2 mb-2"><Input type={`text`}  value={value} onChange={handleChange}/>
-              <span>CREADIT AMOUNT :{(total-value).toFixed(2)}</span>
+              <span className="text-center"><span className="text-xs">CREADIT</span><br/>{(total-value).toFixed(2)}</span>
               </div>
                   <Button
                 key={method.key}
