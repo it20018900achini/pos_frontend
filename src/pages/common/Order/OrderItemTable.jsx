@@ -11,8 +11,10 @@ import {
 } from "../../../components/ui/table";
 import { useNavigate } from "react-router";
 import api from "@/utils/api";
+import { toast } from "sonner";
 const OrderItemTable = ({ selectedOrder }) => {
-  const [updatedItems, setUpdatedItems] = useState({items:[]});
+  const [updatedItems, setUpdatedItems] = useState({ items: [] });
+  const [showReturnForm, setShowReturnForm] = useState(null);
   const navigate = useNavigate();
   // Store return values per item
   const returnQuantityRef = useRef({});
@@ -102,7 +104,7 @@ const OrderItemTable = ({ selectedOrder }) => {
       // console.log("Return successful:", data);
       // navigate(0);
 
-      alert(`Return submitted successfully for Item ID: ${item.id}`);
+      toast.success(`Return submitted successfully `);
 
       // ✅ Optionally clear input fields after submit
       returnQuantityRef.current[item.id] = "";
@@ -127,127 +129,141 @@ const OrderItemTable = ({ selectedOrder }) => {
         </TableHeader>
 
         <TableBody>
-          {((updatedItems?.items?.length) > 0
+          {(updatedItems?.items?.length > 0
             ? updatedItems?.items
-            : selectedOrder.items).map((item) => (
-                <Fragment key={item?.id}>
-                  {/* Main Row */}
-                  <TableRow
-                    className={
-                      item.returned ? "bg-red-200 hover:bg-red-300" : ""
-                    }
-                  >
-                    <TableCell>
-                      <div className="w-10 h-10">
-                        {item.product?.image ? (
-                          <img
-                            src={item.product.image}
-                            alt={item.product?.name || "Product"}
-                            className="w-10 h-10 object-cover rounded-md"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 bg-gray-100 rounded-md border flex items-center justify-center">
-                            <span className="text-xs text-gray-500 font-medium">
-                              {(item.productName || item.product?.name || "P")
-                                .charAt(0)
-                                .toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium">
-                          {(item.product?.name || "Product").slice(0, 20)}...
+            : selectedOrder.items
+          ).map((item) => (
+            <Fragment key={item?.id}>
+              {/* Main Row */}
+              <TableRow
+                className={item.returned ? "bg-red-200 hover:bg-red-300" : ""}
+              >
+                <TableCell>
+                  <div className="w-10 h-10">
+                    {item.product?.image ? (
+                      <img
+                        src={item.product.image}
+                        alt={item.product?.name || "Product"}
+                        className="w-10 h-10 object-cover rounded-md"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-100 rounded-md border flex items-center justify-center">
+                        <span className="text-xs text-gray-500 font-medium">
+                          {(item.productName || item.product?.name || "P")
+                            .charAt(0)
+                            .toUpperCase()}
                         </span>
-                        {item.product?.sku && (
-                          <span className="text-xs text-gray-500">
-                            SKU: {item.product.sku.slice(0, 17)}...
-                          </span>
-                        )}
                       </div>
-                    </TableCell>
+                    )}
+                  </div>
+                </TableCell>
 
-                    <TableCell className="text-center">
-                      {item.quantity}
-                    </TableCell>
+                <TableCell>
+                  <div className="flex flex-col">
+                    <span className="font-medium">
+                      {(item.product?.name || "Product").slice(0, 20)}...
+                    </span>
+                    {item.product?.sku && (
+                      <span className="text-xs text-gray-500">
+                        SKU: {item.product.sku.slice(0, 17)}...
+                      </span>
+                    )}
+                  </div>
+                </TableCell>
 
-                    <TableCell className="text-right">
-                      LKR {item.product?.sellingPrice?.toFixed(2) || "0.00"}
-                    </TableCell>
+                <TableCell className="text-center">{item.quantity}</TableCell>
 
-                    <TableCell className="text-right">
-                      LKR{" "}
-                      {(item.product?.sellingPrice * item.quantity)?.toFixed(
-                        2
-                      ) || "0.00"}
-                    </TableCell>
-                  </TableRow>
+                <TableCell className="text-right">
+                  LKR {item.product?.sellingPrice?.toFixed(2) || "0.00"}
+                </TableCell>
 
-                  <TableRow>
-                    <TableCell colSpan={5} className="p-0">
-                      <div
-                        className={`${
-                          item.returned ? "bg-red-200 " : ""
-                        }w-full border-b border-neutral-800 p-1 flex justify-between items-center`}
-                      >
-                        <div className="w-full">
-                          {item.returned && (
-                            <Badge className="bg-red-500 text-[8px] py-0 px-1">
-                              RETURNED
-                            </Badge>
-                          )}
-                        </div>
-                        {/* <pre></pre>
+                <TableCell className="text-right">
+                  LKR{" "}
+                  {(item.product?.sellingPrice * item.quantity)?.toFixed(2) ||
+                    "0.00"}
+                </TableCell>
+              </TableRow>
+
+              <TableRow>
+                <TableCell colSpan={5} className="p-0">
+                  <div
+                    className={`${
+                      item.returned ? "bg-red-200 " : "bg-gray-200 "
+                    }w-full border-b border-neutral-800 p-1 flex justify-between items-center`}
+                  >
+                    <div className="w-full">
+                      {item.returned && (
+                        <Badge className="bg-red-500 text-[8px] py-0 px-1">
+                          RETURNED
+                        </Badge>
+                      )}
+                    </div>
+                    {/* <pre></pre>
 {JSON.stringify(item,null,2)} */}
 
-                        <div className="flex items-center gap-2">
-                          {/* {item.id} */}
-
-                          {/* RETURN FORM */}
-                          <form onSubmit={(e) => handleSubmit(e, item)}>
-                            <div className="flex gap-2 items-center">
-                              {/* Quantity Input */}
-                              <input
-                                className="border border-neutral-800 w-15"
-                                type="number"
-                                min={1}
-                                max={item.quantity}
-                                placeholder="Qty"
-                                onChange={(e) =>
-                                  (returnQuantityRef.current[item.id] =
-                                    e.target.value)
-                                }
-                              />
-
-                              {/* Reason Input */}
-                              <input
-                                className="border border-neutral-800 w-40"
-                                type="text"
-                                placeholder="Reason"
-                                onChange={(e) =>
-                                  (returnReasonRef.current[item.id] =
-                                    e.target.value)
-                                }
-                              />
-
-                              <Button
-                                className="px-2 rounded-0"
-                                size="xs"
-                                type="submit"
-                              >
-                                RETURN
-                              </Button>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                </Fragment>
-              ))}
+                    <div className="flex items-center gap-2">
+                      {/* {item.id} */}
+                       
+{item.id==showReturnForm?(
+                        <form onSubmit={(e) => handleSubmit(e, item)}>
+                          <div className="flex gap-2 items-center">
+                            {/* Quantity Input */}
+                            Q:{" "}
+                            <input
+                              type="number"
+                              min={1}
+                              max={item.quantity}
+                              defaultValue={item?.quantity} // ✅ allows typing
+                              onChange={(e) => {
+                                returnQuantityRef.current[item.id] = Number(
+                                  e.target.value
+                                );
+                              }}
+                              className="bg-white border border-gray-300 rounded px-1 py-0.5 w-16"
+                            />
+                            {/* Reason Input */}
+                            R:{" "}
+                            <input
+                              type="text"
+                              min={1}
+                              max={item.reason}
+                              defaultValue={item?.reason} // ✅ allows typing
+                              onChange={(e) => {
+                                returnReasonRef.current[item.id] = Number(
+                                  e.target.value
+                                );
+                              }}
+                              className="bg-white border border-gray-300 rounded px-1 py-0.5 w-16"
+                            />
+                            <Button
+                              className="px-2 rounded-0"
+                              size="xs"
+                              type="submit"
+                              disabled={item.returned}
+                            >
+                              RETURN
+                            </Button>
+                          </div>
+                        </form>
+                      ):<Button
+                            size={`xs`}
+                            className={`px-2`}
+                            id={item?.id}
+                            onClick={(e) => {
+                              alert(e.target.id + "" + item.id);
+                               setShowReturnForm(e.target.id);
+                            }}
+                          >SHOW RETURN</Button>}
+                            {/* Show return */}
+                          
+                      { }
+                      {/* RETURN FORM */}
+                    </div>
+                  </div>
+                </TableCell>
+              </TableRow>
+            </Fragment>
+          ))}
         </TableBody>
       </Table>
     </>
