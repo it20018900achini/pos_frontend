@@ -28,7 +28,6 @@ const PaymentDialog = ({
   setShowPaymentDialog,
   setShowReceiptDialog,
 }) => {
-  
   const total = useSelector(selectTotal);
   const [value, setValue] = useState(total);
 
@@ -40,7 +39,6 @@ const PaymentDialog = ({
   const dispatch = useDispatch();
 
   const selectedCustomer = useSelector(selectSelectedCustomer);
-
 
   const note = useSelector(selectNote);
   const [loading, setLoading] = React.useState(false);
@@ -141,17 +139,20 @@ const PaymentDialog = ({
               <div key={method.key}>
                 {method.key === "CASH" ? (
                   <div className="">
-                    <div className="w-full flex items-center gap-2 mb-2">
+                    <div className="mb-2">
+                      CASH AMOUNT
+                    <div className="w-full flex items-center gap-2 ">
                       <Input
                         type={`text`}
                         value={value}
                         onChange={handleChange}
                       />
-                      <span className="text-center">
+                      <span className="text-center border px-2 rounded-md bg-red-100">
                         <span className="text-xs">CREDIT</span>
                         <br />
                         {(total - value).toFixed(2)}
                       </span>
+                    </div>
                     </div>
                     <Button
                       key={method.key}
