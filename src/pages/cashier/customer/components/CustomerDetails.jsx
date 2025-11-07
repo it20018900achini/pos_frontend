@@ -41,12 +41,12 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Loyalty Points
+              Returns
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <StarIcon className="h-5 w-5 text-yellow-500" />
+              {/* <StarIcon className="h-5 w-5 text-yellow-500" /> */}
               <span className="text-2xl font-bold">{customer.loyaltyPoints || 0}</span>
             </div>
           </CardContent>
