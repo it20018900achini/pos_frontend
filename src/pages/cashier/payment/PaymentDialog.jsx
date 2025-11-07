@@ -44,6 +44,7 @@ const [loading, setLoading] = React.useState(false);
   
 
   const processPayment = async () => {
+    
     if (cart.length === 0) {
       toast({
         title: "Empty Cart",
@@ -64,6 +65,7 @@ const [loading, setLoading] = React.useState(false);
 
     try {
       setLoading(true);
+      
       // Prepare order data according to OrderDTO structure
       const orderData = {
         cash:value,
@@ -109,12 +111,12 @@ const [loading, setLoading] = React.useState(false);
   };
 
   const handlePaymentMethod = (method) => dispatch(setPaymentMethod(method));
-    const [value, setValue] = useState(0);
+    const [value, setValue] = useState(total);
     function handleChange(e) {
         setValue(e.target.value);
     }
   return (
-    <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+    <Dialog open={showPaymentDialog} onOpenChange={(showPaymentDialog)=>{setShowPaymentDialog(showPaymentDialog);setValue(total)}}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Payment</DialogTitle>
