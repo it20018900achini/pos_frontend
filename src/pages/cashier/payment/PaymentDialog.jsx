@@ -28,6 +28,8 @@ const PaymentDialog = ({
   setShowPaymentDialog,
   setShowReceiptDialog,
 }) => {
+      const [value, setValue] = useState(total);
+
   const paymentMethod = useSelector(selectPaymentMethod);
   const {toast} = useToast();
   const cart = useSelector(selectCartItems);
@@ -111,7 +113,6 @@ const [loading, setLoading] = React.useState(false);
   };
 
   const handlePaymentMethod = (method) => dispatch(setPaymentMethod(method));
-    const [value, setValue] = useState(total);
     function handleChange(e) {
         setValue(e.target.value);
     }
