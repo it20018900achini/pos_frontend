@@ -2,7 +2,6 @@ import axios from "axios";
 
 
 
-const tk = getAuthToken();
 export const createPayment = (data) =>
   axios.post("http://localhost:5000/api/customer-payments", {
     method: "POST",
