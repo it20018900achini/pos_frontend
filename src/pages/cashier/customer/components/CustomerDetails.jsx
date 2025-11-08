@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StarIcon, PlusIcon, Loader2, UserIcon } from 'lucide-react';
+import PaymentsDashboard from './customerPayments/PaymentsDashboard';
 
 const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
   if (!customer) {
@@ -36,7 +37,7 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
           Add Points
         </Button>
       </div>
-
+<PaymentsDashboard/>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardHeader className="pb-2">
