@@ -14,10 +14,10 @@ const CustomerCard = ({customer, onSelectCustomer, selectedCustomer}) => {
                 <p className="text-sm text-muted-foreground">{customer.phone || 'N/A'}</p>
                 <p className="text-sm text-muted-foreground">{customer.email || 'N/A'}</p>
               </div>
-              <Badge variant="outline" className="flex items-center gap-1">
+              {/* <Badge variant="outline" className="flex items-center gap-1">
                 <StarIcon className="h-3 w-3" />
                 {customer.loyaltyPoints || 0} pts
-              </Badge>
+              </Badge> */}
             </div>
             {/* <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
               <div>
