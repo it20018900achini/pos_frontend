@@ -7,11 +7,11 @@ import { ChefHat } from "lucide-react";
 const POSHeader = () => {
   const {setSidebarOpen} = useSidebar();
   return (
-    <div className="bg-card border-b px-6 py-4">
+    <div className="bg-green-700 border-b px-6 py-4 text-white">
       <div className="flex items-center justify-between">
         <div>
           <Button
-            className="z-10 p-2 rounded shadow-lg border border-border"
+            className="z-10 p-2 rounded shadow-lg border border-border text-neutral-800 bg-white hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-ring"
             onClick={() => setSidebarOpen(true)}
             aria-label="Open sidebar"
           >
@@ -31,7 +31,7 @@ const POSHeader = () => {
           </Button>
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground"> <ChefHat className="inline mb-1 mr-1 w-4 h-4"/> Wijesiri Bakery</h1>
+          <h1 className="text-2xl font-bold "> <ChefHat className="inline mb-1 mr-1 w-4 h-4"/> Wijesiri Bakery</h1>
           {/* <p className="text-sm text-muted-foreground">
            
             Create new order</p> */}

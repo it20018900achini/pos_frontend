@@ -124,7 +124,7 @@ const OrderHistoryPage = () => {
         </Button>
       </div>
 
-      <div className="p-4 border-b">
+      {/* <div className="p-4 border-b">
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[300px]">
             <div className="relative">
@@ -206,7 +206,7 @@ const OrderHistoryPage = () => {
             </Button>
           </div>
         )}
-      </div>
+      </div> */}
 
       <div className="flex-1 p-4 overflow-auto">
         {loading ? (

@@ -39,6 +39,7 @@ const PurchaseHistory = ({ orders, loading = false }) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {loading?"loading...":"mm"}
           <div className="space-y-4">
             {orders.map((order) => (
               <div key={order.id} className="border rounded-lg p-4">
