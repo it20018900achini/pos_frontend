@@ -9,6 +9,9 @@ const OrderInformation = ({selectedOrder}) => {
           <CardContent className="p-4">
             <h3 className="font-semibold mb-2">Order Information</h3>
             <div className="space-y-1 text-sm">
+              <div className="flex justify-end">
+                <span className="font-semibold">#{selectedOrder?.id}</span>
+              </div>
               <div className="flex justify-between">
                 <span className="font-semibold">Date:</span>
                 <span>{formatDate(selectedOrder.createdAt)}</span>

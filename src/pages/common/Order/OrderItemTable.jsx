@@ -40,7 +40,7 @@ const OrderItemTable = ({ selectedOrder }) => {
   // Handle RETURN submit per item
   const handleSubmit = async (event, item) => {
     event.preventDefault();
-setLoadReturning(true);
+    setLoadReturning(true);
     const quantity = returnQuantityRef.current[item.id] || 0;
     const reason = returnReasonRef.current[item.id] || "";
 
@@ -49,6 +49,7 @@ setLoadReturning(true);
       returnReason: reason,
       returnQuantity: Number(quantity),
     };
+    alert(JSON.stringify(payload));
 
     try {
       const response = await fetch(
@@ -74,7 +75,6 @@ setLoadReturning(true);
       // );
 
       try {
-        
         const headers = getAuthHeaders();
         const response1 = await fetch(
           `https://pos-dsxh.onrender.com/api/orders/${selectedOrder.id}`,
@@ -207,25 +207,31 @@ setLoadReturning(true);
 
                     <div className="flex items-center gap-2">
                       {/* {item.id} */}
-                       
-{item.id==showReturnForm?(
-                        <form onSubmit={(e) => handleSubmit(e, item)} className="flex gap-2 items-center">
+
+                      {item.id == showReturnForm ? (
+                        <form
+                          onSubmit={(e) => handleSubmit(e, item)}
+                          className="flex gap-2 items-center"
+                        >
                           <Button
                             size={`xs`}
                             className={`px-2`}
                             id={item?.id}
                             onClick={(e) => {
-                               setShowReturnForm(null);
+                              setShowReturnForm(null);
                             }}
-                          >hide</Button>
+                          >
+                            hide
+                          </Button>
                           <div className="flex gap-2 items-center">
                             {/* Quantity Input */}
                             Q:{" "}
+                            {item?.quantity}
                             <input
                               type="number"
                               min={1}
                               max={item.quantity}
-                              defaultValue={item?.quantity} // ✅ allows typing
+                              defaultValue={item?.return_quantity} // ✅ allows typing
                               onChange={(e) => {
                                 returnQuantityRef.current[item.id] = Number(
                                   e.target.value
@@ -234,16 +240,14 @@ setLoadReturning(true);
                               className="bg-white border border-gray-300 rounded px-1 py-0.5 w-16"
                             />
                             {/* Reason Input */}
-                            R:{" "}{item?.reason}
-                            <input
+                            R: {item?.reason}
+                             <input
                               type="text"
-                              min={1}
-                              max={item.reason}
-                              defaultValue={item?.reason} // ✅ allows typing
+                              defaultValue={item?.return_reason} // ✅ allows typing
                               onChange={(e) => {
-                                returnReasonRef.current[item.id] = Number(
+                                returnReasonRef.current[item.id] = 
                                   e.target.value
-                                );
+                                ;
                               }}
                               className="bg-white border border-gray-300 rounded px-1 py-0.5 w-16"
                             />
@@ -253,22 +257,29 @@ setLoadReturning(true);
                               type="submit"
                               disabled={loadReturning}
                             >
-                             {loadReturning?          <LoaderCircleIcon className="animate-spin text-red-500 w-2 h-2" />
-:""} RETURN
+                              {loadReturning ? (
+                                <LoaderCircleIcon className="animate-spin text-red-500 w-2 h-2" />
+                              ) : (
+                                ""
+                              )}{" "}
+                              RETURN
                             </Button>
                           </div>
                         </form>
-                      ):<Button
-                            size={`xs`}
-                            className={`px-2`}
-                            id={item?.id}
-                            onClick={(e) => {
-                               setShowReturnForm(e.target.id);
-                            }}
-                          >SHOW RETURN</Button>}
-                            {/* Show return */}
-                          
-                      { }
+                      ) : (
+                        <Button
+                          size={`xs`}
+                          className={`px-2`}
+                          id={item?.id}
+                          onClick={(e) => {
+                            setShowReturnForm(e.target.id);
+                          }}
+                        >
+                          SHOW RETURN
+                        </Button>
+                      )}
+
+                      {}
                       {/* RETURN FORM */}
                     </div>
                   </div>
