@@ -77,7 +77,7 @@ const OrderTable = ({
               </div>
             </TableCell>
           </TableRow>
-           <TableRow >
+           <TableRow className="borde-b border-neutral-400">
             <TableCell className="font-medium" colspan={7}>
               {/* <pre>{JSON.stringify(order?.items,null,2)}</pre> */}
               {order?.items.map((it) => (
