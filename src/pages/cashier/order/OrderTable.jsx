@@ -83,7 +83,8 @@ const OrderTable = ({
               {order?.items.map((it) => (
                 <Fragment key={it.id}>
                   <Badge className={"mr-1"}>
-                    {it?.product?.name} x {it?.quantity} 
+                    {it?.product?.name} x {it?.quantity} <span className="text-red-500">{(it?.returned && it?.return_quantity>0) && " | R: "+it?.return_quantity}  </span>
+                    {/* {JSON.stringify(it)} */}
                   </Badge>
                 </Fragment>
 
