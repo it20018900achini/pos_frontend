@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import { formatDate, getPaymentModeLabel, getStatusBadgeVariant } from "./data";
 import {
   Table,
@@ -35,7 +35,8 @@ const OrderTable = ({
       </TableHeader>
       <TableBody>
         {orders.map((order) => (
-          <TableRow key={order.id}>
+          <Fragment key={order.id}>
+          <TableRow >
             <TableCell className="font-medium">{order.id}</TableCell>
             <TableCell>{formatDate(order.createdAt)}</TableCell>
             <TableCell>
@@ -76,6 +77,20 @@ const OrderTable = ({
               </div>
             </TableCell>
           </TableRow>
+           <TableRow >
+            <TableCell className="font-medium" colspan={7}>
+              {/* <pre>{JSON.stringify(order?.items,null,2)}</pre> */}
+              {order?.items.map((it) => (
+                <Fragment key={it.id}>
+                  <Badge className={"mr-1"}>
+                    {it?.product?.name} x {it?.quantity} 
+                  </Badge>
+                </Fragment>
+
+              ))}
+</TableCell>
+            </TableRow>
+          </Fragment>
         ))}
       </TableBody>
     </Table>

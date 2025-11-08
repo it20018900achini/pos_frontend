@@ -12,9 +12,11 @@ import {
 import { useNavigate } from "react-router";
 import api from "@/utils/api";
 import { toast } from "sonner";
+import { LoaderCircleIcon } from "lucide-react";
 const OrderItemTable = ({ selectedOrder }) => {
   const [updatedItems, setUpdatedItems] = useState({ items: [] });
   const [showReturnForm, setShowReturnForm] = useState(null);
+  const [loadReturning, setLoadReturning] = useState(false);
   const navigate = useNavigate();
   // Store return values per item
   const returnQuantityRef = useRef({});
@@ -38,7 +40,7 @@ const OrderItemTable = ({ selectedOrder }) => {
   // Handle RETURN submit per item
   const handleSubmit = async (event, item) => {
     event.preventDefault();
-
+setLoadReturning(true);
     const quantity = returnQuantityRef.current[item.id] || 0;
     const reason = returnReasonRef.current[item.id] || "";
 
@@ -72,6 +74,7 @@ const OrderItemTable = ({ selectedOrder }) => {
       // );
 
       try {
+        
         const headers = getAuthHeaders();
         const response1 = await fetch(
           `https://pos-dsxh.onrender.com/api/orders/${selectedOrder.id}`,
@@ -82,6 +85,7 @@ const OrderItemTable = ({ selectedOrder }) => {
         }
         const result = await response1.json();
         setUpdatedItems(result);
+        setLoadReturning(false);
         console.log("Fetched updated order items:", result);
       } catch (error) {
         // setError(error);
@@ -205,7 +209,15 @@ const OrderItemTable = ({ selectedOrder }) => {
                       {/* {item.id} */}
                        
 {item.id==showReturnForm?(
-                        <form onSubmit={(e) => handleSubmit(e, item)}>
+                        <form onSubmit={(e) => handleSubmit(e, item)} className="flex gap-2 items-center">
+                          <Button
+                            size={`xs`}
+                            className={`px-2`}
+                            id={item?.id}
+                            onClick={(e) => {
+                               setShowReturnForm(null);
+                            }}
+                          >hide</Button>
                           <div className="flex gap-2 items-center">
                             {/* Quantity Input */}
                             Q:{" "}
@@ -236,12 +248,13 @@ const OrderItemTable = ({ selectedOrder }) => {
                               className="bg-white border border-gray-300 rounded px-1 py-0.5 w-16"
                             />
                             <Button
-                              className="px-2 rounded-0"
+                              className="px-1 rounded-0 flex gap-1 items-center"
                               size="xs"
                               type="submit"
-                              disabled={item.returned}
+                              disabled={loadReturning}
                             >
-                              RETURN
+                             {loadReturning?          <LoaderCircleIcon className="animate-spin text-red-500 w-2 h-2" />
+:""} RETURN
                             </Button>
                           </div>
                         </form>
