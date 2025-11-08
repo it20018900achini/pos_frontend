@@ -4,13 +4,13 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, ShoppingBagIcon, CalendarIcon, DollarSignIcon } from 'lucide-react';
 import { formatDate, getStatusColor } from '../../order/data';
 
-const PurchaseHistory = ({ orders, loading = false }) => {
+const PurchaseHistory = ({ orders, loading  }) => {
 
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-4 text-center text-muted-foreground">
-        <Loader2 className="animate-spin h-8 w-8 mb-4" />
+        {/* <Loader2 className="animate-spin h-8 w-8 mb-4" /> */}
         <p>Loading purchase history...</p>
       </div>
     );

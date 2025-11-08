@@ -84,9 +84,26 @@ const orderSlice = createSlice({
         state.todayOrders = action.payload;
       })
 
+
+
+      .addCase(getOrdersByCustomer.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(getOrdersByCustomer.fulfilled, (state, action) => {
+        state.loading = false;
         state.customerOrders = action.payload;
       })
+      .addCase(getOrdersByCustomer.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+
+
+
+
+
+
 
       .addCase(getRecentOrdersByBranch.fulfilled, (state, action) => {
         state.recentOrders = action.payload;

@@ -27,6 +27,7 @@ import CustomerForm from "./CustomerForm";
 import POSHeader from "../components/POSHeader";
 
 const CustomerLookupPage = () => {
+const [loadingCustomerOrders, setLoadingCustomerOrders] = useState(false);
   const dispatch = useDispatch();
   const { toast } = useToast();
 
@@ -38,7 +39,7 @@ const CustomerLookupPage = () => {
   } = useSelector((state) => state.customer);
   const {
     customerOrders,
-    loading: orderLoading,
+    loading,
     error: orderError,
   } = useSelector((state) => state.order);
   // const { userProfile } = useSelector((state) => state.user);
@@ -79,15 +80,20 @@ const CustomerLookupPage = () => {
 
   // Filter customers based on search term
   const filteredCustomers = filterCustomers(customers, searchTerm);
-
   const handleSelectCustomer = async (customer) => {
+
     setSelectedCustomer(customer);
     // Clear previous customer orders
     dispatch(clearCustomerOrders());
     // Fetch customer orders
     if (customer.id) {
+      
+    // alert("selected customer");
+    setLoadingCustomerOrders(true);
       dispatch(getOrdersByCustomer(customer.id));
+
     }
+    setLoadingCustomerOrders(false);
   };
 
   const handleAddPoints = () => {
@@ -162,11 +168,10 @@ const CustomerLookupPage = () => {
           <CustomerDetails
             customer={displayCustomer}
             onAddPoints={() => setShowAddPointsDialog(true)}
-            loading={orderLoading}
+            loading={loading}
           />
-
           {selectedCustomer && (
-            <PurchaseHistory orders={customerOrders} loading={orderLoading} />
+            <PurchaseHistory orders={customerOrders} loading={loading} />
           )}
         </div>
       </div>
