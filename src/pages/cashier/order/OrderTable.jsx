@@ -59,7 +59,7 @@ const OrderTable = ({
                 >
                   <EyeIcon className="h-4 w-4" />
                 </Button>
-                <Button
+                {/* <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => handlePrintInvoice(order)}
@@ -72,7 +72,7 @@ const OrderTable = ({
                   onClick={() => handleInitiateReturn(order)}
                 >
                   <RotateCcwIcon className="h-4 w-4" />
-                </Button>
+                </Button> */}
               </div>
             </TableCell>
           </TableRow>
