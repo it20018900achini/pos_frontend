@@ -35,6 +35,10 @@ export default function PaymentsDashboard({customer}) {
       </div>
 
       <PaymentTable payments={payments}  />
+       <div className="p-6 space-y-6">
+      <h1 className="text-xl font-bold">Customer Payments</h1>
+      <PaymentTablePagination customerId={customerId} />
+    </div>
     </div>
   );
 }

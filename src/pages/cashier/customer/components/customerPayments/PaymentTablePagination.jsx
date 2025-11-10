@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { getPaymentsByCustomer } from "./services/paymentService";
+import { PaymentFormModal } from "./PaymentFormModal";
 
 
 export function PaymentTablePagination({ customerId }) {
@@ -40,8 +41,14 @@ export function PaymentTablePagination({ customerId }) {
   const handlePrev = () => setPage((prev) => Math.max(prev - 1, 0));
   const handleNext = () => setPage((prev) => Math.min(prev + 1, totalPages - 1));
 
+  const handleSubmit = async (data) => {
+    await createPayment(data);
+    await loadData();
+  };
   return (
     <div className="space-y-4">
+                <PaymentFormModal onSubmit={handleSubmit} />
+        
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <Button onClick={handlePrev} disabled={page === 0}>
