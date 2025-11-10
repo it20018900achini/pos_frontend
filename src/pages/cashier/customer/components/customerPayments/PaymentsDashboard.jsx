@@ -23,9 +23,12 @@ export default function PaymentsDashboard({customer}) {
     loadData();
   }, []);
 
+
+    const customerId = 5; // Example: current customer
+
   return (
     <div className="p-6 space-y-6">
-      {JSON.stringify(customer)}
+      {/* {JSON.stringify(customer)} */}
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-bold">Customer Payments</h1>
         <PaymentFormModal onSubmit={handleSubmit} />

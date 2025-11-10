@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 
 export function PaymentTable({ payments }) {
-  return (<>{JSON.stringify(payments)}
+  return (<>
     <Table>
       <TableHeader>
         <TableRow>

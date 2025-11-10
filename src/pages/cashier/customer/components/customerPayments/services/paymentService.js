@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_BASE = "https://pos-dsxh.onrender.com/api/customer-payments";
+// const API_BASE = "https://pos-dsxh.onrender.com/api/customer-payments";
+const API_BASE = "http://localhost:5000/api/customer-payments";
 
 const getAuthToken = () => {
   const token = localStorage.getItem("jwt");
@@ -10,32 +11,51 @@ const getAuthToken = () => {
   return token;
 };
 
-// ✅ Create payment
+const authHeader = () => ({
+  "Content-Type": "application/json",
+  Authorization: "Bearer " + getAuthToken(),
+});
+
+/* ✅ Create payment */
 export const createPayment = async (data) => {
   return axios.post(`${API_BASE}`, data, {
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + getAuthToken(),
-    },
+    headers: authHeader(),
   });
 };
 
-// ✅ Get payments by customer
-export const getPaymentsByCustomer = async (customerId) => {
-  return axios.get(`${API_BASE}/customer/${customerId}`, {
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + getAuthToken(),
-    },
+/* ✅ Paginated get all payments */
+export const getAllPayments = async (page = 0, size = 10, sort = "id,desc") => {
+  return axios.get(`${API_BASE}?page=${page}&size=${size}&sort=${sort}`, {
+    headers: authHeader(),
   });
 };
 
-// ✅ Get payments by cashier
-export const getPaymentsByCashier = async (cashierId) => {
-  return axios.get(`${API_BASE}/cashier/${cashierId}`, {
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + getAuthToken(),
-    },
-  });
+/* ✅ Paginated get payments by customer */
+export const getPaymentsByCustomer = async (
+  customerId,
+  page = 0,
+  size = 10,
+  sort = "id,desc"
+) => {
+  return axios.get(
+    `${API_BASE}/customer/${customerId}?page=${page}&size=${size}&sort=${sort}`,
+    {
+      headers: authHeader(),
+    }
+  );
+};
+
+/* ✅ Paginated get payments by cashier */
+export const getPaymentsByCashier = async (
+  cashierId,
+  page = 0,
+  size = 10,
+  sort = "id,desc"
+) => {
+  return axios.get(
+    `${API_BASE}/cashier/${cashierId}?page=${page}&size=${size}&sort=${sort}`,
+    {
+      headers: authHeader(),
+    }
+  );
 };
