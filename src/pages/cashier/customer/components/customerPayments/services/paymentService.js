@@ -1,26 +1,41 @@
 import axios from "axios";
 
+const API_BASE = "https://pos-dsxh.onrender.com/api/customer-payments";
 
+const getAuthToken = () => {
+  const token = localStorage.getItem("jwt");
+  if (!token) {
+    throw new Error("No JWT token found");
+  }
+  return token;
+};
 
-export const createPayment = (data) =>
-  axios.post("http://localhost:5000/api/customer-payments", {
-    method: "POST",
+// ✅ Create payment
+export const createPayment = async (data) => {
+  return axios.post(`${API_BASE}`, data, {
     headers: {
       "Content-Type": "application/json",
+      "Authorization": "Bearer " + getAuthToken(),
     },
-    body: JSON.stringify(data),
   });
+};
 
-export const getPaymentsByCustomer = (customerId) =>
-  axios.get(
-    `http://localhost:5000/api/customer-payments/customer/${customerId}`,
-     {
+// ✅ Get payments by customer
+export const getPaymentsByCustomer = async (customerId) => {
+  return axios.get(`${API_BASE}/customer/${customerId}`, {
+    headers: {
       "Content-Type": "application/json",
-    }
-  );
+      "Authorization": "Bearer " + getAuthToken(),
+    },
+  });
+};
 
-
-
-
-export const getPaymentsByCashier = (cashierId) =>
-  axios.get(`http://localhost:5000/api/customer-payments/cashier/${cashierId}`);
+// ✅ Get payments by cashier
+export const getPaymentsByCashier = async (cashierId) => {
+  return axios.get(`${API_BASE}/cashier/${cashierId}`, {
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + getAuthToken(),
+    },
+  });
+};

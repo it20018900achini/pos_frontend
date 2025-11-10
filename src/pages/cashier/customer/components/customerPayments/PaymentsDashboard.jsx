@@ -6,11 +6,11 @@ import { PaymentTable } from "./PaymentTable";
 // import { PaymentFormModal } from "@/components/payments/PaymentFormModal";
 // import { createPayment, getPaymentsByCustomer } from "@/services/paymentService";
 
-export default function PaymentsDashboard() {
+export default function PaymentsDashboard({customer}) {
   const [payments, setPayments] = useState([]);
 
   const loadData = async () => {
-    const res = await getPaymentsByCustomer(7); // For demo: customer 1
+    const res = await getPaymentsByCustomer(customer?.id); // For demo: customer 1
     setPayments(res.data);
   };
 
@@ -25,12 +25,13 @@ export default function PaymentsDashboard() {
 
   return (
     <div className="p-6 space-y-6">
+      {JSON.stringify(customer)}
       <div className="flex justify-between items-center">
         <h1 className="text-xl font-bold">Customer Payments</h1>
         <PaymentFormModal onSubmit={handleSubmit} />
       </div>
 
-      <PaymentTable payments={payments} />
+      <PaymentTable payments={payments}  />
     </div>
   );
 }
