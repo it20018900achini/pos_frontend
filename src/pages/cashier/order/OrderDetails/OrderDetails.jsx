@@ -11,7 +11,11 @@ const OrderDetails = ({ selectedOrder }) => {
         <OrderInformation selectedOrder={selectedOrder} />
         <CustomerInformation selectedOrder={selectedOrder} />
       </div>
-
+      <Card className={"mb-2"}>
+<div className="flex w-full px-4">
+  <span className="w-full">CASH: LKR{selectedOrder?.cash.toFixed(2)}</span>
+  <span className="w-full">CREDIT: LKR{selectedOrder?.credit.toFixed(2)}</span>
+</div></Card>
        <Card>
         <CardContent className="p-4">
           <h3 className="font-semibold mb-2">Order Items</h3>

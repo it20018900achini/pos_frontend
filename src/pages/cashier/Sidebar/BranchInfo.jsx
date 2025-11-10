@@ -1,4 +1,5 @@
 
+import { Home } from "lucide-react";
 import { useSelector } from "react-redux";
 
 const BranchInfo = () => {
@@ -9,7 +10,7 @@ const BranchInfo = () => {
   if (error) return <p>Error: {error}</p>;
   return (
     <div className="mt-4 p-3 bg-secondary rounded-md text-sm">
-      <h3 className="font-semibold mb-1">Branch Info:</h3>
+      <h3 className="font-semibold mb-1 flex items-center gap-2"><Home className="text-neutral-600 w-4 h-4"/> Branch Info:</h3>
       <p>
         <strong>Name:</strong> {branch.name}
       </p>

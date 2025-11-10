@@ -30,6 +30,7 @@ const App = () => {
   const location = useLocation();
 
   useEffect(() => {
+    
 if (!userProfile) {
   navigate('/')
 }
