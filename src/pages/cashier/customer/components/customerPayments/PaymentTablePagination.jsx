@@ -46,8 +46,10 @@ export function PaymentTablePagination({ customerId }) {
     await loadData();
   };
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4">
+    <div className="flex justify-end items-center">
                 <PaymentFormModal onSubmit={handleSubmit} />
+    </div>
         
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-2">

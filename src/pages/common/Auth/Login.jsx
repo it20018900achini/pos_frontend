@@ -1,137 +1,153 @@
-import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { useToast } from '@/components/ui/use-toast'
-import { 
-  Eye, 
-  EyeOff, 
-  Mail, 
-  Lock, 
-  ShoppingCart, 
-  ArrowLeft,
+import React, { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
   CheckCircle,
-  ChefHat
-} from 'lucide-react'
-import { Link, useNavigate } from 'react-router'
-import { useDispatch, useSelector } from 'react-redux'
-import { login } from '@/Redux Toolkit/features/auth/authThunk'
-import { getUserProfile } from '../../../Redux Toolkit/features/user/userThunks'
-import { startShift } from '../../../Redux Toolkit/features/shiftReport/shiftReportThunks'
-import { ThemeToggle } from '../../../components/theme-toggle'
-import { forgotPassword } from '../../../Redux Toolkit/features/auth/authThunk'
+  ChefHat,
+} from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { login, forgotPassword } from "@/Redux Toolkit/features/auth/authThunk";
+import { getUserProfile } from "@/Redux Toolkit/features/user/userThunks";
+import { startShift } from "@/Redux Toolkit/features/shiftReport/shiftReportThunks";
+import { useNavigate } from "react-router";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const Login = () => {
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [showForgotPassword, setShowForgotPassword] = useState(false)
-  const [emailSent, setEmailSent] = useState(false)
-  
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { loading } = useSelector((state) => state.auth);
+
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+  const containerRef = useRef(null);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [shake, setShake] = useState(false);
+
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  })
+    email: "",
+    password: "",
+  });
 
-  const [forgotEmail, setForgotEmail] = useState('')
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+  });
 
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const { toast } = useToast()
-  const { error, loading } = useSelector((state) => state.auth)
+  const [forgot, setForgot] = useState({
+    show: false,
+    email: "",
+    emailSent: false,
+  });
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
+  // ✅ Autofocus email on load
+  useEffect(() => {
+    emailRef.current?.focus();
+  }, []);
 
+  // ✅ Validate form live
+  useEffect(() => {
+    const newErrors = {};
+    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email";
+    }
+    if (formData.password && formData.password.length < 4) {
+      newErrors.password = "Password must be at least 4 characters";
+    }
+    setErrors(newErrors);
+  }, [formData]);
+
+  const isFormValid =
+    formData.email && formData.password && !errors.email && !errors.password;
+
+  // ✅ Login handler
   const handleLogin = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    if (!isFormValid) {
+      triggerShake();
+      return;
+    }
+
     try {
-      const resultAction = await dispatch(login(formData))
-      if (login.fulfilled.match(resultAction)) {
-        toast({
-          title: "Success",
-          description: "Login successful!",
-        })
+      const res = await dispatch(login(formData)).unwrap();
 
-        const user=resultAction.payload.user;
+      toast({
+        title: "Success",
+        description: "Login successful!",
+      });
 
-        console.log('Login success:', resultAction.payload.user.role)
-        dispatch(getUserProfile(resultAction.payload.jwt)); 
-        
-        
-        // Redirect based on user role
-        const userRole = user.role
-        if (userRole === 'ROLE_BRANCH_CASHIER') {
-          navigate('/cashier')
-          dispatch(startShift(user.branchId))
-        
-        } else if (userRole === 'ROLE_STORE_ADMIN' || userRole === 'ROLE_STORE_MANAGER') {
-          navigate('/store')
-        } else if (userRole === 'ROLE_BRANCH_MANAGER' || userRole === 'ROLE_BRANCH_ADMIN') {
-          navigate('/branch')
-        } else {
-          // Unknown role, redirect to landing page
-          navigate('/')
-        }
+      const jwt = localStorage.getItem("jwt");
+      dispatch(getUserProfile(jwt));
+
+      // Navigate based on user role
+      const user = res.user;
+      const role = user.role;
+
+      if (role === "ROLE_BRANCH_CASHIER") {
+        dispatch(startShift(user.branchId));
+        navigate("/cashier");
+      } else if (
+        role === "ROLE_STORE_ADMIN" ||
+        role === "ROLE_STORE_MANAGER"
+      ) {
+        navigate("/store");
+      } else if (
+        role === "ROLE_BRANCH_MANAGER" ||
+        role === "ROLE_BRANCH_ADMIN"
+      ) {
+        navigate("/branch");
       } else {
-        toast({
-          title: "Error",
-          description: resultAction.payload || 'Login failed',
-          variant: "destructive",
-        })
+        navigate("/");
       }
-    } catch (error) {
+    } catch (err) {
+      triggerShake();
       toast({
-        title: "Error",
-        description: error.message || 'Login failed',
+        title: "Login Failed",
+        description: err || "Invalid email or password",
         variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+      });
     }
-  }
+  };
 
+  // ✅ Forgot password handler (debounced)
   const handleForgotPassword = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    if (!forgot.email || !/\S+@\S+\.\S+/.test(forgot.email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
-      const resultAction = await dispatch(forgotPassword(forgotEmail))
-       if (forgotPassword.fulfilled.match(resultAction)) {
-        toast({
-          title: "Success",
-          description: "Password reset email sent!",
-        })
-      }else{
-        console.log("error", error)
-        toast({
-        title: "Error",
-        description: error || 'Failed to send reset email',
-        variant: "destructive",
-      })
-      }
-    } catch (error) {
-      console.log("error", error)
+      await dispatch(forgotPassword(forgot.email)).unwrap();
+      toast({
+        title: "Email Sent",
+        description: "Check your inbox for reset instructions.",
+      });
+      setForgot((prev) => ({ ...prev, emailSent: true }));
+    } catch (err) {
       toast({
         title: "Error",
-        description: error || 'Failed to send reset email',
+        description: err || "Failed to send reset email",
         variant: "destructive",
-      })
-      return
+      });
     }
+  };
 
-    
-    
-  }
-
-  const resetForgotPassword = () => {
-    setShowForgotPassword(false)
-    setEmailSent(false)
-    setForgotEmail('')
-  }
+  // ✅ Shake animation for errors
+  const triggerShake = () => {
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center p-4 relative">
@@ -139,245 +155,162 @@ const Login = () => {
       <div className="absolute top-4 right-4">
         <ThemeToggle />
       </div>
-      {/* {JSON.stringify(error, null, 2)} */}
-      <div className="w-full max-w-md">
-        {/* Logo and Back Button */}
+
+      <div
+        ref={containerRef}
+        className={`w-full max-w-md transition-all duration-300 ${
+          shake ? "animate-shake" : ""
+        }`}
+      >
+        {/* Logo */}
         <div className="text-center mb-8">
-         
           <div className="flex items-center justify-center space-x-2 mb-4">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <ChefHat className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-2xl font-bold text-foreground">Wijesiri Bakery</span>
+            <span className="text-2xl font-bold">Wijesiri Bakery</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {showForgotPassword ? 'Reset Password' : ''}
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            {showForgotPassword 
-              ? 'Enter your email to receive reset instructions'
-              : 'Sign in to your account to continue'
-            }
+          <p className="text-muted-foreground">
+            {forgot.show ? "Reset your password" : "Sign in to continue"}
           </p>
         </div>
 
-        {/* Login Form */}
-        {!showForgotPassword && !emailSent && (
-          <div className="bg-card rounded-2xl shadow-xl p-8">
-            <form onSubmit={handleLogin} className="space-y-6">
-              {/* Email Field */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                    <Mail className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <Input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="pl-10"
-                    placeholder="Enter your email"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Password Field */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                    <Lock className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="pl-10 pr-12"
-                    placeholder="Enter your password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Remember Me and Forgot Password */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-foreground">
-                    Remember me
-                  </label>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowForgotPassword(true)}
-                  className="text-sm text-primary hover:text-primary/80 transition-colors"
-                >
-                  Forgot password?
-                </button>
-              </div>
-
-              {/* Login Button */}
-              <Button
-                type="submit"
-                className="w-full py-3 text-lg font-medium"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Signing in...
-                  </div>
-                ) : (
-                  'Sign In'
-                )}
-              </Button>
-            </form>
-
-            {/* Divider */}
-            <div className="mt-6">
+        {/* ✅ Login Form */}
+        {!forgot.show && !forgot.emailSent && (
+          <form
+            onSubmit={handleLogin}
+            className="bg-card rounded-2xl shadow-xl p-8 space-y-6"
+          >
+            {/* Email */}
+            <div>
+              <label className="block text-sm mb-2">Email</label>
               <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border" />
-                </div>
-                {/* <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-card text-muted-foreground">Or continue with</span>
-                </div> */}
+                <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                <Input
+                  ref={emailRef}
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, email: e.target.value }))
+                  }
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && passwordRef.current?.focus()
+                  }
+                  className="pl-10"
+                  placeholder="Enter your email"
+                />
               </div>
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+              )}
             </div>
 
-            {/* Demo Account Info */}
-            {/* <div className="mt-6 p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground text-center">
-                <strong>Demo Account:</strong><br />
-                Email: demo@pospro.com<br />
-                Password: demo123
-              </p>
-            </div> */}
-          </div>
-        )}
-
-        {/* Forgot Password Form */}
-        {showForgotPassword && !emailSent && (
-          <div className="bg-card rounded-2xl shadow-xl p-8">
-            <form onSubmit={handleForgotPassword} className="space-y-6">
-              <div>
-                <label htmlFor="forgot-email" className="block text-sm font-medium text-foreground mb-2">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                    <Mail className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <Input
-                    type="email"
-                    id="forgot-email"
-                    value={forgotEmail}
-                    onChange={(e) => setForgotEmail(e.target.value)}
-                    className="pl-10"
-                    placeholder="Enter your email"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="flex space-x-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={resetForgotPassword}
-                >
-                  Back to Login
-                </Button>
-                <Button
-                  type="submit"
-                  className="flex-1"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary mr-2"></div>
-                      Sending...
-                    </div>
-                  ) : (
-                    'Send Reset Link'
-                  )}
-                </Button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* Email Sent Success */}
-        {emailSent && (
-          <div className="bg-card rounded-2xl shadow-xl p-8 text-center">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">
-              Check Your Email
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              We've sent password reset instructions to <strong>{forgotEmail}</strong>
-            </p>
-            <div className="space-y-3">
-              <Button
-                onClick={resetForgotPassword}
-                className="w-full"
-              >
-                Back to Login
-              </Button>
-              <p className="text-sm text-muted-foreground">
-                Didn't receive the email? Check your spam folder or{' '}
+            {/* Password */}
+            <div>
+              <label className="block text-sm mb-2">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                <Input
+                  ref={passwordRef}
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, password: e.target.value }))
+                  }
+                  onKeyDown={(e) => e.key === "Enter" && handleLogin(e)}
+                  className="pl-10 pr-12"
+                  placeholder="Enter your password"
+                />
                 <button
-                  onClick={() => setEmailSent(false)}
-                  className="text-primary hover:text-primary/80"
+                  type="button"
+                  className="absolute right-3 top-3"
+                  onClick={() => setShowPassword((p) => !p)}
                 >
-                  try again
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
-              </p>
+              </div>
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+              )}
             </div>
-          </div>
+
+            {/* Forgot Password */}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                className="text-sm text-primary hover:underline"
+                onClick={() => setForgot((p) => ({ ...p, show: true }))}
+              >
+                Forgot password?
+              </button>
+            </div>
+
+            {/* Submit */}
+            <Button
+              type="submit"
+              disabled={!isFormValid || loading}
+              className="w-full py-3 text-lg"
+            >
+              {loading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
         )}
 
-        {/* Footer
-        <div className="text-center mt-8">
-          <p className="text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-primary hover:text-primary/80 font-medium">
-              Sign up
-            </Link>
-          </p>
-        </div> */}
+        {/* ✅ Forgot Password Form */}
+        {forgot.show && !forgot.emailSent && (
+          <form
+            onSubmit={handleForgotPassword}
+            className="bg-card rounded-2xl shadow-xl p-8 space-y-6"
+          >
+            <label className="block text-sm mb-2">Enter your email</label>
+            <Input
+              type="email"
+              value={forgot.email}
+              onChange={(e) =>
+                setForgot((p) => ({ ...p, email: e.target.value }))
+              }
+              placeholder="email@example.com"
+            />
+
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setForgot({ show: false, email: "", emailSent: false })}
+                className="flex-1"
+              >
+                Back
+              </Button>
+              <Button type="submit" className="flex-1">
+                Send Reset Link
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* ✅ Email Sent Success Screen */}
+        {forgot.emailSent && (
+          <div className="bg-card rounded-2xl shadow-xl p-8 text-center">
+            <CheckCircle className="w-12 h-12 mx-auto text-green-600 mb-3" />
+            <h3 className="text-lg font-semibold">Check Your Email</h3>
+            <p className="text-muted-foreground mb-4">
+              We've sent reset instructions to {forgot.email}
+            </p>
+
+            <Button
+              className="w-full"
+              onClick={() =>
+                setForgot({ show: false, email: "", emailSent: false })
+              }
+            >
+              Back to Login
+            </Button>
+          </div>
+        )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login 
+export default Login;

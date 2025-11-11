@@ -7,7 +7,6 @@ import PaymentsDashboard from './customerPayments/PaymentsDashboard';
 import { PaymentTablePagination } from './customerPayments/PaymentTablePagination';
 
 const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
-  const [tab1, setTab1] = useState(true);
   if (!customer) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
@@ -39,13 +38,8 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
           Add Points
         </Button>
       </div>
-      <div className='flex gap-2 mb-2'>
-        
-      <Button size="sm" onClick={()=>setTab1(true)} className={tab1&&"bg-neutral-600 hover:bg-neutral-700"}>ORDERS</Button>   
-      <Button size="sm" onClick={()=>setTab1(false)} className={!tab1&&"bg-neutral-600 hover:bg-neutral-700"}>PAYMENTS</Button>   
-        
-      </div>
-      {tab1?<div>
+      
+      <div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card>
@@ -106,14 +100,7 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
 
 
 
-</div>:(
-  
- <>
- {/* <PaymentsDashboard customer={customer}/> */}
-         <PaymentTablePagination customerId={customer?.id} />
-
- 
- </> )}
+</div>
 
 
     </div>

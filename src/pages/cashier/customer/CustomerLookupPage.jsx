@@ -25,8 +25,12 @@ import {
 import { clearCustomerOrders } from "../../../Redux Toolkit/features/order/orderSlice";
 import CustomerForm from "./CustomerForm";
 import POSHeader from "../components/POSHeader";
+import { PaymentTablePagination } from "./components/customerPayments/PaymentTablePagination";
+import { Button } from "../../../components/ui/button";
 
 const CustomerLookupPage = () => {
+    const [tab1, setTab1] = useState(true);
+
 const [loadingCustomerOrders, setLoadingCustomerOrders] = useState(false);
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -165,13 +169,24 @@ const [loadingCustomerOrders, setLoadingCustomerOrders] = useState(false);
 
         {/* Right Column - Customer Details */}
         <div className="w-2/3 flex flex-col overflow-y-auto">
+
+
+
           <CustomerDetails
             customer={displayCustomer}
             onAddPoints={() => setShowAddPointsDialog(true)}
             loading={loading}
           />
+                <div className='flex gap-2 mb-2 p-4'>
+                  
+                <Button size="sm" onClick={()=>setTab1(true)} className={tab1&&"bg-neutral-600 hover:bg-neutral-700"}>ORDERS</Button>   
+                <Button size="sm" onClick={()=>setTab1(false)} className={!tab1&&"bg-neutral-600 hover:bg-neutral-700"}>PAYMENTS</Button>   
+                  
+                </div>
+                
           {selectedCustomer && (
-            <PurchaseHistory orders={customerOrders} loading={loading} />
+                  tab1?<PurchaseHistory orders={customerOrders} loading={loading} />:<PaymentTablePagination customerId={selectedCustomer?.id} /> 
+
           )}
         </div>
       </div>
