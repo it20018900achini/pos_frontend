@@ -142,16 +142,23 @@ export const getOrdersByBranch = createAsyncThunk(
 // );
 export const getOrdersByCashier = createAsyncThunk(
   "order/getByCashier",
-  async ({ cashierId, page = 0, size = 10, sort = "id,desc" }, { rejectWithValue }) => {
+  async ({ cashierId, page = 0, size = 10, sort = "id,desc", start, end, search }, { rejectWithValue }) => {
     try {
       const headers = getAuthHeaders();
-      const res = await api.get(
-        `/api/orders/cashier/${cashierId}?page=${page}&size=${size}&sort=${sort}`,
-        { headers }
-      );
+
+      // Build query params
+      const params = new URLSearchParams();
+      params.append("page", page);
+      params.append("size", size);
+      params.append("sort", sort);
+      if (start) params.append("start", start);   // ISO string e.g. 2025-11-01T00:00:00
+      if (end) params.append("end", end);
+      if (search) params.append("search", search);
+
+      const res = await api.get(`/api/orders/cashier/${cashierId}?${params.toString()}`, { headers });
 
       return {
-        orders: res.data.content,           // ✅ actual array of orders
+        orders: res.data.content,
         pageInfo: {
           page: res.data.number,
           size: res.data.size,
@@ -164,6 +171,8 @@ export const getOrdersByCashier = createAsyncThunk(
     }
   }
 );
+
+
 // 🔹 Get Today's Orders by Branch
 export const getTodayOrdersByBranch = createAsyncThunk(
   'order/getTodayByBranch',

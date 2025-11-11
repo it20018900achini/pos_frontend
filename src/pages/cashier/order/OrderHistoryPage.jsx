@@ -17,20 +17,27 @@ import { handleDownloadOrderPDF } from "./pdf/pdfUtils";
 const OrderHistoryPage = () => {
   const dispatch = useDispatch();
   const { toast } = useToast();
-
   const { userProfile } = useSelector((state) => state.user);
   const { orders, pageInfo, loading, error } = useSelector((state) => state.order);
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderDetailsDialog, setShowOrderDetailsDialog] = useState(false);
 
-  // Pagination state
+  // Pagination
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
 
-  // Fetch orders
-  const loadOrders = () => {
+  // Filters
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [searchText, setSearchText] = useState("");
+
+  // Load Orders
+  const loadOrders = (start = startDate, end = endDate, search = searchText) => {
     if (!userProfile?.id) return;
+
+    const startISO = start ? new Date(start).toISOString() : undefined;
+    const endISO = end ? new Date(end).toISOString() : undefined;
 
     dispatch(
       getOrdersByCashier({
@@ -38,6 +45,9 @@ const OrderHistoryPage = () => {
         page,
         size,
         sort: "id,desc",
+        start: startISO,
+        end: endISO,
+        search: search || undefined,
       })
     );
   };
@@ -46,7 +56,7 @@ const OrderHistoryPage = () => {
     loadOrders();
   }, [userProfile, page, size]);
 
-  // Show errors
+  // Error toast
   useEffect(() => {
     if (error) {
       toast({
@@ -74,6 +84,13 @@ const OrderHistoryPage = () => {
     await handleDownloadOrderPDF(selectedOrder, toast);
   };
 
+  const handleInitiateReturn = (order) => {
+    toast({
+      title: "Initiate Return",
+      description: `Return process started for order ${order.id}.`,
+    });
+  };
+
   const handleRefreshOrders = () => {
     loadOrders();
     toast({
@@ -82,11 +99,12 @@ const OrderHistoryPage = () => {
     });
   };
 
-  const handleInitiateReturn = (order) => {
-    toast({
-      title: "Initiate Return",
-      description: `Return process started for order ${order.id}.`,
-    });
+  const resetFilters = () => {
+    setStartDate("");
+    setEndDate("");
+    setSearchText("");
+    setPage(0);
+    loadOrders("", "", "");
   };
 
   // Pagination
@@ -111,6 +129,33 @@ const OrderHistoryPage = () => {
         </Button>
       </div>
 
+      {/* Filters */}
+      <div className="p-4 flex gap-2 items-center">
+        <input
+          type="datetime-local"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="border p-1"
+          placeholder="Start Date"
+        />
+        <input
+          type="datetime-local"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="border p-1"
+          placeholder="End Date"
+        />
+        <input
+          type="text"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="border p-1"
+          placeholder="Search by ID or Customer"
+        />
+        <Button onClick={() => loadOrders()} disabled={loading}>Filter</Button>
+        <Button variant="outline" onClick={resetFilters} disabled={loading}>Reset</Button>
+      </div>
+
       {/* Main Content */}
       <div className="flex-1 p-4 overflow-auto">
         {loading ? (
@@ -129,11 +174,7 @@ const OrderHistoryPage = () => {
                 <Button variant="outline" disabled={page === 0 || loading} onClick={prevPage}>
                   Prev
                 </Button>
-                <Button
-                  variant="outline"
-                  disabled={pageInfo?.page === pageInfo?.totalPages - 1 || loading}
-                  onClick={nextPage}
-                >
+                <Button variant="outline" disabled={pageInfo?.page === pageInfo?.totalPages - 1 || loading} onClick={nextPage}>
                   Next
                 </Button>
               </div>
@@ -151,7 +192,7 @@ const OrderHistoryPage = () => {
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
             <SearchIcon size={48} strokeWidth={1} />
             <p className="mt-4">No orders found</p>
-            <p className="text-sm">Try refreshing</p>
+            <p className="text-sm">Try refreshing or adjusting filters</p>
           </div>
         )}
       </div>
