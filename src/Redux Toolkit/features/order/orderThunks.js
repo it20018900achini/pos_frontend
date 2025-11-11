@@ -107,40 +107,63 @@ export const getOrdersByBranch = createAsyncThunk(
 );
 
 // 🔹 Get Orders by Cashier
+// export const getOrdersByCashier = createAsyncThunk(
+//   'order/getByCashier',
+//   async (cashierId, { rejectWithValue }) => {
+//     try {
+//       console.log('🔄 Fetching orders by cashier...', { cashierId });
+      
+//       const headers = getAuthHeaders();
+//       const res = await api.get(`/api/orders/cashier/${cashierId}`, { headers });
+      
+//       console.log('✅ Orders fetched successfully:', {
+//         cashierId,
+//         orderCount: res.data.length,
+//         orders: res.data.map(order => ({
+//           id: order.id,
+//           totalAmount: order.totalAmount,
+//           customer: order.customer,
+//           createdAt: order.createdAt
+//         }))
+//       });
+      
+//       return res.data;
+//     } catch (err) {
+//       console.error('❌ Failed to fetch orders by cashier:', {
+//         cashierId,
+//         error: err.response?.data || err.message,
+//         status: err.response?.status,
+//         statusText: err.response?.statusText
+//       });
+      
+//       return rejectWithValue(err.response?.data?.message || 'Failed to fetch orders');
+//     }
+//   }
+// );
 export const getOrdersByCashier = createAsyncThunk(
-  'order/getByCashier',
-  async (cashierId, { rejectWithValue }) => {
+  "order/getByCashier",
+  async ({ cashierId, page = 0, size = 10, sort = "id,desc" }, { rejectWithValue }) => {
     try {
-      console.log('🔄 Fetching orders by cashier...', { cashierId });
-      
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/orders/cashier/${cashierId}`, { headers });
-      
-      console.log('✅ Orders fetched successfully:', {
-        cashierId,
-        orderCount: res.data.length,
-        orders: res.data.map(order => ({
-          id: order.id,
-          totalAmount: order.totalAmount,
-          customer: order.customer,
-          createdAt: order.createdAt
-        }))
-      });
-      
-      return res.data;
+      const res = await api.get(
+        `/api/orders/cashier/${cashierId}?page=${page}&size=${size}&sort=${sort}`,
+        { headers }
+      );
+
+      return {
+        orders: res.data.content,           // ✅ actual array of orders
+        pageInfo: {
+          page: res.data.number,
+          size: res.data.size,
+          totalPages: res.data.totalPages,
+          totalElements: res.data.totalElements,
+        },
+      };
     } catch (err) {
-      console.error('❌ Failed to fetch orders by cashier:', {
-        cashierId,
-        error: err.response?.data || err.message,
-        status: err.response?.status,
-        statusText: err.response?.statusText
-      });
-      
-      return rejectWithValue(err.response?.data?.message || 'Failed to fetch orders');
+      return rejectWithValue(err.response?.data?.message || "Failed to fetch orders");
     }
   }
 );
-
 // 🔹 Get Today's Orders by Branch
 export const getTodayOrdersByBranch = createAsyncThunk(
   'order/getTodayByBranch',

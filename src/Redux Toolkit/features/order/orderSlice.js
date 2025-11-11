@@ -18,6 +18,7 @@ const initialState = {
   loading: false,
   error: null,
   recentOrders: [], // Added for recent orders
+  pageInfo: null,
 };
 
 const orderSlice = createSlice({
@@ -26,6 +27,7 @@ const orderSlice = createSlice({
   reducers: {
     clearOrderState: (state) => {
       state.orders = [];
+      state.pageInfo= null,
       state.todayOrders = [];
       state.customerOrders = [];
       state.selectedOrder = null;
@@ -60,17 +62,18 @@ const orderSlice = createSlice({
 
 
 
-
       .addCase(getOrdersByCashier.pending, (state) => {
         state.loading = true;
       })
       .addCase(getOrdersByCashier.fulfilled, (state, action) => {
+        state.orders = action.payload.orders;       // ✅ array
+        state.pageInfo = action.payload.pageInfo;
         state.loading = false;
-        state.orders = action.payload;
       })
       .addCase(getOrdersByCashier.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.orders = [];  // ✅ reset to empty array to be safe
       })
 
 

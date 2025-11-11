@@ -79,6 +79,7 @@ export function PaymentForm({ onSubmit }) {
         <Select
           onValueChange={(val) => setValue("paymentMethod", val)}
           defaultValue="CASH"
+          className="w-full"
         >
           <SelectTrigger>
             <SelectValue placeholder="Select method" />
