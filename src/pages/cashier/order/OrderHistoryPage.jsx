@@ -185,21 +185,17 @@ const OrderHistoryPage = () => {
             {/* Pagination */}
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
               {/* Page info + select */}
-              <div className="text-sm flex items-center gap-2">
-                Page{" "}
-                <select
-                  value={page}
-                  onChange={(e) => setPage(Number(e.target.value))}
-                  className="border p-1"
-                >
-                  {Array.from({ length: pageInfo?.totalPages || 0 }, (_, i) => (
-                    <option key={i} value={i}>
-                      {i + 1}
-                    </option>
-                  ))}
-                </select>{" "}
-                of {pageInfo?.totalPages || 0}
-              </div>
+               <div className="text-sm">
+    Showing{" "}
+    {pageInfo
+      ? page * size + 1
+      : 0}{" "}
+    -{" "}
+    {pageInfo
+      ? Math.min((page + 1) * size, pageInfo.totalElements)
+      : 0}{" "}
+    of {pageInfo?.totalElements || 0} orders
+  </div>
 {/* Pagination */}
 <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
   {/* Page info + select */}
