@@ -107,7 +107,7 @@ const OrderHistoryPage = () => {
     loadOrders("", "", "");
   };
 
-  // Pagination
+  // Pagination handlers
   const nextPage = () => {
     if (pageInfo && page < pageInfo.totalPages - 1) setPage(page + 1);
   };
@@ -130,30 +130,47 @@ const OrderHistoryPage = () => {
       </div>
 
       {/* Filters */}
-      <div className="p-4 flex gap-2 items-center">
+      <div className="p-4 md:flex gap-2 items-center flex-wrap">
         <input
           type="datetime-local"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
-          className="border p-1"
+          className="border p-1 m-1"
           placeholder="Start Date"
         />
         <input
           type="datetime-local"
           value={endDate}
           onChange={(e) => setEndDate(e.target.value)}
-          className="border p-1"
+          className="border p-1 m-1"
           placeholder="End Date"
         />
         <input
           type="text"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          className="border p-1"
+          className="border p-1 m-1"
           placeholder="Search by ID or Customer"
         />
-        <Button onClick={() => loadOrders()} disabled={loading}>Filter</Button>
-        <Button variant="outline" onClick={resetFilters} disabled={loading}>Reset</Button>
+
+        {/* Page size selector */}
+        <select
+          value={size}
+          onChange={(e) => setSize(Number(e.target.value))}
+          className="border p-1 m-1"
+        >
+          <option value={5}>5 per page</option>
+          <option value={10}>10 per page</option>
+          <option value={20}>20 per page</option>
+          <option value={50}>50 per page</option>
+        </select>
+
+        <Button onClick={() => loadOrders()} disabled={loading} size="sm" className="m-1">
+          Filter
+        </Button>
+        <Button variant="outline" onClick={resetFilters} disabled={loading} size="sm" className="m-1">
+          Reset
+        </Button>
       </div>
 
       {/* Main Content */}
@@ -166,18 +183,74 @@ const OrderHistoryPage = () => {
         ) : orders && orders.length > 0 ? (
           <>
             {/* Pagination */}
-            <div className="flex justify-between items-center mb-4">
-              <div className="text-sm">
-                Page {pageInfo?.page + 1} of {pageInfo?.totalPages}
+            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+              {/* Page info + select */}
+              <div className="text-sm flex items-center gap-2">
+                Page{" "}
+                <select
+                  value={page}
+                  onChange={(e) => setPage(Number(e.target.value))}
+                  className="border p-1"
+                >
+                  {Array.from({ length: pageInfo?.totalPages || 0 }, (_, i) => (
+                    <option key={i} value={i}>
+                      {i + 1}
+                    </option>
+                  ))}
+                </select>{" "}
+                of {pageInfo?.totalPages || 0}
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" disabled={page === 0 || loading} onClick={prevPage}>
-                  Prev
-                </Button>
-                <Button variant="outline" disabled={pageInfo?.page === pageInfo?.totalPages - 1 || loading} onClick={nextPage}>
-                  Next
-                </Button>
-              </div>
+{/* Pagination */}
+<div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+  {/* Page info + select */}
+  {/* <div className="text-sm flex items-center gap-2">
+    Page{" "}
+    <select
+      value={page}
+      onChange={(e) => setPage(Number(e.target.value))}
+      className="border p-1"
+    >
+      {Array.from({ length: pageInfo?.totalPages || 0 }, (_, i) => (
+        <option key={i} value={i}>
+          {i + 1}
+        </option>
+      ))}
+    </select>{" "}
+    of {pageInfo?.totalPages || 0}
+  </div> */}
+
+  {/* Prev/Next buttons */}
+  <div className="flex gap-2 items-center">
+    <Button variant="outline" disabled={page === 0 || loading} onClick={prevPage}>
+      Prev
+    </Button>
+
+    {/* Numeric page buttons */}
+    {pageInfo &&
+      Array.from({ length: pageInfo.totalPages }, (_, i) => i)
+        .slice(Math.max(0, page - 2), Math.min(pageInfo.totalPages, page + 3))
+        .map((i) => (
+          <Button
+            key={i}
+            variant={i === page ? "default" : "outline"}
+            onClick={() => setPage(i)}
+            disabled={loading}
+          >
+            {i + 1}
+          </Button>
+        ))}
+
+    <Button
+      variant="outline"
+      disabled={pageInfo?.page === pageInfo?.totalPages - 1 || loading}
+      onClick={nextPage}
+    >
+      Next
+    </Button>
+  </div>
+</div>
+              {/* Prev/Next buttons */}
+              
             </div>
 
             {/* Orders Table */}
