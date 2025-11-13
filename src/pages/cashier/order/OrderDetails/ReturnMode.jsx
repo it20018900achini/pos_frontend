@@ -70,7 +70,7 @@ const ReturnMode = ({
       setLoading(true);
 
       const orderData = {
-        cash: "130.00",
+        cash: "0.00",
         credit: "0.00",
         totalAmount: todos.reduce((sum, item) => sum + item.sellingPrice * item.quantity, 0),
         cashierId: 13,
