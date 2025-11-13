@@ -91,7 +91,7 @@ const ReturnMode = ({
       dispatch(setCurrentOrder(createdRefund));
 
       setShowPaymentDialog(false);
-      setShowReceiptDialog(true);
+    //   setShowReceiptDialog(true);
 
       toast({
         title: "Refund Created Successfully",
