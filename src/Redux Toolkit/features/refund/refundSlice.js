@@ -1,24 +1,27 @@
 import { createSlice } from '@reduxjs/toolkit';
 import {
   createRefund,
-  getAllRefunds,
-  getRefundsByCashier,
-  getRefundsByBranch,
-  getRefundsByShift,
-  getRefundsByCashierAndDateRange,
   getRefundById,
-  deleteRefund
+  getRefundsByBranch,
+  getRefundsByCashier,
+  getTodayRefundsByBranch,
+  deleteRefund,
+  getRefundsByCustomer,
+  getRecentRefundsByBranch
 } from './refundThunks';
 
 const initialState = {
   refunds: [],
-  refundsByCashier: [],
-  refundsByBranch: [],
-  refundsByShift: [],
-  refundsByDateRange: [],
+  todayRefunds: [],
+  customerRefunds: [],
   selectedRefund: null,
   loading: false,
   error: null,
+  recentRefunds: [],
+  pageInfo: null,
+  search: '',
+  startDate: null,
+  endDate: null,
 };
 
 const refundSlice = createSlice({
@@ -27,176 +30,97 @@ const refundSlice = createSlice({
   reducers: {
     clearRefundState: (state) => {
       state.refunds = [];
-      state.refundsByCashier = [];
-      state.refundsByBranch = [];
-      state.refundsByShift = [];
-      state.refundsByDateRange = [];
+      state.pageInfo = null;
+      state.todayRefunds = [];
+      state.customerRefunds = [];
       state.selectedRefund = null;
       state.error = null;
+      state.search = '';
+      state.startDate = null;
+      state.endDate = null;
     },
-    clearSelectedRefund: (state) => {
-      state.selectedRefund = null;
+    clearCustomerRefunds: (state) => {
+      state.customerRefunds = [];
     },
-    clearRefundsByCashier: (state) => {
-      state.refundsByCashier = [];
+    setSearchFilter: (state, action) => {
+      state.search = action.payload;
     },
-    clearRefundsByBranch: (state) => {
-      state.refundsByBranch = [];
-    },
-    clearRefundsByShift: (state) => {
-      state.refundsByShift = [];
-    },
-    clearRefundsByDateRange: (state) => {
-      state.refundsByDateRange = [];
+    setDateFilter: (state, action) => {
+      const { startDate, endDate } = action.payload;
+      state.startDate = startDate;
+      state.endDate = endDate;
     },
   },
   extraReducers: (builder) => {
     builder
       // Create Refund
-      .addCase(createRefund.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      .addCase(createRefund.pending, (state) => { state.loading = true; })
       .addCase(createRefund.fulfilled, (state, action) => {
         state.loading = false;
-        state.refunds.push(action.payload);
-        // Also add to other relevant arrays
-        state.refundsByCashier.push(action.payload);
-        state.refundsByBranch.push(action.payload);
-        if (action.payload.shiftReportId) {
-          state.refundsByShift.push(action.payload);
-        }
+        state.refunds.unshift(action.payload); // add to top
+        state.selectedRefund = action.payload;
       })
       .addCase(createRefund.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-      // Get All Refunds
-      .addCase(getAllRefunds.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getAllRefunds.fulfilled, (state, action) => {
-        state.loading = false;
-        state.refunds = action.payload;
-      })
-      .addCase(getAllRefunds.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+      // Get Refund by ID
+      .addCase(getRefundById.fulfilled, (state, action) => {
+        state.selectedRefund = action.payload;
       })
 
-      // Get Refunds by Cashier
-      .addCase(getRefundsByCashier.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      // Get Refunds by Branch
+      .addCase(getRefundsByBranch.fulfilled, (state, action) => {
+        state.refunds = action.payload;
       })
+
+      // Get Refunds by Cashier (with pagination, search, date filter)
+      .addCase(getRefundsByCashier.pending, (state) => { state.loading = true; })
       .addCase(getRefundsByCashier.fulfilled, (state, action) => {
+        state.refunds = action.payload.refunds || [];
+        state.pageInfo = action.payload.pageInfo || null;
         state.loading = false;
-        state.refundsByCashier = action.payload;
       })
       .addCase(getRefundsByCashier.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.refunds = [];
       })
 
-      // Get Refunds by Branch
-      .addCase(getRefundsByBranch.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      // Today Refunds
+      .addCase(getTodayRefundsByBranch.fulfilled, (state, action) => {
+        state.todayRefunds = action.payload;
       })
-      .addCase(getRefundsByBranch.fulfilled, (state, action) => {
+
+      // Customer Refunds
+      .addCase(getRefundsByCustomer.pending, (state) => { state.loading = true; })
+      .addCase(getRefundsByCustomer.fulfilled, (state, action) => {
         state.loading = false;
-        state.refundsByBranch = action.payload;
+        state.customerRefunds = action.payload;
       })
-      .addCase(getRefundsByBranch.rejected, (state, action) => {
+      .addCase(getRefundsByCustomer.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-      // Get Refunds by Shift
-      .addCase(getRefundsByShift.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getRefundsByShift.fulfilled, (state, action) => {
-        state.loading = false;
-        state.refundsByShift = action.payload;
-      })
-      .addCase(getRefundsByShift.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Get Refunds by Cashier and Date Range
-      .addCase(getRefundsByCashierAndDateRange.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getRefundsByCashierAndDateRange.fulfilled, (state, action) => {
-        state.loading = false;
-        state.refundsByDateRange = action.payload;
-      })
-      .addCase(getRefundsByCashierAndDateRange.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Get Refund by ID
-      .addCase(getRefundById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getRefundById.fulfilled, (state, action) => {
-        state.loading = false;
-        state.selectedRefund = action.payload;
-      })
-      .addCase(getRefundById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+      // Recent Refunds
+      .addCase(getRecentRefundsByBranch.fulfilled, (state, action) => {
+        state.recentRefunds = action.payload;
       })
 
       // Delete Refund
-      .addCase(deleteRefund.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(deleteRefund.fulfilled, (state, action) => {
-        state.loading = false;
-        // Remove the deleted refund from all arrays
-        state.refunds = state.refunds.filter(refund => refund.id !== action.payload);
-        state.refundsByCashier = state.refundsByCashier.filter(refund => refund.id !== action.payload);
-        state.refundsByBranch = state.refundsByBranch.filter(refund => refund.id !== action.payload);
-        state.refundsByShift = state.refundsByShift.filter(refund => refund.id !== action.payload);
-        state.refundsByDateRange = state.refundsByDateRange.filter(refund => refund.id !== action.payload);
-        
-        // Clear selected refund if it was the deleted one
-        if (state.selectedRefund && state.selectedRefund.id === action.payload) {
-          state.selectedRefund = null;
-        }
-      })
-      .addCase(deleteRefund.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+        state.refunds = state.refunds.filter(o => o.id !== action.payload);
       })
 
-      // Generic error handling for all refund actions
+      // Generic error matcher
       .addMatcher(
         (action) => action.type.startsWith('refund/') && action.type.endsWith('/rejected'),
-        (state, action) => {
-          state.error = action.payload;
-        }
+        (state, action) => { state.error = action.payload; }
       );
   },
 });
 
-export const { 
-  clearRefundState, 
-  clearSelectedRefund, 
-  clearRefundsByCashier, 
-  clearRefundsByBranch, 
-  clearRefundsByShift, 
-  clearRefundsByDateRange 
-} = refundSlice.actions;
-
-export default refundSlice.reducer; 
+export const { clearRefundState, clearCustomerRefunds, setSearchFilter, setDateFilter } = refundSlice.actions;
+export default refundSlice.reducer;

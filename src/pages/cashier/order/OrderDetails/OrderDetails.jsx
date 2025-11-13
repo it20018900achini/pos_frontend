@@ -5,8 +5,50 @@ import OrderItemTable from "../../../common/Order/OrderItemTable";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
+import ReturnMode from "./ReturnMode";
+import { useState } from "react";
+import {  useSelector } from "react-redux";
+import { selectCartItems, selectSelectedCustomer, } from "../../../../Redux Toolkit/features/cart/cartSlice";
+import { useToast } from "../../../../components/ui/use-toast";
 
 const OrderDetails = ({ selectedOrder }) => {
+  
+    const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+    // const [showReceiptDialog, setShowReceiptDialog] = useState(false);
+
+  const cartItems = useSelector(selectCartItems);
+  const selectedCustomer = useSelector(selectSelectedCustomer);
+
+  // const total = useSelector(selectTotal);
+
+  const {toast} = useToast();
+  // const dispatch = useDispatch();
+
+  const handlePayment = () => {
+    // if (cartItems.length === 0) {
+    //   toast({
+    //     title: "Empty Cart",
+    //     description: "Please add items to cart before proceeding to payment",
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
+
+    // Check if customer is selected
+    // if (!selectedCustomer) {
+    //   toast({
+    //     title: "Customer Required",
+    //     description: "Please select a customer before proceeding to payment",
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
+
+    setShowPaymentDialog(true);
+  };
+
+  
+
   return (
     <div>
       <div className="grid grid-cols-2 gap-4 mb-4">
@@ -20,7 +62,24 @@ const OrderDetails = ({ selectedOrder }) => {
 </div></Card>
        <Card>
         <CardContent className="p-4">
-          <div><Button size={`sm`}>Return Mode</Button>
+          <div>
+
+
+          <Button
+            className={`w-full py-3 text-lg font-semibold `}
+            onClick={handlePayment}
+            // disabled={cartItems.length === 0}
+          >
+            
+            
+          
+            Process Payment
+          </Button>
+
+            <ReturnMode 
+        showPaymentDialog={showPaymentDialog}
+        setShowPaymentDialog={setShowPaymentDialog}
+        setShowReceiptDialog={false}/>
 
 
           </div>
