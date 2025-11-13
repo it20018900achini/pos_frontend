@@ -9,15 +9,16 @@ import {
   TableHeader,
   TableRow,
 } from "../../../components/ui/table";
-import { useNavigate } from "react-router";
-import api from "@/utils/api";
+// import { useNavigate } from "react-router";
+// import api from "@/utils/api";
 import { toast } from "sonner";
 import { LoaderCircleIcon } from "lucide-react";
+import { settings } from "../../../constant";
 const OrderItemTable = ({ selectedOrder }) => {
   const [updatedItems, setUpdatedItems] = useState({ items: [] });
   const [showReturnForm, setShowReturnForm] = useState(null);
   const [loadReturning, setLoadReturning] = useState(false);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   // Store return values per item
   const returnQuantityRef = useRef({});
   const returnReasonRef = useRef({});
@@ -53,7 +54,7 @@ const OrderItemTable = ({ selectedOrder }) => {
 
     try {
       const response = await fetch(
-        `https://pos-dsxh.onrender.com/order-items/${item.id}/return`,
+        settings?.url+`/order-items/${item.id}/return`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -64,20 +65,12 @@ const OrderItemTable = ({ selectedOrder }) => {
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
-      const tk = getAuthToken();
-      // alert(JSON.stringify(selectedOrder));
-
-      // const responseOr = await fetch(
-      //   `https://pos-dsxh.onrender.com/api/orders/${selectedOrder.id}`,
-      //   {
-      //      headers: { Authorization: `Bearer ${tk}` },
-      //   }
-      // );
+     
 
       try {
         const headers = getAuthHeaders();
         const response1 = await fetch(
-          `https://pos-dsxh.onrender.com/api/orders/${selectedOrder.id}`,
+          settings?.url+`/api/orders/${selectedOrder.id}`,
           { headers }
         );
         if (!response1.ok) {
@@ -89,6 +82,7 @@ const OrderItemTable = ({ selectedOrder }) => {
         console.log("Fetched updated order items:", result);
       } catch (error) {
         // setError(error);
+        console.log(error)
       } finally {
         // setLoading(false);
       }
@@ -104,7 +98,7 @@ const OrderItemTable = ({ selectedOrder }) => {
 
       //       setUpdatedItems(responseOr?.items);
 
-      const data = await response.text();
+      // const data = await response.text();
       // console.log("Return successful:", data);
       // navigate(0);
 
@@ -134,6 +128,7 @@ const OrderItemTable = ({ selectedOrder }) => {
 
         <TableBody>
           {(updatedItems?.items?.length > 0
+            // eslint-disable-next-line no-unsafe-optional-chaining
             ? updatedItems?.items
             : selectedOrder.items
           ).map((item) => (
@@ -217,7 +212,7 @@ const OrderItemTable = ({ selectedOrder }) => {
                             size={`xs`}
                             className={`px-2`}
                             id={item?.id}
-                            onClick={(e) => {
+                            onClick={() => {
                               setShowReturnForm(null);
                             }}
                           >

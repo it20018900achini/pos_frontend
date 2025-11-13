@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { settings } from '../constant';
 
 const api = axios.create({
-  baseURL: 'https://pos-dsxh.onrender.com',
+  baseURL: settings?.url,
   headers: {
     'Content-Type': 'application/json',
   },

@@ -16,6 +16,7 @@ import { getUserProfile } from "@/Redux Toolkit/features/user/userThunks";
 import { startShift } from "@/Redux Toolkit/features/shiftReport/shiftReportThunks";
 import { useNavigate } from "react-router";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { settings } from "../../../constant";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -168,7 +169,7 @@ const Login = () => {
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <ChefHat className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-2xl font-bold">Wijesiri Bakery</span>
+            <span className="text-2xl font-bold">{settings?.businessName}</span>
           </div>
           <p className="text-muted-foreground">
             {forgot.show ? "Reset your password" : "Sign in to continue"}

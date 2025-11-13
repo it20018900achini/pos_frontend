@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -113,6 +113,9 @@ const PaymentDialog = ({
   function handleChange(e) {
     setValue(e.target.value);
   }
+  useEffect(() => {
+    setValue(total)
+  }, [total])
   
   
   return (

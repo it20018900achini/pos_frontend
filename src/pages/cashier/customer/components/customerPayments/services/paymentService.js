@@ -1,7 +1,7 @@
 import axios from "axios";
+import { settings } from "../../../../../../constant";
 
-// const API_BASE = "https://pos-dsxh.onrender.com/api/customer-payments";
-const API_BASE = "http://localhost:5000/api/customer-payments";
+const API_BASE = settings?.url+`/api/customer-payments`
 
 const getAuthToken = () => {
   const token = localStorage.getItem("jwt");

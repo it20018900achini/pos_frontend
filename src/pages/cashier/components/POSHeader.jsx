@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { useSidebar } from "../../../context/hooks/useSidebar";
 import { ChefHat } from "lucide-react";
+import { settings } from "../../../constant";
 
 const POSHeader = () => {
   const {setSidebarOpen} = useSidebar();
@@ -31,7 +32,7 @@ const POSHeader = () => {
           </Button>
         </div>
         <div>
-          <h1 className="text-2xl font-bold "> <ChefHat className="inline mb-1 mr-1 w-4 h-4"/> Wijesiri Bakery</h1>
+          <h1 className="text-2xl font-bold "> {settings?.businessName}</h1>
           {/* <p className="text-sm text-muted-foreground">
            
             Create new order</p> */}

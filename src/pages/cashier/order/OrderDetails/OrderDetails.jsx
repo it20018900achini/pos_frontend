@@ -3,6 +3,8 @@ import OrderInformation from "./OrderInformation";
 import CustomerInformation from "./CustomerInformation";
 import OrderItemTable from "../../../common/Order/OrderItemTable";
 import { Card, CardContent } from "../../../../components/ui/card";
+import { Badge } from "../../../../components/ui/badge";
+import { Button } from "../../../../components/ui/button";
 
 const OrderDetails = ({ selectedOrder }) => {
   return (
@@ -18,10 +20,18 @@ const OrderDetails = ({ selectedOrder }) => {
 </div></Card>
        <Card>
         <CardContent className="p-4">
+          <div><Button size={`sm`}>Return Mode</Button>
+
+
+          </div>
+          {/* <Separator/> */}<hr/>
           <h3 className="font-semibold mb-2">Order Items</h3>
       {/* <pre>{JSON.stringify(selectedOrder, null, 2)}</pre>     */}
           <OrderItemTable selectedOrder={selectedOrder} />
         </CardContent>
+
+
+
       </Card>
 
      

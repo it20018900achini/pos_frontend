@@ -80,18 +80,16 @@ const CustomerDialog = ({ showCustomerDialog, setShowCustomerDialog }) => {
               <TableBody>
                 {filteredCustomers.map(customer => (
                   <TableRow key={customer.id}>
-                    <TableCell>{customer.fullName}</TableCell>
-                    <TableCell>{customer.phone}</TableCell>
-                    <TableCell>{customer.email}</TableCell>
-                    <TableCell>
-                      <Button 
+                    <TableCell><Button 
                         size="sm" 
                         onClick={() => handleCustomerSelect(customer)}
                         aria-label={`Select ${customer.fullName}`}
                       >
                         Select
-                      </Button>
-                    </TableCell>
+                      </Button> {customer.fullName}</TableCell>
+                    <TableCell>{customer.phone}</TableCell>
+                    <TableCell>{customer.email}</TableCell>
+                    
                   </TableRow>
                 ))}
               </TableBody>

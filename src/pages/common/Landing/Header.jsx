@@ -3,11 +3,12 @@ import React, { useState, useEffect } from 'react'
 import { Button } from '../../../components/ui/button'
 import { useNavigate } from 'react-router'
 import { ThemeToggle } from '../../../components/theme-toggle'
+import { settings } from '../../../constant'
 
 const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
-    const [activeDropdown, setActiveDropdown] = useState(null)
+    // const [activeDropdown, setActiveDropdown] = useState(null)
     const navigate = useNavigate();
 
     // Handle scroll effect for header
@@ -24,9 +25,9 @@ const Header = () => {
         navigate('/auth/login');
     }
     
-    const toggleDropdown = (name) => {
-        setActiveDropdown(activeDropdown === name ? null : name)
-    }
+    // const toggleDropdown = (name) => {
+    //     setActiveDropdown(activeDropdown === name ? null : name)
+    // }
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-background/95 shadow-md backdrop-blur-sm border-b' : 'bg-transparent'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,7 +38,7 @@ const Header = () => {
                 <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300 transform group-hover:scale-105">
                   <ChefHat className="w-6 h-6 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">Wijesiri Bakery</span>
+                <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{settings?.businessName}</span>
               </div>
             </div>
 
