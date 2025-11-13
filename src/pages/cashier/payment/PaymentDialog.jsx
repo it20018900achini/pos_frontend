@@ -117,7 +117,10 @@ const PaymentDialog = ({
     setValue(total)
   }, [total])
   
-  
+//   git config --global user.name "it20018900achini"
+// git config --global user.email "achininirupama98@gmail.com"
+
+
   return (
     <Dialog
       open={showPaymentDialog}
