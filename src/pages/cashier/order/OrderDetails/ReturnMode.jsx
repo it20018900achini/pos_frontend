@@ -9,10 +9,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useSelector } from "react-redux";
 import {
-  selectCartItems,
-  selectNote,
-  selectPaymentMethod,
-  selectSelectedCustomer,
   selectTotal,
   setCurrentOrder,
   setPaymentMethod,
@@ -21,25 +17,19 @@ import { useToast } from "@/components/ui/use-toast";
 import { useDispatch } from "react-redux";
 import { createRefund } from "@/Redux Toolkit/features/refund/refundThunks";
 import { Input } from "@/components/ui/input";
+import TodoList from "./returnComponents/TodoList";
+import Todo from "./returnComponents/Todo";
 
 const ReturnMode = ({
   showPaymentDialog,
   setShowPaymentDialog,
   setShowReceiptDialog,
+  selectedOrder
 }) => {
-  const total = useSelector(selectTotal);
-  const [value, setValue] = useState(total);
-
-  const paymentMethod = useSelector(selectPaymentMethod);
+  
   const { toast } = useToast();
-  const cart = useSelector(selectCartItems);
-  const branch = useSelector((state) => state.branch);
-  const { userProfile } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
-  const selectedCustomer = useSelector(selectSelectedCustomer);
-
-  const note = useSelector(selectNote);
   const [loading, setLoading] = React.useState(false);
 
   const processPayment = async () => {
@@ -101,93 +91,68 @@ const ReturnMode = ({
     }
   };
 
-  const handlePaymentMethod = (method) => dispatch(setPaymentMethod(method));
-  function handleChange(e) {
-    setValue(e.target.value);
-  }
-  useEffect(() => {
-    setValue(total)
-  }, [total])
-  
+ 
 //   git config --global user.name "it20018900achini"
 // git config --global user.email "achininirupama98@gmail.com"
 
+  const orderDetails=selectedOrder?.items.map((i)=>({"id":i?.id,quantity:i?.quantity,"name":i?.product?.name,"sellingPrice":i?.product?.sellingPrice}))
+  const [todos, setTodos] = useState(orderDetails);
 
+  // ✅ Add new todo
+  
+
+  // ✅ Remove todo
+  const removeTodo = (id) => {
+    setTodos(todos.filter(todo => todo.id !== id));
+  };
+
+  // ✅ Update quantity
+  const updateTodo = (id, updatedQuantity) => {
+    setTodos(
+      todos.map(todo =>
+        todo.id === id ? { ...todo, quantity: updatedQuantity } : todo
+      )
+    );
+  };
+
+  // ✅ Toggle completed
+  const toggleComplete = (id) => {
+    setTodos(
+      todos.map(todo =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  };
   return (
     <Dialog
       open={showPaymentDialog}
       onOpenChange={(showPaymentDialog) => {
         setShowPaymentDialog(showPaymentDialog);
-        setValue(total);
+        
         ()=>dispatch(setPaymentMethod("CASH"))
       }}
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Payment1111</DialogTitle>
+          <DialogTitle>Refund</DialogTitle>
         </DialogHeader>
+{/* <TodoList selectedOrder={selectedOrder}/> */}
 
-        <div className="space-y-4">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">
-              LKR {total.toFixed(2)}
-            </div>
-            <p className="text-sm text-gray-600">Amount to be paid</p>
-          </div>
+{/* {JSON.stringify(orderDetails)} */}
+       <div className="flex justify-end"><Button onClick={()=>setTodos(orderDetails)}>RESET</Button></div>
 
-          <div className="space-y-2">
-            {[
-    { key: 'CASH', label: '💵 Cash / Credit', display: 'cash' },
-    // { key: 'CARD', label: '💳 Card', display: 'card' },
-  ].map((method) => (
-              <div key={method.key}>
-                {method.key == "CASH" ? (
-                  <div className="">
-                    <div className="mb-2">
-                      CASH AMOUNT
-                    <div className="w-full flex items-center gap-2 ">
-                      <Input
-                        type={`text`}
-                        className={`border-green-500`}
-                        value={value}
-                        onChange={handleChange}
-                      />
-                      <span className={`text-center border px-2 rounded-md ${
-                        (total - value) <= 0 ?  'bg-green-200 text-green-800 border-green-400': 'bg-red-200 text-red-800 border-red-400'
-                      }`}>
-                        <span className="text-xs">CREDIT</span>
-                        <br />
-                        {(total - value).toFixed(2)}
-                      </span>
-                    </div>
-                    </div>
-                    <Button
-                      key={method.key}
-                      variant={
-                        paymentMethod === method.key ? "default" : "outline"
-                      }
-                      className="w-full justify-start"
-                      onClick={() => handlePaymentMethod(method.key)}
-                    >
-                      {method.label}
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    key={method.key}
-                    variant={
-                      paymentMethod === method.key ? "default" : "outline"
-                    }
-                    className="w-full justify-start"
-                    onClick={() => handlePaymentMethod(method.key)}
-                  >
-                    {method.label}
-                  </Button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+      <ul className="border">
+        {todos.map(todo => (
+          <Todo
+            key={todo.id}
+            todo={todo}
+            toggleComplete={toggleComplete}
+            updateTodo={updateTodo}
+            removeTodo={removeTodo}
+            selectedOrder={selectedOrder}
+          />
+        ))}
+      </ul>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>

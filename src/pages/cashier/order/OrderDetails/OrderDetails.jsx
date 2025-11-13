@@ -7,21 +7,14 @@ import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
 import ReturnMode from "./ReturnMode";
 import { useState } from "react";
-import {  useSelector } from "react-redux";
-import { selectCartItems, selectSelectedCustomer, } from "../../../../Redux Toolkit/features/cart/cartSlice";
-import { useToast } from "../../../../components/ui/use-toast";
-
 const OrderDetails = ({ selectedOrder }) => {
   
     const [showPaymentDialog, setShowPaymentDialog] = useState(false);
     // const [showReceiptDialog, setShowReceiptDialog] = useState(false);
 
-  const cartItems = useSelector(selectCartItems);
-  const selectedCustomer = useSelector(selectSelectedCustomer);
 
   // const total = useSelector(selectTotal);
 
-  const {toast} = useToast();
   // const dispatch = useDispatch();
 
   const handlePayment = () => {
@@ -79,7 +72,9 @@ const OrderDetails = ({ selectedOrder }) => {
             <ReturnMode 
         showPaymentDialog={showPaymentDialog}
         setShowPaymentDialog={setShowPaymentDialog}
-        setShowReceiptDialog={false}/>
+        setShowReceiptDialog={false}
+        selectedOrder={selectedOrder}
+        />
 
 
           </div>
