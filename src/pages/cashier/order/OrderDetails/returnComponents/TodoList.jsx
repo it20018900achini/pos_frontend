@@ -1,65 +1,74 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Todo from "./Todo";
-import NewTodoForm from "./NewTodoForm";
-import { v4 as uuidv4 } from "uuid";
-
-import "./TodoList.css";
 import { Button } from "../../../../../components/ui/button";
 
-function TodoList({selectedOrder}) {
-    const orderDetails=selectedOrder?.items.map((i)=>({"id":i?.id,quantity:i?.quantity,"name":i?.product?.name}))
-  const [todos, setTodos] = useState(orderDetails);
+import "./TodoList.css";
 
-  // ✅ Add new todo
-  const createTodo = (newTodo) => {
-    setTodos([...todos, newTodo]);
+function TodoList({ selectedOrder }) {
+  const [todos, setTodos] = useState([]);
+
+  // Sync todos with selectedOrder whenever it changes
+  useEffect(() => {
+    if (selectedOrder?.items) {
+      setTodos(
+        selectedOrder.items.map((i) => ({
+          id: i?.id,
+          quantity: i?.quantity,
+          name: i?.product?.name,
+          sellingPrice: i?.product?.sellingPrice,
+        }))
+      );
+    } else {
+      setTodos([]);
+    }
+  }, [selectedOrder]);
+
+  // Reset todos to original quantities
+  const resetTodos = () => {
+    if (!selectedOrder?.items) return;
+    setTodos(
+      selectedOrder.items.map((i) => ({
+        id: i?.id,
+        quantity: i?.quantity,
+        name: i?.product?.name,
+        sellingPrice: i?.product?.sellingPrice,
+      }))
+    );
   };
 
-  // ✅ Remove todo
-  const removeTodo = (id) => {
-    setTodos(todos.filter(todo => todo.id !== id));
-  };
-
-  // ✅ Update quantity
+  // Update quantity for a todo item
   const updateTodo = (id, updatedQuantity) => {
     setTodos(
-      todos.map(todo =>
+      todos.map((todo) =>
         todo.id === id ? { ...todo, quantity: updatedQuantity } : todo
       )
     );
   };
 
-  // ✅ Toggle completed
-  const toggleComplete = (id) => {
-    setTodos(
-      todos.map(todo =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
+  // Remove a todo item
+  const removeTodo = (id) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
   };
 
   return (
     <div className="TodoList">
       <h1>
-        Todo List <span>A simple React Todo App</span>
+        Return Items <span>Edit quantities before creating refund</span>
       </h1>
-       {/* <pre>{JSON.stringify(orderDetails,null,2)}</pre> */}
-       <div className="flex justify-end"><Button onClick={()=>setTodos(orderDetails)}>RESET</Button></div>
-       
-     
-      {/* {JSON.stringify(selectedOrder,null,2)}  */}
 
-      {/* <NewTodoForm createTodo={createTodo} /> */}
+      {/* Reset Button */}
+      <div className="flex justify-end mb-2">
+        <Button onClick={resetTodos}>RESET</Button>
+      </div>
 
-      <ul className="border">
-        {todos.map(todo => (
+      {/* Refund Items List */}
+      <ul className="border p-2">
+        {todos.map((todo) => (
           <Todo
             key={todo.id}
             todo={todo}
-            toggleComplete={toggleComplete}
             updateTodo={updateTodo}
             removeTodo={removeTodo}
-            selectedOrder={selectedOrder}
           />
         ))}
       </ul>
