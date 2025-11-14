@@ -234,45 +234,39 @@ export const deleteRefund = createAsyncThunk(
     }
   }
 );
-
-// 🔹 Get Refunds by Customer
 export const getRefundsByCustomer = createAsyncThunk(
   'refund/getByCustomer',
   async (customerId, { rejectWithValue }) => {
     try {
       console.log('🔄 Fetching refunds by customer...', { customerId });
-      
+
       const headers = getAuthHeaders();
       const res = await api.get(`/api/refunds/customer/${customerId}`, { headers });
-      
-      console.log('✅ Customer refunds fetched successfully:', {
-        customerId,
-        refundCount: res.data.length,
-        totalSpent: res.data.reduce((sum, refund) => sum + refund.totalAmount, 0),
-        refunds: res.data.map(refund => ({
-          id: refund.id,
-          totalAmount: refund.totalAmount,
-          customer: refund.customer,
-          createdAt: refund.createdAt,
-          paymentMethod: refund.paymentMethod,
-          status: refund.status,
-          items: refund.items
-        }))
-      });
-      
-      return res.data;
+
+      // Make sure we have an array
+      const refunds = Array.isArray(res.data) ? res.data : res.data.refunds || [];
+
+      const summary = {
+        refundCount: refunds.length,
+        totalSpent: refunds.reduce((sum, refund) => sum + refund.totalAmount, 0),
+      };
+
+      console.log('✅ Customer refunds fetched successfully:', { customerId, ...summary });
+
+      return { refunds, summary };
     } catch (err) {
       console.error('❌ Failed to fetch customer refunds:', {
         customerId,
         error: err.response?.data || err.message,
         status: err.response?.status,
-        statusText: err.response?.statusText
+        statusText: err.response?.statusText,
       });
-      
-      return rejectWithValue(err.response?.data?.message || 'Failed to fetch customer refunds');
+
+      return rejectWithValue(err.response?.data?.message || err.message || 'Failed to fetch customer refunds');
     }
   }
 );
+
 
 // 🔹 Get Top 5 Recent Refunds by Branch
 export const getRecentRefundsByBranch = createAsyncThunk(
