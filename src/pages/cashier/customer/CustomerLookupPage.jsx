@@ -23,15 +23,17 @@ import {
  
 } from "./components";
 import { clearCustomerOrders } from "../../../Redux Toolkit/features/order/orderSlice";
+
 import CustomerForm from "./CustomerForm";
 import POSHeader from "../components/POSHeader";
 import { PaymentTablePagination } from "./components/customerPayments/PaymentTablePagination";
 import { Button } from "../../../components/ui/button";
+import RefundHistory from "./components/RefundHistory";
+import { getRefundsByCustomer } from "../../../Redux Toolkit/features/refund/refundThunks";
 
 const CustomerLookupPage = () => {
     const [tab1, setTab1] = useState(true);
 
-const [loadingCustomerOrders, setLoadingCustomerOrders] = useState(false);
   const dispatch = useDispatch();
   const { toast } = useToast();
 
@@ -46,6 +48,11 @@ const [loadingCustomerOrders, setLoadingCustomerOrders] = useState(false);
     loading,
     error: orderError,
   } = useSelector((state) => state.order);
+  const {
+    customerRefunds,
+    loadingR,
+    error: refundError,
+  } = useSelector((state) => state.refund);
   // const { userProfile } = useSelector((state) => state.user);
 
   // Local state
@@ -80,6 +87,13 @@ const [loadingCustomerOrders, setLoadingCustomerOrders] = useState(false);
         variant: "destructive",
       });
     }
+    if (refundError) {
+      toast({
+        title: "Error",
+        description: refundError,
+        variant: "destructive",
+      });
+    }
   }, [orderError, toast]);
 
   // Filter customers based on search term
@@ -93,11 +107,12 @@ const [loadingCustomerOrders, setLoadingCustomerOrders] = useState(false);
     if (customer.id) {
       
     // alert("selected customer");
-    setLoadingCustomerOrders(true);
+    // setLoadingCustomerOrders(true);
       dispatch(getOrdersByCustomer(customer.id));
+      dispatch(getRefundsByCustomer(customer.id));
 
     }
-    setLoadingCustomerOrders(false);
+    // setLoadingCustomerOrders(false);
   };
 
   const handleAddPoints = () => {
@@ -127,6 +142,7 @@ const [loadingCustomerOrders, setLoadingCustomerOrders] = useState(false);
   useEffect(() => {
     if (selectedCustomer) {
       dispatch(getOrdersByCustomer(selectedCustomer.id));
+      dispatch(getRefundsByCustomer(selectedCustomer.id));
     }
   }, [selectedCustomer]);
 
@@ -185,7 +201,10 @@ const [loadingCustomerOrders, setLoadingCustomerOrders] = useState(false);
                 </div>
                 
           {selectedCustomer && (
-                  tab1?<PurchaseHistory orders={customerOrders} loading={loading} />:<PaymentTablePagination customerId={selectedCustomer?.id} /> 
+                  tab1?<><PurchaseHistory orders={customerOrders} loading={loading} />
+                  <RefundHistory orders={customerRefunds} loading={loadingR} />
+                  
+                  </>:<PaymentTablePagination customerId={selectedCustomer?.id} /> 
 
           )}
         </div>

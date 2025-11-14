@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 
-import { SearchIcon, Loader2, RefreshCw, Download, PrinterIcon } from "lucide-react";
+import { SearchIcon, Loader2, RefreshCw, Download, PrinterIcon, RectangleHorizontal, ListOrdered } from "lucide-react";
 
 import POSHeader from "../components/POSHeader";
 import OrderTable from "./OrderTable";
@@ -225,8 +225,8 @@ const handlePrintInvoice = (order, storeName = "STORE NAME", storeLogoUrl) => {
       <POSHeader />
 
       {/* Page Header */}
-      <div className="p-4 bg-card border-b flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Order Refund History</h1>
+      <div className="p-4 bg-card border-b flex justify-between items-center gap-5">
+        <h1 className="text-2xl font-bold flex items-center gap-3"><span className="w-4 h-4 bg-red-500"></span>Order Refund History</h1>
         <Button variant="outline" onClick={handleRefreshOrders} disabled={loading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           Refresh

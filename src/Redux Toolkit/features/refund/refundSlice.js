@@ -94,13 +94,13 @@ const refundSlice = createSlice({
       })
 
       // Customer Refunds
-      .addCase(getRefundsByCustomer.pending, (state) => { state.loading = true; })
+      .addCase(getRefundsByCustomer.pending, (state) => { state.loadingR = true; })
       .addCase(getRefundsByCustomer.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loadingR = false;
         state.customerRefunds = action.payload;
       })
       .addCase(getRefundsByCustomer.rejected, (state, action) => {
-        state.loading = false;
+        state.loadingR = false;
         state.error = action.payload;
       })
 

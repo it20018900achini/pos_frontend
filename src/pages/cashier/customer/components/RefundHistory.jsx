@@ -4,14 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, ShoppingBagIcon, CalendarIcon, DollarSignIcon } from 'lucide-react';
 import { formatDate, getStatusColor } from '../../order/data';
 
-const PurchaseHistory = ({ orders, loading  }) => {
+const RefundHistory = ({ orders, loading  }) => {
 
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-4 text-center text-muted-foreground">
         {/* <Loader2 className="animate-spin h-8 w-8 mb-4" /> */}
-        <p>Loading purchase history...</p>
+        <p>Loading refund history...</p>
       </div>
     );
   }
@@ -20,7 +20,7 @@ const PurchaseHistory = ({ orders, loading  }) => {
     return (
       <div className="flex flex-col items-center justify-center p-4 text-center text-muted-foreground">
         <ShoppingBagIcon size={48} strokeWidth={1} />
-        <p className="mt-4">No purchase history found</p>
+        <p className="mt-4">No refund history found</p>
         <p className="text-sm">This customer hasn't made any orders yet</p>
       </div>
     );
@@ -31,11 +31,11 @@ const PurchaseHistory = ({ orders, loading  }) => {
 
   return (
     <div className="p-4 border-t ">
-      <Card className="border-green-300">
+      <Card className="border-red-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ShoppingBagIcon className="h-5 w-5 text-green-500" />
-            Purchase History
+            <span className='w-4 h-4 bg-red-500'></span>
+            Refund History
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -45,7 +45,9 @@ const PurchaseHistory = ({ orders, loading  }) => {
               <div key={order.id} className="border rounded-lg p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="font-medium">Order #{order.id}</h3>
+                    <h3 className="font-medium">Refund No #{order.id}</h3>
+                    <span className='text-sm'>Order No #{order?.orderId}</span>
+                  <pre>{JSON.stringify(order,null,2)}</pre>  
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                       <CalendarIcon className="h-4 w-4" />
                       {formatDate(order.createdAt)}
@@ -94,4 +96,4 @@ const PurchaseHistory = ({ orders, loading  }) => {
   );
 };
 
-export default PurchaseHistory; 
+export default RefundHistory; 
