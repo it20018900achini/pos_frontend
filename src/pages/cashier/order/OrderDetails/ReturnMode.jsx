@@ -12,11 +12,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { createRefund } from "@/Redux Toolkit/features/refund/refundThunks";
 import { setCurrentOrder, setPaymentMethod } from "@/Redux Toolkit/features/cart/cartSlice";
 import Todo from "./returnComponents/Todo";
+import OrderInformation from "./OrderInformation";
+import OrderDetails from "./OrderDetails";
+import CustomerInformation from "./CustomerInformation";
 
 const ReturnMode = ({
   showPaymentDialog,
   setShowPaymentDialog,
-  setShowReceiptDialog,
   selectedOrder
 }) => {
   const { toast } = useToast();
@@ -118,11 +120,16 @@ const ReturnMode = ({
         dispatch(setPaymentMethod("CASH"));
       }}
     >
-      <DialogContent>
+      <DialogContent  className="bg-white max-h-screen overflow-y-scroll max-w-[800px]">
         <DialogHeader>
           <DialogTitle>Refund</DialogTitle>
         </DialogHeader>
-
+          {/* <OrderDetails selectedOrder={selectedOrder} /> */}
+         
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <OrderInformation selectedOrder={selectedOrder} />
+        <CustomerInformation selectedOrder={selectedOrder} />
+      </div>
         {/* Reset button */}
         <div className="flex justify-end mb-2">
           <Button onClick={resetTodos}>RESET</Button>
