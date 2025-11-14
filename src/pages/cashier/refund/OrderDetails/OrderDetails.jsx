@@ -17,28 +17,6 @@ const OrderDetails = ({ selectedOrder }) => {
 
   // const dispatch = useDispatch();
 
-  const handlePayment = () => {
-    // if (cartItems.length === 0) {
-    //   toast({
-    //     title: "Empty Cart",
-    //     description: "Please add items to cart before proceeding to payment",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-
-    // Check if customer is selected
-    // if (!selectedCustomer) {
-    //   toast({
-    //     title: "Customer Required",
-    //     description: "Please select a customer before proceeding to payment",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-
-    setShowPaymentDialog(true);
-  };
 
   
 
@@ -57,17 +35,6 @@ const OrderDetails = ({ selectedOrder }) => {
         <CardContent className="p-4">
           <div>
 
-
-          <Button
-            className={`w-full py-3 text-lg font-semibold `}
-            onClick={handlePayment}
-            // disabled={cartItems.length === 0}
-          >
-            
-            
-          
-            Process Payment
-          </Button>
 
             <ReturnMode 
         showPaymentDialog={showPaymentDialog}

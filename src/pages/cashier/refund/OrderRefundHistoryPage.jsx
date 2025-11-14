@@ -53,10 +53,9 @@ const OrderRefundHistoryPage = () => {
   };
 
   useEffect(() => {
-    loadOrders();
+    if (userProfile?.id) loadOrders();
   }, [userProfile, page, size]);
 
-  // Error toast
   useEffect(() => {
     if (error) {
       toast({
@@ -72,23 +71,128 @@ const OrderRefundHistoryPage = () => {
     setSelectedOrder(refund);
     setShowOrderDetailsDialog(true);
   };
+const handlePrintInvoice = (order, storeName = "STORE NAME", storeLogoUrl) => {
+  if (!order) return;
 
-  const handlePrintInvoice = (refund) => {
-    toast({
-      title: "Print Invoice",
-      description: `Invoice for refund ${refund.id} sent to printer.`,
-    });
-  };
+  const printWindow = window.open("", "_blank", "width=300,height=600");
+  if (!printWindow) return;
+
+  const formatCurrency = (amount) => Number(amount).toFixed(2);
+  const totalAmount = order.items.reduce(
+    (sum, item) => sum + (item.product?.sellingPrice || 0) * item.quantity,
+    0
+  );
+
+  const cashPaid = Number(order.cash || 0);
+  const creditPaid = Number(order.credit || 0);
+  const changeDue = Math.max(cashPaid + creditPaid - totalAmount, 0);
+  const notes = order.note || "";
+
+  const barcodeUrl = `https://chart.googleapis.com/chart?cht=code128&chs=200x50&chl=${order.id}`;
+
+  // Truncate long names
+  const truncate = (str, max = 20) => (str.length > max ? str.slice(0, max - 3) + "..." : str);
+
+  const fontSize = order.items.length > 15 ? 8 : 10;
+
+  const htmlContent = `
+    <html>
+      <head>
+        <title>Receipt #${order.id}</title>
+        <style>
+          body {
+            font-family: monospace;
+            font-size: ${fontSize}px;
+            padding: 2px;
+            width: 200px;
+            line-height: 1.1; /* tight spacing */
+            white-space: pre-wrap;
+          }
+          @media print {
+            @page { margin: 0.15in; size: 58mm auto; }
+            body { margin: 0; }
+          }
+          p, th, td, .line, .center, .right { margin: 0; padding: 0; }
+          .center { text-align: center; }
+          .line { border-top: 1px dashed #000; margin: 2px 0; }
+          .right { text-align: right; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { padding: 1px 0; vertical-align: top; }
+          td.item { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+          img.barcode, img.logo { display: block; margin: 3px auto; }
+        </style>
+      </head>
+      <body>
+        <!-- Header -->
+        <div class="center">
+          ${storeLogoUrl ? `<img class="logo" src="${storeLogoUrl}" alt="Logo" width="80"/>` : ""}
+          <p style="font-weight:bold;">${storeName}</p>
+          <p >Invoice #${order.id}</p>
+          <p >${new Date(order.createdAt).toLocaleString()}</p>
+        </div>
+
+        <p>Customer: ${order.customer?.name || "Walk-in"}</p>
+        <div class="line"></div>
+
+        <!-- Items Table -->
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Qty</th>
+              <th class="right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${order.items
+              .map(
+                (item) => `
+              <tr>
+                <td class="item">${truncate(item.product?.name || item.name)}</td>
+                <td>${item.quantity}</td>
+                <td class="right">${formatCurrency((item.product?.sellingPrice || 0) * item.quantity)}</td>
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+
+        <div class="line"></div>
+
+        <!-- Totals -->
+        <p class="right">TOTAL: ${formatCurrency(totalAmount)}</p>
+        <p class="right">CASH: ${formatCurrency(cashPaid)}</p>
+        <p class="right">CREDIT: ${formatCurrency(creditPaid)}</p>
+        <p class="right">CHANGE: ${formatCurrency(changeDue)}</p>
+
+        ${notes ? `<div class="line"></div><p>Notes: ${notes}</p>` : ""}
+
+        <div class="line"></div>
+
+        <!-- Barcode -->
+        <div class="center">
+          <img class="barcode" src="${barcodeUrl}" alt="Invoice Barcode"/>
+          <p>Invoice #${order.id}</p>
+        </div>
+
+        <p class="center">Thank you for your purchase!</p>
+      </body>
+    </html>
+  `;
+
+  printWindow.document.write(htmlContent);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+  printWindow.close();
+};
+
+
 
   const handleDownloadPDF = async () => {
+    if (!selectedOrder) return;
     await handleDownloadOrderPDF(selectedOrder, toast);
-  };
-
-  const handleInitiateReturn = (refund) => {
-    toast({
-      title: "Initiate Return",
-      description: `Return process started for refund ${refund.id}.`,
-    });
   };
 
   const handleRefreshOrders = () => {
@@ -122,7 +226,7 @@ const OrderRefundHistoryPage = () => {
 
       {/* Page Header */}
       <div className="p-4 bg-card border-b flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Order History</h1>
+        <h1 className="text-2xl font-bold">Order Refund History</h1>
         <Button variant="outline" onClick={handleRefreshOrders} disabled={loading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           Refresh
@@ -153,7 +257,6 @@ const OrderRefundHistoryPage = () => {
           placeholder="Search by ID or Customer"
         />
 
-        {/* Page size selector */}
         <select
           value={size}
           onChange={(e) => setSize(Number(e.target.value))}
@@ -184,86 +287,36 @@ const OrderRefundHistoryPage = () => {
           <>
             {/* Pagination */}
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-              {/* Page info + select */}
-              <div className="text-sm flex items-center gap-2">
-                Page{" "}
-                <select
-                  value={page}
-                  onChange={(e) => setPage(Number(e.target.value))}
-                  className="border p-1"
-                >
-                  {Array.from({ length: pageInfo?.totalPages || 0 }, (_, i) => (
-                    <option key={i} value={i}>
-                      {i + 1}
-                    </option>
-                  ))}
-                </select>{" "}
-                of {pageInfo?.totalPages || 0}
+              <div className="text-sm">
+                Showing {pageInfo ? page * size + 1 : 0} -{" "}
+                {pageInfo ? Math.min((page + 1) * size, pageInfo.totalElements) : 0} of{" "}
+                {pageInfo?.totalElements || 0} refunds
               </div>
-
-              
-{/* Pagination */}
-<div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-    <div className="text-sm">
-    Showing{" "}
-    {pageInfo
-      ? page * size + 1
-      : 0}{" "}
-    -{" "}
-    {pageInfo
-      ? Math.min((page + 1) * size, pageInfo.totalElements)
-      : 0}{" "}
-    of {pageInfo?.totalElements || 0} refunds
-  </div>
-  {/* Page info + select */}
-  {/* <div className="text-sm flex items-center gap-2">
-    Page{" "}
-    <select
-      value={page}
-      onChange={(e) => setPage(Number(e.target.value))}
-      className="border p-1"
-    >
-      {Array.from({ length: pageInfo?.totalPages || 0 }, (_, i) => (
-        <option key={i} value={i}>
-          {i + 1}
-        </option>
-      ))}
-    </select>{" "}
-    of {pageInfo?.totalPages || 0}
-  </div> */}
-
-  {/* Prev/Next buttons */}
-  <div className="flex gap-2 items-center">
-    <Button variant="outline" disabled={page === 0 || loading} onClick={prevPage}>
-      Prev
-    </Button>
-
-    {/* Numeric page buttons */}
-    {pageInfo &&
-      Array.from({ length: pageInfo.totalPages }, (_, i) => i)
-        .slice(Math.max(0, page - 2), Math.min(pageInfo.totalPages, page + 3))
-        .map((i) => (
-          <Button
-            key={i}
-            variant={i === page ? "default" : "outline"}
-            onClick={() => setPage(i)}
-            disabled={loading}
-          >
-            {i + 1}
-          </Button>
-        ))}
-
-    <Button
-      variant="outline"
-      disabled={pageInfo?.page === pageInfo?.totalPages - 1 || loading}
-      onClick={nextPage}
-    >
-      Next
-    </Button>
-  </div>
-</div>
-              {/* Prev/Next buttons */}
-              
+              <div className="flex gap-2 items-center">
+                <Button variant="outline" disabled={page === 0 || loading} onClick={prevPage}>
+                  Prev
+                </Button>
+                {pageInfo &&
+                  Array.from({ length: pageInfo.totalPages }, (_, i) => i)
+                    .slice(Math.max(0, page - 2), Math.min(pageInfo.totalPages, page + 3))
+                    .map((i) => (
+                      <Button
+                        key={i}
+                        variant={i === page ? "default" : "outline"}
+                        onClick={() => setPage(i)}
+                        disabled={loading}
+                      >
+                        {i + 1}
+                      </Button>
+                    ))}
+                <Button
+                  variant="outline"
+                  disabled={pageInfo?.page === pageInfo?.totalPages - 1 || loading}
+                  onClick={nextPage}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
 
             {/* Orders Table */}
@@ -271,7 +324,6 @@ const OrderRefundHistoryPage = () => {
               refunds={refunds}
               handleViewOrder={handleViewOrder}
               handlePrintInvoice={handlePrintInvoice}
-              handleInitiateReturn={handleInitiateReturn}
             />
           </>
         ) : (
@@ -286,9 +338,9 @@ const OrderRefundHistoryPage = () => {
       {/* Order Details Modal */}
       <Dialog open={showOrderDetailsDialog} onOpenChange={setShowOrderDetailsDialog}>
         {selectedOrder && (
-          <DialogContent className="bg-white max-h-screen overflow-y-scroll max-w-[800px]">
+          <DialogContent className="bg-white max-h-screen overflow-y-auto  overflow-x-hidden max-w-[800px]">
             <DialogHeader>
-              <DialogTitle>Order Details - Invoice</DialogTitle>
+              <DialogTitle>Order Refund Details - Invoice</DialogTitle>
             </DialogHeader>
 
             <OrderDetails selectedOrder={selectedOrder} />

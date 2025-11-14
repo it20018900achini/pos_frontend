@@ -25,7 +25,7 @@ const navItems = [
     label: "Order History",
   },
   {
-    path: "/cashier/returns",
+    path: "/cashier/refunds",
     icon: <RotateCcwIcon size={20} />,
     label: "Returns/Refunds",
   },
