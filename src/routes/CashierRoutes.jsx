@@ -7,6 +7,7 @@ import OrderHistoryPage from "../pages/cashier/order/OrderHistoryPage";
 import CustomerLookupPage from "../pages/cashier/customer/CustomerLookupPage";
 import ShiftSummaryPage from "../pages/cashier/ShiftSummary/ShiftSummaryPage";
 import PageNotFound from "../pages/common/PageNotFound";
+import OrderRefundHistoryPage from "../pages/cashier/refund/OrderRefundHistoryPage";
 
 const CashierRoutes = () => {
   return (
@@ -15,6 +16,7 @@ const CashierRoutes = () => {
         <Route index element={<CreateOrderPage />} />
         <Route path="orders" element={<OrderHistoryPage />} />
         <Route path="returns" element={<ReturnOrderPage />} />
+        <Route path="refunds" element={<OrderRefundHistoryPage />} />
         <Route path="customers" element={<CustomerLookupPage />} />
         <Route path="shift-summary" element={<ShiftSummaryPage />} />
       </Route>

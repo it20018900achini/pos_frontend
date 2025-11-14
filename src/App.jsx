@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -20,6 +20,7 @@ const App = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const [loadingInit, setLoadingInit]=useState(false)
 
   const { userProfile, loading } = useSelector((state) => state.user);
   const { store } = useSelector((state) => state.store);
@@ -27,7 +28,9 @@ const App = () => {
   // Fetch user profile on mount
   useEffect(() => {
     const jwt = localStorage.getItem("jwt");
+    setLoadingInit(true)
     if (jwt) dispatch(getUserProfile(jwt));
+    setLoadingInit(false)
   }, [dispatch]);
 
   // Fetch store if user is store admin/manager
@@ -39,10 +42,10 @@ const App = () => {
 
   // Redirect to landing if user not logged in and not on auth pages
   useEffect(() => {
-    if (!loading && !userProfile && !location.pathname.startsWith("/auth")) {
-      navigate("/", { replace: true });
-    }
-  }, [loading, userProfile, location.pathname, navigate]);
+    // if (!loadingInit && !loading && !userProfile && !location.pathname.startsWith("/auth")) {
+    //   navigate("/", { replace: true });
+    // }
+  }, [loading, userProfile, location.pathname, navigate,loadingInit]);
 
   // --- Route rendering based on role ---
   if (loading) return null; // Or a loading spinner
