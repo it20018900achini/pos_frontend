@@ -29,7 +29,6 @@ import { getRefundsByCustomer } from "../../../Redux Toolkit/features/refund/ref
 import { clearCustomerRefunds } from "../../../Redux Toolkit/features/refund/refundSlice";
 
 const CustomerLookupPage = () => {
-  const [tab1, setTab1] = useState(true);
   const dispatch = useDispatch();
   const { toast } = useToast();
 
@@ -122,12 +121,8 @@ const CustomerLookupPage = () => {
             loading={ordersLoading}
           />
 
-          <div className="flex gap-2 mb-2 p-4">
-            <Button size="sm" onClick={() => setTab1(true)} className={tab1 ? "bg-neutral-600 hover:bg-neutral-700" : ""}>ORDERS</Button>
-            <Button size="sm" onClick={() => setTab1(false)} className={!tab1 ? "bg-neutral-600 hover:bg-neutral-700" : ""}>PAYMENTS</Button>
-          </div>
 
-          {selectedCustomer && (
+          {/* {selectedCustomer && (
             tab1 ? (
               <>
                 <RefundHistory refunds={customerRefunds} loading={loadingR} />
@@ -136,7 +131,7 @@ const CustomerLookupPage = () => {
             ) : (
               <PaymentTablePagination customerId={selectedCustomer?.id} />
             )
-          )}
+          )} */}
         </div>
       </div>
 

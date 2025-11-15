@@ -10,7 +10,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { getPaymentsByCustomer } from "./services/paymentService";
+import { createPayment, getPaymentsByCustomer } from "./services/paymentService";
 import { PaymentFormModal } from "./PaymentFormModal";
 
 

@@ -2,13 +2,36 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { StarIcon, PlusIcon, Loader2, UserIcon } from 'lucide-react';
+import { StarIcon, PlusIcon, Loader2, UserIcon, ArrowBigLeft } from 'lucide-react';
 import PaymentsDashboard from './customerPayments/PaymentsDashboard';
 import { PaymentTablePagination } from './customerPayments/PaymentTablePagination';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAllCustomers } from '../../../../Redux Toolkit/features/customer/customerThunks';
+import RefundHistory from './RefundHistory';
+import PurchaseHistory from './PurchaseHistory';
+import { toast } from 'sonner';
 
 const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
-  const [tab1,setTab1]=useState(true)
+  const [tab,setTab]=useState(0)
+  const dispatch = useDispatch();
+
+  const { customerOrders, loading: ordersLoading, error: orderError } = useSelector((state) => state.order);
+  const { customerRefunds, loadingR, error: refundError } = useSelector((state) => state.refund);
+
+  // Handle errors
+  useEffect(() => {
+    if (orderError) toast({ title: "Error", description: orderError, variant: "destructive" });
+    if (refundError) toast({ title: "Error", description: refundError, variant: "destructive" });
+  }, [ orderError, refundError, ]);
+
+  // Load customers
+  useEffect(() => {
+    dispatch(getAllCustomers());
+  }, [dispatch]);
+
+
+
   if (!customer) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
@@ -44,11 +67,14 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
         </Button>
         </div>
         <div className='flex gap-2'>
-          
-        <Button onClick={()=>{setTab1(tab1)}} className="flex items-center gap-2">
-          Orders/Refunds
+         {tab!==0&&<Button  onClick={()=>{setTab(0)}}  variant="secondary"><ArrowBigLeft/></Button>} 
+        <Button onClick={()=>{setTab(1)}} className="flex items-center gap-2">
+          Orders
         </Button>
-        <Button  onClick={()=>{setTab1(!tab1)}} className="flex items-center gap-2">
+        <Button onClick={()=>{setTab(2)}} className="flex items-center gap-2">
+          Refunds
+        </Button>
+        <Button  onClick={()=>{setTab(3)}} className="flex items-center gap-2">
           Customer Payments
         </Button>
         </div>
@@ -56,7 +82,10 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
       
       <div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+
+        {tab==0 &&<>
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -112,11 +141,27 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
           </p>
         </div>
       )}
+        </>}
+
+     
 
 
 
 </div>
 
+
+ {customer && (
+            tab==1 ? (
+              <>
+                
+                <PurchaseHistory orders={customerOrders} loading={ordersLoading} />
+              </>
+            ) : tab==2?
+              <RefundHistory refunds={customerRefunds} loading={loadingR} />:
+              
+              tab==3?<PaymentTablePagination customerId={customer?.id} />:""
+            
+          )}
 
     </div>
   );
