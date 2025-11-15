@@ -94,15 +94,18 @@ const refundSlice = createSlice({
       })
 
       // Customer Refunds
-      .addCase(getRefundsByCustomer.pending, (state) => { state.loadingR = true; })
-      .addCase(getRefundsByCustomer.fulfilled, (state, action) => {
-        state.loadingR = false;
-        state.customerRefunds = action.payload;
-      })
-      .addCase(getRefundsByCustomer.rejected, (state, action) => {
-        state.loadingR = false;
-        state.error = action.payload;
-      })
+    .addCase(getRefundsByCustomer.pending, (state) => {
+      state.loadingR = true;
+      state.error = null;
+    })
+    .addCase(getRefundsByCustomer.fulfilled, (state, action) => {
+      state.loadingR = false;
+      state.customerRefunds = action.payload; // <-- Make sure payload is correct
+    })
+    .addCase(getRefundsByCustomer.rejected, (state, action) => {
+      state.loadingR = false;
+      state.error = action.error.message;
+    })
 
       // Recent Refunds
       .addCase(getRecentRefundsByBranch.fulfilled, (state, action) => {

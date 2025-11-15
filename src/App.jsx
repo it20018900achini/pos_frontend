@@ -1,58 +1,74 @@
 import React, { useEffect, useState } from "react";
-import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router";
+import { Routes, Route, Navigate, useLocation } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 
-// Auth and Store Routes
+// Routes
 import AuthRoutes from "./routes/AuthRoutes";
 import StoreRoutes from "./routes/StoreRoutes";
 import BranchManagerRoutes from "./routes/BranchManagerRoutes";
 import CashierRoutes from "./routes/CashierRoutes";
 import SuperAdminRoutes from "./routes/SuperAdminRoutes";
 
+// Pages
 import Landing from "./pages/common/Landing/Landing";
 import Onboarding from "./pages/onboarding/Onboarding";
 import PageNotFound from "./pages/common/PageNotFound";
 
+// Thunks
 import { getUserProfile } from "./Redux Toolkit/features/user/userThunks";
 import { getStoreByAdmin } from "./Redux Toolkit/features/store/storeThunks";
+import SplashScreen from "./pages/common/SplashScreen";
+
+// Components
+// import SplashScreen from "./components/common/SplashScreen";
 
 const App = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const location = useLocation();
-  const [loadingInit, setLoadingInit]=useState(false)
 
-  const { userProfile, loading } = useSelector((state) => state.user);
-  const { store } = useSelector((state) => state.store);
+  const { userProfile, loading: loadingUser } = useSelector((state) => state.user);
+  const { store, loading: loadingStore } = useSelector((state) => state.store);
+
+  // Splash screen state
+  const [isReloading, setIsReloading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsReloading(false), 600); // Show splash 0.6s
+    return () => clearTimeout(timer);
+  }, []);
 
   // Fetch user profile on mount
   useEffect(() => {
     const jwt = localStorage.getItem("jwt");
-    setLoadingInit(true)
-    if (jwt) dispatch(getUserProfile(jwt));
-    setLoadingInit(false)
-  }, [dispatch]);
-
-  // Fetch store if user is store admin/manager
-  useEffect(() => {
-    if (userProfile?.role === "ROLE_STORE_ADMIN") {
-      dispatch(getStoreByAdmin(userProfile.jwt));
+    if (jwt && !userProfile) {
+      dispatch(getUserProfile(jwt));
     }
   }, [dispatch, userProfile]);
 
-  // Redirect to landing if user not logged in and not on auth pages
+  // Fetch store if user is store admin/manager
   useEffect(() => {
-    // if (!loadingInit && !loading && !userProfile && !location.pathname.startsWith("/auth")) {
-    //   navigate("/", { replace: true });
-    // }
-  }, [loading, userProfile, location.pathname, navigate,loadingInit]);
+    if (
+      (userProfile?.role === "ROLE_STORE_ADMIN" ||
+        userProfile?.role === "ROLE_STORE_MANAGER") &&
+      !store
+    ) {
+      dispatch(getStoreByAdmin(userProfile.jwt));
+    }
+  }, [dispatch, userProfile, store]);
 
-  // --- Route rendering based on role ---
-  if (loading) return null; // Or a loading spinner
+  // Show splash screen while loading or reloading
+  if (isReloading || loadingUser || loadingStore) {
+    return <SplashScreen />;
+  }
 
+  // Redirect to landing if not logged in
+  if (!userProfile && !location.pathname.startsWith("/auth")) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Render routes based on role
   const renderRoutes = () => {
     if (!userProfile || !userProfile.role) {
-      // Not logged in
       return (
         <Routes>
           <Route path="/" element={<Landing />} />

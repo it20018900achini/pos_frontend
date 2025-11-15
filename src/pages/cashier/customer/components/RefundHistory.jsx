@@ -17,15 +17,15 @@ const RefundHistory = ({ refunds, loading }) => {
     );
   }
 
-  if (refundList.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center p-4 text-center text-muted-foreground">
-        <ShoppingBagIcon size={48} strokeWidth={1} />
-        <p className="mt-4">No refund history found</p>
-        <p className="text-sm">This customer hasn't made any refunds yet</p>
-      </div>
-    );
-  }
+  // if (refundList.length === 0) {
+  //   return (
+  //     <div className="flex flex-col items-center justify-center p-4 text-center text-muted-foreground">
+  //       <ShoppingBagIcon size={48} strokeWidth={1} />
+  //       <p className="mt-4">No refund history found</p>
+  //       <p className="text-sm">This customer hasn't made any refunds yet</p>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="p-4">

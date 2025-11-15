@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+// import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StarIcon, PlusIcon, Loader2, UserIcon } from 'lucide-react';
 import PaymentsDashboard from './customerPayments/PaymentsDashboard';
 import { PaymentTablePagination } from './customerPayments/PaymentTablePagination';
+import { useState } from 'react';
 
 const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
+  const [tab1,setTab1]=useState(true)
   if (!customer) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
@@ -28,15 +30,28 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
   return (
     <div className="p-4">
       <div className="flex justify-between items-start mb-6">
-        <div>
+        <div className='flex'>
+          <div>
+            
           <h2 className="text-2xl font-bold">{customer.fullName || 'Unknown Customer'}</h2>
           <p className="text-muted-foreground">{customer.phone || 'N/A'}</p>
           <p className="text-muted-foreground">{customer.email || 'N/A'}</p>
-        </div>
-        <Button onClick={onAddPoints} className="flex items-center gap-2">
+          
+          </div>
+        <Button varient="secondary" size="sm" onClick={onAddPoints} className="bg-orange-500  hover:bg-orange-600 flex items-center gap-2">
           <PlusIcon className="h-4 w-4" />
           Add Points
         </Button>
+        </div>
+        <div className='flex gap-2'>
+          
+        <Button onClick={()=>{setTab1(tab1)}} className="flex items-center gap-2">
+          Orders/Refunds
+        </Button>
+        <Button  onClick={()=>{setTab1(!tab1)}} className="flex items-center gap-2">
+          Customer Payments
+        </Button>
+        </div>
       </div>
       
       <div>
