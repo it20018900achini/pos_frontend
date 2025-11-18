@@ -11,6 +11,7 @@ import CustomerPaymentForm from "./CustomerPaymentForm";
 import Filters from "./Filters";
 import Pagination from "./Pagination";
 import { Loader2 } from "lucide-react";
+import CustomerSummary from "./CustomerSummary";
 
 export default function CustomerPaymentsPage(customer) {
   const dispatch = useDispatch();
@@ -56,6 +57,8 @@ export default function CustomerPaymentsPage(customer) {
 
   return (
     <div className="border-t">
+<CustomerSummary customerId={customer?.customer?.id}/>
+      
       <h1 className="text-3xl font-bold">Customer Payments</h1>
       {/* Filters */}
 

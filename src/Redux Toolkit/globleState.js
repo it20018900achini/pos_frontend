@@ -22,6 +22,7 @@ import subscriptionPlanReducer from "./features/subscriptionPlan/subscriptionPla
 import subscriptionReducer from "./features/subscription/subscriptionSlice.js";
 import paymentReducer from "./features/payment/paymentSlice.js";
 import customerPaymentsSlice from "./features/customerPayment/customerPaymentSlice.js";
+import customerSummaryReducer from "./features/customerSummary/customerSummarySlice.js";
 
 const globleState = configureStore({
   reducer: {
@@ -48,7 +49,9 @@ const globleState = configureStore({
     subscriptionPlan: subscriptionPlanReducer,
     subscription: subscriptionReducer,
     payment: paymentReducer,
-customerPayment: customerPaymentsSlice,  },
+    customerPayment: customerPaymentsSlice,    
+    customerSummary: customerSummaryReducer,
+  },
 });
 
 export default globleState;

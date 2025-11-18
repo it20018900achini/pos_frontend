@@ -67,6 +67,7 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
           Add Points
         </Button> */}
         </div>
+        
         <div className=' md:flex  gap-2'>
          {tab!==0&&<Button  onClick={()=>{setTab(0)}}  variant="secondary"><ArrowBigLeft/></Button>} 
         <Button onClick={()=>{setTab(1)}}  variant={tab==1?"secondary":"default"} className="flex items-center gap-2 border">
