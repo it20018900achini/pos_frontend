@@ -40,7 +40,7 @@ export const createPayment = createAsyncThunk(
   async (payment) => {
           const headers = getAuthHeaders();
 
-    const response = await api.post("/customer-payments", payment,{headers});
+    const response = await api.post("/api/customer-payments", payment,{headers});
     return response.data;
   }
 );
