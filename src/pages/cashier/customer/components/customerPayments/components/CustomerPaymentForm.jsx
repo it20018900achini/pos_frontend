@@ -16,6 +16,8 @@ import {
   SelectContent,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserProfile } from "../../../../../../Redux Toolkit/features/user/userThunks";
 
 export default function CustomerPaymentForm({
   initialData,
@@ -23,9 +25,11 @@ export default function CustomerPaymentForm({
   onCancel,
   customer
 }) {
+    const { userProfile, loading: loadingUser } = useSelector((state) => state.user);
+
   const [form, setForm] = useState({
     customerId: customer?.customer?.id,
-    cashierId: "",
+    cashierId:userProfile?.id,
     amount: "",
     paymentMethod: "CASH",
     reference: "",
@@ -40,6 +44,13 @@ export default function CustomerPaymentForm({
       setIsOpen(true);
     }
   }, [initialData]);
+
+  // Fetch user profile
+  // useEffect(() => {
+  //   const jwt = localStorage.getItem("jwt");
+  //   if (jwt && !userProfile) dispatch(getUserProfile(jwt));
+  //    setUserData(res.user);
+  // }, [dispatch, userProfile]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -78,15 +89,14 @@ export default function CustomerPaymentForm({
               {initialData ? "Edit Payment" : "Add Payment"}
             </DialogTitle>
           </DialogHeader>
-
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
-              <Label>Customer ID</Label>
               <Input
                 type="number"
                 value={form.customerId}
                 onChange={(e) => setForm({ ...form, customerId: e.target.value })}
                 required
+                className="hidden"
               />
             </div>
             <div>
@@ -96,6 +106,8 @@ export default function CustomerPaymentForm({
                 value={form.cashierId}
                 onChange={(e) => setForm({ ...form, cashierId: e.target.value })}
                 required
+                                className="hidden"
+
               />
             </div>
             <div>
@@ -135,11 +147,12 @@ export default function CustomerPaymentForm({
             </div>
             <div>
               <Label>Note</Label>
-              <Input
+              {/* <Input
                 type="text"
+              /> */}
+              <textarea className="border w-full" 
                 value={form.note}
-                onChange={(e) => setForm({ ...form, note: e.target.value })}
-              />
+                onChange={(e) => setForm({ ...form, note: e.target.value })}></textarea>
             </div>
 
             <DialogFooter>

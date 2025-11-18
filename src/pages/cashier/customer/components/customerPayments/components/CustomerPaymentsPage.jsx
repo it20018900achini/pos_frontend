@@ -54,8 +54,8 @@ export default function CustomerPaymentsPage(customer) {
   };
 
   return (
-    <div>
-      <h1>Customer Payments</h1>
+    <div className="border-t">
+      <h1 className="text-3xl font-bold">Customer Payments</h1>
       {/* Filters */}
 
       {/* Form for Add/Edit */}
