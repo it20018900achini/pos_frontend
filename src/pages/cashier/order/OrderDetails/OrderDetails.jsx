@@ -55,18 +55,19 @@ const OrderDetails = ({ selectedOrder }) => {
 </div></Card>
        <Card>
         <CardContent className="p-4">
-          <div>
+          <div className="flex justify-end mb-1">
 
 
           <Button
-            className={`w-full py-3 text-lg font-semibold `}
+            className={`py-3 text-lg font-semibold `}
+            size={`sm`}
             onClick={handlePayment}
             // disabled={cartItems.length === 0}
           >
             
             
           
-            Process Payment
+            Return
           </Button>
 
             <ReturnMode 

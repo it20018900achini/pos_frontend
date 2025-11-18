@@ -45,7 +45,7 @@ const PurchaseHistory = ({ orders, loading  }) => {
               <div key={order.id} className="border rounded-lg p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="font-medium">Order #{order.id}</h3>
+                    <h3 className="font-medium">Order #{order?.id}</h3>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                       <CalendarIcon className="h-4 w-4" />
                       {formatDate(order.createdAt)}
@@ -54,11 +54,11 @@ const PurchaseHistory = ({ orders, loading  }) => {
                   <div className="text-right">
                     <div className="flex items-center gap-2 mb-1">
                       <DollarSignIcon className="h-4 w-4" />
-                      <span className="font-bold">LKR {order.totalAmount?.toFixed(2) || '0.00'}</span>
+                      <span className="font-bold">LKR {order?.totalAmount?.toFixed(2) || '0.00'}</span>
                     </div>
-                    {order.status && (
+                    {order?.status && (
                       <Badge className={getStatusColor(order.status)}>
-                        {order.status}
+                        {order?.status}
                       </Badge>
                     )}
                   </div>
@@ -66,7 +66,7 @@ const PurchaseHistory = ({ orders, loading  }) => {
                 
                 {order.paymentMethod && (
                   <div className="text-sm text-muted-foreground mb-2">
-                    Payment: {order.paymentMethod}
+                    Payment: {order?.paymentMethod}
                   </div>
                 )}
                 
@@ -76,9 +76,9 @@ const PurchaseHistory = ({ orders, loading  }) => {
                     <div className="space-y-1">
                       {order.items.map((item, index) => (
                         <div key={index} className="flex justify-between text-sm">
-                          <span>{item.product.name || item.productName || 'Unknown Product'}</span>
+                          <span>{item?.product?.name || item?.productName || 'Unknown Product'}</span>
                           <span className="text-muted-foreground">
-                            {item.quantity || 1} × LKR {(item.price || 0).toFixed(2)}
+                            {item?.quantity || 1} × LKR {(item?.price || 0).toFixed(2)}
                           </span>
                         </div>
                       ))}

@@ -69,13 +69,13 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
         </div>
         <div className=' md:flex  gap-2'>
          {tab!==0&&<Button  onClick={()=>{setTab(0)}}  variant="secondary"><ArrowBigLeft/></Button>} 
-        <Button onClick={()=>{setTab(1)}} className="flex items-center gap-2">
+        <Button onClick={()=>{setTab(1)}}  variant={tab==1?"secondary":"default"} className="flex items-center gap-2 border">
           Orders
         </Button>
-        <Button onClick={()=>{setTab(2)}} className="flex items-center gap-2">
+        <Button onClick={()=>{setTab(2)}} variant={tab==2?"secondary":"default"}  className="flex items-center gap-2 border">
           Refunds
         </Button>
-        <Button  onClick={()=>{setTab(3)}} className="flex items-center gap-2">
+        <Button  onClick={()=>{setTab(3)}}  variant={tab==3?"secondary":"default"}  className="flex items-center gap-2 border">
           Customer Payments
         </Button>
         </div>

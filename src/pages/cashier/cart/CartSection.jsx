@@ -96,7 +96,7 @@ const CartSection = ({ setShowHeldOrdersDialog }) => {
         )}
         {/* Scroll Shadow */}
         {cartItems.length > 0 && (
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-b from-gray-200/50 to-transparent pointer-events-none" />
+          <div className="absolute top-0 left-0 w-full h-2 bg-linear-to-b from-gray-200/50 to-transparent pointer-events-none" />
         )}
       </div>
 

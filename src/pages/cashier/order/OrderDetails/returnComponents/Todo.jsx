@@ -13,7 +13,7 @@ export default function Todo({ todo, updateTodo, removeTodo }) {
   };
 
   return (
-    <li className="Todo flex gap-2 border-b items-center p-2">
+    <li className="Todo flex gap-2  items-center p-2">
       {/* Product Name */}
       <div className="w-full font-medium">{todo.name}</div>
 

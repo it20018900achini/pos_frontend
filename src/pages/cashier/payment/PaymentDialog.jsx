@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useSelector } from "react-redux";
 import {
   selectCartItems,
+  selectDiscount,
   selectNote,
   selectPaymentMethod,
   selectSelectedCustomer,
@@ -29,6 +30,7 @@ const PaymentDialog = ({
   setShowReceiptDialog,
 }) => {
   const total = useSelector(selectTotal);
+  const discount = useSelector(selectDiscount);
   const [value, setValue] = useState(total);
 
   const paymentMethod = useSelector(selectPaymentMethod);
@@ -70,6 +72,7 @@ const PaymentDialog = ({
         cash: parseFloat(value).toFixed(2),
         credit: parseFloat(total - value).toFixed(2),
         totalAmount: total,
+        discount: discount,
         branchId: branch.id,
         cashierId: userProfile.id,
         customer: selectedCustomer || null,
