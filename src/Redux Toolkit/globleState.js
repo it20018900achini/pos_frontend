@@ -21,6 +21,7 @@ import adminDashboardReducer from "./features/adminDashboard/adminDashboardSlice
 import subscriptionPlanReducer from "./features/subscriptionPlan/subscriptionPlanSlice.js";
 import subscriptionReducer from "./features/subscription/subscriptionSlice.js";
 import paymentReducer from "./features/payment/paymentSlice.js";
+import customerPaymentsSlice from "./features/customerPayment/customerPaymentSlice.js";
 
 const globleState = configureStore({
   reducer: {
@@ -47,7 +48,7 @@ const globleState = configureStore({
     subscriptionPlan: subscriptionPlanReducer,
     subscription: subscriptionReducer,
     payment: paymentReducer,
-  },
+customerPayment: customerPaymentsSlice,  },
 });
 
 export default globleState;

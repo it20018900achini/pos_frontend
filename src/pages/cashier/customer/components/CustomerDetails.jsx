@@ -3,14 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StarIcon, PlusIcon, Loader2, UserIcon, ArrowBigLeft } from 'lucide-react';
-import PaymentsDashboard from './customerPayments/PaymentsDashboard';
-import { PaymentTablePagination } from './customerPayments/PaymentTablePagination';
+// import PaymentsDashboard from './customerPayments/PaymentsDashboard';
+// import { PaymentTablePagination } from './customerPayments/PaymentTablePagination';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllCustomers } from '../../../../Redux Toolkit/features/customer/customerThunks';
 import RefundHistory from './RefundHistory';
 import PurchaseHistory from './PurchaseHistory';
 import { toast } from 'sonner';
+import CustomerPaymentsPage from './customerPayments/components/CustomerPaymentsPage';
 
 const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
   const [tab,setTab]=useState(0)
@@ -52,8 +53,8 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
 
   return (
     <div className="p-4">
-      <div className="flex justify-between items-start mb-6">
-        <div className='flex'>
+      <div className="md:flex justify-between items-start mb-6">
+        <div className='md:flex'>
           <div>
             
           <h2 className="text-2xl font-bold">{customer.fullName || 'Unknown Customer'}</h2>
@@ -61,12 +62,12 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
           <p className="text-muted-foreground">{customer.email || 'N/A'}</p>
           
           </div>
-        <Button varient="secondary" size="sm" onClick={onAddPoints} className="bg-orange-500  hover:bg-orange-600 flex items-center gap-2">
+        {/* <Button varient="secondary" size="sm" onClick={onAddPoints} className="bg-orange-500  hover:bg-orange-600 flex items-center gap-2">
           <PlusIcon className="h-4 w-4" />
           Add Points
-        </Button>
+        </Button> */}
         </div>
-        <div className='flex gap-2'>
+        <div className=' md:flex  gap-2'>
          {tab!==0&&<Button  onClick={()=>{setTab(0)}}  variant="secondary"><ArrowBigLeft/></Button>} 
         <Button onClick={()=>{setTab(1)}} className="flex items-center gap-2">
           Orders
@@ -159,7 +160,9 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
             ) : tab==2?
               <RefundHistory refunds={customerRefunds} loading={loadingR} />:
               
-              tab==3?<PaymentTablePagination customerId={customer?.id} />:""
+              tab==3?
+              <CustomerPaymentsPage customer={customer}/>
+              :""
             
           )}
 

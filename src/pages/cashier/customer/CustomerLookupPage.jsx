@@ -22,7 +22,7 @@ import {
 import { clearCustomerOrders } from "../../../Redux Toolkit/features/order/orderSlice";
 import CustomerForm from "./CustomerForm";
 import POSHeader from "../components/POSHeader";
-import { PaymentTablePagination } from "./components/customerPayments/PaymentTablePagination";
+// import { PaymentTablePagination } from "./components/customerPayments/PaymentTablePagination";
 import { Button } from "../../../components/ui/button";
 import RefundHistory from "./components/RefundHistory";
 import { getRefundsByCustomer } from "../../../Redux Toolkit/features/refund/refundThunks";
