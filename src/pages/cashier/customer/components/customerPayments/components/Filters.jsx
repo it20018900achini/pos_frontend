@@ -1,7 +1,4 @@
 import React, { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 
 export default function Filters({ onFilter }) {
   const [data, setData] = useState({
@@ -24,47 +21,37 @@ export default function Filters({ onFilter }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-      <Input
+    <form onSubmit={handleSubmit}>
+      <input
         type="number"
         placeholder="Customer ID"
         value={data.customerId}
         onChange={(e) => setData({ ...data, customerId: e.target.value })}
       />
-      <Input
+      <input
         type="number"
         placeholder="Cashier ID"
         value={data.cashierId}
         onChange={(e) => setData({ ...data, cashierId: e.target.value })}
       />
-
-      <Select
+      <select
         value={data.paymentMethod}
-        onValueChange={(value) => setData({ ...data, paymentMethod: value })}
+        onChange={(e) => setData({ ...data, paymentMethod: e.target.value })}
       >
-        <SelectTrigger>
-          <SelectValue placeholder="Payment Method" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="">All</SelectItem>
-          <SelectItem value="CASH">Cash</SelectItem>
-          <SelectItem value="CARD">Card</SelectItem>
-          <SelectItem value="ONLINE">Online</SelectItem>
-        </SelectContent>
-      </Select>
-
-      <Input
+        <option value="">All</option>
+        <option value="CASH">Cash</option>
+        <option value="CARD">Card</option>
+        <option value="ONLINE">Online</option>
+      </select>
+      <input
         type="datetime-local"
         onChange={(e) => setData({ ...data, startDate: e.target.value })}
       />
-      <Input
+      <input
         type="datetime-local"
         onChange={(e) => setData({ ...data, endDate: e.target.value })}
       />
-
-      <Button type="submit" className="col-span-full md:col-span-1">
-        Filter
-      </Button>
+      <button type="submit">Filter</button>
     </form>
   );
 }
