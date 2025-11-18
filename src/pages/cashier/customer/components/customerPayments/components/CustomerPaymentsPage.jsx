@@ -17,6 +17,7 @@ export default function CustomerPaymentsPage(customer) {
   const { payments, loading, totalPages, currentPage } = useSelector(
     (state) => state.customerPayment
   );
+  const { userProfile, loading: loadingUser } = useSelector((state) => state.user);
 
   const [filters, setFilters] = useState({});
   const [editing, setEditing] = useState(null);
@@ -65,6 +66,7 @@ export default function CustomerPaymentsPage(customer) {
         onSave={handleSave}
         onCancel={() => setEditing(null)}
         customer={customer}
+        user={userProfile}
       />
       <Filters onFilter={setFilters} />
 
@@ -84,6 +86,7 @@ export default function CustomerPaymentsPage(customer) {
             setSortBy(col);
             setSortDir(dir);
           }}
+          user={userProfile}
         />}
         
         

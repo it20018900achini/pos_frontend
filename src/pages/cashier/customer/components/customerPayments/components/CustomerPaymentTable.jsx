@@ -1,7 +1,8 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "../../../../../../components/ui/badge";
 
-export default function CustomerPaymentTable({ payments, onEdit, onDelete, onSort, sortBy, sortDir }) {
+export default function CustomerPaymentTable({ payments, onEdit, onDelete, onSort, sortBy, sortDir,user }) {
   if (!payments || payments.length === 0) {
     return <p className="text-center py-4">No payments found.</p>;
   }
@@ -34,7 +35,7 @@ export default function CustomerPaymentTable({ payments, onEdit, onDelete, onSor
             <tr key={p.id} className="hover:bg-gray-50">
               <td className="px-4 py-2">{new Date(p.createdAt).toLocaleString()}</td>
               <td className="px-4 py-2">{p.amount}</td>
-              <td className="px-4 py-2">{p.cashier?.fullName || p.cashierId}</td>
+              <td className="px-4 py-2">{user?.id==p.cashierId?<Badge>YOU</Badge>:p.cashierId}</td>
               <td className="px-4 py-2">{p.paymentMethod}</td>
               <td className="px-4 py-2">{p.reference}</td>
               <td className="px-4 py-2 flex gap-2">

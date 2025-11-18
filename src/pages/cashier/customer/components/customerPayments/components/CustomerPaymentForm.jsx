@@ -16,20 +16,19 @@ import {
   SelectContent,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useDispatch, useSelector } from "react-redux";
-import { getUserProfile } from "../../../../../../Redux Toolkit/features/user/userThunks";
+import {  useSelector } from "react-redux";
 
 export default function CustomerPaymentForm({
   initialData,
   onSave,
   onCancel,
-  customer
+  customer,
+  user
 }) {
-    const { userProfile, loading: loadingUser } = useSelector((state) => state.user);
 
   const [form, setForm] = useState({
     customerId: customer?.customer?.id,
-    cashierId:userProfile?.id,
+    cashierId:user?.id,
     amount: "",
     paymentMethod: "CASH",
     reference: "",
