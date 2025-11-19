@@ -23,15 +23,18 @@ const CustomerSummary = ({ customerId }) => {
   if (!summary) return <p>No summary available</p>;
 
   const metrics = [
-    { label: "Total Amount", value: summary.totalAmount },
-    { label: "Total Cash", value: summary.totalCash },
-    { label: "Total Credit", value: summary.totalCredit },
-    { label: "Total Refund Cash", value: summary.totalRefundCash },
-    { label: "Total Refund Credit", value: summary.totalRefundCredit },
-    { label: "Total Refund Amount", value: summary.totalRefundAmount },
-    { label: "Total Payment Amount", value: summary.totalPaymentAmount },
-    { label: "Total Payment Cash", value: summary.totalPaymentCash },
-    { label: "Total Payment Credit", value: summary.totalPaymentCredit },
+    { label: "Orders", value: summary.totalAmount,"sub":{
+      cash:summary.totalCash,
+      credit:summary.totalCredit
+    } },
+    { label: "Refunds", value: summary.totalRefundAmount,"sub":{
+      cash:summary.totalRefundCash,
+      credit:summary.totalRefundCredit
+    } },
+    { label: "Payments", value: summary.totalPaymentAmount,"sub":{
+      cash:summary.totalPaymentCash,
+      credit:summary.totalPaymentCredit
+    } },
   ];
 
   return (
@@ -45,10 +48,11 @@ const CustomerSummary = ({ customerId }) => {
         {metrics.map((metric) => (
           <Card key={metric.label} className="bg-white shadow-md">
             <CardHeader>
-              <CardTitle>{metric.label}</CardTitle>
+              <CardTitle className="flex justify-between overflow-auto">{metric.label}<span>LKR {metric.value}</span></CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-xl font-semibold">{metric.value}</p>
+            <CardContent className="flex justify-between overflow-auto">
+              <p className="text-sm font-semibold text-green-500">CASH {metric.sub?.cash}</p>
+              <p className="text-sm font-semibold text-red-500">CREDIT {metric.sub?.credit}</p>
             </CardContent>
           </Card>
         ))}

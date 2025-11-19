@@ -22,7 +22,7 @@ export default function Filters({ onFilter }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border p-1 mb-2">
+    <form onSubmit={handleSubmit} className="border p-1 mb-2 text-right">
       <input
         type="number"
         placeholder="Customer ID"
@@ -32,7 +32,7 @@ export default function Filters({ onFilter }) {
       />
       <input
         type="number"
-                className="border px-2 m-1"
+                className="border px-2 m-1 hidden"
 
         placeholder="Cashier ID"
         value={data.cashierId}

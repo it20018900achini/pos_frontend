@@ -16,7 +16,8 @@ import {
   SelectContent,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import {  useSelector } from "react-redux";
+// import {  useSelector } from "react-redux";
+// import { getCustomerSummaryById } from "../../../../../../Redux Toolkit/features/customerSummary/customerSummaryThunks";
 
 export default function CustomerPaymentForm({
   initialData,
@@ -55,6 +56,13 @@ export default function CustomerPaymentForm({
     e.preventDefault();
     onSave(form);
     resetForm();
+
+// dispatch(getCustomerSummaryById(customerId))
+//  const dispatch = useDispatch();
+  // const { summary, loading, error } = useSelector(
+  //   (state) => state.customerSummary
+  // );
+
   };
 
   const resetForm = () => {
