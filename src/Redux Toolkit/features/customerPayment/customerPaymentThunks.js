@@ -38,6 +38,7 @@ export const fetchPayments = createAsyncThunk(
 
     const query = new URLSearchParams(filters).toString();
     const response = await api.get(`/api/customer-payments/customer7?${query}`,[headers]);
+    
     return {
       payments: response.data.content, // if backend returns Page<CustomerPaymentDTO>
       totalPages: response.data.totalPages,
