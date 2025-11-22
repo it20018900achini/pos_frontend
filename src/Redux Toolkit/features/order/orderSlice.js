@@ -7,7 +7,8 @@ import {
   getTodayOrdersByBranch,
   deleteOrder,
   getOrdersByCustomer,
-  getRecentOrdersByBranch
+  getRecentOrdersByBranch,
+  getOrdersByCustomerPagin
 } from './orderThunks';
 
 const initialState = {
@@ -75,6 +76,8 @@ const orderSlice = createSlice({
         state.orders = action.payload;
       })
 
+
+
       // Get Orders by Cashier (with pagination, search, date filter)
       .addCase(getOrdersByCashier.pending, (state) => { state.loading = true; })
       .addCase(getOrdersByCashier.fulfilled, (state, action) => {
@@ -88,6 +91,34 @@ const orderSlice = createSlice({
         state.orders = [];
       })
 
+.addCase(getOrdersByCustomerPagin.pending, (state) => {
+  state.loading = true;
+})
+
+.addCase(getOrdersByCustomerPagin.fulfilled, (state, action) => {
+  const data = action.payload; // Spring Boot Page JSON
+
+  state.loading = false;
+
+  // FIXED: map correctly
+  state.orders = data.content || [];
+
+  state.pageInfo = {
+    pageNumber: data.number ?? 0,
+    pageSize: data.size ?? 20,
+    totalPages: data.totalPages ?? 0,
+    totalElements: data.totalElements ?? 0,
+    first: data.first ?? false,
+    last: data.last ?? false,
+    numberOfElements: data.numberOfElements ?? 0,
+  };
+})
+
+.addCase(getOrdersByCustomerPagin.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+  state.orders = [];
+})
       // Today Orders
       .addCase(getTodayOrdersByBranch.fulfilled, (state, action) => {
         state.todayOrders = action.payload;

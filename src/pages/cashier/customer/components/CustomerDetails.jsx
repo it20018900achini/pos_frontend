@@ -12,6 +12,8 @@ import RefundHistory from './RefundHistory';
 import PurchaseHistory from './PurchaseHistory';
 import { toast } from 'sonner';
 import CustomerPaymentsPage from './customerPayments/components/CustomerPaymentsPage';
+import CustomerOrderHistory from '../orders/CustomerOrderHistory';
+import CustomerOrdersPage from '../orders/CustomerOrdersPage';
 
 const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
   const [tab,setTab]=useState(0)
@@ -155,8 +157,11 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
  {customer && (
             tab==1 ? (
               <>
-                
-                <PurchaseHistory orders={customerOrders} loading={ordersLoading} />
+              <CustomerOrdersPage customerId={customer?.id}/>
+              {/* <CustomerOrdersPage/> */}
+              {/* {JSON.stringify(customer)} */}
+                {/* <CustomerOrderHistory customerId={customer?.id}/> */}
+                {/* <PurchaseHistory orders={customerOrders} loading={ordersLoading} /> */}
               </>
             ) : tab==2?
               <RefundHistory refunds={customerRefunds} loading={loadingR} />:

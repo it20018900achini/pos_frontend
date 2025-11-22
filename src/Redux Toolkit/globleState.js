@@ -23,6 +23,10 @@ import subscriptionReducer from "./features/subscription/subscriptionSlice.js";
 import paymentReducer from "./features/payment/paymentSlice.js";
 import customerPaymentsSlice from "./features/customerPayment/customerPaymentSlice.js";
 import customerSummaryReducer from "./features/customerSummary/customerSummarySlice.js";
+// import { fetchCustomerOrders } from "./features/customer/customerOrders/customerOrderSlice.js";
+
+// ✅ Import your new customerOrder slice
+import customerOrderReducer from "./features/customer/customerOrders/customerOrderSlice.js";
 
 const globleState = configureStore({
   reducer: {
@@ -33,11 +37,10 @@ const globleState = configureStore({
     user: userReducer,
     category: categoryReducer,
     product: productReducer,
-    employee:employeeReducer,
+    employee: employeeReducer,
     inventory: inventoryReducer,
     order: orderReducer,
     customer: customerReducer,
-    // supplier: supplierReducer,
     sale: saleReducer,
     transaction: transactionReducer,
     cart: cartReducer,
@@ -49,8 +52,11 @@ const globleState = configureStore({
     subscriptionPlan: subscriptionPlanReducer,
     subscription: subscriptionReducer,
     payment: paymentReducer,
-    customerPayment: customerPaymentsSlice,    
+    customerPayment: customerPaymentsSlice,
     customerSummary: customerSummaryReducer,
+
+    // ✅ Added here
+    customerOrder: customerOrderReducer,
   },
 });
 
