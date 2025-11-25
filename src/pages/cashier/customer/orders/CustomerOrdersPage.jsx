@@ -9,7 +9,19 @@ import {
   setFilters,
   resetFilters
 } from "../../../../Redux Toolkit/features/customer/customerOrders/customerOrderSlice";
+import OrderTable from "./OrderTable";
+import  { Fragment } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 export default function CustomerOrderPage({ customerId }) {
   const dispatch = useDispatch();
 
@@ -109,46 +121,86 @@ export default function CustomerOrderPage({ customerId }) {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <table className="w-full border">
-          <thead>
-            <tr className="bg-gray-200">
-              <th
-                className="cursor-pointer"
-                onClick={() => handleSort("createdAt")}
-              >
-                Date {sortBy === "createdAt" ? `(${sortDir})` : ""}
-              </th>
-
-              <th
-                className="cursor-pointer"
-                onClick={() => handleSort("total")}
-              >
-                Total {sortBy === "total" ? `(${sortDir})` : ""}
-              </th>
-
-              <th>Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {content.length === 0 ? (
-              <tr>
-                <td colSpan="3" className="text-center py-3">
-                  No records found
-                </td>
-              </tr>
-            ) : (
-              content.map((order) => (
-                <tr key={order.id} className="border-t">
-                  <td>{order?.id}| {order.createdAt}</td>
-                  <td>{order.total}</td>
-                  <td>{order.status}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+          <Table>
+               <TableHeader>
+                 <TableRow>
+                   <TableHead>Order ID</TableHead>
+                   <TableHead>Date</TableHead>
+                   <TableHead>Customer</TableHead>
+                   <TableHead>Total</TableHead>
+                   <TableHead>Payment Mode</TableHead>
+                   <TableHead>Status</TableHead>
+                   <TableHead className="text-right">Actions</TableHead>
+                 </TableRow>
+               </TableHeader>
+         
+               <TableBody>
+                 {content.map((order) => (
+                   <Fragment key={order.id}>
+                     
+                     {/* ✅ ORDER MAIN ROW */}
+                     <TableRow>
+                       <TableCell className="font-medium">{order.id}</TableCell>
+         
+                       <TableCell>
+                         {order.createdAt
+                           ? new Date(order.createdAt).toLocaleString()
+                           : "-"}
+                       </TableCell>
+         
+                       <TableCell>
+                         {order.customer?.fullName || "Walk-in Customer"}
+                       </TableCell>
+         
+                       <TableCell>
+                         LKR {Number(order.totalAmount || 0).toFixed(2)}
+                       </TableCell>
+         
+                       <TableCell>{order.paymentType || "CASH"}</TableCell>
+         
+                       <TableCell>
+                         <Badge
+                           className={
+                             order.status === "REFUNDED"
+                               ? "bg-red-500 text-white"
+                               : "bg-green-600 text-white"
+                           }
+                         >
+                           {order.status || "COMPLETE"}
+                         </Badge>
+                       </TableCell>
+         
+                       <TableCell className="text-right">
+                         {/* <Button
+                           variant="ghost"
+                           size="icon"
+                           onClick={() => handleViewOrder(order)}
+                         >
+                           <EyeIcon className="h-4 w-4" />
+                         </Button> */}
+                       </TableCell>
+                     </TableRow>
+         
+                     {/* ✅ ITEM ROW (Product List) */}
+                     <TableRow className="bg-muted/30">
+                       <TableCell colSpan={7} className="py-2">
+                         <div className="flex flex-wrap gap-2">
+                           {order.items?.map((it) => (
+                             <Badge key={it.id} className="text-sm px-3 py-1">
+                               {it.product?.name} × {it.quantity}
+                               
+                             </Badge>
+                           ))}
+                         </div>
+                       </TableCell>
+                     </TableRow>
+         
+                   </Fragment>
+                 ))}
+               </TableBody>
+             </Table>
       )}
+     
 {/* <pre>{JSON.stringify(content,null,2)}</pre> */}
       {/* ========================= PAGINATION ========================= */}
       <div className="flex justify-between items-center mt-4">

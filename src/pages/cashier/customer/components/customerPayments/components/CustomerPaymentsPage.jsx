@@ -57,7 +57,7 @@ export default function CustomerPaymentsPage(customer) {
 
   return (
     <div className="border-t">
-<CustomerSummary customerId={customer?.customer?.id}/>
+{/* <CustomerSummary customerId={customer?.customer?.id}/> */}
       
       <h1 className="text-3xl font-bold">Customer Payments</h1>
       {/* Filters */}

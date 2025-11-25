@@ -94,11 +94,7 @@ const OrderTable = ({
                   {order.items?.map((it) => (
                     <Badge key={it.id} className="text-sm px-3 py-1">
                       {it.product?.name} × {it.quantity}
-                      {it.returned && it.return_quantity > 0 ? (
-                        <span className="ml-2 text-red-500 font-semibold">
-                          | R: {it.return_quantity}
-                        </span>
-                      ) : null}
+                      
                     </Badge>
                   ))}
                 </div>

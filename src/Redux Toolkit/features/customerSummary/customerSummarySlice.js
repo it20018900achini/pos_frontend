@@ -1,55 +1,67 @@
-import { createSlice } from '@reduxjs/toolkit';
-import {
-
-  getCustomerSummaryById,
-} from './customerSummaryThunks';
+import { createSlice } from "@reduxjs/toolkit";
+import { getCustomerSummaryById } from "./customerSummaryThunks";
 
 const initialState = {
-  customers: [],
   summary: null,
   loading: false,
   error: null,
 };
 
-const customerSlice = createSlice({
-  name: 'customer',
+const customerSummarySlice = createSlice({
+  name: "customerSummary",
+
   initialState,
+
   reducers: {
-    clearCustomerState: (state) => {
-      state.customers = [];
+    clearSummaryState: (state) => {
       state.summary = null;
       state.error = null;
+      state.loading = false;
     },
-    clearSelectedCustomer: (state) => {
+
+    clearSelectedSummary: (state) => {
       state.summary = null;
     },
   },
+
   extraReducers: (builder) => {
     builder
-      
-
-      // Get Customer by ID
+      // ===============================
+      // FETCH: Customer Summary by ID
+      // ===============================
       .addCase(getCustomerSummaryById.pending, (state) => {
         state.loading = true;
-      })
-      .addCase(getCustomerSummaryById.fulfilled, (state, action) => {
-        state.loading = false;
-        state.summary = action.payload;
-      })
-      .addCase(getCustomerSummaryById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+        state.error = null;
       })
 
-      // Generic error handling for all customer actions
+      .addCase(getCustomerSummaryById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.summary = action.payload || null;
+      })
+
+      .addCase(getCustomerSummaryById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || action.error?.message || "Failed to load summary";
+      })
+
+      // ===============================
+      // GLOBAL ERROR CATCHER FOR SLICE
+      // ===============================
       .addMatcher(
-        (action) => action.type.startsWith('customer/') && action.type.endsWith('/rejected'),
+        (action) =>
+          action.type.startsWith("customerSummary/") &&
+          action.type.endsWith("/rejected"),
         (state, action) => {
-          state.error = action.payload;
+          state.error = action.payload || action.error?.message || "Unexpected error";
+          state.loading = false;
         }
       );
   },
 });
 
-export const { clearCustomerState, clearSelectedCustomer } = customerSlice.actions;
-export default customerSlice.reducer; 
+// Export actions
+export const { clearSummaryState, clearSelectedSummary } =
+  customerSummarySlice.actions;
+
+// Export reducer
+export default customerSummarySlice.reducer;

@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import CustomerPaymentsPage from './customerPayments/components/CustomerPaymentsPage';
 import CustomerOrderHistory from '../orders/CustomerOrderHistory';
 import CustomerOrdersPage from '../orders/CustomerOrdersPage';
+import CustomerSummary from './customerPayments/components/CustomerSummary';
 
 const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
   const [tab,setTab]=useState(0)
@@ -89,62 +90,11 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
 
 
         {tab==0 &&<>
-         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Returns
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              {/* <StarIcon className="h-5 w-5 text-yellow-500" /> */}
-              <span className="text-2xl font-bold">{customer.loyaltyPoints || 0}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Orders
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <span className="text-2xl font-bold">{customer.totalOrders || 0}</span>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Spent
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <span className="text-2xl font-bold">LKR {(customer.totalSpent || 0).toFixed(2)}</span>
-          </CardContent>
-        </Card>
+         <div className="w-full">
+        <CustomerSummary customerId={customer?.id}/>
       </div>
 
-      {customer.averageOrderValue && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Average Order Value</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <span className="text-2xl font-bold">LKR {customer.averageOrderValue.toFixed(2)}</span>
-          </CardContent>
-        </Card>
-      )}
 
-      {customer.lastVisit && (
-        <div className="mt-4">
-          <p className="text-sm text-muted-foreground">
-            Last Visit: {new Date(customer.lastVisit).toLocaleDateString()}
-          </p>
-        </div>
-      )}
         </>}
 
      
