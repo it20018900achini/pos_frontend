@@ -79,7 +79,9 @@ console.log("Page info:", pageInfo);
                 <td className="border p-2">{r.customer?.fullName || "-"}</td>
                 <td className="border p-2 text-right">{r.totalAmount.toFixed(2)}</td>
                 <td className="border p-2 text-right">{new Date(r.createdAt).toLocaleString()}</td>
-                <td className="border p-2">{r.status}</td>
+                <td className="border p-2 text-center">
+Refunded
+                </td>
               </tr>
             ))
           ) : (
@@ -99,7 +101,7 @@ console.log("Page info:", pageInfo);
           <button
             onClick={handlePrevPage}
             disabled={page === 0}
-            className="px-3 py-1 border rounded disabled:opacity-50"
+            className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer"
           >
             Previous
           </button>
@@ -109,7 +111,7 @@ console.log("Page info:", pageInfo);
           <button
             onClick={handleNextPage}
             disabled={page >= pageInfo.totalPages - 1}
-            className="px-3 py-1 border rounded disabled:opacity-50"
+            className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer"
           >
             Next
           </button>
