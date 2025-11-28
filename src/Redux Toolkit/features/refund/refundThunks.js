@@ -275,7 +275,6 @@ export const getRefundsByCustomer = createAsyncThunk(
     }
   }
 );
-
 // 🔹 Get Top 5 Recent Refunds by Branch
 export const getRecentRefundsByBranch = createAsyncThunk(
   'refund/getRecentByBranch',
@@ -301,3 +300,45 @@ export const getRecentRefundsByBranch = createAsyncThunk(
     }
   }
 );
+
+// 🔹 Get Recent Refunds by Branch (Paginated + Filter)
+export const getRecentRefundsByBranchPagin = createAsyncThunk(
+  'refund/getRecentByBranchPagin',
+  async ({ branchId, page = 0, size = 10, sort = "id,desc", start, end, search }, { rejectWithValue }) => {
+    try {
+      const headers = getAuthHeaders();
+      const params = new URLSearchParams();
+      params.append("page", page);
+      params.append("size", size);
+      params.append("sort", sort);
+      
+  if (start) {
+  const formatted = new Date(start).toISOString();
+  params.append("start", formatted);
+}
+
+if (end) {
+  const formatted = new Date(end).toISOString();
+  params.append("end", formatted);
+}
+
+
+      if (search) params.append("search", search);
+
+      const res = await api.get(`/api/refunds/branch/t/${branchId}?${params.toString()}`, { headers });
+console.log(res)
+      return {
+        refunds: res.data.content,
+        pageInfo: {
+          page: res.data.number,
+          size: res.data.size,
+          totalPages: res.data.totalPages,
+          totalElements: res.data.totalElements,
+        },
+      };
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch paginated recent refunds');
+    }
+  }
+);
+

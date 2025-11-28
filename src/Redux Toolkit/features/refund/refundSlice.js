@@ -7,7 +7,8 @@ import {
   getTodayRefundsByBranch,
   deleteRefund,
   getRefundsByCustomer,
-  getRecentRefundsByBranch
+  getRecentRefundsByBranch,
+  getRecentRefundsByBranchPagin
 } from './refundThunks';
 
 const initialState = {
@@ -18,6 +19,7 @@ const initialState = {
   loading: false,
   error: null,
   recentRefunds: [],
+  recentRefundsPagin: [],
   pageInfo: null,
   search: '',
   startDate: null,
@@ -38,6 +40,8 @@ const refundSlice = createSlice({
       state.search = '';
       state.startDate = null;
       state.endDate = null;
+      state.recentRefunds = [];
+      state.recentRefundsPagin = [];
     },
     clearCustomerRefunds: (state) => {
       state.customerRefunds = [];
@@ -57,7 +61,7 @@ const refundSlice = createSlice({
       .addCase(createRefund.pending, (state) => { state.loading = true; })
       .addCase(createRefund.fulfilled, (state, action) => {
         state.loading = false;
-        state.refunds.unshift(action.payload); // add to top
+        state.refunds.unshift(action.payload);
         state.selectedRefund = action.payload;
       })
       .addCase(createRefund.rejected, (state, action) => {
@@ -75,7 +79,7 @@ const refundSlice = createSlice({
         state.refunds = action.payload;
       })
 
-      // Get Refunds by Cashier (with pagination, search, date filter)
+      // Get Refunds by Cashier
       .addCase(getRefundsByCashier.pending, (state) => { state.loading = true; })
       .addCase(getRefundsByCashier.fulfilled, (state, action) => {
         state.refunds = action.payload.refunds || [];
@@ -94,23 +98,61 @@ const refundSlice = createSlice({
       })
 
       // Customer Refunds
-    .addCase(getRefundsByCustomer.pending, (state) => {
-      state.loadingR = true;
-      state.error = null;
-    })
-    .addCase(getRefundsByCustomer.fulfilled, (state, action) => {
-      state.loadingR = false;
-      state.customerRefunds = action.payload; // <-- Make sure payload is correct
-    })
-    .addCase(getRefundsByCustomer.rejected, (state, action) => {
-      state.loadingR = false;
-      state.error = action.error.message;
-    })
+      .addCase(getRefundsByCustomer.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getRefundsByCustomer.fulfilled, (state, action) => {
+        state.loading = false;
+        state.customerRefunds = action.payload;
+      })
+      .addCase(getRefundsByCustomer.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
 
-      // Recent Refunds
+      // Recent Refunds (Top 5)
       .addCase(getRecentRefundsByBranch.fulfilled, (state, action) => {
         state.recentRefunds = action.payload;
       })
+
+
+.addCase(getRecentRefundsByBranchPagin.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(getRecentRefundsByBranchPagin.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+})
+.addCase(getRecentRefundsByBranchPagin.fulfilled, (state, action) => {
+  state.loading = false;
+  state.pageInfo = action.payload.pageInfo || null;
+  state.refunds=action.payload.refunds||[]
+})
+
+      // Recent Refunds with Pagination + Filter
+      // .addCase(getRecentRefundsByBranchPagin.fulfilled, (state, action) => {
+      //   state.recentRefundsPagin = action.payload.refunds || [];
+      //   state.pageInfo = action.payload.pageInfo || null;
+
+      //   // Apply search & date filter immediately
+      //   const { search, startDate, endDate } = state;
+      //   state.recentRefundsPagin = state.recentRefundsPagin.filter((refund) => {
+      //     const matchesSearch = search
+      //       ? refund.customer?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+      //         refund.items?.some(item =>
+      //           item.product?.name?.toLowerCase().includes(search.toLowerCase())
+      //         )
+      //       : true;
+
+      //     const refundDate = dayjs(refund.createdAt);
+      //     const matchesStart = startDate ? refundDate.isAfter(dayjs(startDate).subtract(1, 'day')) : true;
+      //     const matchesEnd = endDate ? refundDate.isBefore(dayjs(endDate).add(1, 'day')) : true;
+
+      //     return matchesSearch && matchesStart && matchesEnd;
+      //   });
+      // })
 
       // Delete Refund
       .addCase(deleteRefund.fulfilled, (state, action) => {
