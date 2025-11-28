@@ -66,6 +66,7 @@ console.log("Page info:", pageInfo);
             <th className="border p-2">ID</th>
             <th className="border p-2">Customer</th>
             <th className="border p-2">Total Amount</th>
+            <th className="border p-2">Cashier</th>
             <th className="border p-2">Date</th>
             <th className="border p-2">Status</th>
           </tr>
@@ -78,6 +79,8 @@ console.log("Page info:", pageInfo);
                 <td className="border p-2">{r.id}</td>
                 <td className="border p-2">{r.customer?.fullName || "-"}</td>
                 <td className="border p-2 text-right">{r.totalAmount.toFixed(2)}</td>
+                                <td className="border p-2 text-center">#{r.cashierId || "-"}</td>
+
                 <td className="border p-2 text-right">{new Date(r.createdAt).toLocaleString()}</td>
                 <td className="border p-2 text-center">
 Refunded
