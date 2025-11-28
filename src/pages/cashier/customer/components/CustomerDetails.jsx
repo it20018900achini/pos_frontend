@@ -15,6 +15,7 @@ import CustomerPaymentsPage from './customerPayments/components/CustomerPayments
 import CustomerOrderHistory from '../orders/CustomerOrderHistory';
 import CustomerOrdersPage from '../orders/CustomerOrdersPage';
 import CustomerSummary from './customerPayments/components/CustomerSummary';
+import CustomerRefundsPage from '../refunds/CustomerRefundsPage';
 
 const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
   const [tab,setTab]=useState(0)
@@ -114,7 +115,8 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
                 {/* <PurchaseHistory orders={customerOrders} loading={ordersLoading} /> */}
               </>
             ) : tab==2?
-              <RefundHistory refunds={customerRefunds} loading={loadingR} />:
+                          <CustomerRefundsPage customerId={customer?.id}/>
+:
               
               tab==3?
               <CustomerPaymentsPage customer={customer}/>
