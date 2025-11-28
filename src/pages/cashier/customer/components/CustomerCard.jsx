@@ -7,7 +7,8 @@ const CustomerCard = ({customer, onSelectCustomer, selectedCustomer}) => {
             key={customer.id} 
             className={`p-4 cursor-pointer hover:bg-accent transition-colors ${selectedCustomer?.id === customer.id ? 'bg-accent' : ''}`}
             onClick={() => onSelectCustomer(customer)}
-          >
+          >{selectedCustomer?.id === customer.id ? <div className='w-3 h-3 bg-green-500 float-end rounded-full'></div> : ''}
+            
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="font-medium">{customer.fullName || 'Unknown Customer'}</h3>

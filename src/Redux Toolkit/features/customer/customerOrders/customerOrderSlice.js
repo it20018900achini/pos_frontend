@@ -48,8 +48,15 @@ export const fetchCustomerOrders = createAsyncThunk(
       params.append("sortDir", sortDir);
 
       if (status) params.append("status", status);
-      if (startDate) params.append("startDate", startDate);
-      if (endDate) params.append("endDate", endDate);
+      if (startDate) {
+  const formatted = new Date(startDate).toISOString();
+  params.append("start", formatted);
+}
+
+if (endDate) {
+  const formatted = new Date(endDate).toISOString();
+  params.append("end", formatted);
+}
       const headers = getAuthHeaders();
 
       const res = await api.get(
