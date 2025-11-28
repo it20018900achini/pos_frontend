@@ -32,7 +32,7 @@ console.log("Page info:", pageInfo);
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Recent Refunds</h2>
+      <h2 className="text-xl font-bold mb-4">Recent Refunds {`(${pageInfo?.totalElements})`}</h2>
 
       {/* Filters */}
       <div className="flex gap-2 mb-4">
@@ -57,7 +57,7 @@ console.log("Page info:", pageInfo);
         />
       </div>
 
-      {loading && <p>Loading refunds...</p>}
+      
       {error && <p className="text-red-500">{error}</p>}
 
       <table className="w-full border-collapse border">
@@ -71,7 +71,8 @@ console.log("Page info:", pageInfo);
           </tr>
         </thead>
         <tbody>
-          {refunds.length > 0 ? (
+            {loading && <tr><td colSpan={5}>Loading refunds...</td></tr>}
+          {!loading ? refunds.length > 0 ? (
             refunds.map((r) => (
               <tr key={r.id}>
                 <td className="border p-2">{r.id}</td>
@@ -87,7 +88,8 @@ console.log("Page info:", pageInfo);
                 No refunds found.
               </td>
             </tr>
-          )}
+          ):""}
+          {/* {JSON.stringify(pageInfo)} */}
         </tbody>
       </table>
 {/* {JSON.stringify(refunds)} */}
