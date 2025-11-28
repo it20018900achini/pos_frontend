@@ -83,7 +83,7 @@ console.log("Page info:", pageInfo);
             refunds.map((r) => (
               <tr key={r.id}>
                 <td className="border p-2">{r.id}</td>
-                <td className="border p-2">{r.customer?.fullName || "-"}</td>
+                <td className="border p-2"><span className="float-end text-neutral-500 text-sm"> #{r?.customer?.id}</span>{r.customer?.fullName || "-"}</td>
                 <td className="border p-2 text-right">{r.totalAmount.toFixed(2)}</td>
                                 <td className="border p-2 text-center">#{r.cashierId || "-"}</td>
 
