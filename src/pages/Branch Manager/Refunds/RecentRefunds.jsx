@@ -59,7 +59,13 @@ console.log("Page info:", pageInfo);
 
       
       {error && <p className="text-red-500">{error}</p>}
-
+      <div className="flex justify-end ">
+        {loading&&<span class="relative flex size-3 ">
+        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
+        <span class="relative inline-flex size-3 rounded-full bg-sky-500"></span>
+        </span>}
+        
+      </div>
       <table className="w-full border-collapse border">
         <thead>
           <tr>
@@ -72,8 +78,8 @@ console.log("Page info:", pageInfo);
           </tr>
         </thead>
         <tbody>
-            {loading && <tr><td colSpan={5}>Loading refunds...</td></tr>}
-          {!loading ? refunds.length > 0 ? (
+            {/* {loading && <tr><td colSpan={5}>Loading refunds...</td></tr>} */}
+          { refunds.length > 0 ? (
             refunds.map((r) => (
               <tr key={r.id}>
                 <td className="border p-2">{r.id}</td>
@@ -93,7 +99,7 @@ Refunded
                 No refunds found.
               </td>
             </tr>
-          ):""}
+          )}
           {/* {JSON.stringify(pageInfo)} */}
         </tbody>
       </table>
