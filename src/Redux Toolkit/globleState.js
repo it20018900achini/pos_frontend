@@ -28,6 +28,7 @@ import customerSummaryReducer from "./features/customerSummary/customerSummarySl
 // ✅ Import your new customerOrder slice
 import customerOrderReducer from "./features/customer/customerOrders/customerOrderSlice.js";
 import customerRefundReducer from "./features/customer/customerRefunds/customerRefundSlice.js";
+import transactionsReducer from "./features/transactions/transactionsSlice.js";
 
 const globleState = configureStore({
   reducer: {
@@ -59,6 +60,8 @@ const globleState = configureStore({
     // ✅ Added here
     customerOrder: customerOrderReducer,
     customerRefund: customerRefundReducer,
+        transactions: transactionsReducer,
+
   },
 });
 
