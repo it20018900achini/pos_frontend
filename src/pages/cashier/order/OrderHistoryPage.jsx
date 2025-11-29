@@ -108,46 +108,46 @@ const OrderHistoryPage = () => {
           </style>
         </head>
         <body>
-          <div class="center">
-            ${storeLogoUrl ? `<img class="logo" src="${storeLogoUrl}" width="80" />` : ""}
+          <div  className="center">
+            ${storeLogoUrl ? `<img  className="logo" src="${storeLogoUrl}" width="80" />` : ""}
             <p style="font-weight:bold;">${storeName}</p>
             <p style="margin-top:2px;">Invoice #${order.id}</p>
             <p style="margin-top:2px;">${new Date(order.createdAt).toLocaleString()}</p>
           </div>
 
           <p>Customer: ${order.customer?.name || "Walk-in"}</p>
-          <div class="line"></div>
+          <div  className="line"></div>
 
           <table>
             <thead>
-              <tr><th>Item</th><th>Qty</th><th class="right">Total</th></tr>
+              <tr><th>Item</th><th>Qty</th><th  className="right">Total</th></tr>
             </thead>
             <tbody>
               ${order.items.map(item => `
                 <tr>
-                  <td class="item">${truncate(item.product?.name || item.name)}</td>
+                  <td  className="item">${truncate(item.product?.name || item.name)}</td>
                   <td>${item.quantity}</td>
-                  <td class="right">${formatCurrency((item.product?.sellingPrice || 0) * item.quantity)}</td>
+                  <td  className="right">${formatCurrency((item.product?.sellingPrice || 0) * item.quantity)}</td>
                 </tr>
               `).join("")}
             </tbody>
           </table>
 
-          <div class="line"></div>
-          <p class="right">TOTAL: ${formatCurrency(totalAmount)}</p>
-          <p class="right">CASH: ${formatCurrency(cashPaid)}</p>
-          <p class="right">CREDIT: ${formatCurrency(creditPaid)}</p>
-          <p class="right">CHANGE: ${formatCurrency(changeDue)}</p>
+          <div  className="line"></div>
+          <p  className="right">TOTAL: ${formatCurrency(totalAmount)}</p>
+          <p  className="right">CASH: ${formatCurrency(cashPaid)}</p>
+          <p  className="right">CREDIT: ${formatCurrency(creditPaid)}</p>
+          <p  className="right">CHANGE: ${formatCurrency(changeDue)}</p>
 
-          ${notes ? `<div class="line"></div><p>Notes: ${notes}</p>` : ""}
-          <div class="line"></div>
+          ${notes ? `<div  className="line"></div><p>Notes: ${notes}</p>` : ""}
+          <div  className="line"></div>
 
-          <div class="center">
-            <img class="barcode" src="${barcodeUrl}" />
+          <div  className="center">
+            <img  className="barcode" src="${barcodeUrl}" />
             <p>Invoice #${order.id}</p>
           </div>
 
-          <p class="center">Thank you for your purchase!</p>
+          <p  className="center">Thank you for your purchase!</p>
         </body>
       </html>
     `;

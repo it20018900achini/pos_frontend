@@ -8,7 +8,8 @@ import {
   deleteOrder,
   getOrdersByCustomer,
   getRecentOrdersByBranch,
-  getOrdersByCustomerPagin
+  getOrdersByCustomerPagin,
+  getRecentOrdersByBranchPagin
 } from './orderThunks';
 
 const initialState = {
@@ -144,6 +145,24 @@ const orderSlice = createSlice({
       .addCase(deleteOrder.fulfilled, (state, action) => {
         state.orders = state.orders.filter(o => o.id !== action.payload);
       })
+
+
+
+.addCase(getRecentOrdersByBranchPagin.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(getRecentOrdersByBranchPagin.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+})
+.addCase(getRecentOrdersByBranchPagin.fulfilled, (state, action) => {
+  state.loading = false;
+  state.pageInfo = action.payload.pageInfo || null;
+  state.orders=action.payload.orders||[]
+})
+
+
 
       // Generic error matcher
       .addMatcher(

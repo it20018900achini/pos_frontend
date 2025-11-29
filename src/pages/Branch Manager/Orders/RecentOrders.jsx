@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getRecentRefundsByBranchPagin } from "../../../Redux Toolkit/features/refund/refundThunks";
+import { getRecentOrdersByBranchPagin } from "../../../Redux Toolkit/features/order/orderThunks";
 
-const RecentRefunds = ({ branchId }) => {
+const RecentOrders = ({ branchId }) => {
   const dispatch = useDispatch();
-const { refunds, pageInfo,loading,error } = useSelector((state) => state.refund);
-console.log("Refunds state:", refunds);
+const { orders, pageInfo,loading,error } = useSelector((state) => state.order);
+console.log("Orders state:", orders);
 console.log("Page info:", pageInfo);
 // console.log("Loading:", loading);
 // console.log("Error:", error);
@@ -20,10 +20,10 @@ console.log("Page info:", pageInfo);
     setPage(0);
   }, [search, start, end]);
 
-  // Fetch refunds whenever dependencies change
+  // Fetch orders whenever dependencies change
   useEffect(() => {
     if (branchId) {
-      dispatch(getRecentRefundsByBranchPagin({ branchId, page, size, search, start, end }));
+      dispatch(getRecentOrdersByBranchPagin({ branchId, page, size, search, start, end }));
     }
   }, [branchId, page, size, search, start, end, dispatch]);
 
@@ -32,8 +32,7 @@ console.log("Page info:", pageInfo);
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Recent Refunds {`(${pageInfo?.totalElements})`}</h2>
-
+      <h2 className="text-xl font-bold mb-4">Recent Orders {`(${pageInfo?.totalElements})`}</h2>
       {/* Filters */}
       <div className="flex gap-2 mb-4">
         <input
@@ -78,9 +77,9 @@ console.log("Page info:", pageInfo);
           </tr>
         </thead>
         <tbody>
-            {/* {loading && <tr><td colSpan={5}>Loading refunds...</td></tr>} */}
-          { refunds.length > 0 ? (
-            refunds.map((r) => (
+            {/* {loading && <tr><td colSpan={5}>Loading orders...</td></tr>} */}
+          { orders.length > 0 ? (
+            orders.map((r) => (
               <tr key={r.id}>
                 <td className="border p-2">{r.id}</td>
                 <td className="border p-2"><span className="float-end text-neutral-500 text-sm"> #{r?.customer?.id}</span>{r.customer?.fullName || "-"}</td>
@@ -89,21 +88,21 @@ console.log("Page info:", pageInfo);
 
                 <td className="border p-2 text-right">{new Date(r.createdAt).toLocaleString()}</td>
                 <td className="border p-2 text-center">
-Refunded
+Ordered
                 </td>
               </tr>
             ))
           ) : (
             <tr>
               <td colSpan={5} className="text-center p-4 text-gray-500">
-                No refunds found.
+                No orders found.
               </td>
             </tr>
           )}
           {/* {JSON.stringify(pageInfo)} */}
         </tbody>
       </table>
-{/* {JSON.stringify(refunds)} */}
+{/* {JSON.stringify(orders)} */}
       {/* Pagination */}
       {pageInfo && pageInfo.totalPages > 1 && (
         <div className="flex justify-between mt-4 items-center">
@@ -130,4 +129,4 @@ Refunded
   );
 };
 
-export default RecentRefunds;
+export default RecentOrders;
