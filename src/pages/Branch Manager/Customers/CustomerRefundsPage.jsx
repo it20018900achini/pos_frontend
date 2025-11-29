@@ -1,14 +1,14 @@
-// src/components/CustomerOrderPage.jsx
+// src/components/CustomerRefundsPage.jsx
 
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  fetchCustomerOrders,
+  fetchCustomerRefunds,
   setPage,
   setSort,
   setFilters,
   resetFilters
-} from "@/Redux Toolkit/features/customer/customerOrders/customerOrderSlice";
+} from "@/Redux Toolkit/features/customer/customerRefunds/customerRefundSlice";
 import  { Fragment } from "react";
 import {
   Table,
@@ -22,7 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-export default function CustomerOrderPage({ customerId }) {
+export default function CustomerRefundsPage({ customerId }) {
   const dispatch = useDispatch();
 
   const {
@@ -35,12 +35,12 @@ export default function CustomerOrderPage({ customerId }) {
     startDate,
     endDate,
     loading,
-  } = useSelector((state) => state.customerOrder);
+  } = useSelector((state) => state.customerRefund);
 
   // Load data
   useEffect(() => {
     dispatch(
-      fetchCustomerOrders({
+      fetchCustomerRefunds({
         customerId,
         page: number,
         sortBy,
@@ -78,10 +78,9 @@ export default function CustomerOrderPage({ customerId }) {
 
   return (
     <div>
-      <h2 className="text-lg font-bold mb-2">Customer Orders</h2>
 
       {/* ========================= FILTERS ========================= */}
-      <div className="mb-4">
+      <div className="flex gap-3 mb-4">
         {/* Status Filter */}
         <select
           name="status"
@@ -127,9 +126,9 @@ export default function CustomerOrderPage({ customerId }) {
           <Table>
                <TableHeader>
                  <TableRow>
-                   <TableHead>Order ID</TableHead>
+                   <TableHead>Refund ID</TableHead>
                    <TableHead>Date</TableHead>
-                   <TableHead>CashierId</TableHead>
+                   <TableHead>Customer</TableHead>
                    <TableHead>Total</TableHead>
                    <TableHead>Payment Mode</TableHead>
                    <TableHead>Status</TableHead>
@@ -138,38 +137,38 @@ export default function CustomerOrderPage({ customerId }) {
                </TableHeader>
          
                <TableBody>
-                 {content.map((order) => (
-                   <Fragment key={order?.id}>
+                 {content.map((refund) => (
+                   <Fragment key={refund.id}>
                      
                      {/* ✅ ORDER MAIN ROW */}
                      <TableRow>
-                       <TableCell className="font-medium">{order?.id}</TableCell>
+                       <TableCell className="font-medium">{refund.id}</TableCell>
          
                        <TableCell>
-                         {order?.createdAt
-                           ? new Date(order.createdAt).toLocaleString()
+                         {refund.createdAt
+                           ? new Date(refund.createdAt).toLocaleString()
                            : "-"}
                        </TableCell>
          
-                       <TableCell className="text-center">
-                         {order?.cashierId}
+                       <TableCell>
+                         {refund.customer?.fullName || "Walk-in Customer"}
                        </TableCell>
          
                        <TableCell>
-                         LKR {Number(order?.totalAmount || 0).toFixed(2)}
+                         LKR {Number(refund.totalAmount || 0).toFixed(2)}
                        </TableCell>
          
-                       <TableCell>{order?.paymentType || "CASH"}</TableCell>
+                       <TableCell>{refund.paymentType || "CASH"}</TableCell>
          
                        <TableCell>
                          <Badge
                            className={
-                             order.status === "REFUNDED"
+                             refund.status === "REFUNDED"
                                ? "bg-red-500 text-white"
                                : "bg-green-600 text-white"
                            }
                          >
-                           {order.status || "COMPLETE"}
+                           {refund.status || "COMPLETE"}
                          </Badge>
                        </TableCell>
          
@@ -177,7 +176,7 @@ export default function CustomerOrderPage({ customerId }) {
                          {/* <Button
                            variant="ghost"
                            size="icon"
-                           onClick={() => handleViewOrder(order)}
+                           onClick={() => handleViewRefund(refund)}
                          >
                            <EyeIcon className="h-4 w-4" />
                          </Button> */}
@@ -185,10 +184,10 @@ export default function CustomerOrderPage({ customerId }) {
                      </TableRow>
          
                      {/* ✅ ITEM ROW (Product List) */}
-                     {/* <TableRow className="bg-muted/30">
+                     <TableRow className="bg-muted/30">
                        <TableCell colSpan={7} className="py-2">
                          <div className="flex flex-wrap gap-2">
-                           {order.items?.map((it) => (
+                           {refund.items?.map((it) => (
                              <Badge key={it.id} className="text-sm px-3 py-1">
                                {it.product?.name} × {it.quantity}
                                
@@ -196,7 +195,7 @@ export default function CustomerOrderPage({ customerId }) {
                            ))}
                          </div>
                        </TableCell>
-                     </TableRow> */}
+                     </TableRow>
          
                    </Fragment>
                  ))}

@@ -1,18 +1,14 @@
 // import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { StarIcon, PlusIcon, Loader2, UserIcon, ArrowBigLeft } from 'lucide-react';
+import {  Loader2, UserIcon, ArrowBigLeft } from 'lucide-react';
 // import PaymentsDashboard from './customerPayments/PaymentsDashboard';
 // import { PaymentTablePagination } from './customerPayments/PaymentTablePagination';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllCustomers } from '../../../../Redux Toolkit/features/customer/customerThunks';
-import RefundHistory from './RefundHistory';
-import PurchaseHistory from './PurchaseHistory';
+
 import { toast } from 'sonner';
 import CustomerPaymentsPage from './customerPayments/components/CustomerPaymentsPage';
-import CustomerOrderHistory from '../orders/CustomerOrderHistory';
 import CustomerOrdersPage from '../orders/CustomerOrdersPage';
 import CustomerSummary from './customerPayments/components/CustomerSummary';
 import CustomerRefundsPage from '../refunds/CustomerRefundsPage';

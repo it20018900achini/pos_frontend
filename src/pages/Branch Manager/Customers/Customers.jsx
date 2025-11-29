@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Search, ShoppingBag, Phone, Mail, User, Calendar } from "lucide-react";
+import { Search, ShoppingBag, Phone, Mail, User, Calendar, ArrowBigLeft } from "lucide-react";
 import { getStatusColor } from "../../../utils/getStatusColor";
 import { calculateCustomerStats } from "../../cashier/customer/utils/customerUtils";
 import { useSelector } from "react-redux";
@@ -27,8 +27,13 @@ import { getAllCustomers } from "../../../Redux Toolkit/features/customer/custom
 import { clearCustomerOrders } from "../../../Redux Toolkit/features/order/orderSlice";
 import { getOrdersByCustomer } from "../../../Redux Toolkit/features/order/orderThunks";
 import CustomerOrderPage from "./CustomerOrdersPage";
+import CustomerSummary from "./CustomerSummary";
+import CustomerRefundsPage from "./CustomerRefundsPage";
+import CustomerPaymentsPage from "./CustomerPaymentsPage";
 
 const Customers = () => {
+    const [tab,setTab]=useState(0)
+
   // Sample data - in a real app, this would come from an API
   // const initialCustomers = [
   //   {
@@ -320,7 +325,10 @@ const Customers = () => {
           open={isCustomerDetailsOpen}
           onOpenChange={setIsCustomerDetailsOpen}
         >
-          <DialogContent className="h-[93vh] overflow-y-auto ">
+          <DialogContent className=" min-w-[80%]   w-full max-w-fit h-full 
+          md:w-[90vw] md:h-[99vh] 
+          p-6           
+          ">
             <DialogHeader>
               <DialogTitle>Customer Details</DialogTitle>
             </DialogHeader>
@@ -385,8 +393,59 @@ const Customers = () => {
            
             </div>
 
-<div className="w-full h-full overflow-auto"> <CustomerOrderPage customerId={displayCustomer?.id}/>  </div>
-           
+
+<div className="flex w-full justify-between border-t pt-3">
+{
+tab==0&&<h1 className="text-3xl font-bold">Summary</h1>
+}
+{
+tab==1&&<h1 className="text-3xl font-bold">Orders</h1>
+}
+{
+tab==2&&<h1 className="text-3xl font-bold">Refunds</h1>
+}
+{
+tab==3&&<h1 className="text-3xl font-bold">Payments</h1>
+}
+
+        <div className=' md:flex  gap-2'>
+         {tab!==0&&<Button  onClick={()=>{setTab(0)}}  variant="secondary"><ArrowBigLeft/></Button>} 
+        <Button onClick={()=>{setTab(1)}}  variant={tab==1?"secondary":"default"} className="flex items-center gap-2 border">
+          Orders
+        </Button>
+        <Button onClick={()=>{setTab(2)}} variant={tab==2?"secondary":"default"}  className="flex items-center gap-2 border">
+          Refunds
+        </Button>
+        <Button  onClick={()=>{setTab(3)}}  variant={tab==3?"secondary":"default"}  className="flex items-center gap-2 border">
+          Customer Payments
+        </Button>
+        </div>
+</div>
+
+        
+
+
+        
+
+        {tab==0 &&<>
+         <div className="w-full h-full overflow-auto">
+        <CustomerSummary customerId={displayCustomer?.id}/>
+      </div>
+        </>}
+
+        {tab==1 &&<div className="w-full h-full overflow-auto"> <CustomerOrderPage customerId={displayCustomer?.id}/>  </div>}
+
+        {
+          tab==2 &&<>
+        <div className="w-full h-full overflow-auto"><CustomerRefundsPage customerId={displayCustomer?.id}/></div>
+          </>
+        }
+        {
+          tab==3?
+                        <div className="w-full h-full overflow-auto"><CustomerPaymentsPage customer={displayCustomer}/></div>
+                        :""
+        }
+
 
 
              {/* <Card className="w-full overflow-x-auto">
