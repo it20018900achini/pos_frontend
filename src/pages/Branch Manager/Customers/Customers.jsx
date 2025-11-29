@@ -26,6 +26,7 @@ import { useDispatch } from "react-redux";
 import { getAllCustomers } from "../../../Redux Toolkit/features/customer/customerThunks";
 import { clearCustomerOrders } from "../../../Redux Toolkit/features/order/orderSlice";
 import { getOrdersByCustomer } from "../../../Redux Toolkit/features/order/orderThunks";
+import CustomerOrderPage from "./CustomerOrdersPage";
 
 const Customers = () => {
   // Sample data - in a real app, this would come from an API
@@ -323,7 +324,7 @@ const Customers = () => {
             <DialogHeader>
               <DialogTitle>Customer Details</DialogTitle>
             </DialogHeader>
-            <div className=" py-4 space-y-5">
+            <div className=" py-4 space-y-2">
               {/* Customer Info */}
               <>
                 <CardHeader>
@@ -332,7 +333,7 @@ const Customers = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-1">
                     <div className="flex justify-between">
                       <div className="flex items-center gap-3">
                         <User className="h-5 w-5 text-gray-500" />
@@ -379,7 +380,16 @@ const Customers = () => {
               </>
 
               {/* Order History */}
-              <Card className="">
+             
+
+           
+            </div>
+
+<div className="w-full h-full overflow-auto"> <CustomerOrderPage customerId={displayCustomer?.id}/>  </div>
+           
+
+
+             {/* <Card className="w-full overflow-x-auto">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold">
                     Order History
@@ -421,10 +431,7 @@ const Customers = () => {
                     </TableBody>
                   </Table>
                 </CardContent>
-              </Card>
-
-           
-            </div>
+              </Card> */}
             <DialogFooter>
               <Button onClick={() => setIsCustomerDetailsOpen(false)}>
                 Close
