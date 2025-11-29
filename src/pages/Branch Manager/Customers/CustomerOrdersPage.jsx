@@ -121,7 +121,7 @@ export default function CustomerOrderPage({ customerId }) {
       {loading ? (
         <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
         <Loader2 className="animate-spin h-8 w-8 mb-4" />
-        <p>Loading customer payments...</p>
+        <p>Loading customer orders...</p>
       </div>
       ) : (
           <Table>

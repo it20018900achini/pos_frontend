@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { getCustomerSummaryById } from "@/Redux Toolkit/features/customerSummary/customerSummaryThunks";
 import { Separator } from "@/components/ui/separator";
+import { Loader2 } from "lucide-react";
 
 const CustomerSummary = ({ customerId }) => {
   const dispatch = useDispatch();
@@ -18,7 +19,10 @@ const CustomerSummary = ({ customerId }) => {
     if (customerId) dispatch(getCustomerSummaryById(customerId));
   }, [dispatch, customerId]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
+        <Loader2 className="animate-spin h-8 w-8 mb-4" />
+        <p>Loading customer summary...</p>
+      </div>;
   if (error) return <p>Error: {error}</p>;
   if (!summary) return <p>No summary available</p>;
 
