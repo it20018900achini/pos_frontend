@@ -88,7 +88,7 @@ console.log("Page info:", pageInfo);
 
                 <td className="border p-2 text-right">{new Date(r.createdAt).toLocaleString()}</td>
                 <td className="border p-2 text-center">
-Ordered
+{JSON.stringify(r?.status)}
                 </td>
               </tr>
             ))
