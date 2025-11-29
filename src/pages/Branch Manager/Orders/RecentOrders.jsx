@@ -125,6 +125,22 @@ Ordered
           </button>
         </div>
       )}
+      <div className="text-4xl fixed bottom-6 right-8">
+
+{loading&&<div  class="flex items-center gap-2">
+  <span class="sr-only">Loading…</span>
+
+  <div class="flex items-end space-x-1">
+    <span class="w-2.5 h-2.5 rounded-full bg-green-700 animate-bounce" style={{animationDelay:"0s"}}></span>
+    <span class="w-2.5 h-2.5 rounded-full bg-green-700 animate-bounce" style={{animationDelay:"0.12s"}}></span>
+    <span class="w-2.5 h-2.5 rounded-full bg-green-700 animate-bounce" style={{animationDelay:"0.24s"}}></span>
+  </div>
+</div>}
+        
+
+
+
+      </div>
     </div>
   );
 };
