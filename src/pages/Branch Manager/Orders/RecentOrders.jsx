@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getRecentOrdersByBranchPagin } from "../../../Redux Toolkit/features/order/orderThunks";
+import { Loader2 } from "lucide-react";
 
 const RecentOrders = ({ branchId }) => {
   const dispatch = useDispatch();
@@ -93,9 +94,16 @@ console.log("Page info:", pageInfo);
               </tr>
             ))
           ) : (
-            <tr>
+            !loading?<tr>
               <td colSpan={5} className="text-center p-4 text-gray-500">
                 No orders found.
+              </td>
+            </tr>:<tr>
+              <td colSpan={5}>
+                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
+        <Loader2 className="animate-spin h-8 w-8 mb-4" />
+        <p>Loading orders...</p>
+      </div>
               </td>
             </tr>
           )}
