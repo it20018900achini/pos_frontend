@@ -15,6 +15,9 @@ import CustomerSummary from "./CustomerSummary";
 
 export default function CustomerPaymentsPage(customer) {
   const dispatch = useDispatch();
+  
+    const { branch } = useSelector((state) => state.branch);
+    const branchId = branch?.id;
   const { payments, loading, totalPages, currentPage } = useSelector(
     (state) => state.customerPayment
   );
@@ -45,7 +48,7 @@ export default function CustomerPaymentsPage(customer) {
       dispatch(updatePayment({ id: editing.id, payment: data }));
       setEditing(null);
     } else {
-      dispatch(createPayment(data));
+      dispatch(createPayment({...data,branchId}));
     }
   };
 

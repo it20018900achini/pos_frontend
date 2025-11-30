@@ -33,7 +33,7 @@ console.log("Page info:", pageInfo);
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Recent Refunds {`(${pageInfo?.totalElements})`}</h2>
+      <h2 className="text-xl font-bold mb-4">Recent Refunds {`(${pageInfo?.totalElements==undefined?"...":pageInfo?.totalElements})`}</h2>
 
       {/* Filters */}
       <div className="flex gap-2 mb-4">

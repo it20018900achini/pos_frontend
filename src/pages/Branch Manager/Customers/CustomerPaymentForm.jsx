@@ -16,59 +16,47 @@ import {
   SelectContent,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-// import {  useSelector } from "react-redux";
-// import { getCustomerSummaryById } from "../../../../../../Redux Toolkit/features/customerSummary/customerSummaryThunks";
 
 export default function CustomerPaymentForm({
   initialData,
   onSave,
   onCancel,
   customer,
-  user
+  user,
 }) {
-
   const [form, setForm] = useState({
-    customerId: customer?.customer?.id,
-    cashierId:user?.id,
+    customerId: customer?.customer?.id || "",
+    cashierId: user?.id || "",
     amount: "",
     paymentMethod: "CASH",
     reference: "",
     note: "",
   });
+
   const [isOpen, setIsOpen] = useState(false);
 
   // Fill form when editing
   useEffect(() => {
     if (initialData) {
-      setForm(initialData);
+      setForm({
+        ...initialData,
+        customerId: initialData.customerId || customer?.customer?.id,
+        cashierId: initialData.cashierId || user?.id,
+      });
       setIsOpen(true);
     }
-  }, [initialData]);
-
-  // Fetch user profile
-  // useEffect(() => {
-  //   const jwt = localStorage.getItem("jwt");
-  //   if (jwt && !userProfile) dispatch(getUserProfile(jwt));
-  //    setUserData(res.user);
-  // }, [dispatch, userProfile]);
+  }, [initialData, customer, user]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(form);
     resetForm();
-
-// dispatch(getCustomerSummaryById(customerId))
-//  const dispatch = useDispatch();
-  // const { summary, loading, error } = useSelector(
-  //   (state) => state.customerSummary
-  // );
-
   };
 
   const resetForm = () => {
     setForm({
-      customerId: "",
-      cashierId: "",
+      customerId: customer?.customer?.id || "",
+      cashierId: user?.id || "",
       amount: "",
       paymentMethod: "CASH",
       reference: "",
@@ -81,12 +69,11 @@ export default function CustomerPaymentForm({
   return (
     <>
       {!initialData && (
-        <div className="flex justify-end">    <Button onClick={() => setIsOpen(true)} className="mb-4">
-          Add Payment
-        </Button></div>
-        
-        
-    
+        <div className="flex justify-end">
+          <Button onClick={() => setIsOpen(true)} className="mb-4">
+            Add Payment
+          </Button>
+        </div>
       )}
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -96,27 +83,12 @@ export default function CustomerPaymentForm({
               {initialData ? "Edit Payment" : "Add Payment"}
             </DialogTitle>
           </DialogHeader>
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div>
-              <Input
-                type="number"
-                value={form.customerId}
-                onChange={(e) => setForm({ ...form, customerId: e.target.value })}
-                required
-                className="hidden"
-              />
-            </div>
-            <div>
-              <Label>Cashier ID</Label>
-              <Input
-                type="number"
-                value={form.cashierId}
-                onChange={(e) => setForm({ ...form, cashierId: e.target.value })}
-                required
-                                className="hidden"
 
-              />
-            </div>
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            {/* Hidden IDs using type="hidden" to avoid browser errors */}
+            <input type="hidden" value={form.customerId} name="customerId" />
+            <input type="hidden" value={form.cashierId} name="cashierId" />
+
             <div>
               <Label>Amount</Label>
               <Input
@@ -124,8 +96,10 @@ export default function CustomerPaymentForm({
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: e.target.value })}
                 required
+                min={0}
               />
             </div>
+
             <div>
               <Label>Payment Method</Label>
               <Select
@@ -144,6 +118,7 @@ export default function CustomerPaymentForm({
                 </SelectContent>
               </Select>
             </div>
+
             <div>
               <Label>Reference</Label>
               <Input
@@ -152,14 +127,14 @@ export default function CustomerPaymentForm({
                 onChange={(e) => setForm({ ...form, reference: e.target.value })}
               />
             </div>
+
             <div>
               <Label>Note</Label>
-              {/* <Input
-                type="text"
-              /> */}
-              <textarea className="border w-full" 
+              <textarea
+                className="border w-full p-2 rounded"
                 value={form.note}
-                onChange={(e) => setForm({ ...form, note: e.target.value })}></textarea>
+                onChange={(e) => setForm({ ...form, note: e.target.value })}
+              />
             </div>
 
             <DialogFooter>

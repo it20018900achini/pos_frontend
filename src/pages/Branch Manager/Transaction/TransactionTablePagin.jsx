@@ -1,178 +1,327 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchTransactions, fetchAllTransactions } from "@/Redux Toolkit/features/transactions/transactionsSlice";
-// import { getRecentRefundsByBranchPagin } from "@/Redux Toolkit/features/transactions/transactionsSlice";
+import {
+  fetchTransactions,
+  fetchAllTransactions,
+} from "@/Redux Toolkit/features/transactions/transactionsSlice";
 
-import Pagination from "./Pagination";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { format } from "date-fns";
+import { ArrowDownToLine, Loader2, Download } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 function toCsv(rows) {
   if (!rows || rows.length === 0) return "";
   const headers = Object.keys(rows[0]);
-  const csv = [
+  return [
     headers.join(","),
-    ...rows.map(r => headers.map(h => {
-      const v = r[h];
-      if (v === null || v === undefined) return "";
-      const s = typeof v === "string" ? v : String(v);
-      // escape quotes
-      return `"${s.replace(/"/g, '""')}"`;
-    }).join(","))
+    ...rows.map((r) =>
+      headers
+        .map((h) => `"${String(r[h] ?? "").replace(/"/g, '""')}"`)
+        .join(",")
+    ),
   ].join("\n");
-  return csv;
 }
 
 export default function TransactionTablePagin() {
   const dispatch = useDispatch();
+
+  const { branch } = useSelector((state) => state.branch);
+  const branchId = branch?.id;
   const {
-    loading, content, page, size, totalPages, totalElements, error,
-    allLoading, allContent
-  } = useSelector(state => state.transactions);
+    loading,
+    content,
+    page,
+    totalPages,
+    totalElements,
+    error,
+    allLoading,
+    allContent,
+  } = useSelector((s) => s.transactions);
 
-  // local filters
-  const [branchIdsInput, setBranchIdsInput] = useState("1,2"); // default example
-  const [startDateInput, setStartDateInput] = useState("");
-  const [endDateInput, setEndDateInput] = useState("");
-  const [paymentTypeInput, setPaymentTypeInput] = useState("");
-  const [currentPage, setCurrentPage] = useState(0);
+  // filters
+  const [branchIds, setBranchIds] = useState(`${String(branchId)}`);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [paymentType, setPaymentType] = useState("");
   const [pageSize, setPageSize] = useState(20);
-
   useEffect(() => {
-    // initial load
-    handleFetch(currentPage, pageSize);
+    if (branchId !== undefined) {
+      setBranchIds(String(branchId)); // convert number to string
+    }
+  }, [branchId]);
+  useEffect(() => {
+    handleFetch(0, pageSize);
+    // setBranchIds(branchId)
     // eslint-disable-next-line
-  }, []);
+  }, [branchId]);
 
-  const buildDatesForApi = (start, end) => {
-    // API expects full ISO local date-time (e.g. 2025-11-01T00:00:00)
-    const startIso = start ? `${start}T00:00:00` : null;
-    const endIso = end ? `${end}T23:59:59` : null;
+  const buildDates = () => {
+    const startIso = startDate ? `${startDate}T00:00:00` : null;
+    const endIso = endDate ? `${endDate}T23:59:59` : null;
     return { startIso, endIso };
-  }
+  };
 
   const handleFetch = (p = 0, s = pageSize) => {
-    if (!branchIdsInput) {
-      alert("Enter branchIds (comma separated)");
-      return;
-    }
-    const { startIso, endIso } = buildDatesForApi(startDateInput, endDateInput);
-    setCurrentPage(p);
-    setPageSize(s);
-    dispatch(fetchTransactions({
-      branchIds: branchIdsInput,
-      startDate: startIso,
-      endDate: endIso,
-      paymentType: paymentTypeInput || undefined,
-      page: p,
-      size: s
-    }));
+    const { startIso, endIso } = buildDates();
+    dispatch(
+      fetchTransactions({
+        branchIds,
+        startDate: startIso,
+        endDate: endIso,
+        paymentType: paymentType || undefined,
+        page: p,
+        size: s,
+      })
+    );
   };
 
   const handleFetchAll = () => {
-    if (!branchIdsInput) {
-      alert("Enter branchIds (comma separated)");
-      return;
-    }
-    const { startIso, endIso } = buildDatesForApi(startDateInput, endDateInput);
-    dispatch(fetchAllTransactions({
-      branchIds: branchIdsInput,
-      startDate: startIso,
-      endDate: endIso,
-      paymentType: paymentTypeInput || undefined
-    }));
+    const { startIso, endIso } = buildDates();
+    dispatch(
+      fetchAllTransactions({
+        branchIds,
+        startDate: startIso,
+        endDate: endIso,
+        paymentType: paymentType || undefined,
+      })
+    );
   };
 
-  const downloadCsv = (rows, filename = "transactions.csv") => {
+  const downloadCsv = (rows, filename) => {
     const csv = toCsv(rows);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
+    const el = document.createElement("a");
+    el.href = url;
+    el.download = filename;
+    el.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div style={{ padding: 20, maxWidth: 1100, margin: "0 auto" }}>
-      <h2>Merged Transactions (Orders / Refunds / Customer Payments)</h2>
+    <div className="max-w-7xl mx-auto p-6 space-y-6">
+      {/* 🔥 Filters Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Filters</CardTitle>
+        </CardHeader>
 
-      <div style={{ display: "flex", gap: 12, marginBottom: 12, alignItems: "center" }}>
-        <label>
-          Branch IDs (comma):<br/>
-          <input value={branchIdsInput} onChange={e => setBranchIdsInput(e.target.value)} placeholder="1,2" />
-        </label>
+        <CardContent className="grid grid-cols-1 md:grid-cols-5 gap-4">
 
-        <label>
-          Start date (YYYY-MM-DD):<br/>
-          <input value={startDateInput} onChange={e => setStartDateInput(e.target.value)} placeholder="2025-11-01" />
-        </label>
 
-        <label>
-          End date (YYYY-MM-DD):<br/>
-          <input value={endDateInput} onChange={e => setEndDateInput(e.target.value)} placeholder="2025-11-30" />
-        </label>
+          <div>
+            <Input
+              value={branchIds}
+              onChange={(e) => setBranchIds(e.target.value)}
+              placeholder="1,2"
+              className="hidden"
+            />
+            <label className="text-sm font-medium">Start Date</label>
+            <Input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </div>
 
-        <label>
-          Payment Type:<br/>
-          <input value={paymentTypeInput} onChange={e => setPaymentTypeInput(e.target.value)} placeholder="CASH" />
-        </label>
+          <div>
+            <label className="text-sm font-medium">End Date</label>
+            <Input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <button onClick={() => handleFetch(0, pageSize)}>Search</button>
-          <button onClick={handleFetchAll} disabled={allLoading}>{allLoading ? "Loading..." : "Fetch All"}</button>
+          <div>
+            <label className="text-sm font-medium">Payment Type</label>
+            <Input
+              value={paymentType}
+              onChange={(e) => setPaymentType(e.target.value)}
+              placeholder="CASH"
+            />
+          </div>
+
+          <div className="flex items-end gap-2">
+            <Button onClick={() => handleFetch(0, pageSize)}>Search</Button>
+            <Button
+              variant="secondary"
+              disabled={allLoading}
+              onClick={handleFetchAll}
+            >
+              {allLoading ? (
+                <Loader2 className="animate-spin w-4 h-4" />
+              ) : (
+                "Fetch All"
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 🔥 Header Section */}
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-muted-foreground">
+          Total Records: {totalElements}
+        </div>
+
+        <div className="flex gap-3">
+
+          {/* Page size select */}
+          <Select
+            value={String(pageSize)}
+            onValueChange={(v) => {
+              const size = Number(v);
+              setPageSize(size);
+              handleFetch(0, size);
+            }}
+          >
+            <SelectTrigger className="w-28">
+              <SelectValue placeholder="Page size" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+              <SelectItem value="100">100</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* CSV Download Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                <Download className="w-4 h-4 mr-1" /> Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                onClick={() =>
+                  downloadCsv(content, `transactions_page_${page}.csv`)
+                }
+              >
+                Page CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => downloadCsv(allContent, `transactions_all.csv`)}
+              >
+                All CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      <div style={{ marginBottom: 8 }}>
-        <label>Page size:
-          <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); handleFetch(0, Number(e.target.value)); }}>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
-        </label>
-        <span style={{ marginLeft: 12 }}>Total: {totalElements} items</span>
-        <button style={{ marginLeft: 12 }} onClick={() => downloadCsv(content, `transactions_page_${currentPage}.csv`)} disabled={!content || content.length===0}>Download Page CSV</button>
-        <button style={{ marginLeft: 8 }} onClick={() => downloadCsv(allContent, `transactions_all.csv`)} disabled={!allContent || allContent.length===0}>Download All CSV</button>
+      {/* 🔥 Transactions Table */}
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Type</TableHead>
+                <TableHead>ID</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Cashier</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Payment</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created</TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan="8" className="text-center p-6">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+                  </TableCell>
+                </TableRow>
+              ) : content?.length > 0 ? (
+                content.map((row) => (
+                  <TableRow key={`${row.type}-${row.id}`}>
+                    <TableCell>{row.type}</TableCell>
+                    <TableCell>{row.id}</TableCell>
+                    <TableCell>{row.customerName}</TableCell>
+                    <TableCell>{row.cashierName}</TableCell>
+                    <TableCell>{row.amount}</TableCell>
+                    <TableCell>{row.paymentMethod}</TableCell>
+                    <TableCell>{row.status}</TableCell>
+                    <TableCell>
+                      {row.createdAt
+                        ? format(
+                            new Date(row.createdAt),
+                            "yyyy-MM-dd HH:mm:ss"
+                          )
+                        : ""}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan="8" className="text-center py-6">
+                    No Results
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* 🔥 Pagination */}
+      <div className="flex justify-center gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={page <= 0}
+          onClick={() => handleFetch(page - 1, pageSize)}
+        >
+          Prev
+        </Button>
+
+        <div className="px-4 py-2 text-sm">
+          Page {page + 1} / {totalPages}
+        </div>
+
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={page >= totalPages - 1}
+          onClick={() => handleFetch(page + 1, pageSize)}
+        >
+          Next
+        </Button>
       </div>
-
-      {loading ? <p>Loading...</p> : null}
-      {error ? <p style={{ color: "red" }}>{JSON.stringify(error)}</p> : null}
-
-      <table border="1" cellPadding="6" style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>ID</th>
-            <th>Customer</th>
-            <th>Cashier</th>
-            <th>Amount</th>
-            <th>Payment</th>
-            <th>Status</th>
-            <th>Created</th>
-          </tr>
-        </thead>
-        <tbody>
-          {content && content.length > 0 ? content.map((row) => (
-            <tr key={`${row.type}-${row.id}`}>
-              <td>{row.type}</td>
-              <td>{row.id}</td>
-              <td>{row.customerName}</td>
-              <td>{row.cashierName}</td>
-              <td>{row.amount ?? ""}</td>
-              <td>{row.paymentMethod}</td>
-              <td>{row.status}</td>
-              <td>{row.createdAt ? format(new Date(row.createdAt), "yyyy-MM-dd HH:mm:ss") : ""}</td>
-            </tr>
-          )) : (
-            <tr><td colSpan="8" style={{ textAlign: "center" }}>No results</td></tr>
-          )}
-        </tbody>
-      </table>
-
-      <Pagination page={page || currentPage} totalPages={totalPages} onChange={(p) => { handleFetch(p, pageSize); }} />
     </div>
   );
 }
