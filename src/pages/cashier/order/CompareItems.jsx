@@ -79,7 +79,7 @@ export default function CompareItems({ data }) {
         const getColor = (score) => {
           if (score === 0) return "bg-red-400 text-white";
           if (score === 0.5) return "bg-yellow-300 text-black";
-          return "bg-green-400 text-white";
+          return "bg-red-400 text-white";
         };
 
         const color = getColor(score);

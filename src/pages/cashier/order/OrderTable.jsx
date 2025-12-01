@@ -86,12 +86,19 @@ const OrderTable = ({
                 >
                   Order
                 </Button>
-                <Button
+                {order.hasReturnCount>0?<Button
                   onClick={() => handleReturnOrder(order)}
                   size="sm"
                 >
                   Refunds
-                </Button>
+                </Button>:<Button
+                  size="sm"
+                  varient="gost"
+                  disabled="true"
+                >
+                  Refunds
+                </Button>}
+                
                 
               </TableCell>
             </TableRow>
