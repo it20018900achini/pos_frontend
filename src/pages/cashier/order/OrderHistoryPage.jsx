@@ -274,11 +274,11 @@ const OrderHistoryPage = () => {
           <DialogContent className="bg-white max-h-screen overflow-y-scroll max-w-[800px]">
             <DialogHeader><DialogTitle>Refund Details - Invoice</DialogTitle></DialogHeader>
 <CompareItems data={selectedOrderRetuen?.orderReturns}/>
-{/* <pre>
+ {/* <pre> */}
 
-{JSON.stringify(selectedOrderRetuen?.orderReturns[0]?.items,null,2)}
-{JSON.stringify(selectedOrderRetuen?.orderReturns[0]?.order?.items,null,2)}
-</pre> */}
+{/* {JSON.stringify(selectedOrderRetuen,null,2)}</pre>  */}
+{/*{JSON.stringify(selectedOrderRetuen?.orderReturns[0]?.order?.items,null,2)}
+*/}
 {
   selectedOrderRetuen?.orderReturns?.length > 1
     ? selectedOrderRetuen.orderReturns.map((item, index) => (

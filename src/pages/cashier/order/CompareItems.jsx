@@ -2,6 +2,8 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import OrderInformation from "./OrderDetails/OrderInformation";
+import { format } from "date-fns";
+import { Timer } from "lucide-react";
 
 export default function CompareItems({ data }) {
   const orderItems = data[0].order.items;
@@ -37,8 +39,9 @@ export default function CompareItems({ data }) {
             </div>
           </CardContent>
         </Card>
-
-       <Card className={'border-red-600'}>
+<div>
+    
+       <Card className={'border-red-600 p-0'}>
           <CardContent className="p-4">
             <h3 className="font-semibold mb-2">Customer Information</h3>
             <div className="space-y-1 text-sm">
@@ -59,6 +62,16 @@ export default function CompareItems({ data }) {
             </div>
           </CardContent>
         </Card>
+        <Card className="relative mt-1 bg-red-500 text-white px-2">
+            #R ID {data[0]?.id}<br/>
+            LKR {data[0]?.totalAmount.toFixed(2)}<br/>
+
+<div className="absolute bottom-1 right-2 flex gap-1 text-sm items-center justify-end ">
+        <Timer className="w-3 h-3"/> {format(new Date(data[0]?.createdAt), "yyyy-MM-dd hh:mm a")  }
+
+    </div>           
+        </Card>
+</div>
       </div>
       {orderItems.map((orderItem) => {
         const matched = items.find(
