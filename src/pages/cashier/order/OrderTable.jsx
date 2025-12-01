@@ -72,7 +72,7 @@ const OrderTable = ({
                       : "bg-green-600 text-white"
                   }
                 >
-                  {order.hasReturnCount>0? "REFUNDED": "COMPLETE"}
+                  {order.hasReturnCount>0? "REFUNDED": "COMPLETE"}-
                 </Badge>
               </TableCell>
 
