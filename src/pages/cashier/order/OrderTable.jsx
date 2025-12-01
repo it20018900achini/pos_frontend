@@ -67,12 +67,12 @@ const OrderTable = ({
               <TableCell>
                 <Badge
                   className={
-                    order.status === "REFUNDED"
+                    order.hasReturnCount>0
                       ? "bg-red-500 text-white"
                       : "bg-green-600 text-white"
                   }
                 >
-                  {order.status || "COMPLETE"}
+                  {order.hasReturnCount>0? "REFUNDED": "COMPLETE"}
                 </Badge>
               </TableCell>
 
