@@ -79,7 +79,7 @@ export default function CompareItems({ data }) {
         const getColor = (score) => {
           if (score === 0) return "bg-red-400 text-white";
           if (score === 0.5) return "bg-yellow-300 text-black";
-          return "bg-red-400 text-white";
+          return "bg-red-500 text-white";
         };
 
         const color = getColor(score);
@@ -97,10 +97,10 @@ export default function CompareItems({ data }) {
      <div className="">
       <div>Ordered Price: LKR {orderItem?.product?.sellingPrice.toFixed(2)}</div>
     </div>
-      {matched?.quantity>0&&<div className={`px-2 ${matched?.quantity>0?color:""}`}>
+      {matched?.quantity>0?<div className={`px-2 ${matched?.quantity>0?color:""}`}>
         
         Refunded {matched?.quantity ? matched?.quantity : 0} from {orderItem.quantity}
-      </div>}
+      </div>:"Quantity: "+orderItem.quantity}
     </div>
   </CardHeader>
   {/* <CardContent className="flex flex-col md:flex-row md:justify-between md:items-center">
