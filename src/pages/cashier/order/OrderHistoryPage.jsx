@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import OrderDetails from "./OrderDetails/OrderDetails";
 
 import { getOrdersByCashier } from "@/Redux Toolkit/features/order/orderThunks";
 import { handleDownloadOrderPDF } from "./pdf/pdfUtils";
+import CompareItems from "./CompareItems";
 
 const OrderHistoryPage = () => {
   const dispatch = useDispatch();
@@ -22,6 +23,10 @@ const OrderHistoryPage = () => {
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderDetailsDialog, setShowOrderDetailsDialog] = useState(false);
+
+  
+  const [selectedOrderRetuen, setSelectedOrderReturn] = useState(null);
+  const [showOrderReturnDetailsDialog, setShowOrderDetailsReturnDialog] = useState(false);
 
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
@@ -66,6 +71,11 @@ const OrderHistoryPage = () => {
   const handleViewOrder = (order) => {
     setSelectedOrder(order);
     setShowOrderDetailsDialog(true);
+  };
+
+  const handleReturnOrder = (order) => {
+    setSelectedOrderReturn(order);
+    setShowOrderDetailsReturnDialog(true);
   };
 
   // Ultra-compact thermal receipt printing
@@ -233,6 +243,7 @@ const OrderHistoryPage = () => {
             <OrderTable
               orders={orders}
               handleViewOrder={handleViewOrder}
+              handleReturnOrder={handleReturnOrder}
               handlePrintInvoice={handlePrintInvoice}
               handleInitiateReturn={handleInitiateReturn}
             />
@@ -254,6 +265,34 @@ const OrderHistoryPage = () => {
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={handleDownloadPDF}><Download className="h-4 w-4 mr-2" />Download PDF</Button>
               <Button onClick={() => handlePrintInvoice(selectedOrder)}><PrinterIcon className="h-4 w-4 mr-2" />Print Invoice</Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
+      <Dialog open={showOrderReturnDetailsDialog} onOpenChange={setShowOrderDetailsReturnDialog}>
+        {selectedOrderRetuen && (
+          <DialogContent className="bg-white max-h-screen overflow-y-scroll max-w-[800px]">
+            <DialogHeader><DialogTitle>Refund Details - Invoice</DialogTitle></DialogHeader>
+<CompareItems data={selectedOrderRetuen?.orderReturns}/>
+{/* <pre>
+
+{JSON.stringify(selectedOrderRetuen?.orderReturns[0]?.items,null,2)}
+{JSON.stringify(selectedOrderRetuen?.orderReturns[0]?.order?.items,null,2)}
+</pre> */}
+{
+  selectedOrderRetuen?.orderReturns?.length > 1
+    ? selectedOrderRetuen.orderReturns.map((item, index) => (
+        <Button key={index}>
+          {index}
+        </Button>
+      ))
+    : <Fragment>
+
+    </Fragment>
+}
+
+            <DialogFooter className="gap-2">
+              {/* <Button onClick={() => handlePrintInvoice(selectedOrder)}><PrinterIcon className="h-4 w-4 mr-2" />Print Invoice</Button> */}
             </DialogFooter>
           </DialogContent>
         )}

@@ -15,6 +15,7 @@ import { EyeIcon } from "lucide-react";
 const OrderTable = ({
   orders = [],
   handleViewOrder,
+  handleReturnOrder,
   handlePrintInvoice,
   handleInitiateReturn,
 }) => {
@@ -45,7 +46,7 @@ const OrderTable = ({
           <Fragment key={order.id}>
             
             {/* ✅ ORDER MAIN ROW */}
-            <TableRow>
+            <TableRow className={order.hasReturnCount>0? "bg-red-100 hover:bg-red-200": ""}>
               <TableCell className="font-medium">{order.id}</TableCell>
 
               <TableCell>
@@ -72,23 +73,31 @@ const OrderTable = ({
                       : "bg-green-600 text-white"
                   }
                 >
-                  {order.hasReturnCount>0? "REFUNDED": "COMPLETE"}-
+                  {order.hasReturnCount>0? "REFUNDED": "COMPLETE"}
                 </Badge>
               </TableCell>
 
               <TableCell className="text-right">
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  size="sm"
                   onClick={() => handleViewOrder(order)}
+                  className="mr-1"
+
                 >
-                  <EyeIcon className="h-4 w-4" />
+                  Order
                 </Button>
+                <Button
+                  onClick={() => handleReturnOrder(order)}
+                  size="sm"
+                >
+                  Refunds
+                </Button>
+                
               </TableCell>
             </TableRow>
 
             {/* ✅ ITEM ROW (Product List) */}
-            <TableRow className="bg-muted/30">
+            {/* <TableRow className="bg-muted/30">
               <TableCell colSpan={7} className="py-2">
                 <div className="flex flex-wrap gap-2">
                   {order.items?.map((it) => (
@@ -103,7 +112,7 @@ const OrderTable = ({
                   ))}
                 </div>
               </TableCell>
-            </TableRow>
+            </TableRow> */}
 
           </Fragment>
         ))}
