@@ -183,11 +183,12 @@ const ReturnMode = ({ showPaymentDialog, setShowPaymentDialog, selectedOrder }) 
         cashierId: 13,
         orderId: selectedOrder.id,
         customer: selectedOrder.customer,
-        items: todos.map((i) => ({
-          productId: i.id,
-          quantity: i.quantity,
-          total: i.sellingPrice * i.quantity,
-        })),
+        items: todos.filter(i => Number(i.quantity) > 0)
+  .map(i => ({
+    productId: i.id,
+    quantity: i.quantity,
+    total: i.sellingPrice * i.quantity,
+  })),
         note: "",
       };
 
