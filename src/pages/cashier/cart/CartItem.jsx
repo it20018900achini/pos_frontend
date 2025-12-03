@@ -17,6 +17,13 @@ const CartItem = ({ item, updateCartItemQuantity, removeFromCart }) => {
 
   const handleIncrease = () => updateCartItemQuantity(item.id, item.quantity + 1);
 
+  const handleChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value) && value > 0) {
+      updateCartItemQuantity(item.id, value);
+    }
+  };
+
   return (
     <Card key={item.id} className="border-l-4 border-l-green-700">
       <CardContent className="p-3">
@@ -44,9 +51,14 @@ const CartItem = ({ item, updateCartItemQuantity, removeFromCart }) => {
                 <Minus className="w-4 h-4" />
               </Button>
 
-              <span className="px-3 py-1 text-sm font-medium min-w-[3rem] text-center">
-                {item.quantity}
-              </span>
+              {/* Input field for quantity */}
+              <input
+                type="number"
+                min="1"
+                value={item.quantity}
+                onChange={handleChange}
+                className="w-12 text-center py-1 border-none focus:ring-0"
+              />
 
               <Button
                 aria-label="Increase quantity"
