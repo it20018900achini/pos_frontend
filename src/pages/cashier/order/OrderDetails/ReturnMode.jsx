@@ -164,6 +164,7 @@ const ReturnMode = ({ showPaymentDialog, setShowPaymentDialog, selectedOrder }) 
 
     if (e.key === "Escape") {
       setShowPaymentDialog(false);
+      
     }
   };
 
@@ -305,15 +306,22 @@ const ReturnMode = ({ showPaymentDialog, setShowPaymentDialog, selectedOrder }) 
         </div>
 
         <DialogFooter className="mt-4 flex gap-2">
-          <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
+          <Button variant="outline" onClick={() => {setShowPaymentDialog(false);
+
+            setTodos(availableItems);
+          }}>
             Cancel
           </Button>
-          <Button
+          {totalAmount>0?<Button
             onClick={processPayment}
             disabled={loading || errors.cash || errors.credit || errors.totalMismatch}
           >
             {loading ? "Processing..." : "Complete Refund"}
-          </Button>
+          </Button>:<Button
+            disabled={true}
+          >
+            {loading ? "Processing..." : "Complete Refund"}
+          </Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>
