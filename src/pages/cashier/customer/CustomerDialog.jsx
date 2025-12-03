@@ -34,15 +34,15 @@ const CustomerDialog = ({ showCustomerDialog, setShowCustomerDialog }) => {
   const handleCustomerSelect = (customer) => {
     dispatch(setSelectedCustomer(customer));
     setShowCustomerDialog(false);
-    toast({
-      title: "Customer Selected",
-      description: `${customer.fullName} selected for this order`,
-    });
+    // toast({
+    //   title: "Customer Selected",
+    //   description: `${customer.fullName} selected for this order`,
+    // });
   };
 
   return (
     <Dialog open={showCustomerDialog} onOpenChange={setShowCustomerDialog}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Select Customer</DialogTitle>
         </DialogHeader>
