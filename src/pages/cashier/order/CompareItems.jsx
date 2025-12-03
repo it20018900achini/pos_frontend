@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { Timer } from "lucide-react";
+import { Badge } from "../../../components/ui/badge";
 
 // -------------------- SUMMARY CARD --------------------
 // -------------------- SUMMARY CARD WITH PRODUCT TOTALS --------------------
@@ -46,7 +47,7 @@ function SummaryCard({ dataSelected }) {
   });
 
   return (
-    <Card className="p-4 border-purple-600 space-y-4">
+    <Card className="p-4 border-red-600 space-y-4">
       <CardHeader>
         <CardTitle className="text-xl font-bold">Summary Overview</CardTitle>
       </CardHeader>
@@ -109,7 +110,7 @@ function SummaryCard({ dataSelected }) {
           <div className="space-y-1 text-sm">
             {Object.values(productTotals).map((p, idx) => (
               <div key={idx} className="flex justify-between border-b py-1">
-                <span>{p.name}</span>
+                <span>{p.name} <Badge variant={p.available<1?`destructive`:"primary"} className={p.available>0&&"bg-green-600 text-white"}>Available: {p.available}</Badge></span>
                 <span>
                   Qty: {p.qty} × {p.price.toFixed(2)} = {p.total.toFixed(2)}
                   {p.available !== undefined ? ` (Available: ${p.available})` : ""}
@@ -159,7 +160,8 @@ function OrderCard({ order }) {
           </div>
         </CardContent>
       </Card>
-
+<div>
+  
       {/* Customer Information */}
       <Card className="border-red-600 p-0">
         <CardContent className="p-4">
@@ -190,6 +192,7 @@ function OrderCard({ order }) {
           {format(new Date(order?.createdAt), "yyyy-MM-dd hh:mm a")}
         </div>
       </Card>
+</div>
     </div>
   );
 }
@@ -241,7 +244,7 @@ const data=dataSelected?.orderReturns
           onClick={() => setIndex(0)}
           className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
             index === 0
-              ? "bg-purple-600 text-white border-purple-600 shadow-sm"
+              ? "bg-red-600 text-white border-red-600 shadow-sm"
               : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
           }`}
         >
@@ -255,7 +258,7 @@ const data=dataSelected?.orderReturns
             onClick={() => setIndex(i + 1)}
             className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
               index === i + 1
-                ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                ? "bg-red-600 text-white border-red-600 shadow-sm"
                 : "bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200"
             }`}
           >

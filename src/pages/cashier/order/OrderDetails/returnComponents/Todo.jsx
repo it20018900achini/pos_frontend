@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "../../../../../components/ui/button";
+import { Pen } from "lucide-react";
 
 export default function Todo({ todo, updateTodo, removeTodo }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -13,7 +14,7 @@ export default function Todo({ todo, updateTodo, removeTodo }) {
   };
 
   return (
-    <li className={`Todo flex gap-2  items-center p-2 ${quantity<=0?"bg-red-100":""}`}>
+    <li className={`w-full Todo flex gap-2  items-center p-2 ${quantity<=0?"bg-red-100":""}`}>
       {/* Product Name */}
       <div className="w-full font-medium">{todo.name}</div>
 
@@ -21,7 +22,7 @@ export default function Todo({ todo, updateTodo, removeTodo }) {
       <div className="w-[120px]">LKR {todo.sellingPrice.toFixed(2)}</div>
 
       {/* Quantity */}
-      <div className={`flex items-center gap-1 `}>
+      <div className={`flex items-center gap-0 w-[100px]`}>
         {isEditing ? (
           <>
             <input
@@ -40,12 +41,12 @@ export default function Todo({ todo, updateTodo, removeTodo }) {
         ) : (
           <>
             <span className="w-[80px]">{todo.quantity}</span>
-            {quantity<=0?"":<button
+            {quantity<=0?"":<Button size={'sm'}
               onClick={() => setIsEditing(true)}
-              className="text-orange-500 hover:underline"
+              className=""
             >
-              Edit
-            </button>}
+              <Pen className="w-4 h-4"/>
+            </Button>}
           </>
         )}
       </div>

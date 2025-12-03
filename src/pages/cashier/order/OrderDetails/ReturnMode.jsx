@@ -221,7 +221,7 @@ const ReturnMode = ({ showPaymentDialog, setShowPaymentDialog, selectedOrder }) 
         dispatch(setPaymentMethod("CASH"));
       }}
     >
-      <DialogContent className="max-h-screen overflow-y-auto overflow-x-hidden">
+      <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Refund</DialogTitle>
         </DialogHeader>

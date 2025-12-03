@@ -266,14 +266,14 @@ const OrderHistoryPage = () => {
 
       <Dialog open={showOrderDetailsDialog} onOpenChange={setShowOrderDetailsDialog}>
         {selectedOrder && (
-          <DialogContent className="bg-white max-h-screen overflow-y-scroll max-w-[800px]">
+          <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Order Details - Invoice</DialogTitle></DialogHeader>
             <OrderDetails selectedOrder={selectedOrder} />
 
-<pre>
+{/* <pre>
 
 {JSON.stringify(getFlattenedRefundSummaryWithTotals(selectedOrder) ,null,2)}
-</pre>
+</pre> */}
             {/* <TotalRefundSummary  dataSelected={selectedOrder} /> */}
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={handleDownloadPDF}><Download className="h-4 w-4 mr-2" />Download PDF</Button>
@@ -284,7 +284,7 @@ const OrderHistoryPage = () => {
       </Dialog>
       <Dialog open={showOrderReturnDetailsDialog} onOpenChange={setShowOrderDetailsReturnDialog}>
         {selectedOrderRetuen && (
-          <DialogContent className="bg-white max-h-screen overflow-y-scroll max-w-[800px]">
+          <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Refund Details - Invoice</DialogTitle></DialogHeader>
 <CompareItems dataSelected={selectedOrderRetuen} />
  {/* <pre> */}
