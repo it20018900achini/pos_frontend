@@ -7,8 +7,9 @@ import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
 import ReturnMode from "./ReturnMode";
 import { useState } from "react";
+import { getFlattenedRefundSummaryWithTotals } from "../getFlattenedRefundSummaryWithTotals";
 const OrderDetails = ({ selectedOrder }) => {
-  
+  const totals=getFlattenedRefundSummaryWithTotals(selectedOrder)?.totals
     const [showPaymentDialog, setShowPaymentDialog] = useState(false);
     // const [showReceiptDialog, setShowReceiptDialog] = useState(false);
 
@@ -57,8 +58,10 @@ const OrderDetails = ({ selectedOrder }) => {
         <CardContent className="p-4">
           <div className="flex justify-end mb-1">
 
+{totals?.totalAvailableQuantity>0?
 
-          <Button
+
+<Button
             className={`py-3 text-lg font-semibold `}
             size={`sm`}
             onClick={handlePayment}
@@ -68,7 +71,9 @@ const OrderDetails = ({ selectedOrder }) => {
             
           
             Return
-          </Button>
+          </Button>:<span className="text-red-500">All Refunded</span>}
+
+          
 
             <ReturnMode 
         showPaymentDialog={showPaymentDialog}

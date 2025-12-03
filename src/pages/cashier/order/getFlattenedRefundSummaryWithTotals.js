@@ -75,6 +75,9 @@ export function getFlattenedRefundSummaryWithTotals(dataSelected) {
     totalProductsReturned: flattened.length,
     totalUniqueProducts: products.length,
     totalCustomers: new Set(flattened.map((x) => x.customerPhone)).size,
+      totalAvailableQuantity: products.reduce((s, p) => s + p.availableStock, 0),
+
+
   };
 
   return {
