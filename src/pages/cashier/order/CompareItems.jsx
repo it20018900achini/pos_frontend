@@ -7,7 +7,6 @@ import { Timer } from "lucide-react";
 
 // -------------------- SUMMARY CARD --------------------
 // -------------------- SUMMARY CARD WITH PRODUCT TOTALS --------------------
-// -------------------- SUMMARY CARD WITH AVAILABLE --------------------
 function SummaryCard({ dataSelected }) {
   const data = dataSelected?.orderReturns || [];
   const originalItems = dataSelected?.items || [];
@@ -16,30 +15,32 @@ function SummaryCard({ dataSelected }) {
   const totalCustomers = new Set(data.map((x) => x?.customer?.phone)).size;
   const totalProducts = data.flatMap((d) => d.items || []).length;
 
-  // Calculate total quantity, total amount, and available per product
+  // --------------------
+  // Calculate totals per product
+  // --------------------
   const productTotals = {};
 
+  // Step 1: Initialize with all original products
+  originalItems.forEach((item) => {
+    productTotals[item.productId] = {
+      name: item.product.name,
+      qty: 0, // total returned quantity
+      total: 0, // total returned amount
+      price: item.product.sellingPrice,
+      available: item.quantity, // original stock
+    };
+  });
+
+  // Step 2: Add returned quantities from orderReturns
   data.forEach((order) => {
     order.items?.forEach((item) => {
       const key = item.productId;
-
-      // Find original stock from dataSelected?.items
-      const originalItem = originalItems.find((p) => p.productId === key);
-
-      if (!productTotals[key]) {
-        productTotals[key] = {
-          name: item.product.name,
-          qty: 0,
-          total: 0,
-          price: item.product.sellingPrice,
-          available: originalItem ? originalItem.quantity : item.product.available || 0, // original stock
-        };
-      }
+      if (!productTotals[key]) return; // safety check
 
       productTotals[key].qty += item.quantity || 0;
       productTotals[key].total += (item.quantity || 0) * item.product.sellingPrice;
 
-      // Reduce available stock by returned qty
+      // Reduce available stock
       productTotals[key].available -= item.quantity || 0;
     });
   });
@@ -79,7 +80,7 @@ function SummaryCard({ dataSelected }) {
                 className="p-3 border rounded hover:bg-gray-100 transition space-y-2"
               >
                 <div className="flex justify-between font-medium">
-                  <span>#{order.id} - {order?.customer?.fullName || "Walk-in Customer"}</span>
+                  <span><span className="text-red-500">#{order.id} </span> | {format(order?.createdAt,'yyyy-MM-dd h:mm a') }</span>
                   <span>LKR {order.totalAmount?.toFixed(2)}</span>
                 </div>
 
@@ -121,6 +122,7 @@ function SummaryCard({ dataSelected }) {
     </Card>
   );
 }
+
 
 
 

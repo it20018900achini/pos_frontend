@@ -14,6 +14,7 @@ import OrderDetails from "./OrderDetails/OrderDetails";
 import { getOrdersByCashier } from "@/Redux Toolkit/features/order/orderThunks";
 import { handleDownloadOrderPDF } from "./pdf/pdfUtils";
 import CompareItems from "./CompareItems";
+import { TotalRefundSummary } from "./TotalRefundSummary";
 
 const OrderHistoryPage = () => {
   const dispatch = useDispatch();
@@ -262,6 +263,7 @@ const OrderHistoryPage = () => {
           <DialogContent className="bg-white max-h-screen overflow-y-scroll max-w-[800px]">
             <DialogHeader><DialogTitle>Order Details - Invoice</DialogTitle></DialogHeader>
             <OrderDetails selectedOrder={selectedOrder} />
+            <TotalRefundSummary  dataSelected={selectedOrder} />
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={handleDownloadPDF}><Download className="h-4 w-4 mr-2" />Download PDF</Button>
               <Button onClick={() => handlePrintInvoice(selectedOrder)}><PrinterIcon className="h-4 w-4 mr-2" />Print Invoice</Button>
