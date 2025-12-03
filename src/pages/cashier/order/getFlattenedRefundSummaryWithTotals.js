@@ -6,37 +6,49 @@ export function getFlattenedRefundSummaryWithTotals(dataSelected) {
 
   const productTotals = {};
 
-  // --- Precompute totals per product ---
+  // --- Step 1: Initialize productTotals with ALL original items ---
+  originalItems.forEach((item) => {
+    productTotals[item.productId] = {
+      productId: item.productId,
+      productName: item.product?.name || item.name,
+      price: item.product?.sellingPrice || item.sellingPrice,
+      totalQty: 0,                 // returned qty
+      totalAmount: 0,
+      availableStock: item.quantity, // original quantity
+    };
+  });
+
+  // --- Step 2: Deduct returned items ---
   data.forEach((order) => {
     order.items?.forEach((item) => {
       const key = item.productId;
-      const originalItem = originalItems.find((p) => p.productId === key);
+      const sellingPrice = item.product.sellingPrice;
 
       if (!productTotals[key]) {
+        // In case a returned item does NOT exist in originalItems
         productTotals[key] = {
           productId: key,
           productName: item.product.name,
-          price: item.product.sellingPrice,
+          price: sellingPrice,
           totalQty: 0,
           totalAmount: 0,
-          availableStock: originalItem
-            ? originalItem.quantity
-            : item.product.available || 0,
+          availableStock: item.product.available || 0,
         };
       }
 
       productTotals[key].totalQty += item.quantity || 0;
-      productTotals[key].totalAmount += (item.quantity || 0) * item.product.sellingPrice;
+      productTotals[key].totalAmount += (item.quantity || 0) * sellingPrice;
       productTotals[key].availableStock -= item.quantity || 0;
     });
   });
 
-  // --- Flatten all rows ---
+  // --- Step 3: Flatten rows ---
   const flattened = [];
 
   data.forEach((order) => {
     order.items?.forEach((item) => {
       const key = item.productId;
+
       flattened.push({
         orderId: order.id,
         orderDate: format(order?.createdAt, "yyyy-MM-dd h:mm a"),
@@ -51,7 +63,7 @@ export function getFlattenedRefundSummaryWithTotals(dataSelected) {
     });
   });
 
-  // --- Convert productTotals object to array ---
+  // --- Step 4: Convert to array ---
   const products = Object.values(productTotals);
 
   // --- Overall totals ---
@@ -69,5 +81,6 @@ export function getFlattenedRefundSummaryWithTotals(dataSelected) {
     flattened,
     products,
     totals,
+    order: dataSelected?.items
   };
 }

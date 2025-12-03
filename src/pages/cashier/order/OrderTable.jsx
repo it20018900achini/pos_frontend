@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EyeIcon } from "lucide-react";
+import { getFlattenedRefundSummaryWithTotals } from "./getFlattenedRefundSummaryWithTotals";
 
 const OrderTable = ({
   orders = [],
@@ -60,6 +61,7 @@ const OrderTable = ({
               </TableCell>
 
               <TableCell>
+                
                 LKR {Number(order.totalAmount || 0).toFixed(2)}
               </TableCell>
 
@@ -73,7 +75,8 @@ const OrderTable = ({
                       : "bg-green-600 text-white"
                   }
                 >
-                  {order.hasReturnCount>0? "REFUNDED": "COMPLETE"}
+                  {getFlattenedRefundSummaryWithTotals(order)?.totals?.totalPrice==order.totalAmount?"All REFUNDED":order.hasReturnCount>0? "REFUNDED": "COMPLETE"}
+                  {}
                 </Badge>
               </TableCell>
 
