@@ -273,13 +273,13 @@ const OrderHistoryPage = () => {
         {selectedOrderRetuen && (
           <DialogContent className="bg-white max-h-screen overflow-y-scroll max-w-[800px]">
             <DialogHeader><DialogTitle>Refund Details - Invoice</DialogTitle></DialogHeader>
-<CompareItems data={selectedOrderRetuen?.orderReturns}/>
+<CompareItems dataSelected={selectedOrderRetuen} />
  {/* <pre> */}
 
 {/* {JSON.stringify(selectedOrderRetuen,null,2)}</pre>  */}
 {/*{JSON.stringify(selectedOrderRetuen?.orderReturns[0]?.order?.items,null,2)}
 */}
-{
+{/* {
   selectedOrderRetuen?.orderReturns?.length > 1
     ? selectedOrderRetuen.orderReturns.map((item, index) => (
         <Button key={index}>
@@ -289,7 +289,7 @@ const OrderHistoryPage = () => {
     : <Fragment>
 
     </Fragment>
-}
+} */}
 
             <DialogFooter className="gap-2">
               {/* <Button onClick={() => handlePrintInvoice(selectedOrder)}><PrinterIcon className="h-4 w-4 mr-2" />Print Invoice</Button> */}
