@@ -14,9 +14,10 @@ import OrderDetails from "./OrderDetails/OrderDetails";
 import { getOrdersByCashier } from "@/Redux Toolkit/features/order/orderThunks";
 import { handleDownloadOrderPDF } from "./pdf/pdfUtils";
 import CompareItems from "./CompareItems";
-import { TotalRefundSummary } from "./TotalRefundSummary";
+import { getFlattenedRefundSummaryWithTotals,  } from "./getFlattenedRefundSummaryWithTotals";
 
 const OrderHistoryPage = () => {
+
   const dispatch = useDispatch();
   const { toast } = useToast();
   const { userProfile } = useSelector((state) => state.user);
@@ -193,6 +194,11 @@ const OrderHistoryPage = () => {
   const nextPage = () => { if (pageInfo && page < pageInfo.totalPages - 1) setPage(page + 1); };
   const prevPage = () => { if (page > 0) setPage(page - 1); };
 
+
+
+
+  
+  // const summaryWithTotals = getFlattenedRefundSummaryWithTotals(selectedOrder);
   return (
     <div className="h-full flex flex-col">
       <POSHeader />
@@ -263,7 +269,12 @@ const OrderHistoryPage = () => {
           <DialogContent className="bg-white max-h-screen overflow-y-scroll max-w-[800px]">
             <DialogHeader><DialogTitle>Order Details - Invoice</DialogTitle></DialogHeader>
             <OrderDetails selectedOrder={selectedOrder} />
-            <TotalRefundSummary  dataSelected={selectedOrder} />
+
+<pre>
+
+{JSON.stringify(getFlattenedRefundSummaryWithTotals(selectedOrder) ,null,2)}
+</pre>
+            {/* <TotalRefundSummary  dataSelected={selectedOrder} /> */}
             <DialogFooter className="gap-2">
               <Button variant="outline" onClick={handleDownloadPDF}><Download className="h-4 w-4 mr-2" />Download PDF</Button>
               <Button onClick={() => handlePrintInvoice(selectedOrder)}><PrinterIcon className="h-4 w-4 mr-2" />Print Invoice</Button>
