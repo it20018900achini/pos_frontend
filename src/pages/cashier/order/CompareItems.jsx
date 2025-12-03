@@ -80,17 +80,17 @@ function SummaryCard({ dataSelected }) {
                 className="p-3 border rounded hover:bg-gray-100 transition space-y-2"
               >
                 <div className="flex justify-between font-medium">
-                  <span><span className="text-red-500">#{order.id} </span> | {format(order?.createdAt,'yyyy-MM-dd h:mm a') }</span>
+                  <span className="text-neutral-500"><span className="text-red-500">#{order.id} </span> | {format(order?.createdAt,'yyyy-MM-dd h:mm a') }</span>
                   <span>LKR {order.totalAmount?.toFixed(2)}</span>
                 </div>
 
                 <div className="ml-4 space-y-1 text-sm">
-                  {order.items?.map((item) => {
+                  {order.items?.map((item,i) => {
                     const qty = item.quantity || 0;
                     const totalPrice = qty * item.product.sellingPrice;
                     return (
                       <div key={item.productId} className="flex justify-between">
-                        <span>{item.product.name}</span>
+                        <span>{i+1}. {item.product.name}</span>
                         <span>
                           Qty: {qty} × {item.product.sellingPrice.toFixed(2)} = {totalPrice.toFixed(2)}
                         </span>
