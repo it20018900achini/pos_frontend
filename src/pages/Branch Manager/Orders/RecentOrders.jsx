@@ -36,6 +36,8 @@ const RecentOrders = () => {
   const [endDate, setEndDate] = useState("");
   const [searchText, setSearchText] = useState("");
 
+    const { branch } = useSelector((state) => state.branch);
+    const branchId = branch?.id;
   const loadOrders = (start = startDate, end = endDate, search = searchText) => {
     if (!userProfile?.id) return;
 
@@ -44,7 +46,7 @@ const RecentOrders = () => {
 
     dispatch(
       getRecentOrdersByBranchPagin({
-        branchId: 52,
+        branchId: branchId,
         page,
         size,
         sort: "id,desc",

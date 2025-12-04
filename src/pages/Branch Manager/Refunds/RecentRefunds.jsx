@@ -31,6 +31,8 @@ const RecentRefunds = () => {
   const [endDate, setEndDate] = useState("");
   const [searchText, setSearchText] = useState("");
 
+    const { branch } = useSelector((state) => state.branch);
+    const branchId = branch?.id;
   // Load Orders
   const loadOrders = (start = startDate, end = endDate, search = searchText) => {
     if (!userProfile?.id) return;
@@ -40,7 +42,7 @@ const RecentRefunds = () => {
 
     dispatch(
       getRecentRefundsByBranchPagin({
-        branchId:52,
+        branchId:branchId,
         page,
         size,
         sort: "id,desc",

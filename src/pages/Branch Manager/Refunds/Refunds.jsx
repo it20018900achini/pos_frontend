@@ -1,10 +1,14 @@
 import React from 'react'
 import RecentRefunds from './RecentRefunds'
+import { useSelector } from 'react-redux';
 
 function Refunds() {
+  
+    const { branch } = useSelector((state) => state.branch);
+    const branchId = branch?.id;
   return (
-    <div>ss
-<RecentRefunds branchId={52} />
+    <div>
+<RecentRefunds branchId={branchId} />
 
     </div>
   )
