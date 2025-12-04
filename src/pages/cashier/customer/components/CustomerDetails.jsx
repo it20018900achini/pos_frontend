@@ -1,38 +1,34 @@
-// import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import {  Loader2, UserIcon, ArrowBigLeft } from 'lucide-react';
-// import PaymentsDashboard from './customerPayments/PaymentsDashboard';
-// import { PaymentTablePagination } from './customerPayments/PaymentTablePagination';
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { getAllCustomers } from '../../../../Redux Toolkit/features/customer/customerThunks';
-
-import { toast } from 'sonner';
-import CustomerPaymentsPage from './customerPayments/components/CustomerPaymentsPage';
-import CustomerOrdersPage from '../orders/CustomerOrdersPage';
+import { Loader2, UserIcon, ArrowBigLeft } from 'lucide-react';
 import CustomerSummary from './customerPayments/components/CustomerSummary';
+import CustomerOrdersPage from '../orders/CustomerOrdersPage';
 import CustomerRefundsPage from '../refunds/CustomerRefundsPage';
+import CustomerPaymentsPage from './customerPayments/components/CustomerPaymentsPage';
 
-const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
-  const [tab,setTab]=useState(0)
-  const dispatch = useDispatch();
+// Skeleton loader for any tab
+const TabSkeleton = () => (
+  <div className="space-y-4 animate-pulse p-4">
+    <div className="h-6 w-1/3 bg-muted rounded" />
+    <div className="h-6 w-1/4 bg-muted rounded" />
+    <div className="h-40 w-full bg-muted rounded mt-2" />
+    <div className="h-40 w-full bg-muted rounded mt-2" />
+  </div>
+);
 
-  const { customerOrders, loading: ordersLoading, error: orderError } = useSelector((state) => state.order);
-  const { customerRefunds, loadingR, error: refundError } = useSelector((state) => state.refund);
+const CustomerDetails = ({ customer, loading = false }) => {
+  const [tab, setTab] = useState(0);
+  const [tabLoading, setTabLoading] = useState(false);
 
-  // Handle errors
-  useEffect(() => {
-    if (orderError) toast({ title: "Error", description: orderError, variant: "destructive" });
-    if (refundError) toast({ title: "Error", description: refundError, variant: "destructive" });
-  }, [ orderError, refundError, ]);
+  // Handle tab changes
+  const handleTabChange = (newTab) => {
+    setTabLoading(true);
+    setTab(newTab);
+    // simulate fetch delay for skeleton
+    setTimeout(() => setTabLoading(false), 300); 
+  };
 
-  // Load customers
-  useEffect(() => {
-    dispatch(getAllCustomers());
-  }, [dispatch]);
-
-
-
+  // Empty state
   if (!customer) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
@@ -42,6 +38,7 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
     );
   }
 
+  // Loading state after selecting a customer
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
@@ -52,76 +49,54 @@ const CustomerDetails = ({ customer, onAddPoints, loading = false }) => {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-4 flex flex-col space-y-4 h-full">
+      {/* Header */}
       <div className="md:flex justify-between items-start mb-6">
-        <div className='md:flex'>
-          <div>
-            
+        <div>
           <h2 className="text-2xl font-bold">{customer.fullName || 'Unknown Customer'}</h2>
           <p className="text-muted-foreground">{customer.phone || 'N/A'}</p>
           <p className="text-muted-foreground">{customer.email || 'N/A'}</p>
-          
-          </div>
-        {/* <Button varient="secondary" size="sm" onClick={onAddPoints} className="bg-orange-500  hover:bg-orange-600 flex items-center gap-2">
-          <PlusIcon className="h-4 w-4" />
-          Add Points
-        </Button> */}
         </div>
-        
-        <div className=' md:flex  gap-2'>
-         {tab!==0&&<Button  onClick={()=>{setTab(0)}}  variant="secondary"><ArrowBigLeft/></Button>} 
-        <Button onClick={()=>{setTab(1)}}  variant={tab==1?"secondary":"default"} className="flex items-center gap-2 border">
-          Orders
-        </Button>
-        <Button onClick={()=>{setTab(2)}} variant={tab==2?"secondary":"default"}  className="flex items-center gap-2 border">
-          Refunds
-        </Button>
-        <Button  onClick={()=>{setTab(3)}}  variant={tab==3?"secondary":"default"}  className="flex items-center gap-2 border">
-          Customer Payments
-        </Button>
-        </div>
-      </div>
-      
-      <div>
 
-
-
-        {tab==0 &&<>
-         <div className="w-full">
-        <CustomerSummary customerId={customer?.id}/>
-      </div>
-
-
-        </>}
-
-     
-
-
-
-</div>
-
-
- {customer && (
-            tab==1 ? (
-              <>
-              <CustomerOrdersPage customerId={customer?.id}/>
-              {/* <CustomerOrdersPage/> */}
-              {/* {JSON.stringify(customer)} */}
-                {/* <CustomerOrderHistory customerId={customer?.id}/> */}
-                {/* <PurchaseHistory orders={customerOrders} loading={ordersLoading} /> */}
-              </>
-            ) : tab==2?
-                          <CustomerRefundsPage customerId={customer?.id}/>
-:
-              
-              tab==3?
-              <CustomerPaymentsPage customer={customer}/>
-              :""
-            
+        <div className="md:flex gap-2 mt-4 md:mt-0">
+          {tab !== 0 && (
+            <Button onClick={() => handleTabChange(0)} variant="secondary">
+              <ArrowBigLeft />
+            </Button>
           )}
+          <Button
+            onClick={() => handleTabChange(1)}
+            variant={tab === 1 ? 'secondary' : 'default'}
+            className="flex items-center gap-2"
+          >
+            Orders
+          </Button>
+          <Button
+            onClick={() => handleTabChange(2)}
+            variant={tab === 2 ? 'secondary' : 'default'}
+            className="flex items-center gap-2"
+          >
+            Refunds
+          </Button>
+          <Button
+            onClick={() => handleTabChange(3)}
+            variant={tab === 3 ? 'secondary' : 'default'}
+            className="flex items-center gap-2"
+          >
+            Customer Payments
+          </Button>
+        </div>
+      </div>
 
+      {/* Tab Content */}
+      <div className="flex-1 overflow-y-auto shadow-inner p-2 rounded-md bg-card">
+        {tab === 0 && (tabLoading ? <TabSkeleton /> : <CustomerSummary customerId={customer.id} />)}
+        {tab === 1 && (tabLoading ? <TabSkeleton /> : <CustomerOrdersPage customerId={customer.id} />)}
+        {tab === 2 && (tabLoading ? <TabSkeleton /> : <CustomerRefundsPage customerId={customer.id} />)}
+        {tab === 3 && (tabLoading ? <TabSkeleton /> : <CustomerPaymentsPage customer={customer} />)}
+      </div>
     </div>
   );
 };
 
-export default CustomerDetails; 
+export default CustomerDetails;

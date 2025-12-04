@@ -1,32 +1,39 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  getAllCustomers,
-} from "@/Redux Toolkit/features/customer/customerThunks";
-import {
-  getOrdersByCustomer,
-} from "@/Redux Toolkit/features/order/orderThunks";
-import {
-  filterCustomers,
-  validatePoints,
-  calculateCustomerStats,
-} from "./utils/customerUtils";
+
+import POSHeader from "../components/POSHeader";
+import CustomerForm from "./CustomerForm";
 import {
   CustomerSearch,
   CustomerList,
   CustomerDetails,
   PurchaseHistory,
   AddPointsDialog,
+  RefundHistory,
 } from "./components";
-import { clearCustomerOrders } from "../../../Redux Toolkit/features/order/orderSlice";
-import CustomerForm from "./CustomerForm";
-import POSHeader from "../components/POSHeader";
-// import { PaymentTablePagination } from "./components/customerPayments/PaymentTablePagination";
+
 import { Button } from "../../../components/ui/button";
-import RefundHistory from "./components/RefundHistory";
-import { getRefundsByCustomer } from "../../../Redux Toolkit/features/refund/refundThunks";
-import { clearCustomerRefunds } from "../../../Redux Toolkit/features/refund/refundSlice";
+
+import {
+  getAllCustomers,
+} from "@/Redux Toolkit/features/customer/customerThunks";
+
+import {
+  getOrdersByCustomer,
+  clearCustomerOrders,
+} from "@/Redux Toolkit/features/order/orderThunks";
+
+import {
+  getRefundsByCustomer,
+  clearCustomerRefunds,
+} from "@/Redux Toolkit/features/refund/refundThunks";
+
+import {
+  filterCustomers,
+  validatePoints,
+  calculateCustomerStats,
+} from "./utils/customerUtils";
 
 const CustomerLookupPage = () => {
   const dispatch = useDispatch();
@@ -34,15 +41,16 @@ const CustomerLookupPage = () => {
 
   const { customers, loading: customerLoading, error: customerError } = useSelector((state) => state.customer);
   const { customerOrders, loading: ordersLoading, error: orderError } = useSelector((state) => state.order);
-  const { customerRefunds, loadingR, error: refundError } = useSelector((state) => state.refund);
+  const { customerRefunds, loading: refundsLoading, error: refundError } = useSelector((state) => state.refund);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showAddPointsDialog, setShowAddPointsDialog] = useState(false);
   const [pointsToAdd, setPointsToAdd] = useState(0);
   const [showCustomerForm, setShowCustomerForm] = useState(false);
+  const [activeTab, setActiveTab] = useState("history"); // history | refunds
 
-  // Load customers
+  // Load customer list on mount
   useEffect(() => {
     dispatch(getAllCustomers());
   }, [dispatch]);
@@ -60,7 +68,9 @@ const CustomerLookupPage = () => {
     setSelectedCustomer(customer);
     dispatch(clearCustomerOrders());
     dispatch(clearCustomerRefunds());
-    if (customer.id) {
+
+    if (customer?.id) {
+      // Load orders and refunds only when a customer is selected
       dispatch(getOrdersByCustomer(customer.id));
       dispatch(getRefundsByCustomer(customer.id));
     }
@@ -79,26 +89,25 @@ const CustomerLookupPage = () => {
     setPointsToAdd(0);
   };
 
-  // Re-fetch orders/refunds when selected customer changes
-  useEffect(() => {
-    if (selectedCustomer?.id) {
-      dispatch(getOrdersByCustomer(selectedCustomer.id));
-      dispatch(getRefundsByCustomer(selectedCustomer.id));
-    }
-  }, [selectedCustomer, dispatch]);
-
   const customerStats = selectedCustomer ? calculateCustomerStats(customerOrders) : null;
   const displayCustomer = selectedCustomer ? { ...selectedCustomer, ...customerStats } : null;
 
   return (
     <div className="h-full flex flex-col">
       <POSHeader />
-      <div className="p-4 bg-card border-b">
+
+      <div className="p-4 bg-card border-b flex justify-between items-center">
         <h1 className="text-2xl font-bold">Customer Management</h1>
+        {selectedCustomer && (
+          <div className="flex gap-2">
+            <Button onClick={() => setShowAddPointsDialog(true)}>Add Points</Button>
+            <Button variant="secondary" onClick={() => setShowCustomerForm(true)}>Edit</Button>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Column */}
+        {/* Left Column: Search + List */}
         <div className="w-1/3 border-r flex flex-col">
           <CustomerSearch
             searchTerm={searchTerm}
@@ -113,25 +122,42 @@ const CustomerLookupPage = () => {
           />
         </div>
 
-        {/* Right Column */}
-        <div className="w-2/3 flex flex-col overflow-y-auto">
+        {/* Right Column: Details + Tabs */}
+        <div className="w-2/3 flex flex-col overflow-y-auto p-4 space-y-4">
           <CustomerDetails
             customer={displayCustomer}
-            onAddPoints={() => setShowAddPointsDialog(true)}
-            loading={ordersLoading}
+            loading={ordersLoading || refundsLoading}
           />
 
+          {selectedCustomer && (
+            <div className="flex flex-col space-y-4">
+              {/* Tabs */}
+              <div className="flex gap-4 border-b pb-2">
+                <button
+                  className={`px-3 py-1 font-medium ${activeTab === "history" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}
+                  onClick={() => setActiveTab("history")}
+                >
+                  Purchase History
+                </button>
+                <button
+                  className={`px-3 py-1 font-medium ${activeTab === "refunds" ? "border-b-2 border-primary text-primary" : "text-muted-foreground"}`}
+                  onClick={() => setActiveTab("refunds")}
+                >
+                  Refund History
+                </button>
+              </div>
 
-          {/* {selectedCustomer && (
-            tab1 ? (
-              <>
-                <RefundHistory refunds={customerRefunds} loading={loadingR} />
-                <PurchaseHistory orders={customerOrders} loading={ordersLoading} />
-              </>
-            ) : (
-              <PaymentTablePagination customerId={selectedCustomer?.id} />
-            )
-          )} */}
+              {/* Tab Content */}
+              <div>
+                {activeTab === "history" && selectedCustomer?.id && (
+                  <PurchaseHistory orders={customerOrders} loading={ordersLoading} />
+                )}
+                {activeTab === "refunds" && selectedCustomer?.id && (
+                  <RefundHistory refunds={customerRefunds} loading={refundsLoading} />
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
