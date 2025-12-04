@@ -338,7 +338,7 @@ const handlePrintInvoice = (order, storeName = "STORE NAME", storeLogoUrl) => {
       {/* Order Details Modal */}
       <Dialog open={showOrderDetailsDialog} onOpenChange={setShowOrderDetailsDialog}>
         {selectedOrder && (
-          <DialogContent className="bg-white max-h-screen overflow-y-auto  overflow-x-hidden max-w-[800px]">
+          <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Order Refund Details - Invoice</DialogTitle>
             </DialogHeader>

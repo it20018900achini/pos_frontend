@@ -11,17 +11,19 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EyeIcon } from "lucide-react";
+import { getFlattenedRefundSummaryWithTotals } from "./getFlattenedRefundSummaryWithTotals";
 
 const OrderTable = ({
-  refunds = [],
+  orders = [],
   handleViewOrder,
-  // handlePrintInvoice,
-  // handleInitiateReturn,
+  handleReturnOrder,
+  handlePrintInvoice,
+  handleInitiateReturn,
 }) => {
-  if (!Array.isArray(refunds) || refunds.length === 0) {
+  if (!Array.isArray(orders) || orders.length === 0) {
     return (
       <div className="text-center text-muted-foreground py-6">
-        No refunds found
+        No orders found
       </div>
     );
   }
@@ -30,7 +32,6 @@ const OrderTable = ({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Refund ID</TableHead>
           <TableHead>Order ID</TableHead>
           <TableHead>Date</TableHead>
           <TableHead>Customer</TableHead>
@@ -42,14 +43,12 @@ const OrderTable = ({
       </TableHeader>
 
       <TableBody>
-        {refunds.map((order) => (
+        {orders.map((order) => (
           <Fragment key={order.id}>
             
             {/* ✅ ORDER MAIN ROW */}
-            <TableRow>
+            <TableRow className={order.hasReturnCount>0? "bg-red-100 hover:bg-red-200": ""}>
               <TableCell className="font-medium">{order.id}</TableCell>
-              <TableCell className="font-medium">{order?.order?.id}</TableCell>
-
 
               <TableCell>
                 {order.createdAt
@@ -71,27 +70,59 @@ const OrderTable = ({
               <TableCell>
                 <Badge
                   className={
-                    "bg-red-500 text-white"
-                      
+                    order.hasReturnCount>0
+                      ? "bg-red-500 text-white"
+                      : "bg-green-600 text-white"
                   }
                 >
-                  {order.status || "REFUNDED"}
+                  {getFlattenedRefundSummaryWithTotals(order)?.totals?.totalPrice==order.totalAmount?"All REFUNDED":order.hasReturnCount>0? "REFUNDED": "COMPLETE"}
+                  {}
                 </Badge>
               </TableCell>
 
               <TableCell className="text-right">
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  size="sm"
                   onClick={() => handleViewOrder(order)}
+                  className="mr-1"
+
                 >
-                  <EyeIcon className="h-4 w-4" />
+                  Order
                 </Button>
+                {order.hasReturnCount>0?<Button
+                  onClick={() => handleReturnOrder(order)}
+                  size="sm"
+                >
+                  Refunds
+                </Button>:<Button
+                  size="sm"
+                  varient="gost"
+                  disabled="true"
+                >
+                  Refunds
+                </Button>}
+                
+                
               </TableCell>
             </TableRow>
 
             {/* ✅ ITEM ROW (Product List) */}
-         
+            {/* <TableRow className="bg-muted/30">
+              <TableCell colSpan={7} className="py-2">
+                <div className="flex flex-wrap gap-2">
+                  {order.items?.map((it) => (
+                    <Badge key={it.id} className="text-sm px-3 py-1">
+                      {it.product?.name} × {it.quantity}
+                      {it.returned && it.return_quantity > 0 ? (
+                        <span className="ml-2 text-red-500 font-semibold">
+                          | R: {it.return_quantity}
+                        </span>
+                      ) : null}
+                    </Badge>
+                  ))}
+                </div>
+              </TableCell>
+            </TableRow> */}
 
           </Fragment>
         ))}

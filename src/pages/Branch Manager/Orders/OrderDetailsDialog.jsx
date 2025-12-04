@@ -9,7 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-import OrderItemTable from "../../common/Order/OrderItemTable";
+import OrderItemTable from "@/common/Order/OrderItemTable";
 
 const OrderDetailsDialog = ({
   open,
@@ -20,7 +20,7 @@ const OrderDetailsDialog = ({
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Order Details</DialogTitle>
         </DialogHeader>
