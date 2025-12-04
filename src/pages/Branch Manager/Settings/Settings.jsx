@@ -136,7 +136,7 @@ const Settings = () => {
             <Building className="h-4 w-4" />
             Branch Info
           </TabsTrigger>
-          <TabsTrigger value="printer" className="flex items-center gap-2">
+          {/* <TabsTrigger value="printer" className="flex items-center gap-2">
             <Printer className="h-4 w-4" />
             Printer
           </TabsTrigger>
@@ -151,7 +151,7 @@ const Settings = () => {
           <TabsTrigger value="discount" className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
             Discount
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
         {/* Branch Info Tab */}

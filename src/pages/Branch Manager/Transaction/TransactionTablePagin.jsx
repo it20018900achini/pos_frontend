@@ -273,8 +273,12 @@ export default function TransactionTablePagin() {
                     <TableCell>{row.id}</TableCell>
                     <TableCell>{row.customerName}</TableCell>
                     <TableCell>{row.cashierName}</TableCell>
-                    <TableCell>{row.amount}</TableCell>
-                    <TableCell>{row.paymentMethod}</TableCell>
+
+  <TableCell className={`text-center font-medium ${row.type == "ORDER" ? `text-green-600` : row.type == "REFUND" ? ` text-red-600`:"text-blue-600"}`}>
+                        {row.type == "ORDER" ? `+LKR ${row.amount.toFixed(2)}` : row.type == "REFUND" ?`-LKR ${row.amount.toFixed(2)}`:`+LKR ${row.amount.toFixed(2)}`}
+                      </TableCell>
+
+                    <TableCell className="text-center">{row.paymentMethod==0?"CASH":row.paymentMethod==2?"CREDIT":row.paymentMethod}</TableCell>
                     <TableCell>{row.status}</TableCell>
                     <TableCell>
                       {row.createdAt
