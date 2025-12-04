@@ -271,7 +271,7 @@ const handlePrintInvoice = (order, storeName = "STORE NAME", storeLogoUrl) => {
           <option value={50}>50 per page</option>
         </select>
 
-        <Button onClick={() => loadOrders()} disabled={loading} size="sm" className="m-1">
+        <Button onClick={() => loadOrders(branchId)} disabled={loading} size="sm" className="m-1">
           Filter
         </Button>
         <Button variant="outline" onClick={resetFilters} disabled={loading} size="sm" className="m-1">

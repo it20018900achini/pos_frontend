@@ -184,12 +184,12 @@ const RecentOrders = (branchId) => {
   };
 
   const handleRefreshOrders = () => {
-    loadOrders();
+    loadOrders(branchId.branchId);
     toast({ title: "Refreshing Orders", description: "Please wait..." });
   };
 
   const resetFilters = () => {
-    setStartDate(""); setEndDate(""); setSearchText(""); setPage(0); loadOrders("", "", "");
+    setStartDate(""); setEndDate(""); setSearchText(""); setPage(0); loadOrders(branchId?.branchId,"", "", "");
   };
 
   const nextPage = () => { if (pageInfo && page < pageInfo.totalPages - 1) setPage(page + 1); };
@@ -221,7 +221,7 @@ const RecentOrders = (branchId) => {
           <option value={20}>20 per page</option>
           <option value={50}>50 per page</option>
         </select>
-        <Button onClick={() => loadOrders()} disabled={loading} size="sm" className="m-1">Filter</Button>
+        <Button onClick={() => loadOrders(branchId?.branchId)} disabled={loading} size="sm" className="m-1">Filter</Button>
         <Button variant="outline" onClick={resetFilters} disabled={loading} size="sm" className="m-1">Reset</Button>
       </div>
 
