@@ -1,159 +1,366 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getRecentRefundsByBranchPagin } from "../../../Redux Toolkit/features/refund/refundThunks";
-import { Loader2 } from "lucide-react";
 
-const RecentRefunds = ({ branchId }) => {
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
+
+import { SearchIcon, Loader2, RefreshCw, Download, PrinterIcon, RectangleHorizontal, ListOrdered } from "lucide-react";
+
+import OrderTable from "./OrderTable";
+import OrderDetails from "./OrderDetails";
+
+import { getRecentRefundsByBranchPagin } from "@/Redux Toolkit/features/refund/refundThunks";
+import { handleDownloadOrderPDF } from "./pdf/pdfUtils";
+
+const RecentRefunds = () => {
   const dispatch = useDispatch();
-const { refunds, pageInfo,loading,error } = useSelector((state) => state.refund);
-console.log("Refunds state:", refunds);
-console.log("Page info:", pageInfo);
-// console.log("Loading:", loading);
-// console.log("Error:", error);
+  const { toast } = useToast();
+  const { userProfile } = useSelector((state) => state.user);
+  const { refunds, pageInfo, loading, error } = useSelector((state) => state.refund);
+
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showOrderDetailsDialog, setShowOrderDetailsDialog] = useState(false);
+
+  // Pagination
   const [page, setPage] = useState(0);
-  const [size] = useState(10);
-  const [search, setSearch] = useState("");
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
+  const [size, setSize] = useState(10);
 
-  // Reset page to 0 when search or date filter changes
-  useEffect(() => {
-    setPage(0);
-  }, [search, start, end]);
+  // Filters
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [searchText, setSearchText] = useState("");
 
-  // Fetch refunds whenever dependencies change
+  // Load Orders
+  const loadOrders = (start = startDate, end = endDate, search = searchText) => {
+    if (!userProfile?.id) return;
+
+    const startISO = start ? new Date(start).toISOString() : undefined;
+    const endISO = end ? new Date(end).toISOString() : undefined;
+
+    dispatch(
+      getRecentRefundsByBranchPagin({
+        branchId:52,
+        page,
+        size,
+        sort: "id,desc",
+        start: startISO,
+        end: endISO,
+        search: search || undefined,
+      })
+    );
+  };
+
   useEffect(() => {
-    if (branchId) {
-      dispatch(getRecentRefundsByBranchPagin({ branchId, page, size, search, start, end }));
+    if (userProfile?.id) loadOrders();
+  }, [userProfile, page, size]);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error Loading Orders",
+        description: error,
+        variant: "destructive",
+      });
     }
-  }, [branchId, page, size, search, start, end, dispatch]);
+  }, [error]);
 
-  const handlePrevPage = () => page > 0 && setPage(page - 1);
-  const handleNextPage = () => pageInfo && page < pageInfo.totalPages - 1 && setPage(page + 1);
+  // Handlers
+  const handleViewOrder = (refund) => {
+    setSelectedOrder(refund);
+    setShowOrderDetailsDialog(true);
+  };
+const handlePrintInvoice = (order, storeName = "STORE NAME", storeLogoUrl) => {
+  if (!order) return;
+
+  const printWindow = window.open("", "_blank", "width=300,height=600");
+  if (!printWindow) return;
+
+  const formatCurrency = (amount) => Number(amount).toFixed(2);
+  const totalAmount = order.items.reduce(
+    (sum, item) => sum + (item.product?.sellingPrice || 0) * item.quantity,
+    0
+  );
+
+  const cashPaid = Number(order.cash || 0);
+  const creditPaid = Number(order.credit || 0);
+  const changeDue = Math.max(cashPaid + creditPaid - totalAmount, 0);
+  const notes = order.note || "";
+
+  const barcodeUrl = `https://chart.googleapis.com/chart?cht=code128&chs=200x50&chl=${order.id}`;
+
+  // Truncate long names
+  const truncate = (str, max = 20) => (str.length > max ? str.slice(0, max - 3) + "..." : str);
+
+  const fontSize = order.items.length > 15 ? 8 : 10;
+
+  const htmlContent = `
+    <html>
+      <head>
+        <title>Receipt #${order.id}</title>
+        <style>
+          body {
+            font-family: monospace;
+            font-size: ${fontSize}px;
+            padding: 2px;
+            width: 200px;
+            line-height: 1.1; /* tight spacing */
+            white-space: pre-wrap;
+          }
+          @media print {
+            @page { margin: 0.15in; size: 58mm auto; }
+            body { margin: 0; }
+          }
+          p, th, td, .line, .center, .right { margin: 0; padding: 0; }
+          .center { text-align: center; }
+          .line { border-top: 1px dashed #000; margin: 2px 0; }
+          .right { text-align: right; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { padding: 1px 0; vertical-align: top; }
+          td.item { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+          img.barcode, img.logo { display: block; margin: 3px auto; }
+        </style>
+      </head>
+      <body>
+        <!-- Header -->
+        <div  className="center">
+          ${storeLogoUrl ? `<img  className="logo" src="${storeLogoUrl}" alt="Logo" width="80"/>` : ""}
+          <p style="font-weight:bold;">${storeName}</p>
+          <p >Invoice #${order.id}</p>
+          <p >${new Date(order.createdAt).toLocaleString()}</p>
+        </div>
+
+        <p>Customer: ${order.customer?.name || "Walk-in"}</p>
+        <div  className="line"></div>
+
+        <!-- Items Table -->
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Qty</th>
+              <th  className="right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${order.items
+              .map(
+                (item) => `
+              <tr>
+                <td  className="item">${truncate(item.product?.name || item.name)}</td>
+                <td>${item.quantity}</td>
+                <td  className="right">${formatCurrency((item.product?.sellingPrice || 0) * item.quantity)}</td>
+              </tr>
+            `
+              )
+              .join("")}
+          </tbody>
+        </table>
+
+        <div  className="line"></div>
+
+        <!-- Totals -->
+        <p  className="right">TOTAL: ${formatCurrency(totalAmount)}</p>
+        <p  className="right">CASH: ${formatCurrency(cashPaid)}</p>
+        <p  className="right">CREDIT: ${formatCurrency(creditPaid)}</p>
+        <p  className="right">CHANGE: ${formatCurrency(changeDue)}</p>
+
+        ${notes ? `<div  className="line"></div><p>Notes: ${notes}</p>` : ""}
+
+        <div  className="line"></div>
+
+        <!-- Barcode -->
+        <div  className="center">
+          <img  className="barcode" src="${barcodeUrl}" alt="Invoice Barcode"/>
+          <p>Invoice #${order.id}</p>
+        </div>
+
+        <p  className="center">Thank you for your purchase!</p>
+      </body>
+    </html>
+  `;
+
+  printWindow.document.write(htmlContent);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+  printWindow.close();
+};
+
+
+
+  const handleDownloadPDF = async () => {
+    if (!selectedOrder) return;
+    await handleDownloadOrderPDF(selectedOrder, toast);
+  };
+
+  const handleRefreshOrders = () => {
+    loadOrders();
+    toast({
+      title: "Refreshing Orders",
+      description: "Please wait...",
+    });
+  };
+
+  const resetFilters = () => {
+    setStartDate("");
+    setEndDate("");
+    setSearchText("");
+    setPage(0);
+    loadOrders("", "", "");
+  };
+
+  // Pagination handlers
+  const nextPage = () => {
+    if (pageInfo && page < pageInfo.totalPages - 1) setPage(page + 1);
+  };
+
+  const prevPage = () => {
+    if (page > 0) setPage(page - 1);
+  };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Recent Refunds {`(${pageInfo?.totalElements==undefined?"...":pageInfo?.totalElements})`}</h2>
+    <div className="h-full flex flex-col">
+      {/* <POSHeader /> */}
 
+      {/* Page Header */}
+      <div className="p-4 bg-card border-b flex justify-between items-center gap-5">
+        <h1 className="text-2xl font-bold flex items-center gap-3"><span className="w-4 h-4 bg-red-500"></span>Order Refund History</h1>
+        <Button variant="outline" onClick={handleRefreshOrders} disabled={loading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
+      </div>
+      <pre>
+        
+{JSON.stringify(refunds,null,2)}
+      </pre>
       {/* Filters */}
-      <div className="flex gap-2 mb-4">
+      <div className="p-4 md:flex gap-2 items-center flex-wrap">
+        <input
+          type="datetime-local"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="border p-1 m-1"
+          placeholder="Start Date"
+        />
+        <input
+          type="datetime-local"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="border p-1 m-1"
+          placeholder="End Date"
+        />
         <input
           type="text"
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border p-1 rounded flex-1"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="border p-1 m-1"
+          placeholder="Search by ID or Customer"
         />
-        <input
-          type="date"
-          value={start}
-          onChange={(e) => setStart(e.target.value)}
-          className="border p-1 rounded"
-        />
-        <input
-          type="date"
-          value={end}
-          onChange={(e) => setEnd(e.target.value)}
-          className="border p-1 rounded"
-        />
+
+        <select
+          value={size}
+          onChange={(e) => setSize(Number(e.target.value))}
+          className="border p-1 m-1"
+        >
+          <option value={5}>5 per page</option>
+          <option value={10}>10 per page</option>
+          <option value={20}>20 per page</option>
+          <option value={50}>50 per page</option>
+        </select>
+
+        <Button onClick={() => loadOrders()} disabled={loading} size="sm" className="m-1">
+          Filter
+        </Button>
+        <Button variant="outline" onClick={resetFilters} disabled={loading} size="sm" className="m-1">
+          Reset
+        </Button>
       </div>
 
-      
-      {error && <p className="text-red-500">{error}</p>}
-      <div className="flex justify-end ">
-        {loading&&<span  className="relative flex size-3 ">
-        <span  className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
-        <span  className="relative inline-flex size-3 rounded-full bg-sky-500"></span>
-        </span>}
-        
+      {/* Main Content */}
+      <div className="flex-1 p-4 overflow-auto">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+            <Loader2 className="animate-spin h-16 w-16 text-primary" />
+            <p className="mt-4">Loading refunds...</p>
+          </div>
+        ) : refunds && refunds.length > 0 ? (
+          <>
+            {/* Pagination */}
+            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+              <div className="text-sm">
+                Showing {pageInfo ? page * size + 1 : 0} -{" "}
+                {pageInfo ? Math.min((page + 1) * size, pageInfo.totalElements) : 0} of{" "}
+                {pageInfo?.totalElements || 0} refunds
+              </div>
+              <div className="flex gap-2 items-center">
+                <Button variant="outline" disabled={page === 0 || loading} onClick={prevPage}>
+                  Prev
+                </Button>
+                {pageInfo &&
+                  Array.from({ length: pageInfo.totalPages }, (_, i) => i)
+                    .slice(Math.max(0, page - 2), Math.min(pageInfo.totalPages, page + 3))
+                    .map((i) => (
+                      <Button
+                        key={i}
+                        variant={i === page ? "default" : "outline"}
+                        onClick={() => setPage(i)}
+                        disabled={loading}
+                      >
+                        {i + 1}
+                      </Button>
+                    ))}
+                <Button
+                  variant="outline"
+                  disabled={pageInfo?.page === pageInfo?.totalPages - 1 || loading}
+                  onClick={nextPage}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+
+            {/* Orders Table */}
+            <OrderTable
+              refunds={refunds}
+              handleViewOrder={handleViewOrder}
+              handlePrintInvoice={handlePrintInvoice}
+            />
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+            <SearchIcon size={48} strokeWidth={1} />
+            <p className="mt-4">No refunds found</p>
+            <p className="text-sm">Try refreshing or adjusting filters</p>
+          </div>
+        )}
       </div>
-      <table className="w-full border-collapse border">
-        <thead>
-          <tr>
-            <th className="border p-2">ID</th>
-            <th className="border p-2">OrderID</th>
-            <th className="border p-2">Customer</th>
-            <th className="border p-2">Total Amount</th>
-            <th className="border p-2">Cashier</th>
-            <th className="border p-2">Date</th>
-            <th className="border p-2">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-            {/* {loading && <tr><td colSpan={5}>Loading refunds...</td></tr>} */}
-          { refunds.length > 0 ? (
-            refunds.map((r) => (
-              <tr key={r.id}>
-                <td className="border p-2">{r.id}</td>
-                <td className="border p-2 text-center">{r?.order?.id}</td>
 
-               
-                <td className="border p-2"><span className="float-end text-neutral-500 text-sm"> #{r?.customer?.id}</span>{r.customer?.fullName || "-"}</td>
-                <td className="border p-2 text-right">{r.totalAmount.toFixed(2)}</td>
-                                <td className="border p-2 text-center">#{r.cashierId || "-"}</td>
+      {/* Order Details Modal */}
+      <Dialog open={showOrderDetailsDialog} onOpenChange={setShowOrderDetailsDialog}>
+        {selectedOrder && (
+          <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Order Refund Details - Invoice</DialogTitle>
+            </DialogHeader>
 
-                <td className="border p-2 text-right">{new Date(r.createdAt).toLocaleString()}</td>
-                <td className="border p-2 text-center">
-Refunded
-                </td>
-              </tr>
-            ))
-          ) : (
-            !loading?<tr>
-              <td colSpan={5} className="text-center p-4 text-gray-500">
-                No refunds found.
-              </td>
-            </tr>:<tr>
-              <td colSpan={5}>
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
-        <Loader2 className="animate-spin h-8 w-8 mb-4" />
-        <p>Loading refunds...</p>
-      </div>
-              </td>
-            </tr>
-          )}
-          {/* {JSON.stringify(pageInfo)} */}
-        </tbody>
-      </table>
-{/* {JSON.stringify(refunds)} */}
-      {/* Pagination */}
-      {pageInfo && pageInfo.totalPages > 1 && (
-        <div className="flex justify-between mt-4 items-center">
-          <button
-            onClick={handlePrevPage}
-            disabled={page === 0}
-            className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer"
-          >
-            Previous
-          </button>
-          <span>
-            Page {pageInfo.page + 1} of {pageInfo.totalPages}
-          </span>
-          <button
-            onClick={handleNextPage}
-            disabled={page >= pageInfo.totalPages - 1}
-            className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer"
-          >
-            Next
-          </button>
-        </div>
-      )}
-       <div className="text-4xl fixed bottom-6 right-8">
+            <OrderDetails selectedOrder={selectedOrder} />
 
-{loading&&<div  class="flex items-center gap-2">
-  <span class="sr-only">Loading…</span>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={handleDownloadPDF}>
+                <Download className="h-4 w-4 mr-2" />
+                Download PDF
+              </Button>
 
-  <div class="flex items-end space-x-1">
-    <span class="w-2.5 h-2.5 rounded-full bg-green-700 animate-bounce" style={{animationDelay:"0s"}}></span>
-    <span class="w-2.5 h-2.5 rounded-full bg-green-700 animate-bounce" style={{animationDelay:"0.12s"}}></span>
-    <span class="w-2.5 h-2.5 rounded-full bg-green-700 animate-bounce" style={{animationDelay:"0.24s"}}></span>
-  </div>
-</div>}
-        
-
-
-
-      </div>
+              <Button onClick={() => handlePrintInvoice(selectedOrder)}>
+                <PrinterIcon className="h-4 w-4 mr-2" />
+                Print Invoice
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog>
     </div>
   );
 };
