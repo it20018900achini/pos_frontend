@@ -34,9 +34,9 @@ const RecentRefunds = () => {
     const { branch } = useSelector((state) => state.branch);
     const branchId = branch?.id;
   // Load Orders
-  const loadOrders = (start = startDate, end = endDate, search = searchText) => {
+  const loadOrders = (branchId,start = startDate, end = endDate, search = searchText) => {
     if (!userProfile?.id) return;
-
+// alert(branchId)
     const startISO = start ? new Date(start).toISOString() : undefined;
     const endISO = end ? new Date(end).toISOString() : undefined;
 
@@ -54,8 +54,8 @@ const RecentRefunds = () => {
   };
 
   useEffect(() => {
-    if (userProfile?.id) loadOrders();
-  }, [userProfile, page, size]);
+    if (userProfile?.id) branchId&&loadOrders(branchId);
+  }, [userProfile, page, size,branchId]);
 
   useEffect(() => {
     if (error) {
@@ -197,7 +197,7 @@ const handlePrintInvoice = (order, storeName = "STORE NAME", storeLogoUrl) => {
   };
 
   const handleRefreshOrders = () => {
-    loadOrders();
+    loadOrders(branchId);
     toast({
       title: "Refreshing Orders",
       description: "Please wait...",
@@ -209,7 +209,7 @@ const handlePrintInvoice = (order, storeName = "STORE NAME", storeLogoUrl) => {
     setEndDate("");
     setSearchText("");
     setPage(0);
-    loadOrders("", "", "");
+    loadOrders(branchId,"", "", "");
   };
 
   // Pagination handlers
@@ -235,7 +235,6 @@ const handlePrintInvoice = (order, storeName = "STORE NAME", storeLogoUrl) => {
       </div>
       <pre>
         
-{JSON.stringify(refunds,null,2)}
       </pre>
       {/* Filters */}
       <div className="p-4 md:flex gap-2 items-center flex-wrap">

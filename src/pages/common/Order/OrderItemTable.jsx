@@ -50,7 +50,7 @@ const OrderItemTable = ({ selectedOrder }) => {
       returnReason: reason,
       returnQuantity: Number(quantity),
     };
-    alert(JSON.stringify(payload));
+    // alert(JSON.stringify(payload));
 
     try {
       const response = await fetch(

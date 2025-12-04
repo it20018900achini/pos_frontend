@@ -15,7 +15,7 @@ import CompareItems from "./CompareItems";
 import { getFlattenedRefundSummaryWithTotals,  } from "./getFlattenedRefundSummaryWithTotals";
 import { getRecentOrdersByBranchPagin } from "@/Redux Toolkit/features/order/orderThunks";
 
-const RecentOrders = () => {
+const RecentOrders = (branchId) => {
 
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -35,12 +35,10 @@ const RecentOrders = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [searchText, setSearchText] = useState("");
-
-    const { branch } = useSelector((state) => state.branch);
-    const branchId = branch?.id;
-  const loadOrders = (start = startDate, end = endDate, search = searchText) => {
+// alert(JSON.stringify(branchId))
+  const loadOrders = (branchId,start = startDate, end = endDate, search = searchText) => {
     if (!userProfile?.id) return;
-
+// alert(branchId)
     const startISO = start ? new Date(start).toISOString() : undefined;
     const endISO = end ? new Date(end).toISOString() : undefined;
 
@@ -58,8 +56,10 @@ const RecentOrders = () => {
   };
 
   useEffect(() => {
-    loadOrders();
-  }, [userProfile, page, size]);
+    if (branchId) {
+    loadOrders(branchId?.branchId);
+    }
+  }, [userProfile, page, size,branchId]);
 
   useEffect(() => {
     if (error) {

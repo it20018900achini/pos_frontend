@@ -7,7 +7,7 @@ function Orders() {
       const { branch } = useSelector((state) => state.branch);
       const branchId = branch?.id;
   return (
-    <div><RecentOrders branchId={branchId}/></div>
+    <div >{branchId&&<RecentOrders branchId={branchId}/>}</div>
   )
 }
 

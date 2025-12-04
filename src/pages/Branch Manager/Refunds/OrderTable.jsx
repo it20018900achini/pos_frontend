@@ -14,16 +14,16 @@ import { EyeIcon } from "lucide-react";
 import { getFlattenedRefundSummaryWithTotals } from "./getFlattenedRefundSummaryWithTotals";
 
 const OrderTable = ({
-  orders = [],
+  refunds = [],
   handleViewOrder,
   handleReturnOrder,
   handlePrintInvoice,
   handleInitiateReturn,
 }) => {
-  if (!Array.isArray(orders) || orders.length === 0) {
+  if (!Array.isArray(refunds) || refunds.length === 0) {
     return (
       <div className="text-center text-muted-foreground py-6">
-        No orders found
+        No refunds found
       </div>
     );
   }
@@ -43,7 +43,7 @@ const OrderTable = ({
       </TableHeader>
 
       <TableBody>
-        {orders.map((order) => (
+        {refunds.map((order) => (
           <Fragment key={order.id}>
             
             {/* ✅ ORDER MAIN ROW */}

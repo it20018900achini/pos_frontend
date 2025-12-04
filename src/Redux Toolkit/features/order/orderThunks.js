@@ -357,7 +357,7 @@ if (end) {
 
       if (search) params.append("search", search);
 
-      const res = await api.get(`/api/orders/branch/t/${branchId}?${params.toString()}`, { headers });
+      const res = await api.get(`/api/orders/branch/t/${(branchId)}?${params.toString()}`, { headers });
 console.log(res)
       return {
         orders: res.data.content,
