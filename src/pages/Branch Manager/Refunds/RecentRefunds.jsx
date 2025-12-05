@@ -35,6 +35,9 @@ const RecentRefunds = () => {
 
     const { branch } = useSelector((state) => state.branch);
     const branchId = branch?.id;
+
+
+
   // Load Orders
   const loadOrders = (branchId,start = startDate, end = endDate, search = searchText) => {
     if (!userProfile?.id) return;
@@ -345,36 +348,19 @@ const exportRefundsExcelTwoSheets = () => {
   return (
     <div className="h-full flex flex-col">
       {/* <POSHeader /> */}
-<div className="flex gap-2">
-  <Button variant="outline" onClick={exportRefundsCSV} disabled={!refunds?.length}>
-    CSV
-  </Button>
-
-  <Button variant="outline" onClick={exportRefundsExcel} disabled={!refunds?.length}>
-    Excel
-  </Button>
-
-  <Button variant="outline" onClick={exportRefundsExcelTwoSheets} disabled={!refunds?.length}>
-    Excel (2 Sheets)
-  </Button>
-
-  <Button variant="outline" onClick={handleRefreshOrders} disabled={loading}>
-    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-    Refresh
-  </Button>
-</div>
+     
 
       {/* Page Header */}
-      <div className="p-4 bg-card border-b flex justify-between items-center gap-5">
+      {/* <div className="p-4 bg-card border-b flex justify-between items-center gap-5">
         <h1 className="text-2xl font-bold flex items-center gap-3"><span className="w-4 h-4 bg-red-500"></span>Order Refund History</h1>
         <Button variant="outline" onClick={handleRefreshOrders} disabled={loading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           Refresh
         </Button>
-      </div>
-      <pre>
+      </div> */}
+      {/* <pre>
         
-      </pre>
+      </pre> */}
       {/* Filters */}
       <div className="p-4 md:flex gap-2 items-center flex-wrap">
         <input
@@ -418,6 +404,24 @@ const exportRefundsExcelTwoSheets = () => {
         </Button>
       </div>
 
+<div className="flex gap-2 w-full justify-end">
+  <Button variant="outline" onClick={exportRefundsCSV} disabled={!refunds?.length}>
+    CSV
+  </Button>
+
+  <Button variant="outline" onClick={exportRefundsExcel} disabled={!refunds?.length}>
+    Excel
+  </Button>
+
+  <Button variant="outline" onClick={exportRefundsExcelTwoSheets} disabled={!refunds?.length}>
+    Excel (2 Sheets)
+  </Button>
+
+  <Button variant="outline" onClick={handleRefreshOrders} disabled={loading}>
+    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+    Refresh
+  </Button>
+</div>
       {/* Main Content */}
       <div className="flex-1 p-4 overflow-auto">
         {loading ? (
@@ -427,6 +431,13 @@ const exportRefundsExcelTwoSheets = () => {
           </div>
         ) : refunds && refunds.length > 0 ? (
           <>
+
+            {/* Orders Table */}
+            <OrderTable
+              refunds={refunds}
+              handleViewOrder={handleViewOrder}
+              handlePrintInvoice={handlePrintInvoice}
+            />
             {/* Pagination */}
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
               <div className="text-sm">
@@ -460,13 +471,6 @@ const exportRefundsExcelTwoSheets = () => {
                 </Button>
               </div>
             </div>
-
-            {/* Orders Table */}
-            <OrderTable
-              refunds={refunds}
-              handleViewOrder={handleViewOrder}
-              handlePrintInvoice={handlePrintInvoice}
-            />
           </>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
