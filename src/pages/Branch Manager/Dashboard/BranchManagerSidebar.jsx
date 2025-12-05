@@ -11,57 +11,21 @@ import {
   UserCircle,
   FileText,
   Settings,
-  LogOut
+  LogOut,
+  RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
 
 const navLinks = [
-  {
-    name: "Dashboard",
-    path: "/branch/dashboard",
-    icon: <LayoutDashboard className="w-5 h-5" />,
-  },
-  {
-    name: "Orders",
-    path: "/branch/orders",
-    icon: <ShoppingBag className="w-5 h-5" />,
-  },
-  {
-    name: "Refunds",
-    path: "/branch/refunds",
-    icon: <RefreshCw className="w-5 h-5" />,
-  },
-  {
-    name: "Transactions",
-    path: "/branch/transactions",
-    icon: <CreditCard className="w-5 h-5" />,
-  },
-  {
-    name: "Inventory",
-    path: "/branch/inventory",
-    icon: <Package className="w-5 h-5" />,
-  },
-  {
-    name: "Employees",
-    path: "/branch/employees",
-    icon: <Users className="w-5 h-5" />,
-  },
-  {
-    name: "Customers",
-    path: "/branch/customers",
-    icon: <UserCircle className="w-5 h-5" />,
-  },
-  {
-    name: "Reports",
-    path: "/branch/reports",
-    icon: <FileText className="w-5 h-5" />,
-  },
-  {
-    name: "Settings",
-    path: "/branch/settings",
-    icon: <Settings className="w-5 h-5" />,
-  },
+  { name: "Dashboard", path: "/branch/dashboard", icon: <LayoutDashboard /> },
+  { name: "Orders", path: "/branch/orders", icon: <ShoppingBag /> },
+  { name: "Refunds", path: "/branch/refunds", icon: <RefreshCw /> },
+  { name: "Transactions", path: "/branch/transactions", icon: <CreditCard /> },
+  { name: "Inventory", path: "/branch/inventory", icon: <Package /> },
+  { name: "Employees", path: "/branch/employees", icon: <Users /> },
+  { name: "Customers", path: "/branch/customers", icon: <UserCircle /> },
+  { name: "Reports", path: "/branch/reports", icon: <FileText /> },
+  { name: "Settings", path: "/branch/settings", icon: <Settings /> },
 ];
 
 export default function BranchManagerSidebar() {
@@ -76,49 +40,48 @@ export default function BranchManagerSidebar() {
   };
 
   return (
-    <aside className="h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col py-6 px-4 shadow-lg">
-      <div className="mb-8 text-2xl font-extrabold text-primary tracking-tight flex items-center gap-2">
-        <Package className="w-7 h-7 text-primary" />
-        Branch Manager
+    <aside className="w-64 h-full bg-white text-gray-800 flex flex-col shadow-lg rounded-r-lg overflow-hidden">
+      
+      {/* Branding */}
+      <div className="flex flex-col items-center py-6 border-b border-gray-200">
+        <Package className="w-10 h-10 text-green-500" />
+        <h1 className="text-xl font-bold mt-2">Branch Manager</h1>
       </div>
+
+      {/* Branch Info */}
       {branch && (
-        <div className="mb-6 px-4 py-3 bg-sidebar-accent rounded-lg">
-          <h3 className="font-medium text-sidebar-accent-foreground">{branch.name}</h3>
-          <p className="text-xs text-sidebar-accent-foreground/70 mt-1">{branch.address}</p>
+        <div className="mx-4 my-4 p-3 bg-gray-100 rounded-xl shadow-sm">
+          <h3 className="font-semibold">{branch.name}</h3>
+          <p className="text-xs mt-1 text-gray-500">{branch.address}</p>
         </div>
       )}
-      <nav className="flex-1 overflow-y-auto">
-        <ul className="space-y-2">
-          {navLinks.map((link) => (
-            <li key={link.name}>
-              <Link
-                to={link.path}
-                className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-base font-medium group ${
-                  location.pathname.startsWith(link.path)
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground shadow"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-2 space-y-2">
+        {navLinks.map((link) => {
+          const active = location.pathname.startsWith(link.path);
+          return (
+            <Link
+              key={link.name}
+              to={link.path}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm
+                ${active
+                  ? "bg-green-100 text-green-600 shadow"
+                  : "hover:bg-gray-100 hover:text-green-500"
                 }`}
-              >
-                <span
-                  className={`transition-colors ${
-                    location.pathname.startsWith(link.path)
-                      ? "text-sidebar-primary"
-                      : "text-sidebar-foreground/60 group-hover:text-sidebar-primary"
-                  }`}
-                >
-                  {link.icon}
-                </span>
-                {link.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
+            >
+              <span className="w-5 h-5">{link.icon}</span>
+              <span>{link.name}</span>
+            </Link>
+          );
+        })}
       </nav>
-      <div className="mt-auto">
+
+      {/* Footer Logout */}
+      <div className="px-4 py-4 mt-auto flex flex-col gap-3 border-t border-gray-200">
         <Button
           onClick={handleLogout}
-          variant=""
-          className="flex items-center gap-3 rounded-lg transition-colors text-base font-medium w-full text-left "
+          className="flex items-center gap-2 w-full justify-center rounded-xl bg-red-500 hover:bg-red-600 text-white"
         >
           <LogOut className="w-5 h-5" />
           Logout

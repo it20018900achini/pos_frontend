@@ -1,49 +1,50 @@
 import React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "../../../components/ui/button";
+import { Button } from "@/components/ui/button";
 import { useSidebar } from "../../../context/hooks/useSidebar";
-import { ChefHat } from "lucide-react";
+import { Search, Users, CreditCard, Menu } from "lucide-react";
 import { settings } from "../../../constant";
 
 const POSHeader = () => {
-  const {setSidebarOpen} = useSidebar();
+  const { setSidebarOpen } = useSidebar();
+
   return (
-    <div className="bg-green-700 border-b px-6 py-4 text-white">
+    <header className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 text-white shadow-md">
       <div className="flex items-center justify-between">
-        <div>
+
+        {/* Left Section */}
+        <div className="flex items-center gap-4">
           <Button
-            className="z-10 p-2 rounded shadow-lg border border-border text-neutral-800 bg-white hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background focus:ring-ring"
             onClick={() => setSidebarOpen(true)}
-            aria-label="Open sidebar"
+            className="p-2 rounded-md bg-white/20 hover:bg-white/30"
           >
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
+            <Menu className="h-5 w-5" />
+          </Button>
+
+          <div>
+            <h1 className="text-2xl font-bold tracking-wide">
+              {settings?.businessName}
+            </h1>
+            <p className="text-sm opacity-80">Point of Sale Dashboard</p>
+          </div>
+        </div>
+
+        {/* Right Section */}
+        <div className="flex items-center gap-3">
+          <Button className="bg-white/20 hover:bg-white/30 text-white">
+            <Search className="h-4 w-4 mr-2" /> Search
+          </Button>
+
+          <Button className="bg-white/20 hover:bg-white/30 text-white">
+            <Users className="h-4 w-4 mr-2" /> Customer
+          </Button>
+
+          <Button className="bg-white text-indigo-600 hover:bg-gray-100">
+            <CreditCard className="h-4 w-4 mr-2" /> Payment
           </Button>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold "> {settings?.businessName}</h1>
-          {/* <p className="text-sm text-muted-foreground">
-           
-            Create new order</p> */}
-        </div>
-        <div className="flex items-center space-x-2">
-          {/* <Badge variant="outline" className="text-xs">
-            F1: Search | F2: Discount | F3: Customer | Ctrl+Enter: Payment
-          </Badge> */}
-        </div>
+
       </div>
-    </div>
+    </header>
   );
 };
 

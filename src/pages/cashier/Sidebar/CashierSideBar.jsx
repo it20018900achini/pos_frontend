@@ -1,9 +1,9 @@
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useLocation } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { getBranchById } from "../../../Redux Toolkit/features/branch/branchThunks";
 import { Button } from "../../../components/ui/button";
-import { LogOutIcon } from "lucide-react";
+import { LogOutIcon, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { logout } from "../../../Redux Toolkit/features/user/userThunks";
 import { ThemeToggle } from "../../../components/theme-toggle";
@@ -12,92 +12,98 @@ import BranchInfo from "./BranchInfo";
 const CashierSideBar = ({ navItems, onClose }) => {
   const dispatch = useDispatch();
   const { userProfile } = useSelector((state) => state.user);
-  const { branch, loading, error } = useSelector((state) => state.branch);
-  const navigate=useNavigate();
+  const { branch } = useSelector((state) => state.branch);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (userProfile && userProfile.branchId) {
+    if (userProfile?.branchId) {
       dispatch(
         getBranchById({
           id: userProfile.branchId,
           jwt: localStorage.getItem("jwt"),
         })
       );
-      
     }
   }, [dispatch, userProfile]);
 
   const handleLogout = () => {
-    dispatch(logout())
-    navigate("/") 
+    dispatch(logout());
+    navigate("/");
   };
 
   return (
-    <div className="w-64 border-r border-border bg-sidebar p-4 flex flex-col h-full relative">
+    <aside
+      className="
+        w-64 h-full bg-sidebar text-sidebar-foreground 
+        border-r border-border px-5 py-5 
+        flex flex-col relative shadow-lg
+        overflow-y-auto overflow-x-hidden
+      "
+    >
+      {/* Close */}
       <Button
-        className="absolute top-2 right-2 rounded"
         onClick={onClose}
         aria-label="Close sidebar"
+        className="absolute top-3 right-3 p-2 rounded-full bg-white text-black hover:bg-gray-200 z-50 shadow-md"
       >
-        <svg
-          className="h-5 w-5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
+        <X className="h-5 w-5" />
       </Button>
-      <div className="flex items-center justify-center p-2 mb-6">
-        <h1 className="text-xl font-bold text-sidebar-foreground">POS System</h1>
+
+      {/* Branding */}
+      <div className="flex flex-col items-center gap-1 mb-8">
+        <div className="text-2xl font-bold tracking-wide">Cashier</div>
+        <div className="text-sm opacity-70">POS Workstation</div>
       </div>
 
-      <nav className="space-y-2 flex-1">
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`flex items-center justify-between p-3 rounded-md hover:bg-sidebar-accent transition-colors ${
-              location.pathname === item.path
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground"
-            }`}
-            onClick={() => {
-              if (onClose) onClose();
-            }}
-          >
-            <div className="flex items-center gap-3">
-              {item.icon}
-              <span>{item.label}</span>
-            </div>
-        
-          </Link>
-        ))}
+      {/* Navigation */}
+      <nav className="flex-1 space-y-1">
+        {navItems.map((item) => {
+          const active = location.pathname === item.path;
+
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`
+                flex items-center gap-3 px-4 py-3 rounded-xl border
+                transition-all text-sm font-medium
+                ${
+                  active
+                    ? "bg-accent border-accent text-accent-foreground shadow-sm"
+                    : "border-transparent hover:bg-accent/30 hover:border-accent/40"
+                }
+              `}
+              onClick={() => onClose && onClose()}
+            >
+              <span className="w-5 h-5 flex items-center">{item.icon}</span>
+              {item.label}
+            </Link>
+          );
+        })}
       </nav>
 
-      {branch && <BranchInfo />}
-      <Separator className="my-4" />
+      {/* Branch Info */}
+      <div className="mt-6">{branch && <BranchInfo />}</div>
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-center mb-2">
+      <Separator className="my-5" />
+
+      {/* Footer */}
+      <div className="flex flex-col space-y-4">
+        <div className="flex justify-center">
           <ThemeToggle />
         </div>
-   
+
         <Button
-          variant="outline"
-          className="w-full justify-start text-destructive hover:text-destructive"
+          variant="destructive"
           onClick={handleLogout}
+          className="w-full rounded-lg flex items-center gap-2"
         >
-          <LogOutIcon className="mr-2 h-4 w-4" />
+          <LogOutIcon className="h-4 w-4" />
           End Shift & Logout
         </Button>
       </div>
-    </div>
+    </aside>
   );
 };
 

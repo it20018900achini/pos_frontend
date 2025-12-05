@@ -202,7 +202,7 @@ const [pload, setPload] = useState(true);
           <div className="flex items-center justify-center h-64">
             <div className="flex flex-col items-center space-y-4">
               <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-              <p className="text-muted-foreground">Loading products...</p>
+              <p className="text-muted-foreground">Loading products1...</p>
             </div>
           </div>
         ) : getDisplayProducts().length === 0 ? (
