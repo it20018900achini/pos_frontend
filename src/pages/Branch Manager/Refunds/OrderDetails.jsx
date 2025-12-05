@@ -1,18 +1,15 @@
 
-// import OrderInformation from "./OrderInformation";
-// import CustomerInformation from "./CustomerInformation";
+import OrderInformation from "./OrderInformation";
+import CustomerInformation from "./CustomerInformation";
+import OrderItemTable from "@/pages/common/Order/OrderItemTable";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import ReturnMode from "./ReturnMode";
+// import ReturnMode from "./ReturnMode";
 import { useState } from "react";
-// import OrderItemTable from "@/common/Order/OrderItemTable";
-
-import { getFlattenedRefundSummaryWithTotals } from "./getFlattenedRefundSummaryWithTotals";
-import OrderItemTable from "../../common/Order/OrderItemTable";
 const OrderDetails = ({ selectedOrder }) => {
-  const totals=getFlattenedRefundSummaryWithTotals(selectedOrder)?.totals
-    const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  
+    // const [showPaymentDialog, setShowPaymentDialog] = useState(false);
     // const [showReceiptDialog, setShowReceiptDialog] = useState(false);
 
 
@@ -20,36 +17,14 @@ const OrderDetails = ({ selectedOrder }) => {
 
   // const dispatch = useDispatch();
 
-  const handlePayment = () => {
-    // if (cartItems.length === 0) {
-    //   toast({
-    //     title: "Empty Cart",
-    //     description: "Please add items to cart before proceeding to payment",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-
-    // Check if customer is selected
-    // if (!selectedCustomer) {
-    //   toast({
-    //     title: "Customer Required",
-    //     description: "Please select a customer before proceeding to payment",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-
-    setShowPaymentDialog(true);
-  };
 
   
 
   return (
     <div>
       <div className="grid grid-cols-2 gap-4 mb-4">
-        {/* <OrderInformation selectedOrder={selectedOrder} />
-        <CustomerInformation selectedOrder={selectedOrder} /> */}
+        <OrderInformation selectedOrder={selectedOrder} />
+        <CustomerInformation selectedOrder={selectedOrder} />
       </div>
       <Card className={"mb-2"}>
 <div className="flex w-full px-4">
@@ -58,31 +33,15 @@ const OrderDetails = ({ selectedOrder }) => {
 </div></Card>
        <Card>
         <CardContent className="p-4">
-          <div className="flex justify-end mb-1">
-
-{totals?.totalAvailableQuantity>0?
+          <div>
 
 
-<Button
-            className={`py-3 text-lg font-semibold `}
-            size={`sm`}
-            onClick={handlePayment}
-            // disabled={cartItems.length === 0}
-          >
-            
-            
-          
-            Return
-          </Button>:<span className="text-red-500">All Refunded</span>}
-
-          
-
-            <ReturnMode 
+            {/* <ReturnMode 
         showPaymentDialog={showPaymentDialog}
         setShowPaymentDialog={setShowPaymentDialog}
         setShowReceiptDialog={false}
         selectedOrder={selectedOrder}
-        />
+        /> */}
 
 
           </div>

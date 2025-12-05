@@ -69,38 +69,22 @@ const OrderTable = ({
 
               <TableCell>
                 <Badge
-                  className={
-                    order.hasReturnCount>0
-                      ? "bg-red-500 text-white"
-                      : "bg-green-600 text-white"
+                  className={"bg-red-500 text-white"
                   }
                 >
-                  {getFlattenedRefundSummaryWithTotals(order)?.totals?.totalPrice==order.totalAmount?"All REFUNDED":order.hasReturnCount>0? "REFUNDED": "COMPLETE"}
-                  {}
+                  REFUNDED
                 </Badge>
               </TableCell>
 
               <TableCell className="text-right">
-                <Button
-                  size="sm"
-                  onClick={() => handleViewOrder(order)}
-                  className="mr-1"
-
-                >
-                  Order
-                </Button>
-                {order.hasReturnCount>0?<Button
-                  onClick={() => handleReturnOrder(order)}
-                  size="sm"
-                >
-                  Refunds
-                </Button>:<Button
-                  size="sm"
-                  varient="gost"
-                  disabled="true"
-                >
-                  Refunds
-                </Button>}
+                
+                  <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleViewOrder(order)}
+                                >
+                                  <EyeIcon className="h-4 w-4" />
+                                </Button>
                 
                 
               </TableCell>

@@ -349,6 +349,10 @@ const exportRefundsExcelTwoSheets = () => {
     <div className="h-full flex flex-col">
       {/* <POSHeader /> */}
      
+      <div className="p-4 bg-card border-b flex justify-between items-center">        <h1 className="text-2xl font-bold flex items-center gap-3"><span className="w-4 h-4 bg-red-500"></span>Refund  History</h1>
+
+        
+      </div>
 
       {/* Page Header */}
       {/* <div className="p-4 bg-card border-b flex justify-between items-center gap-5">
@@ -481,7 +485,6 @@ const exportRefundsExcelTwoSheets = () => {
         )}
       </div>
 
-      {/* Order Details Modal */}
       <Dialog open={showOrderDetailsDialog} onOpenChange={setShowOrderDetailsDialog}>
         {selectedOrder && (
           <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
@@ -505,6 +508,30 @@ const exportRefundsExcelTwoSheets = () => {
           </DialogContent>
         )}
       </Dialog>
+      {/* Order Details Modal */}
+      {/* <Dialog open={showOrderDetailsDialog} onOpenChange={setShowOrderDetailsDialog}>
+        {selectedOrder && (
+          <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Order Refund Details - Invoice</DialogTitle>
+            </DialogHeader>
+
+            <OrderDetails selectedOrder={selectedOrder} />
+
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={handleDownloadPDF}>
+                <Download className="h-4 w-4 mr-2" />
+                Download PDF
+              </Button>
+
+              <Button onClick={() => handlePrintInvoice(selectedOrder)}>
+                <PrinterIcon className="h-4 w-4 mr-2" />
+                Print Invoice
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        )}
+      </Dialog> */}
     </div>
   );
 };

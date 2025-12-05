@@ -52,9 +52,21 @@ const inventorySlice = createSlice({
         state.inventory = action.payload;
       })
 
-      .addCase(getInventoryByBranch.fulfilled, (state, action) => {
-        state.inventories = action.payload;
-      })
+
+.addCase(getInventoryByBranch.pending, (state) => {
+  state.loading = true;
+  state.error = null; // optional reset
+})
+
+.addCase(getInventoryByBranch.fulfilled, (state, action) => {
+  state.loading = false;
+  state.inventories = action.payload;
+})
+
+.addCase(getInventoryByBranch.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload || "Failed to load inventory";
+})
 
       .addCase(getInventoryByProduct.fulfilled, (state, action) => {
         state.inventory = action.payload;
