@@ -12,68 +12,20 @@ import {
   FileText,
   Tag,
   Truck,
-  CreditCard,
 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
-import { BadgeDollarSign } from "lucide-react";
 
 const navLinks = [
-  {
-    name: "Dashboard",
-    path: "/store/dashboard",
-    icon: <LayoutDashboard className="w-5 h-5" />,
-  },
-  {
-    name: "Stores",
-    path: "/store/stores",
-    icon: <Store className="w-5 h-5" />,
-  },
-  {
-    name: "Branches",
-    path: "/store/branches",
-    icon: <Store className="w-5 h-5" />,
-  },
-  {
-    name: "Products",
-    path: "/store/products",
-    icon: <ShoppingCart className="w-5 h-5" />,
-  },
-  {
-    name: "Categories",
-    path: "/store/categories",
-    icon: <Tag className="w-5 h-5" />,
-  },
-  {
-    name: "Employees",
-    path: "/store/employees",
-    icon: <Users className="w-5 h-5" />,
-  },
-  {
-    name: "Alerts",
-    path: "/store/alerts",
-    icon: <Truck className="w-5 h-5" />,
-  },
-  {
-    name: "Sales",
-    path: "/store/sales",
-    icon: <BarChart2 className="w-5 h-5" />,
-  },
-
-  {
-    name: "Reports",
-    path: "/store/reports",
-    icon: <FileText className="w-5 h-5" />,
-  },
-  // {
-  //   name: "Upgrade Plan",
-  //   path: "/store/upgrade",
-  //   icon: <BadgeDollarSign className="w-5 h-5" />,
-  // },
-  {
-    name: "Settings",
-    path: "/store/settings",
-    icon: <Settings className="w-5 h-5" />,
-  },
+  { name: "Dashboard", path: "/store/dashboard", icon: <LayoutDashboard /> },
+  { name: "Stores", path: "/store/stores", icon: <Store /> },
+  { name: "Branches", path: "/store/branches", icon: <Store /> },
+  { name: "Products", path: "/store/products", icon: <ShoppingCart /> },
+  { name: "Categories", path: "/store/categories", icon: <Tag /> },
+  { name: "Employees", path: "/store/employees", icon: <Users /> },
+  { name: "Alerts", path: "/store/alerts", icon: <Truck /> },
+  { name: "Sales", path: "/store/sales", icon: <BarChart2 /> },
+  { name: "Reports", path: "/store/reports", icon: <FileText /> },
+  { name: "Settings", path: "/store/settings", icon: <Settings /> },
 ];
 
 export default function StoreSidebar() {
@@ -87,43 +39,44 @@ export default function StoreSidebar() {
   };
 
   return (
-    <aside className="h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col py-6 px-4 shadow-lg">
-      <div className="mb-8 text-2xl font-extrabold text-primary tracking-tight flex items-center gap-2">
-        <Store className="w-7 h-7 text-primary" />
-        POS Admin
+    <aside className="h-screen w-64 bg-white text-gray-800 flex flex-col shadow-xl rounded-r-xl overflow-hidden">
+      {/* Branding */}
+      <div className="flex items-center gap-2 px-6 py-6 border-b border-gray-200">
+        <Store className="w-8 h-8 text-green-600" />
+        <h1 className="text-xl font-bold text-gray-800">POS Admin</h1>
       </div>
-      <nav className="flex-1 overflow-y-auto">
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-3 mt-4">
         <ul className="space-y-2">
-          {navLinks.map((link) => (
-            <li key={link.name}>
-              <Link
-                to={link.path}
-                className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-base font-medium group ${
-                  location.pathname.startsWith(link.path)
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground shadow"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                }`}
-              >
-                <span
-                  className={`transition-colors ${
-                    location.pathname.startsWith(link.path)
-                      ? "text-sidebar-primary"
-                      : "text-sidebar-foreground/60 group-hover:text-sidebar-primary"
-                  }`}
+          {navLinks.map((link) => {
+            const active = location.pathname.startsWith(link.path);
+            return (
+              <li key={link.name}>
+                <Link
+                  to={link.path}
+                  className={`
+                    flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-200
+                    ${active
+                      ? "bg-green-100 border-green-300 text-green-700 shadow-md"
+                      : "border-transparent hover:bg-green-50 hover:border-green-200 hover:text-green-600"
+                    }
+                  `}
                 >
-                  {link.icon}
-                </span>
-                {link.name}
-              </Link>
-            </li>
-          ))}
+                  <span className="w-5 h-5">{link.icon}</span>
+                  {link.name}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </nav>
-      <div className="mt-auto">
+
+      {/* Footer Logout */}
+      <div className="px-4 py-4 mt-auto border-t border-gray-200">
         <Button
           onClick={handleLogout}
-          variant=""
-          className="w-full"
+          className="flex items-center gap-2 w-full justify-center rounded-xl bg-red-500 hover:bg-red-600 text-white"
         >
           Logout
         </Button>

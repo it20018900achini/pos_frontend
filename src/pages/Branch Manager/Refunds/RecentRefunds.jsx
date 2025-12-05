@@ -12,6 +12,8 @@ import OrderDetails from "./OrderDetails";
 
 import { getRecentRefundsByBranchPagin } from "@/Redux Toolkit/features/refund/refundThunks";
 import { handleDownloadOrderPDF } from "./pdf/pdfUtils";
+import * as XLSX from "xlsx";
+
 
 const RecentRefunds = () => {
   const dispatch = useDispatch();
@@ -221,9 +223,146 @@ const handlePrintInvoice = (order, storeName = "STORE NAME", storeLogoUrl) => {
     if (page > 0) setPage(page - 1);
   };
 
+
+
+  const exportRefundsCSV = () => {
+  if (!refunds || refunds.length === 0) return;
+
+  const headers = [
+    "Refund ID",
+    "Order ID",
+    "Customer",
+    "Created At",
+    "Total Amount",
+    "Cash",
+    "Credit",
+    "Items Count"
+  ];
+
+  const rows = refunds.map((r) => [
+    r.id,
+    r.order?.id || "N/A",
+    r.customer?.name || "Walk-in",
+    new Date(r.createdAt).toLocaleString(),
+    r.items.reduce(
+      (sum, item) => sum + (item.product?.sellingPrice || 0) * item.quantity,
+      0
+    ),
+    r.cash,
+    r.credit,
+    r.items.length,
+  ]);
+
+  const csvContent =
+    "data:text/csv;charset=utf-8," +
+    [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+
+  const link = document.createElement("a");
+  link.href = encodeURI(csvContent);
+  link.download = `refunds_${Date.now()}.csv`;
+  link.click();
+};
+
+
+  const exportRefundsExcel = () => {
+  if (!refunds || refunds.length === 0) return;
+
+  const data = refunds.map((r) => ({
+    "Refund ID": r.id,
+    "Order ID": r.order?.id || "N/A",
+    Customer: r.customer?.name || "Walk-in",
+    "Created At": new Date(r.createdAt).toLocaleString(),
+    Total: r.items.reduce(
+      (sum, item) => sum + (item.product?.sellingPrice || 0) * item.quantity,
+      0
+    ),
+    Cash: r.cash,
+    Credit: r.credit,
+    "Items Count": r.items.length,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Refunds");
+
+  XLSX.writeFile(workbook, `refunds_${Date.now()}.xlsx`);
+};
+
+const exportRefundsExcelTwoSheets = () => {
+  if (!refunds || refunds.length === 0) return;
+
+  // -----------------------------
+  // Sheet 1 — REFUNDS
+  // -----------------------------
+  const refundsSheetData = refunds.map((r) => ({
+    "Refund ID": r.id,
+    "Order ID": r.order?.id || "N/A",
+    Customer: r.customer?.name || "Walk-in",
+    "Created At": new Date(r.createdAt).toLocaleString(),
+    Total: r.items.reduce(
+      (sum, item) => sum + (item.product?.sellingPrice || 0) * item.quantity,
+      0
+    ),
+    Cash: r.cash,
+    Credit: r.credit,
+    "Items Count": r.items.length,
+  }));
+
+  const refundsSheet = XLSX.utils.json_to_sheet(refundsSheetData);
+
+  // -----------------------------
+  // Sheet 2 — ITEMS
+  // -----------------------------
+  const itemsSheetData = [];
+
+  refunds.forEach((refund) => {
+    refund.items.forEach((item) => {
+      itemsSheetData.push({
+        "Refund ID": refund.id,
+        "Order ID": refund.order?.id || "N/A",
+        "Item ID": item.id,
+        "Product Name": item.product?.name || item.name,
+        Qty: item.quantity,
+        Price: item.product?.sellingPrice || 0,
+        Total: item.quantity * (item.product?.sellingPrice || 0),
+        "Refund Date": new Date(refund.createdAt).toLocaleString(),
+      });
+    });
+  });
+
+  const itemsSheet = XLSX.utils.json_to_sheet(itemsSheetData);
+
+  // -----------------------------
+  // Build Workbook
+  // -----------------------------
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, refundsSheet, "Refunds");
+  XLSX.utils.book_append_sheet(workbook, itemsSheet, "Refund Items");
+
+  XLSX.writeFile(workbook, `refunds_with_items_${Date.now()}.xlsx`);
+};
+
   return (
     <div className="h-full flex flex-col">
       {/* <POSHeader /> */}
+<div className="flex gap-2">
+  <Button variant="outline" onClick={exportRefundsCSV} disabled={!refunds?.length}>
+    CSV
+  </Button>
+
+  <Button variant="outline" onClick={exportRefundsExcel} disabled={!refunds?.length}>
+    Excel
+  </Button>
+
+  <Button variant="outline" onClick={exportRefundsExcelTwoSheets} disabled={!refunds?.length}>
+    Excel (2 Sheets)
+  </Button>
+
+  <Button variant="outline" onClick={handleRefreshOrders} disabled={loading}>
+    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+    Refresh
+  </Button>
+</div>
 
       {/* Page Header */}
       <div className="p-4 bg-card border-b flex justify-between items-center gap-5">

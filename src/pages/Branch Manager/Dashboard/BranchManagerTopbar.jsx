@@ -10,12 +10,14 @@ export default function BranchManagerTopbar() {
   const { branch } = useSelector((state) => state.branch);
 
   return (
-    <header className="bg-background border-b px-6 py-4 flex items-center justify-between">
+    <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      
+      {/* Branch Info */}
       <div>
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-2xl font-bold text-gray-800">
           {branch ? branch.name : "Branch Dashboard"}
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-gray-500 mt-1">
           {new Date().toLocaleDateString("en-US", {
             weekday: "long",
             year: "numeric",
@@ -25,23 +27,27 @@ export default function BranchManagerTopbar() {
         </p>
       </div>
 
+      {/* Controls */}
       <div className="flex items-center gap-4">
+        {/* Theme Toggle */}
         <ThemeToggle />
-        
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
+
+        {/* Notifications */}
+        <Button variant="ghost" size="icon" className="relative group">
+          <Bell className="h-6 w-6 text-gray-600 group-hover:text-gray-800 transition-colors" />
+          <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs rounded-full bg-red-500 text-white shadow-md">
             3
           </Badge>
         </Button>
 
+        {/* User Info */}
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-            <User className="h-5 w-5 text-primary" />
+          <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center shadow-inner">
+            <User className="h-6 w-6 text-green-600" />
           </div>
-          <div className="hidden md:block">
-            <p className="text-sm font-medium text-foreground">{userProfile?.name || "Branch Manager"}</p>
-            <p className="text-xs text-muted-foreground">{userProfile?.email || "manager@example.com"}</p>
+          <div className="hidden md:flex flex-col">
+            <p className="text-sm font-semibold text-gray-800">{userProfile?.name || "Branch Manager"}</p>
+            <p className="text-xs text-gray-500">{userProfile?.email || "manager@example.com"}</p>
           </div>
         </div>
       </div>

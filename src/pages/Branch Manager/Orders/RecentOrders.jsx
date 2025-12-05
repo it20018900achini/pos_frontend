@@ -14,7 +14,7 @@ import { handleDownloadOrderPDF } from "./pdf/pdfUtils";
 import CompareItems from "./CompareItems";
 import { getFlattenedRefundSummaryWithTotals,  } from "./getFlattenedRefundSummaryWithTotals";
 import { getRecentOrdersByBranchPagin } from "@/Redux Toolkit/features/order/orderThunks";
-
+import * as XLSX from "xlsx";
 const RecentOrders = (branchId) => {
 
   const dispatch = useDispatch();
@@ -196,7 +196,125 @@ const RecentOrders = (branchId) => {
   const prevPage = () => { if (page > 0) setPage(page - 1); };
 
 
+// -------------------------
+// Export CSV
+// -------------------------
+const exportCSV = () => {
+  if (!orders || !orders.length) return;
 
+  const headers = [
+    "Order ID",
+    "Customer",
+    "Created At",
+    "Total",
+    "Cash",
+    "Credit",
+    "Items Count"
+  ];
+
+  const rows = orders.map((o) => [
+    o.id,
+    o.customer?.name || "Walk-in",
+    new Date(o.createdAt).toLocaleString(),
+    o.items.reduce(
+      (sum, item) => sum + (item.product?.sellingPrice || 0) * item.quantity,
+      0
+    ),
+    o.cash,
+    o.credit,
+    o.items.length,
+  ]);
+
+  const csvContent =
+    "data:text/csv;charset=utf-8," +
+    [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+
+  const link = document.createElement("a");
+  link.href = encodeURI(csvContent);
+  link.download = `orders_${Date.now()}.csv`;
+  link.click();
+};
+
+
+// -------------------------
+// Export Excel XLSX
+// -------------------------
+const exportExcel = () => {
+  if (!orders || !orders.length) return;
+
+  const data = orders.map((o) => ({
+    "Order ID": o.id,
+    Customer: o.customer?.name || "Walk-in",
+    "Created At": new Date(o.createdAt).toLocaleString(),
+    Total: o.items.reduce(
+      (sum, item) => sum + (item.product?.sellingPrice || 0) * item.quantity,
+      0
+    ),
+    Cash: o.cash,
+    Credit: o.credit,
+    "Items Count": o.items.length,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
+
+  XLSX.writeFile(workbook, `orders_${Date.now()}.xlsx`);
+};
+const exportExcelMultiSheet = () => {
+  if (!orders || !orders.length) return;
+
+  // -----------------------------
+  // Sheet 1: ORDERS
+  // -----------------------------
+  const orderSheetData = orders.map((o) => ({
+    "Order ID": o.id,
+    Customer: o.customer?.name || "Walk-in",
+    "Created At": new Date(o.createdAt).toLocaleString(),
+    Total: o.items.reduce(
+      (sum, item) => sum + (item.product?.sellingPrice || 0) * item.quantity,
+      0
+    ),
+    Cash: o.cash,
+    Credit: o.credit,
+    "Items Count": o.items.length,
+  }));
+
+  const ordersSheet = XLSX.utils.json_to_sheet(orderSheetData);
+
+  // -----------------------------
+  // Sheet 2: ITEMS
+  // -----------------------------
+  const itemsSheetData = [];
+
+  orders.forEach((order) => {
+    order.items.forEach((item) => {
+      itemsSheetData.push({
+        "Order ID": order.id,
+        "Item ID": item.id,
+        "Product Name": item.product?.name || item.name,
+        Qty: item.quantity,
+        Price: item.product?.sellingPrice || 0,
+        Total: item.quantity * (item.product?.sellingPrice || 0),
+        "Created At": new Date(order.createdAt).toLocaleString(),
+      });
+    });
+  });
+
+  const itemsSheet = XLSX.utils.json_to_sheet(itemsSheetData);
+
+  // -----------------------------
+  // Build Final Workbook
+  // -----------------------------
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, ordersSheet, "Orders");
+  XLSX.utils.book_append_sheet(workbook, itemsSheet, "Order Items");
+
+  // -----------------------------
+  // Download
+  // -----------------------------
+  XLSX.writeFile(workbook, `orders_with_items_${Date.now()}.xlsx`);
+};
 
   
   // const summaryWithTotals = getFlattenedRefundSummaryWithTotals(selectedOrder);
@@ -211,6 +329,7 @@ const RecentOrders = (branchId) => {
         </Button>
       </div>
 
+
       <div className="p-4 md:flex gap-2 items-center flex-wrap">
         <input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border p-1 m-1" placeholder="Start Date" />
         <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border p-1 m-1" placeholder="End Date" />
@@ -224,6 +343,24 @@ const RecentOrders = (branchId) => {
         <Button onClick={() => loadOrders(branchId?.branchId)} disabled={loading} size="sm" className="m-1">Filter</Button>
         <Button variant="outline" onClick={resetFilters} disabled={loading} size="sm" className="m-1">Reset</Button>
       </div>
+<div className="flex gap-2 w-full justify-end">
+  <Button variant="outline" onClick={exportCSV} disabled={!orders?.length}>
+    Export CSV
+  </Button>
+
+  <Button variant="outline" onClick={exportExcel} disabled={!orders?.length}>
+    Export Excel
+  </Button>
+
+  <Button variant="outline" onClick={exportExcelMultiSheet} disabled={!orders?.length}>
+    Export Excel (2 Sheets)
+  </Button>
+
+  <Button variant="outline" onClick={handleRefreshOrders} disabled={loading}>
+    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+    Refresh
+  </Button>
+</div>
 
       <div className="flex-1 p-4 overflow-auto">
         {loading ? (
@@ -233,7 +370,16 @@ const RecentOrders = (branchId) => {
           </div>
         ) : orders && orders.length > 0 ? (
           <>
-            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+           
+
+            <OrderTable
+              orders={orders}
+              handleViewOrder={handleViewOrder}
+              handleReturnOrder={handleReturnOrder}
+              handlePrintInvoice={handlePrintInvoice}
+              handleInitiateReturn={handleInitiateReturn}
+            />
+             <div className="border-t mt-5 pt-3 flex justify-between items-center mb-4 flex-wrap gap-2">
               <div className="text-sm">
                 Showing {pageInfo ? page * size + 1 : 0} - {pageInfo ? Math.min((page + 1) * size, pageInfo.totalElements) : 0} of {pageInfo?.totalElements || 0} orders
               </div>
@@ -247,14 +393,6 @@ const RecentOrders = (branchId) => {
                 <Button variant="outline" disabled={pageInfo?.page === pageInfo?.totalPages - 1 || loading} onClick={nextPage}>Next</Button>
               </div>
             </div>
-
-            <OrderTable
-              orders={orders}
-              handleViewOrder={handleViewOrder}
-              handleReturnOrder={handleReturnOrder}
-              handlePrintInvoice={handlePrintInvoice}
-              handleInitiateReturn={handleInitiateReturn}
-            />
           </>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
