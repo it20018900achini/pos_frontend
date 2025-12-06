@@ -5,54 +5,87 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { getCustomerSummaryById } from "../../../../../../Redux Toolkit/features/customerSummary/customerSummaryThunks";
 import { Separator } from "@/components/ui/separator";
+import { getCustomerSummaryById } from "../../../../../../Redux Toolkit/features/customerSummary/customerSummaryThunks";
+
+// Format LKR consistently
+const formatLKR = (value) =>
+  new Intl.NumberFormat("en-LK", {
+    style: "currency",
+    currency: "LKR",
+    minimumFractionDigits: 2,
+  }).format(value || 0);
 
 const CustomerSummary = ({ customerId }) => {
   const dispatch = useDispatch();
-  const { summary, loading, error } = useSelector((state) => state.customerSummary);
+  const { summary, loading, error } = useSelector(
+    (state) => state.customerSummary
+  );
 
   useEffect(() => {
     if (customerId) dispatch(getCustomerSummaryById(customerId));
   }, [dispatch, customerId]);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
-  if (!summary) return <p>No summary available</p>;
+  if (loading) return <p className="text-sm">Loading...</p>;
+  if (error) return <p className="text-sm text-red-500">Error: {error}</p>;
+  if (!summary) return <p className="text-sm">No summary available</p>;
 
   const metrics = [
-    { label: "Orders", value: summary.totalAmount,"sub":{
-      cash:summary.totalCash,
-      credit:summary.totalCredit
-    } },
-    { label: "Refunds", value: summary.totalRefundAmount,"sub":{
-      cash:summary.totalRefundCash,
-      credit:summary.totalRefundCredit
-    } },
-    { label: "Payments", value: summary.totalPaymentAmount,"sub":{
-      cash:summary.totalPaymentCash,
-      credit:summary.totalPaymentCredit
-    } },
+    {
+      label: "Orders",
+      value: summary.totalAmount,
+      sub: {
+        cash: summary.totalCash,
+        credit: summary.totalCredit,
+      },
+    },
+    {
+      label: "Refunds",
+      value: summary.totalRefundAmount,
+      sub: {
+        cash: summary.totalRefundCash,
+        credit: summary.totalRefundCredit,
+      },
+    },
+    {
+      label: "Payments",
+      value: summary.totalPaymentAmount,
+      sub: {
+        cash: summary.totalPaymentCash,
+        credit: summary.totalPaymentCredit,
+      },
+    },
   ];
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold mb-4">Customer Summary</h2>
-      
+     <pre>
+      {/* {JSON.stringify(summary,null,2)} */}
+      </pre> 
+      <h2 className="text-xl font-bold">Customer Summary</h2>
+
       <Separator />
 
-      {/* Metrics Grid */}
+      {/* Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {metrics.map((metric) => (
-          <Card key={metric.label} className="bg-white shadow-md">
-            <CardHeader>
-              <CardTitle className="flex justify-between overflow-auto">{metric.label}<span>LKR {metric.value}</span></CardTitle>
+          <Card
+            key={metric.label}
+            className="border bg-white/70 backdrop-blur-sm shadow-sm hover:shadow-md transition-all"
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex justify-between items-center">
+                <span>{metric.label}</span>
+                <span className="text-sm font-semibold text-blue-600">
+                  {formatLKR(metric.value)}
+                </span>
+              </CardTitle>
             </CardHeader>
-            <CardContent className="flex justify-between overflow-auto">
-              <p className="text-sm font-semibold text-green-500">CASH {metric.sub?.cash}</p>
-              <p className="text-sm font-semibold text-red-500">CREDIT {metric.sub?.credit}</p>
+
+            <CardContent className="pt-0 flex justify-between text-sm font-semibold">
+              <p className="text-green-600">Cash: {formatLKR(metric.sub.cash)}</p>
+              <p className="text-red-600">Credit: {formatLKR(metric.sub.credit)}</p>
             </CardContent>
           </Card>
         ))}

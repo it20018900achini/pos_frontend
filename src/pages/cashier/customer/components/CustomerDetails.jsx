@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, UserIcon, ArrowBigLeft } from 'lucide-react';
 import CustomerSummary from './customerPayments/components/CustomerSummary';
@@ -25,7 +25,8 @@ const CustomerDetails = ({ customer, loading = false }) => {
     setTabLoading(true);
     setTab(newTab);
     // simulate fetch delay for skeleton
-    setTimeout(() => setTabLoading(false), 300); 
+    setTabLoading(false)
+    // setTimeout(() => setTabLoading(false), 300); 
   };
 
   // Empty state

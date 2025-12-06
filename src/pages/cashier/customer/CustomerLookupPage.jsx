@@ -16,17 +16,11 @@ import {
   CustomerSearch,
   CustomerList,
   CustomerDetails,
-  PurchaseHistory,
   AddPointsDialog,
 } from "./components";
-import { clearCustomerOrders } from "../../../Redux Toolkit/features/order/orderSlice";
 import CustomerForm from "./CustomerForm";
 import POSHeader from "../components/POSHeader";
-// import { PaymentTablePagination } from "./components/customerPayments/PaymentTablePagination";
-import { Button } from "../../../components/ui/button";
-import RefundHistory from "./components/RefundHistory";
 import { getRefundsByCustomer } from "../../../Redux Toolkit/features/refund/refundThunks";
-import { clearCustomerRefunds } from "../../../Redux Toolkit/features/refund/refundSlice";
 
 const CustomerLookupPage = () => {
   const dispatch = useDispatch();
@@ -34,7 +28,6 @@ const CustomerLookupPage = () => {
 
   const { customers, loading: customerLoading, error: customerError } = useSelector((state) => state.customer);
   const { customerOrders, loading: ordersLoading, error: orderError } = useSelector((state) => state.order);
-  const { customerRefunds, loadingR, error: refundError } = useSelector((state) => state.refund);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -51,15 +44,15 @@ const CustomerLookupPage = () => {
   useEffect(() => {
     if (customerError) toast({ title: "Error", description: customerError, variant: "destructive" });
     if (orderError) toast({ title: "Error", description: orderError, variant: "destructive" });
-    if (refundError) toast({ title: "Error", description: refundError, variant: "destructive" });
-  }, [customerError, orderError, refundError, toast]);
+    // if (refundError) toast({ title: "Error", description: refundError, variant: "destructive" });
+  }, [customerError, orderError, toast]);
 
   const filteredCustomers = filterCustomers(customers, searchTerm);
 
   const handleSelectCustomer = (customer) => {
     setSelectedCustomer(customer);
-    dispatch(clearCustomerOrders());
-    dispatch(clearCustomerRefunds());
+    // dispatch(clearCustomerOrders());
+    // dispatch(clearCustomerRefunds());
     if (customer.id) {
       // dispatch(getOrdersByCustomer(customer.id));
       // dispatch(getRefundsByCustomer(customer.id));
@@ -115,10 +108,11 @@ const CustomerLookupPage = () => {
 
         {/* Right Column */}
         <div className="w-2/3 flex flex-col overflow-y-auto">
+        {/* <pre>{JSON.stringify(displayCustomer,null,2)}</pre> */}
           <CustomerDetails
             customer={displayCustomer}
             onAddPoints={() => setShowAddPointsDialog(true)}
-            loading={ordersLoading}
+            loading={false}
           />
 
 

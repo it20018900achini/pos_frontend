@@ -378,7 +378,7 @@ const Customers = () => {
                         <div>
                           <p className="text-sm font-medium">Total Orders</p>
                           <p className="text-sm text-gray-500">
-                            {displayCustomer.totalOrders} orders
+                            {customerOrders.length>0?displayCustomer?.totalOrders:"-"} orders
                           </p>
                         </div>
                       </div>
