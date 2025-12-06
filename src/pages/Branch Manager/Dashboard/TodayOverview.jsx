@@ -1,64 +1,37 @@
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { getChangeType } from "../data";
+import { getTodayOverview } from "@/Redux Toolkit/features/branchAnalytics/branchAnalyticsThunks";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import {
-  DollarSign,
-  ShoppingBag,
-  Users,
-  Package,
-} from "lucide-react";
+import { DollarSign, Repeat, ShoppingBag, Users, Package, ClipboardCheck } from "lucide-react";
 
 const TodayOverview = () => {
-  const { todayOverview, loading } = useSelector(
-    (state) => state.branchAnalytics
-  );
+  const dispatch = useDispatch();
+  const { todayOverview, loading } = useSelector((state) => state.branchAnalytics);
+
+  // -------------------------------
+  // State for date filtering
+  // -------------------------------
+  const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
+  const [endDate, setEndDate] = useState(new Date().toISOString().split("T")[0]);
+
+  const branchId = 52; // Replace with dynamic branchId if needed
+
+  // -------------------------------
+  // Fetch overview when dates change
+  // -------------------------------
+  useEffect(() => {
+    dispatch(getTodayOverview({ branchId, start: startDate, end: endDate }));
+  }, [branchId, startDate, endDate, dispatch]);
 
   const formatPercent = (num) => {
     if (num === undefined || num === null) return "-";
     const sign = num > 0 ? "+" : "";
     return `${sign}${num.toFixed(2)}%`;
   };
-
-  const kpis = [
-    {
-      title: "Today's Sales",
-      value: todayOverview?.totalSales,
-      formatted: todayOverview?.totalSales
-        ? `LKR ${todayOverview.totalSales.toLocaleString()}`
-        : "-",
-      icon: DollarSign,
-      change: formatPercent(todayOverview?.salesGrowth),
-      changeType: getChangeType(todayOverview?.salesGrowth),
-    },
-    {
-      title: "Orders Today",
-      value: todayOverview?.ordersToday,
-      formatted: todayOverview?.ordersToday ?? "-",
-      icon: ShoppingBag,
-      change: formatPercent(todayOverview?.orderGrowth),
-      changeType: getChangeType(todayOverview?.orderGrowth),
-    },
-    {
-      title: "Active Cashiers",
-      value: todayOverview?.activeCashiers,
-      formatted: todayOverview?.activeCashiers ?? "-",
-      icon: Users,
-      change: formatPercent(todayOverview?.cashierGrowth),
-      changeType: getChangeType(todayOverview?.cashierGrowth),
-    },
-    {
-      title: "Low Stock Items",
-      value: todayOverview?.lowStockItems,
-      formatted: todayOverview?.lowStockItems ?? "-",
-      icon: Package,
-      change: formatPercent(todayOverview?.lowStockGrowth),
-      changeType: getChangeType(todayOverview?.lowStockGrowth),
-    },
-  ];
 
   const getChangeColor = (type) => {
     switch (type) {
@@ -71,89 +44,161 @@ const TodayOverview = () => {
     }
   };
 
-  // ----------------------
-  // Skeleton Card
-  // ----------------------
-  const SkeletonCard = () => (
-    <Card className="rounded-xl shadow-sm animate-fade-out">
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between">
-          <div className="w-full">
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="h-6 w-32 mt-3" />
-            <Skeleton className="h-3 w-20 mt-3" />
-          </div>
-          <Skeleton className="h-12 w-12 rounded-full" />
+  const kpis = [
+    {
+      title: "Today's Sales",
+      value: todayOverview?.totalSales,
+      formatted: todayOverview?.totalSales ? `LKR ${todayOverview.totalSales.toLocaleString()}` : "-",
+      icon: DollarSign,
+      gradient: "bg-gradient-to-tr from-green-400 to-teal-400",
+      change: formatPercent(todayOverview?.salesGrowth),
+      changeType: getChangeType(todayOverview?.salesGrowth),
+    },
+    {
+      title: "Refunds Today",
+      value: todayOverview?.todayRefunds,
+      formatted: todayOverview?.todayRefunds ? `LKR ${todayOverview.todayRefunds.toLocaleString()}` : "-",
+      icon: Repeat,
+      gradient: "bg-gradient-to-tr from-yellow-400 to-pink-400",
+      change: formatPercent(todayOverview?.refundGrowth),
+      changeType: getChangeType(todayOverview?.refundGrowth),
+    },
+    {
+      title: "Orders Today",
+      value: todayOverview?.ordersToday,
+      formatted: todayOverview?.ordersToday ?? "-",
+      icon: ShoppingBag,
+      gradient: "bg-gradient-to-tr from-blue-400 to-indigo-400",
+      change: formatPercent(todayOverview?.orderGrowth),
+      changeType: getChangeType(todayOverview?.orderGrowth),
+    },
+    {
+      title: "Active Cashiers",
+      value: todayOverview?.activeCashiers,
+      formatted: todayOverview?.activeCashiers ?? "-",
+      icon: Users,
+      gradient: "bg-gradient-to-tr from-purple-400 to-pink-400",
+      change: formatPercent(todayOverview?.cashierGrowth),
+      changeType: getChangeType(todayOverview?.cashierGrowth),
+    },
+    {
+      title: "Low Stock Items",
+      value: todayOverview?.lowStockItems,
+      formatted: todayOverview?.lowStockItems ?? "-",
+      icon: Package,
+      gradient: "bg-gradient-to-tr from-red-400 to-orange-400",
+      change: formatPercent(todayOverview?.lowStockGrowth),
+      changeType: getChangeType(todayOverview?.lowStockGrowth),
+    },
+    {
+      title: "Refund Count",
+      value: todayOverview?.todayRefundCount,
+      formatted: todayOverview?.todayRefundCount ?? "-",
+      icon: ClipboardCheck,
+      gradient: "bg-gradient-to-tr from-yellow-400 to-amber-400",
+      change: formatPercent(todayOverview?.todayRefundCount - (todayOverview?.yesterdayRefundCount ?? 0)),
+      changeType: getChangeType(todayOverview?.todayRefundCount - (todayOverview?.yesterdayRefundCount ?? 0)),
+    },
+  ];
+
+  const SkeletonCard = ({ large = false }) => (
+    <Card className={`rounded-xl shadow-md animate-pulse ${large ? "h-56" : "h-40"}`}>
+      <CardContent className="p-5 flex justify-between items-center">
+        <div className="space-y-3 w-full">
+          <Skeleton className="h-5 w-32 rounded-full" />
+          <Skeleton className={`h-10 ${large ? "w-48" : "w-32"} rounded-md`} />
+          <Skeleton className="h-5 w-24 rounded-full" />
         </div>
+        <Skeleton className="h-12 w-12 rounded-full" />
       </CardContent>
     </Card>
   );
 
-  // Calculate dynamic skeleton count based on screen
-  const getSkeletonCount = () => {
-    if (typeof window === "undefined") return 4;
-    if (window.innerWidth < 768) return 1;
-    if (window.innerWidth < 1024) return 2;
-    return 4;
-  };
-
-  const skeletonCount = getSkeletonCount();
-
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <>
+      {/* -------------------------------
+          Date Filter Inputs
+      ------------------------------- */}
+      <div className="flex gap-4 mb-4 items-end">
+        <div>
+          <label className="block text-sm font-medium text-muted-foreground">Start Date</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="mt-1 block w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-muted-foreground">End Date</label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="mt-1 block w-full rounded-md border border-gray-300 p-2"
+          />
+        </div>
+      </div>
 
-      {/* Skeletons when loading */}
-      {loading &&
-        [...Array(skeletonCount)].map((_, idx) => <SkeletonCard key={idx} />)
-      }
+      {/* -------------------------------
+          KPI Cards
+      ------------------------------- */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-rows-2 gap-4 md:col-span-1">
+            <SkeletonCard large />
+            <SkeletonCard large />
+          </div>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-2 md:col-span-2">
+            {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Left Large KPIs */}
+          <div className="grid grid-rows-2 gap-4 md:col-span-1">
+            {kpis.slice(0, 2).map((kpi, idx) => {
+              const Icon = kpi.icon;
+              return (
+                <Card key={idx} className="rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-1 animate-fade-in">
+                  <CardContent className="p-6 flex justify-between items-center">
+                    <div>
+                      <p className="text-sm text-muted-foreground font-medium">{kpi.title}</p>
+                      <h3 className="text-2xl font-bold mt-2">{kpi.formatted}</h3>
+                      <p className={`text-sm mt-1 font-medium ${getChangeColor(kpi.changeType)}`}>{kpi.change}</p>
+                    </div>
+                    <div className={`p-5 rounded-full ${kpi.gradient} flex items-center justify-center`}>
+                      <Icon className="w-8 h-8 text-white" />
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
 
-      {/* KPI Cards when not loading */}
-      {!loading &&
-        kpis.map((kpi, index) => {
-          const Icon = kpi.icon;
-
-          return (
-            <Card
-              key={index}
-              className="rounded-xl shadow-sm hover:shadow-md transition animate-fade-in"
-            >
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[13px] font-medium text-muted-foreground">
-                      {kpi.title}
-                    </p>
-
-                    <h3 className="text-xl font-semibold mt-1 tracking-tight">
-                      {kpi.formatted}
-                    </h3>
-
-                    <p
-                      className={`text-[12px] font-medium mt-1 ${getChangeColor(
-                        kpi.changeType
-                      )}`}
-                    >
-                      {kpi.change}
-                    </p>
-                  </div>
-
-                  <div className="p-3 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Icon className="w-6 h-6 text-primary" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })
-      }
-
-      {/* Show message only when not loading and no KPIs */}
-      {!loading && !todayOverview && (
-        <div className="col-span-4 text-center text-muted-foreground animate-fade-in">
-          No data available
+          {/* Right Small KPIs */}
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-2 md:col-span-2">
+            {kpis.slice(2).map((kpi, idx) => {
+              const Icon = kpi.icon;
+              return (
+                <Card key={idx} className="rounded-xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5 animate-fade-in">
+                  <CardContent className="p-5 flex justify-between items-center">
+                    <div>
+                      <p className="text-[13px] font-medium text-muted-foreground">{kpi.title}</p>
+                      <h3 className="text-xl font-semibold mt-1 tracking-tight">{kpi.formatted}</h3>
+                      <p className={`text-[12px] font-medium mt-1 ${getChangeColor(kpi.changeType)}`}>{kpi.change}</p>
+                    </div>
+                    <div className={`p-4 rounded-full ${kpi.gradient} flex items-center justify-center`}>
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

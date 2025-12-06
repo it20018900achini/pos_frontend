@@ -37,7 +37,8 @@ export default function Dashboard() {
         <p className="text-gray-500">{branch?.name || "Loading branch..."}</p>
       </div>
       {/* KPI Cards */}
-      <TodayOverview/>
+      {/* {branchId&&} */}
+      <TodayOverview branchId={branchId?.branchId}/>
       
       {/* Payment Breakdown */}
       <PaymentBreakdown/>

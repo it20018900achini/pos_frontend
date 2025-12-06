@@ -82,14 +82,21 @@ export const getCategoryWiseSalesBreakdown = createAsyncThunk(
     }
   }
 );
-
-// Get today's branch overview
 export const getTodayOverview = createAsyncThunk(
   'branchAnalytics/getTodayOverview',
-  async (branchId, { rejectWithValue }) => {
+  async ({ branchId, start, end }, { rejectWithValue }) => {
     try {
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/branch-analytics/today-overview?branchId=${branchId}`, { headers });
+
+      const res = await api.get('/api/branch-analytics/by-range', {
+        headers,
+        params: {
+          branchId, // just the branch ID number
+          start,    // start date string: yyyy-MM-dd
+          end       // end date string: yyyy-MM-dd
+        },
+      });
+
       console.log('✅ Today overview response:', res.data);
       return res.data;
     } catch (err) {
@@ -98,6 +105,7 @@ export const getTodayOverview = createAsyncThunk(
     }
   }
 );
+
 
 // Get payment breakdown for a date
 export const getPaymentBreakdown = createAsyncThunk(
