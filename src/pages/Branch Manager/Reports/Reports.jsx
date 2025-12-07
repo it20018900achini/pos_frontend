@@ -12,8 +12,10 @@ import {
   getCategoryWiseSalesBreakdown,
   getTopCashiersByRevenue,
 } from "@/Redux Toolkit/features/branchAnalytics/branchAnalyticsThunks";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 
 const Reports = () => {
   const dispatch = useDispatch();
@@ -35,69 +37,61 @@ const Reports = () => {
     }
   }, [branchId, dispatch]);
 
-  // Map API data to recharts format
-  const salesData = dailySales?.map((item) => ({
-    date: item.date,
-    sales: item.totalSales,
-  })) || [];
-
-  const paymentData = paymentBreakdown?.map((item) => ({
-    name: item.type,
-    value: item.percentage,
-  })) || [];
-
-  const paymentConfig = paymentBreakdown?.reduce((acc, item, idx) => {
-    acc[item.type] = {
-      label: item.type,
-      color: COLORS[idx % COLORS.length],
-    };
-    return acc;
-  }, {}) || {};
-
-  const categoryData = categorySales?.map((item) => ({
-    name: item.categoryName,
-    value: item.totalSales,
-  })) || [];
-
-  const categoryConfig = categorySales?.reduce((acc, item, idx) => {
-    acc[item.categoryName] = {
-      label: item.categoryName,
-      color: COLORS[idx % COLORS.length],
-    };
-    return acc;
-  }, {}) || {};
-
-  const cashierData = topCashiers?.map((item) => ({
-    name: item.cashierName,
-    sales: item.totalRevenue,
-  })) || [];
-
-  const cashierConfig = {
-    sales: {
-      label: "Sales",
-      color: "#4f46e5",
-    },
-  };
-
-  const salesConfig = {
-    sales: {
-      label: "Sales",
-      color: "#4f46e5",
-    },
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'LKR',
+  // Format currency
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "LKR",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
+
+  // Map API data
+  const salesData = dailySales?.map((item) => ({ date: item.date, sales: item.totalSales })) || [];
+  const paymentData = paymentBreakdown?.map((item) => ({ name: item.type, value: item.percentage })) || [];
+  const categoryData = categorySales?.map((item) => ({ name: item.categoryName, value: item.totalSales })) || [];
+  const cashierData = topCashiers?.map((item) => ({ name: item.cashierName, sales: item.totalRevenue })) || [];
+
+  const salesConfig = { sales: { label: "Sales", color: "#4f46e5" } };
+  const paymentConfig = paymentBreakdown?.reduce((acc, item, idx) => {
+    acc[item.type] = { label: item.type, color: COLORS[idx % COLORS.length] };
+    return acc;
+  }, {}) || {};
+  const categoryConfig = categorySales?.reduce((acc, item, idx) => {
+    acc[item.categoryName] = { label: item.categoryName, color: COLORS[idx % COLORS.length] };
+    return acc;
+  }, {}) || {};
+  const cashierConfig = { sales: { label: "Sales", color: "#4f46e5" } };
+
+  // Export to Excel function
+  const exportToExcel = (data, filename = "report.xlsx") => {
+    if (!data || !data.length) return;
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(blob, filename);
   };
 
-  const handleExport = (type, format) => {
-    console.log(`Exporting ${type} report in ${format} format`);
-    // Implement export functionality
+  // Handle export per type
+  const handleExport = (type) => {
+    switch (type) {
+      case "sales":
+        exportToExcel(salesData.map(d => ({ Date: d.date, Sales: d.sales })), "DailySales.xlsx");
+        break;
+      case "payments":
+        exportToExcel(paymentData.map(d => ({ PaymentType: d.name, Percentage: d.value })), "PaymentBreakdown.xlsx");
+        break;
+      case "products":
+        exportToExcel(categoryData.map(d => ({ Category: d.name, Sales: d.value })), "CategorySales.xlsx");
+        break;
+      case "cashier":
+        exportToExcel(cashierData.map(d => ({ Cashier: d.name, Sales: d.sales })), "CashierPerformance.xlsx");
+        break;
+      default:
+        console.warn("Unknown export type");
+    }
   };
 
   return (
@@ -106,14 +100,10 @@ const Reports = () => {
         <h1 className="text-3xl font-bold tracking-tight">Reports & Analytics</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm">
-            <Calendar className="h-4 w-4 mr-1" />
-            {/* Date range selection can be added here */}
-            {/* {dateRange.startDate} - {dateRange.endDate} */}
-            Today
+            <Calendar className="h-4 w-4 mr-1" /> Today
           </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-1" />
-            Export All
+          <Button variant="outline" size="sm" onClick={() => handleExport("sales")}>
+            <Download className="h-4 w-4 mr-1" /> Export All
           </Button>
         </div>
       </div>
@@ -121,20 +111,16 @@ const Reports = () => {
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview" className="flex items-center gap-2">
-            <BarChart2 className="h-4 w-4" />
-            Overview
+            <BarChart2 className="h-4 w-4" /> Overview
           </TabsTrigger>
           <TabsTrigger value="sales" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            Sales
+            <TrendingUp className="h-4 w-4" /> Sales
           </TabsTrigger>
           <TabsTrigger value="products" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Products
+            <FileText className="h-4 w-4" /> Products
           </TabsTrigger>
           <TabsTrigger value="cashier" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Cashier Performance
+            <Users className="h-4 w-4" /> Cashier Performance
           </TabsTrigger>
         </TabsList>
 
@@ -145,9 +131,8 @@ const Reports = () => {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Daily Sales Trend</CardTitle>
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => handleExport('sales', 'excel')}>
-                    <Download className="h-4 w-4" />
-                    Export
+                  <Button variant="outline" size="sm" className="gap-2" onClick={() => handleExport("sales")}>
+                    <Download className="h-4 w-4" /> Export
                   </Button>
                 </div>
               </CardHeader>
@@ -155,35 +140,10 @@ const Reports = () => {
                 <ChartContainer config={salesConfig}>
                   <ResponsiveContainer width="100%" height={400}>
                     <BarChart data={salesData}>
-                      <XAxis
-                        dataKey="date"
-                        stroke="#888888"
-                        fontSize={12}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <YAxis
-                        stroke="#888888"
-                        fontSize={12}
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={(value) => `LKR ${value}`}
-                      />
-                      <ChartTooltip
-                        content={({ active, payload }) => (
-                          <ChartTooltipContent
-                            active={active}
-                            payload={payload}
-                            formatter={(value) => [`LKR ${value}`, "Sales"]}
-                          />
-                        )}
-                      />
-                      <Bar
-                        dataKey="sales"
-                        fill="currentColor"
-                        radius={[4, 4, 0, 0]}
-                        className="fill-primary"
-                      />
+                      <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={v => `LKR ${v}`} />
+                      <ChartTooltip content={({ active, payload }) => <ChartTooltipContent active={active} payload={payload} formatter={v => [`LKR ${v}`, "Sales"]} />} />
+                      <Bar dataKey="sales" fill="currentColor" radius={[4,4,0,0]} className="fill-primary" />
                     </BarChart>
                   </ResponsiveContainer>
                 </ChartContainer>
@@ -194,9 +154,8 @@ const Reports = () => {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Payment Methods</CardTitle>
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => handleExport('payments', 'excel')}>
-                    <Download className="h-4 w-4" />
-                    Export
+                  <Button variant="outline" size="sm" className="gap-2" onClick={() => handleExport("payments")}>
+                    <Download className="h-4 w-4" /> Export
                   </Button>
                 </div>
               </CardHeader>
@@ -204,34 +163,11 @@ const Reports = () => {
                 <ChartContainer config={paymentConfig}>
                   <ResponsiveContainer width="100%" height={400}>
                     <RPieChart>
-                      <Pie
-                        data={paymentData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {paymentData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
+                      <Pie data={paymentData} cx="50%" cy="50%" labelLine={false} label={({ name, percent }) => `${name}: ${(percent*100).toFixed(0)}%`} outerRadius={80} dataKey="value">
+                        {paymentData.map((entry, index) => <Cell key={index} fill={COLORS[index % COLORS.length]} />)}
                       </Pie>
-                      <ChartTooltip
-                        content={({ active, payload }) => (
-                          <ChartTooltipContent
-                            active={active}
-                            payload={payload}
-                            formatter={(value) => [`${value}%`, "Percentage"]}
-                          />
-                        )}
-                      />
-                      <ChartLegend
-                        content={({ payload }) => (
-                          <ChartLegendContent payload={payload} />
-                        )}
-                      />
+                      <ChartTooltip content={({ active, payload }) => <ChartTooltipContent active={active} payload={payload} formatter={v => [`${v}%`, "Percentage"]} />} />
+                      <ChartLegend content={({ payload }) => <ChartLegendContent payload={payload} />} />
                     </RPieChart>
                   </ResponsiveContainer>
                 </ChartContainer>
@@ -246,9 +182,8 @@ const Reports = () => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Sales Performance</CardTitle>
-                <Button variant="outline" size="sm" className="gap-2" onClick={() => handleExport('sales', 'excel')}>
-                  <Download className="h-4 w-4" />
-                  Export
+                <Button variant="outline" size="sm" className="gap-2" onClick={() => handleExport("sales")}>
+                  <Download className="h-4 w-4" /> Export
                 </Button>
               </div>
             </CardHeader>
@@ -256,35 +191,10 @@ const Reports = () => {
               <ChartContainer config={salesConfig}>
                 <ResponsiveContainer width="100%" height={400}>
                   <BarChart data={salesData}>
-                    <XAxis
-                      dataKey="date"
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(value) => `LKR ${value}`}
-                    />
-                    <ChartTooltip
-                      content={({ active, payload }) => (
-                        <ChartTooltipContent
-                          active={active}
-                          payload={payload}
-                          formatter={(value) => [`LKR ${value}`, "Sales"]}
-                        />
-                      )}
-                    />
-                    <Bar
-                      dataKey="sales"
-                      fill="currentColor"
-                      radius={[4, 4, 0, 0]}
-                      className="fill-primary"
-                    />
+                    <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={v => `LKR ${v}`} />
+                    <ChartTooltip content={({ active, payload }) => <ChartTooltipContent active={active} payload={payload} formatter={v => [`LKR ${v}`, "Sales"]} />} />
+                    <Bar dataKey="sales" fill="currentColor" radius={[4,4,0,0]} className="fill-primary" />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
@@ -298,9 +208,8 @@ const Reports = () => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Product Category Performance</CardTitle>
-                <Button variant="outline" size="sm" className="gap-2" onClick={() => handleExport('products', 'excel')}>
-                  <Download className="h-4 w-4" />
-                  Export
+                <Button variant="outline" size="sm" className="gap-2" onClick={() => handleExport("products")}>
+                  <Download className="h-4 w-4" /> Export
                 </Button>
               </div>
             </CardHeader>
@@ -309,38 +218,14 @@ const Reports = () => {
                 <ChartContainer config={categoryConfig}>
                   <ResponsiveContainer width="100%" height={300}>
                     <RPieChart>
-                      <Pie
-                        data={categoryData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {categoryData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
+                      <Pie data={categoryData} cx="50%" cy="50%" labelLine={false} label={({ name, percent }) => `${name}: ${(percent*100).toFixed(0)}%`} outerRadius={80} dataKey="value">
+                        {categoryData.map((entry, index) => <Cell key={index} fill={COLORS[index % COLORS.length]} />)}
                       </Pie>
-                      <ChartTooltip
-                        content={({ active, payload }) => (
-                          <ChartTooltipContent
-                            active={active}
-                            payload={payload}
-                            formatter={(value) => [`${value}%`, "Sales Percentage"]}
-                          />
-                        )}
-                      />
-                      <ChartLegend
-                        content={({ payload }) => (
-                          <ChartLegendContent payload={payload} />
-                        )}
-                      />
+                      <ChartTooltip content={({ active, payload }) => <ChartTooltipContent active={active} payload={payload} formatter={v => [`${v}%`, "Sales Percentage"]} />} />
+                      <ChartLegend content={({ payload }) => <ChartLegendContent payload={payload} />} />
                     </RPieChart>
                   </ResponsiveContainer>
                 </ChartContainer>
-
                 <div className="space-y-4">
                   {categoryData.map((category, index) => (
                     <div key={index} className="rounded-lg bg-gray-50 p-4">
@@ -349,10 +234,7 @@ const Reports = () => {
                           <p className="text-sm font-medium text-gray-500">{category.name}</p>
                           <p className="text-2xl font-bold">{formatCurrency(category.value)}</p>
                         </div>
-                        <div
-                          className="w-4 h-4 rounded-full"
-                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                        />
+                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                       </div>
                     </div>
                   ))}
@@ -361,16 +243,15 @@ const Reports = () => {
             </CardContent>
           </Card>
         </TabsContent>
-        
-        {/* Cashier Performance Tab */}
+
+        {/* Cashier Tab */}
         <TabsContent value="cashier">
           <Card>
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Cashier Performance</CardTitle>
-                <Button variant="outline" size="sm" className="gap-2" onClick={() => handleExport('cashier', 'excel')}>
-                  <Download className="h-4 w-4" />
-                  Export
+                <Button variant="outline" size="sm" className="gap-2" onClick={() => handleExport("cashier")}>
+                  <Download className="h-4 w-4" /> Export
                 </Button>
               </div>
             </CardHeader>
@@ -378,43 +259,17 @@ const Reports = () => {
               <ChartContainer config={cashierConfig}>
                 <ResponsiveContainer width="100%" height={400}>
                   <BarChart data={cashierData} layout="vertical" margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <XAxis
-                      type="number"
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(value) => `LKR ${value}`}
-                    />
-                    <YAxis
-                      dataKey="name"
-                      type="category"
-                      stroke="#888888"
-                      fontSize={12}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <ChartTooltip
-                      content={({ active, payload }) => (
-                        <ChartTooltipContent
-                          active={active}
-                          payload={payload}
-                          formatter={(value) => [`LKR ${value.toLocaleString('en-IN')}`, 'Sales']}
-                        />
-                      )}
-                    />
-                    <Bar
-                      dataKey="sales"
-                      fill="currentColor"
-                      radius={[0, 4, 4, 0]}
-                      className="fill-primary"
-                    />
+                    <XAxis type="number" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={v => `LKR ${v}`} />
+                    <YAxis dataKey="name" type="category" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                    <ChartTooltip content={({ active, payload }) => <ChartTooltipContent active={active} payload={payload} formatter={v => [`LKR ${v.toLocaleString('en-IN')}`, 'Sales']} />} />
+                    <Bar dataKey="sales" fill="currentColor" radius={[0,4,4,0]} className="fill-primary" />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
             </CardContent>
           </Card>
         </TabsContent>
+
       </Tabs>
     </div>
   );
