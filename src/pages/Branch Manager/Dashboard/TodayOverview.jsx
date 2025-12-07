@@ -168,7 +168,7 @@ const TodayOverview = () => {
   const SkeletonCard = ({ large = false }) => (
     <Card
       className={`rounded-xl shadow-md animate-pulse ${
-        large ? "h-56" : "h-40"
+        large ? "h-40" : "h-40"
       }`}
     >
       <CardContent className="p-5 flex justify-between items-center">
