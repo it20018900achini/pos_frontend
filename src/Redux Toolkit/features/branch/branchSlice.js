@@ -59,10 +59,18 @@ const branchSlice = createSlice({
         state.branches = action.payload;
       })
 
+      .addCase(updateBranch.pending, (state) => {
+        state.loading = true; // start loading
+        state.error = null;
+      })
       .addCase(updateBranch.fulfilled, (state, action) => {
         state.branch = action.payload;
+        state.loading = false; // stop loading
       })
-
+      .addCase(updateBranch.rejected, (state, action) => {
+        state.loading = false; // stop loading
+        state.error = action.error.message;
+      })
       .addCase(deleteBranch.fulfilled, (state, action) => {
         state.branches = state.branches.filter((b) => b.id !== action.payload);
       })
