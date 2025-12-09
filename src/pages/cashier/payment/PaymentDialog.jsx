@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useSelector } from "react-redux";
+import { Input } from "@/components/ui/input";
+import { Loader2 } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import { useToast } from "@/components/ui/use-toast";
+
 import {
   selectCartItems,
   selectDiscount,
@@ -17,207 +21,196 @@ import {
   selectTotal,
   setCurrentOrder,
   setPaymentMethod,
-} from "../../../Redux Toolkit/features/cart/cartSlice";
-import { useToast } from "../../../components/ui/use-toast";
-import { useDispatch } from "react-redux";
-import { createOrder } from "../../../Redux Toolkit/features/order/orderThunks";
-import { paymentMethods } from "./data";
-import { Input } from "../../../components/ui/input";
-import { Loader2 } from "lucide-react";
+} from "@/Redux Toolkit/features/cart/cartSlice";
 
-const PaymentDialog = ({
-  showPaymentDialog,
-  setShowPaymentDialog,
-  setShowReceiptDialog,
-}) => {
+import { createOrder } from "@/Redux Toolkit/features/order/orderThunks";
+
+const paymentMethods = [
+  { key: "CASH", label: "Cash", icon: "💵", color: "from-green-500 to-emerald-600" },
+  { key: "CARD", label: "Card", icon: "💳", color: "from-blue-500 to-indigo-600" },
+  { key: "QR", label: "QR Pay", icon: "📱", color: "from-purple-500 to-fuchsia-600" },
+  { key: "WALLET", label: "Wallet", icon: "🪙", color: "from-amber-500 to-yellow-600" },
+  { key: "SPLIT", label: "Split Pay", icon: "➗", color: "from-cyan-500 to-teal-600" },
+];
+
+const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceiptDialog }) => {
+  const dispatch = useDispatch();
+  const { toast } = useToast();
+
   const total = useSelector(selectTotal);
   const discount = useSelector(selectDiscount);
-  const [value, setValue] = useState(total);
-
   const paymentMethod = useSelector(selectPaymentMethod);
-  const { toast } = useToast();
   const cart = useSelector(selectCartItems);
   const branch = useSelector((state) => state.branch);
   const { userProfile } = useSelector((state) => state.user);
-  const dispatch = useDispatch();
-
   const selectedCustomer = useSelector(selectSelectedCustomer);
-
   const note = useSelector(selectNote);
-  const [loading, setLoading] = React.useState(false);
+
+  const [cashAmount, setCashAmount] = useState(total);
+  const [givenAmount, setGivenAmount] = useState(total);
+  const [loading, setLoading] = useState(false);
+
+  const givenRef = useRef(null);
+
+  useEffect(() => {
+    if (showPaymentDialog) {
+      setCashAmount(total);
+      setGivenAmount(total);
+      dispatch(setPaymentMethod("CASH"));
+
+      setTimeout(() => {
+        givenRef.current?.focus();
+        givenRef.current?.select();
+      }, 100);
+    }
+  }, [showPaymentDialog, total, dispatch]);
+
+  const credit = Math.max(total - cashAmount, 0);
+  const changeDue = Math.max(givenAmount - cashAmount, 0);
 
   const processPayment = async () => {
-    if (cart.length === 0) {
-      toast({
-        title: "Empty Cart",
-        description: "Please add items to cart before processing payment",
-        variant: "destructive",
-      });
+    if (!cart.length) {
+      toast({ title: "Empty Cart", description: "Add items first.", variant: "destructive" });
       return;
     }
 
     if (!selectedCustomer) {
-      toast({
-        title: "Customer Required",
-        description: "Please select a customer before processing payment",
-        variant: "destructive",
-      });
+      toast({ title: "Customer Required", description: "Please select a customer.", variant: "destructive" });
       return;
     }
 
     try {
       setLoading(true);
-
-      // Prepare order data according to OrderDTO structure
       const orderData = {
-        cash: parseFloat(value).toFixed(2),
-        credit: parseFloat(total - value).toFixed(2),
+        cash: parseFloat(cashAmount.toFixed(2)),
+        credit: parseFloat(credit.toFixed(2)),
         totalAmount: total,
-        discount: discount,
+        discount,
         branchId: branch.id,
         cashierId: userProfile.id,
-        customer: selectedCustomer || null,
-        items: cart.map((item) => ({
-          productId: item.id,
-          quantity: item.quantity,
-          price: item.price,
-          total: item.price * item.quantity,
+        customer: selectedCustomer,
+        items: cart.map((i) => ({
+          productId: i.id,
+          quantity: i.quantity,
+          price: i.price,
+          total: i.price * i.quantity,
         })),
         paymentType: paymentMethod,
         note: note || "",
+        givenAmount: parseFloat(givenAmount.toFixed(2)),
+        changeDue: parseFloat(changeDue.toFixed(2)),
       };
 
-      console.log("Creating order:", orderData);
-
-      // Create order
-      const createdOrder = await dispatch(createOrder(orderData)).unwrap();
-      dispatch(setCurrentOrder(createdOrder));
+      const created = await dispatch(createOrder(orderData)).unwrap();
+      dispatch(setCurrentOrder(created));
 
       setShowPaymentDialog(false);
-
       setShowReceiptDialog(true);
 
-      toast({
-        title: "Order Created Successfully",
-        description: `Order #${createdOrder.id} created and payment processed`,
-      });
-
+      toast({ title: "Payment Successful", description: `Order #${created.id} created.` });
+    } catch (e) {
+      toast({ title: "Failed", description: e?.message || "Something went wrong.", variant: "destructive" });
+    } finally {
       setLoading(false);
-    } catch (error) {
-      console.error("Failed to create order:", error);
-      toast({
-        title: "Order Creation Failed",
-        description: error || "Failed to create order. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 
-  const handlePaymentMethod = (method) => dispatch(setPaymentMethod(method));
-  function handleChange(e) {
-    setValue(e.target.value);
-  }
-  useEffect(() => {
-    setValue(total)
-  }, [total])
-  
-//   git config --global user.name "it20018900achini"
-// git config --global user.email "achininirupama98@gmail.com"
-
-
   return (
-    <Dialog
-      open={showPaymentDialog}
-      onOpenChange={(showPaymentDialog) => {
-        setShowPaymentDialog(showPaymentDialog);
-        setValue(total);
-        ()=>dispatch(setPaymentMethod("CASH"))
-      }}
-    >
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Payment</DialogTitle>
+    <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+      <DialogContent className="sm:max-w-[700px] h-[100vh] max-h-[95vh] w-[850px] p-0 overflow-hidden rounded-3xl shadow-2xl border border-white/40 bg-gradient-to-br from-slate-50 to-slate-200 backdrop-blur-xl flex flex-col">
+        {/* HEADER */}
+         <DialogHeader className="px-8 py-2 border-b bg-white/50 backdrop-blur-md">
+          <DialogTitle className="font-bold text-slate-800 flex items-center gap-3">
+            <span className="text-3xl">🧾</span> Payment Summary
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-green-600">
-              LKR {total.toFixed(2)}
+        {/* MAIN CONTENT */}
+        <div className="flex  overflow-hidden w-full">
+          {/* LEFT SECTION */}
+          <div className="w-full p-8 py-4 border-r bg-white/40 backdrop-blur-lg flex flex-col overflow-y-auto">
+            {/* TOTAL CARD (fixed at top) */}
+            <div className="rounded-2xl p-2 bg-white shadow-inner border border-slate-200 text-center mb-6 flex-shrink-0">
+              <p className="text-sm text-slate-500 font-medium uppercase tracking-wide">Total Amount</p>
+              <div className="text-2xl font-extrabold mt-1 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                LKR {total.toFixed(2)}
+              </div>
             </div>
-            <p className="text-sm text-gray-600">Amount to be paid</p>
+
+            {/* INPUTS */}
+            <div className="space-y-3">
+              {/* CASH */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Cash Amount</label>
+                <Input
+                  type="number"
+                  className="h-14 text-lg font-semibold rounded-xl border-slate-300 shadow-sm focus:ring-2 focus:ring-purple-500 transition"
+                  value={cashAmount}
+                  onChange={(e) => setCashAmount(parseFloat(e.target.value) || 0)}
+                />
+                <p className={`text-sm px-3 py-1 rounded-lg w-max font-bold ${credit > 0 ? "bg-red-200 text-red-700" : "bg-green-200 text-green-700"}`}>
+                  Credit: LKR {credit.toFixed(2)}
+                </p>
+              </div>
+
+              {/* CUSTOMER PAID */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Customer Paid</label>
+                <Input
+                  type="number"
+                  ref={givenRef}
+                  className="h-14 text-lg font-semibold rounded-xl border-slate-300 shadow-sm focus:ring-2 focus:ring-blue-500 transition"
+                  value={givenAmount}
+                  onChange={(e) => setGivenAmount(parseFloat(e.target.value) || 0)}
+                />
+                <p className="text-sm px-3 py-1 rounded-lg w-max bg-blue-200 text-blue-700 font-bold">
+                  Change: LKR {changeDue.toFixed(2)}
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            {paymentMethods.map((method) => (
-              <div key={method.key}>
-                {method.key == "CASH" ? (
-                  <div className="">
-                    <div className="mb-2">
-                      CASH AMOUNT
-                    <div className="w-full flex items-center gap-2 ">
-                      <Input
-                        type={`text`}
-                        className={`border-green-500`}
-                        value={value}
-                        onChange={handleChange}
-                      />
-                      <span className={`text-center border px-2 rounded-md ${
-                        (total - value) <= 0 ?  'bg-green-200 text-green-800 border-green-400': 'bg-red-200 text-red-800 border-red-400'
-                      }`}>
-                        <span className="text-xs">CREDIT</span>
-                        <br />
-                        {(total - value).toFixed(2)}
-                      </span>
-                    </div>
-                    </div>
-                    <Button
-                      key={method.key}
-                      variant={
-                        paymentMethod === method.key ? "default" : "outline"
-                      }
-                      className="w-full justify-start"
-                      onClick={() => handlePaymentMethod(method.key)}
-                    >
-                      {method.label}
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    key={method.key}
-                    variant={
-                      paymentMethod === method.key ? "default" : "outline"
-                    }
-                    className="w-full justify-start"
-                    onClick={() => handlePaymentMethod(method.key)}
-                  >
-                    {method.label}
-                  </Button>
-                )}
-              </div>
-            ))}
+          {/* RIGHT SECTION */}
+          <div className="p-8 overflow-y-auto w-[400px]">
+            <div className="sticky top-0 flex flex-col gap-5">
+              <p className="text-slate-700 font-semibold text-sm">Payment Options</p>
+              {paymentMethods.map((pm) => (
+                <button
+                  key={pm.key}
+                  onClick={() => dispatch(setPaymentMethod(pm.key))}
+                  className={`h-16 rounded-2xl flex items-center justify-between px-6 shadow transition-all hover:scale-[1.02] text-lg font-semibold ${
+                    paymentMethod === pm.key
+                      ? `bg-gradient-to-r ${pm.color} text-white shadow-xl`
+                      : "bg-white border border-slate-300 text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  <span className="text-2xl">{pm.icon}</span>
+                  <span>{pm.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-     <DialogFooter className="flex justify-end gap-2">
-  {/* Cancel button */}
-  <Button 
-    variant="outline" 
-    onClick={() => setShowPaymentDialog(false)}
-    disabled={loading} // prevent cancel during processing
-  >
-    Cancel
-  </Button>
+        {/* FOOTER (sticky) */}
+        <DialogFooter className="bg-white/70 backdrop-blur-md px-8 py-5 flex justify-end gap-4 flex-shrink-0">
+          <Button
+            variant="outline"
+            onClick={() => setShowPaymentDialog(false)}
+            className="h-12 px-6 text-lg rounded-xl border-slate-300 hover:bg-slate-100"
+          >
+            Cancel
+          </Button>
 
-  {/* Complete Payment button */}
-  <Button
-    onClick={processPayment}
-    disabled={loading}
-    className="flex items-center gap-2"
-  >
-    {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-    {loading ? "Processing..." : "Complete Payment"}
-  </Button>
-</DialogFooter>
+          <Button
+            onClick={processPayment}
+            disabled={loading}
+            className="h-12 px-6 text-lg rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90 shadow-xl"
+          >
+            {loading && <Loader2 className="w-5 h-5 animate-spin mr-2" />}
+            {loading ? "Processing…" : "Confirm Payment"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
