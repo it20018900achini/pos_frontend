@@ -23,6 +23,7 @@ import { useDispatch } from "react-redux";
 import { createOrder } from "../../../Redux Toolkit/features/order/orderThunks";
 import { paymentMethods } from "./data";
 import { Input } from "../../../components/ui/input";
+import { Loader2 } from "lucide-react";
 
 const PaymentDialog = ({
   showPaymentDialog,
@@ -197,16 +198,26 @@ const PaymentDialog = ({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
-            Cancel
-          </Button>
-          {loading ? (
-            <Button disabled>Processing...</Button>
-          ) : (
-            <Button onClick={processPayment}>Complete Payment</Button>
-          )}
-        </DialogFooter>
+     <DialogFooter className="flex justify-end gap-2">
+  {/* Cancel button */}
+  <Button 
+    variant="outline" 
+    onClick={() => setShowPaymentDialog(false)}
+    disabled={loading} // prevent cancel during processing
+  >
+    Cancel
+  </Button>
+
+  {/* Complete Payment button */}
+  <Button
+    onClick={processPayment}
+    disabled={loading}
+    className="flex items-center gap-2"
+  >
+    {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+    {loading ? "Processing..." : "Complete Payment"}
+  </Button>
+</DialogFooter>
       </DialogContent>
     </Dialog>
   );

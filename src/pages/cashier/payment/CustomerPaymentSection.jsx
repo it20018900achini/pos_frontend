@@ -11,6 +11,7 @@ const CustomerPaymentSection = ({ setShowCustomerDialog, setShowPaymentDialog })
 
   return (
     <div className="w-1/5 flex flex-col bg-card overflow-y-auto">
+      
       {/* Customer Section */}
       <CustomerSection setShowCustomerDialog={setShowCustomerDialog} />
 

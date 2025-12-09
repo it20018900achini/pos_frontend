@@ -4,7 +4,8 @@ import {
   updateCustomer,
   deleteCustomer,
   getCustomerById,
-  getAllCustomers
+  getAllCustomers,
+  getAllCustomersPaginated   
 } from './customerThunks';
 
 const initialState = {
@@ -12,6 +13,8 @@ const initialState = {
   selectedCustomer: null,
   loading: false,
   error: null,
+    paginated: null,       // ⬅️ ADD THIS
+
 };
 
 const customerSlice = createSlice({
@@ -102,7 +105,18 @@ const customerSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
+// 📌 Get Paginated Customers
+.addCase(getAllCustomersPaginated.pending, (state) => {
+  state.loading = true;
+})
+.addCase(getAllCustomersPaginated.fulfilled, (state, action) => {
+  state.loading = false;
+  state.paginated = action.payload;   // <-- store paginated object
+})
+.addCase(getAllCustomersPaginated.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+})
       // Generic error handling for all customer actions
       .addMatcher(
         (action) => action.type.startsWith('customer/') && action.type.endsWith('/rejected'),

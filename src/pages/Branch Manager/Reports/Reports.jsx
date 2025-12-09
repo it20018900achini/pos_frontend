@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,50 +20,33 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 const Reports = () => {
   const dispatch = useDispatch();
   const branchId = useSelector((state) => state.branch.branch?.id);
-  const {
-    dailySales,
-    paymentBreakdown,
-    categorySales,
-    topCashiers,
-  } = useSelector((state) => state.branchAnalytics);
+  const { dailySales, paymentBreakdown, categorySales, topCashiers } = useSelector((state) => state.branchAnalytics);
+
+  // --- Date range state ---
+  const today = new Date().toISOString().slice(0, 10);
+  const [startDate, setStartDate] = useState(today);
+  const [endDate, setEndDate] = useState(today);
 
   useEffect(() => {
     if (branchId) {
-      dispatch(getDailySalesChart({ branchId }));
-      const today = new Date().toISOString().slice(0, 10);
-      dispatch(getPaymentBreakdown({ branchId, date: today }));
-      dispatch(getCategoryWiseSalesBreakdown({ branchId, date: today }));
-      dispatch(getTopCashiersByRevenue(branchId));
+      dispatch(getDailySalesChart({ branchId, startDate, endDate }));
+      dispatch(getPaymentBreakdown({ branchId, startDate, endDate }));
+      dispatch(getCategoryWiseSalesBreakdown({ branchId, startDate, endDate }));
+      dispatch(getTopCashiersByRevenue({ branchId, startDate, endDate }));
     }
-  }, [branchId, dispatch]);
+  }, [branchId, startDate, endDate, dispatch]);
 
-  // Format currency
+  // --- Currency formatting ---
   const formatCurrency = (amount) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "LKR",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
+    new Intl.NumberFormat("en-IN", { style: "currency", currency: "LKR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 
-  // Map API data
+  // --- Map API data ---
   const salesData = dailySales?.map((item) => ({ date: item.date, sales: item.totalSales })) || [];
   const paymentData = paymentBreakdown?.map((item) => ({ name: item.type, value: item.percentage })) || [];
   const categoryData = categorySales?.map((item) => ({ name: item.categoryName, value: item.totalSales })) || [];
   const cashierData = topCashiers?.map((item) => ({ name: item.cashierName, sales: item.totalRevenue })) || [];
 
-  const salesConfig = { sales: { label: "Sales", color: "#4f46e5" } };
-  const paymentConfig = paymentBreakdown?.reduce((acc, item, idx) => {
-    acc[item.type] = { label: item.type, color: COLORS[idx % COLORS.length] };
-    return acc;
-  }, {}) || {};
-  const categoryConfig = categorySales?.reduce((acc, item, idx) => {
-    acc[item.categoryName] = { label: item.categoryName, color: COLORS[idx % COLORS.length] };
-    return acc;
-  }, {}) || {};
-  const cashierConfig = { sales: { label: "Sales", color: "#4f46e5" } };
-
-  // Export to Excel function
+  // --- Export function ---
   const exportToExcel = (data, filename = "report.xlsx") => {
     if (!data || !data.length) return;
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -74,7 +57,6 @@ const Reports = () => {
     saveAs(blob, filename);
   };
 
-  // Handle export per type
   const handleExport = (type) => {
     switch (type) {
       case "sales":
@@ -94,20 +76,47 @@ const Reports = () => {
     }
   };
 
+  // --- Chart configurations ---
+  const salesConfig = { sales: { label: "Sales", color: "#4f46e5" } };
+  const paymentConfig = paymentBreakdown?.reduce((acc, item, idx) => {
+    acc[item.type] = { label: item.type, color: COLORS[idx % COLORS.length] };
+    return acc;
+  }, {}) || {};
+  const categoryConfig = categorySales?.reduce((acc, item, idx) => {
+    acc[item.categoryName] = { label: item.categoryName, color: COLORS[idx % COLORS.length] };
+    return acc;
+  }, {}) || {};
+  const cashierConfig = { sales: { label: "Sales", color: "#4f46e5" } };
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Reports & Analytics</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Calendar className="h-4 w-4 mr-1" /> Today
-          </Button>
+        <div className="flex gap-2 items-center">
+          <input
+            type="date"
+            value={startDate}
+            max={endDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="border rounded p-1"
+          />
+          <span>to</span>
+          <input
+            type="date"
+            value={endDate}
+            min={startDate}
+            max={today}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="border rounded p-1"
+          />
           <Button variant="outline" size="sm" onClick={() => handleExport("sales")}>
             <Download className="h-4 w-4 mr-1" /> Export All
           </Button>
         </div>
       </div>
 
+      {/* Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList>
           <TabsTrigger value="overview" className="flex items-center gap-2">
@@ -127,6 +136,7 @@ const Reports = () => {
         {/* Overview Tab */}
         <TabsContent value="overview">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Daily Sales Trend */}
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
@@ -150,6 +160,7 @@ const Reports = () => {
               </CardContent>
             </Card>
 
+            {/* Payment Methods */}
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
@@ -269,7 +280,6 @@ const Reports = () => {
             </CardContent>
           </Card>
         </TabsContent>
-
       </Tabs>
     </div>
   );

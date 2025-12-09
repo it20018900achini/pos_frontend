@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -14,11 +13,11 @@ import { createCustomer } from "@/Redux Toolkit/features/customer/customerThunks
 import { toast } from "sonner";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { Loader2 } from "lucide-react";
 
-const CustomerForm = ({
-  showCustomerForm,
-  setShowCustomerForm
-}) => {
+const CustomerForm = ({ showCustomerForm, setShowCustomerForm }) => {
+  const { branch } = useSelector((state) => state.branch);
+  const branchId = branch?.id;
   const dispatch = useDispatch();
   const { loading } = useSelector((state) => state.customer);
 
@@ -42,14 +41,15 @@ const CustomerForm = ({
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      await dispatch(createCustomer(values)).unwrap();
+      // Include branchId in the request payload
+      const payload = { ...values, branchId };
+
+      await dispatch(createCustomer(payload)).unwrap();
       toast.success("Customer created successfully!");
 
       // Reset form and close dialog
       resetForm();
       setShowCustomerForm(false);
-
- 
     } catch (error) {
       toast.error(error || "Failed to create customer");
     } finally {
@@ -82,9 +82,7 @@ const CustomerForm = ({
                   id="fullName"
                   name="fullName"
                   placeholder="Enter customer full name"
-                  className={
-                    errors.fullName && touched.fullName ? "border-red-500" : ""
-                  }
+                  className={errors.fullName && touched.fullName ? "border-red-500" : ""}
                 />
                 <ErrorMessage
                   name="fullName"
@@ -100,9 +98,7 @@ const CustomerForm = ({
                   id="phone"
                   name="phone"
                   placeholder="Enter phone number"
-                  className={
-                    errors.phone && touched.phone ? "border-red-500" : ""
-                  }
+                  className={errors.phone && touched.phone ? "border-red-500" : ""}
                 />
                 <ErrorMessage
                   name="phone"
@@ -119,9 +115,7 @@ const CustomerForm = ({
                   name="email"
                   type="email"
                   placeholder="Enter email address"
-                  className={
-                    errors.email && touched.email ? "border-red-500" : ""
-                  }
+                  className={errors.email && touched.email ? "border-red-500" : ""}
                 />
                 <ErrorMessage
                   name="email"
@@ -129,15 +123,27 @@ const CustomerForm = ({
                   className="text-sm text-red-500"
                 />
               </div>
+<DialogFooter className="flex justify-end gap-2">
+  {/* Cancel button */}
+  <Button 
+    variant="outline" 
+    onClick={handleCancel} 
+    type="button"
+    disabled={isSubmitting || loading} 
+  >
+    Cancel
+  </Button>
 
-              <DialogFooter>
-                <Button variant="outline" onClick={handleCancel} type="button">
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting || loading}>
-                  {isSubmitting || loading ? "Creating..." : "Create Customer"}
-                </Button>
-              </DialogFooter>
+  {/* Submit button */}
+  <Button 
+    type="submit" 
+    disabled={isSubmitting || loading} 
+    className="flex items-center gap-2"
+  >
+    {(isSubmitting || loading) && <Loader2 className="animate-spin w-4 h-4" />}
+    {isSubmitting || loading ? "Creating..." : "Create Customer"}
+  </Button>
+</DialogFooter>
             </Form>
           )}
         </Formik>

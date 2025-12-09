@@ -161,3 +161,40 @@ export const getAllCustomers = createAsyncThunk(
     }
   }
 ); 
+// 🔹 Get Customers Paginated (with branchId + search + sorting + bystore)
+export const getAllCustomersPaginated = createAsyncThunk(
+  "customer/getAllPaginated",
+  async ({ id, search = "", page = 0, size = 10, sort = "id,asc", bystore = 0 }, { rejectWithValue }) => {
+    try {
+      console.log("🔄 Fetching paginated customers...", {
+        id, search, page, size, sort, bystore
+      });
+
+      const headers = getAuthHeaders();
+
+      const res = await api.get(`/api/customers/t/${id}`, {
+        headers,
+        params: {
+          search,
+          page,
+          size,
+          sort,
+          bystore,
+        }
+      });
+
+      console.log("✅ Paginated customers loaded:", res.data);
+      return res.data;
+    } catch (err) {
+      console.error("❌ Failed to fetch paginated customers:", {
+        id,
+        error: err.response?.data || err.message,
+        status: err.response?.status,
+      });
+
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to load paginated customers"
+      );
+    }
+  }
+);

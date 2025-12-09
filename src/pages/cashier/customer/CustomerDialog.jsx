@@ -1,43 +1,31 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useDispatch, useSelector } from 'react-redux';
-import { getAllCustomers } from '@/Redux Toolkit/features/customer/customerThunks';
-import CustomerForm from './CustomerForm';
+import { useDispatch } from 'react-redux';
 import { setSelectedCustomer } from '../../../Redux Toolkit/features/cart/cartSlice';
-import { useToast } from '../../../components/ui/use-toast';
+import CustomerForm from './CustomerForm';
 
-const CustomerDialog = ({ showCustomerDialog, setShowCustomerDialog }) => {
+const CustomerDialog = ({ showCustomerDialog, setShowCustomerDialog, customers, loading }) => {
   const dispatch = useDispatch();
-  const { toast } = useToast();
-  const { customers, loading } = useSelector(state => state.customer);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showCustomerForm, setShowCustomerForm] = useState(false);
 
-  useEffect(() => {
-    if (showCustomerDialog) {
-      dispatch(getAllCustomers());
-    }
-  }, [showCustomerDialog, dispatch]);
-
   const filteredCustomers = useMemo(
-    () => customers.filter(customer =>
-      customer.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone?.includes(searchTerm)
-    ), [customers, searchTerm]
+    () =>
+      customers?.filter(customer =>
+        customer.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.phone?.includes(searchTerm)
+      ),
+    [customers, searchTerm]
   );
 
   const handleCustomerSelect = (customer) => {
     dispatch(setSelectedCustomer(customer));
     setShowCustomerDialog(false);
-    // toast({
-    //   title: "Customer Selected",
-    //   description: `${customer.fullName} selected for this order`,
-    // });
   };
 
   return (
@@ -47,19 +35,16 @@ const CustomerDialog = ({ showCustomerDialog, setShowCustomerDialog }) => {
           <DialogTitle>Select Customer</DialogTitle>
         </DialogHeader>
 
-        <div className="mb-4">
-          <Input 
-            placeholder="Search customers..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        <Input
+          placeholder="Search customers..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="mb-4"
+        />
 
         <div className="max-h-96 overflow-y-auto">
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <p>Loading customers...</p>
-            </div>
+            <div className="flex items-center justify-center py-8">Loading customers...</div>
           ) : filteredCustomers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 space-y-2">
               <p className="text-gray-500">
@@ -78,18 +63,16 @@ const CustomerDialog = ({ showCustomerDialog, setShowCustomerDialog }) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCustomers.map(customer => (
+                {filteredCustomers.map((customer) => (
                   <TableRow key={customer.id}>
-                    <TableCell><Button 
-                        size="sm" 
-                        onClick={() => handleCustomerSelect(customer)}
-                        aria-label={`Select ${customer.fullName}`}
-                      >
+                    <TableCell>
+                      <Button size="sm" onClick={() => handleCustomerSelect(customer)}>
                         Select
-                      </Button> {customer.fullName}</TableCell>
+                      </Button>{" "}
+                      {customer.fullName}
+                    </TableCell>
                     <TableCell>{customer.phone}</TableCell>
                     <TableCell>{customer.email}</TableCell>
-                    
                   </TableRow>
                 ))}
               </TableBody>
@@ -97,13 +80,15 @@ const CustomerDialog = ({ showCustomerDialog, setShowCustomerDialog }) => {
           )}
         </div>
 
-        <CustomerForm 
+        <CustomerForm
           showCustomerForm={showCustomerForm}
           setShowCustomerForm={setShowCustomerForm}
         />
 
         <DialogFooter className="flex justify-between">
-          <Button variant="outline" onClick={() => setShowCustomerDialog(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => setShowCustomerDialog(false)}>
+            Cancel
+          </Button>
           <Button onClick={() => setShowCustomerForm(true)}>Add New Customer</Button>
         </DialogFooter>
       </DialogContent>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useToast } from "@/components/ui/use-toast";
 
 // Import components
@@ -9,21 +9,29 @@ import CartSection from "./cart/CartSection";
 import CustomerPaymentSection from "./payment/CustomerPaymentSection";
 
 import PaymentDialog from "./payment/PaymentDialog";
-import ReceiptDialog from "./components/ReceiptDialog";
 import HeldOrdersDialog from "./components/HeldOrdersDialog";
 import CustomerDialog from "./customer/CustomerDialog";
 import InvoiceDialog from "./order/OrderDetails/InvoiceDialog";
 
+import { getAllCustomers } from "@/Redux Toolkit/features/customer/customerThunks";
+
 const CreateOrderPage = () => {
   const { toast } = useToast();
-  const searchInputRef = useRef(null);
+  const dispatch = useDispatch();
 
+  const searchInputRef = useRef(null);
   const { error: orderError } = useSelector((state) => state.order);
+  const { customers, loading } = useSelector((state) => state.customer);
 
   const [showCustomerDialog, setShowCustomerDialog] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [showReceiptDialog, setShowReceiptDialog] = useState(false);
   const [showHeldOrdersDialog, setShowHeldOrdersDialog] = useState(false);
+
+  // Fetch all customers ONCE when page loads
+  useEffect(() => {
+    dispatch(getAllCustomers());
+  }, [dispatch]);
 
   useEffect(() => {
     if (orderError) {
@@ -35,7 +43,6 @@ const CreateOrderPage = () => {
     }
   }, [orderError, toast]);
 
-  // Focus on search input when component mounts
   useEffect(() => {
     if (searchInputRef.current) {
       searchInputRef.current.focus();
@@ -44,18 +51,11 @@ const CreateOrderPage = () => {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      {/* Header */}
       <POSHeader />
 
-      {/* Main Content - 3 Column Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Column - Product Search & List */}
         <ProductSection searchInputRef={searchInputRef} />
-
-        {/* Middle Column - Cart */}
         <CartSection setShowHeldOrdersDialog={setShowHeldOrdersDialog} />
-
-        {/* Right Column - Customer & Payment */}
         <CustomerPaymentSection
           setShowCustomerDialog={setShowCustomerDialog}
           setShowPaymentDialog={setShowPaymentDialog}
@@ -65,6 +65,8 @@ const CreateOrderPage = () => {
       <CustomerDialog
         showCustomerDialog={showCustomerDialog}
         setShowCustomerDialog={setShowCustomerDialog}
+        customers={customers}
+        loading={loading}
       />
 
       <PaymentDialog
@@ -73,14 +75,9 @@ const CreateOrderPage = () => {
         setShowReceiptDialog={setShowReceiptDialog}
       />
 
-      {/* <ReceiptDialog
-        showReceiptDialog={showReceiptDialog}
-        setShowReceiptDialog={setShowReceiptDialog}
-      /> */}
       <InvoiceDialog
         showInvoiceDialog={showReceiptDialog}
         setShowInvoiceDialog={setShowReceiptDialog}
-        
       />
 
       <HeldOrdersDialog
