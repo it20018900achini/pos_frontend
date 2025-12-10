@@ -25,7 +25,7 @@ const CartItem = ({ item, updateCartItemQuantity, removeFromCart }) => {
   };
 
   return (
-    <Card key={item.id} className="border-l-4 border-l-green-700">
+    <Card key={item.id} className="border-l-4 border-l-indigo-700">
       <CardContent className="p-3">
         <div className="flex items-center justify-between">
           {/* Item Info */}
@@ -73,7 +73,7 @@ const CartItem = ({ item, updateCartItemQuantity, removeFromCart }) => {
 
             <div className="text-right">
               <p className="font-medium">{formatPrice(item.sellingPrice)}</p>
-              <p className="text-sm font-bold text-green-600">
+              <p className="text-sm font-bold text-indigo-600">
                 {formatPrice(item.sellingPrice * item.quantity)}
               </p>
             </div>
