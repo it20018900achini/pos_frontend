@@ -42,7 +42,7 @@ export default function StoreSidebar() {
     <aside className="h-screen w-64 bg-white text-gray-800 flex flex-col shadow-xl rounded-r-xl overflow-hidden">
       {/* Branding */}
       <div className="flex items-center gap-2 px-6 py-6 border-b border-gray-200">
-        <Store className="w-8 h-8 text-green-600" />
+        <Store className="w-8 h-8 text-indigo-600" />
         <h1 className="text-xl font-bold text-gray-800">POS Admin</h1>
       </div>
 
@@ -58,8 +58,8 @@ export default function StoreSidebar() {
                   className={`
                     flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-200
                     ${active
-                      ? "bg-green-100 border-green-300 text-green-700 shadow-md"
-                      : "border-transparent hover:bg-green-50 hover:border-green-200 hover:text-green-600"
+                      ? "bg-indigo-100 border-indigo-300 text-indigo-700 shadow-md"
+                      : "border-transparent hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600"
                     }
                   `}
                 >

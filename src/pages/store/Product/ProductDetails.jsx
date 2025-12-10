@@ -86,7 +86,7 @@ const ProductDetails = ({ product }) => {
                 <div className="text-sm text-gray-500">Stock</div>
                 <div className="font-medium">
                   {product.stock !== undefined ? (
-                    <Badge className={product.stock > 10 ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}>
+                    <Badge className={product.stock > 10 ? 'bg-indigo-100 text-indigo-800' : 'bg-amber-100 text-amber-800'}>
                       {product.stock} in stock
                     </Badge>
                   ) : 'N/A'}

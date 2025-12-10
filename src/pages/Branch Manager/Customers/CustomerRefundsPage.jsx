@@ -165,7 +165,7 @@ export default function CustomerRefundsPage({ customerId }) {
                            className={
                              refund.status === "REFUNDED"
                                ? "bg-red-500 text-white"
-                               : "bg-green-600 text-white"
+                               : "bg-indigo-600 text-white"
                            }
                          >
                            {refund.status || "COMPLETE"}

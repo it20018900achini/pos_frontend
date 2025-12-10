@@ -110,7 +110,7 @@ function SummaryCard({ dataSelected }) {
           <div className="space-y-1 text-sm">
             {Object.values(productTotals).map((p, idx) => (
               <div key={idx} className="flex justify-between border-b py-1">
-                <span>{p.name} <Badge variant={p.available<1?`destructive`:"primary"} className={p.available>0&&"bg-green-600 text-white"}>Available: {p.available}</Badge></span>
+                <span>{p.name} <Badge variant={p.available<1?`destructive`:"primary"} className={p.available>0&&"bg-indigo-600 text-white"}>Available: {p.available}</Badge></span>
                 <span>
                   Qty: {p.qty} × {p.price.toFixed(2)} = {p.total.toFixed(2)}
                   {p.available !== undefined ? ` (Available: ${p.available})` : ""}
@@ -136,7 +136,7 @@ function OrderCard({ order }) {
   return (
     <div className="grid grid-cols-2 gap-4 mb-4">
       {/* Order Information */}
-      <Card className="bg-green-600 text-green-50">
+      <Card className="bg-indigo-600 text-indigo-50">
         <CardContent className="p-4">
           <h3 className="font-semibold mb-2">Order Information</h3>
           <div className="space-y-1 text-sm">

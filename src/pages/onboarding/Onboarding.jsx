@@ -187,7 +187,7 @@ const Onboarding = () => {
         </div>
 
         {/* Left Side - Image Section */}
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 via-[#047857] to-[#022c22] relative overflow-hidden">
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-600 via-[#047857] to-[#022c22] relative overflow-hidden">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
@@ -222,7 +222,7 @@ const Onboarding = () => {
               {/* Features List */}
               <div className="space-y-4 text-left">
                 <div className="flex items-center">
-                  <div className="w-6 h-6 bg-green-400 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                  <div className="w-6 h-6 bg-indigo-400 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
@@ -230,7 +230,7 @@ const Onboarding = () => {
                   <span className="text-primary/80">Easy inventory management</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-6 h-6 bg-green-400 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                  <div className="w-6 h-6 bg-indigo-400 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
@@ -238,7 +238,7 @@ const Onboarding = () => {
                   <span className="text-primary/80">Real-time sales tracking</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-6 h-6 bg-green-400 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                  <div className="w-6 h-6 bg-indigo-400 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
@@ -265,7 +265,7 @@ const Onboarding = () => {
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-green-600 to-[#022c22] h-2 rounded-full transition-all duration-500 ease-out"
+                  className="bg-gradient-to-r from-indigo-600 to-[#022c22] h-2 rounded-full transition-all duration-500 ease-out"
                   style={{ width: `${(step / 2) * 100}%` }}
                 ></div>
               </div>
@@ -321,7 +321,7 @@ const Onboarding = () => {
             <div className="mt-8 text-center">
               <p className="text-sm text-gray-500">
                 Already have an account?{' '}
-                <a href="/login" className="text-primary hover:text-green-900 font-medium">
+                <a href="/login" className="text-primary hover:text-indigo-900 font-medium">
                   Sign in here
                 </a>
               </p>

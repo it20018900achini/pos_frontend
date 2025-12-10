@@ -158,7 +158,7 @@ export default function PendingRequestsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleApprove(store)}
-                            className="text-green-600 border-green-200 hover:bg-green-50"
+                            className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
                             disabled={updatingId === store.id}
                           >
                             <CheckCircle className="w-4 h-4 mr-1" />
@@ -204,7 +204,7 @@ export default function PendingRequestsPage() {
             <Button variant="outline" onClick={() => setApprovalDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={confirmApprove} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={confirmApprove} className="bg-indigo-600 hover:bg-indigo-700">
               <CheckCircle className="w-4 h-4 mr-2" />
               Approve Store
             </Button>

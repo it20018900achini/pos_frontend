@@ -14,12 +14,12 @@ const CustomerSection = ({setShowCustomerDialog}) => {
           Customer
         </h2>
         {selectedCustomer ? (
-          <Card className="border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800">
+          <Card className="border-indigo-200 bg-indigo-50 dark:bg-indigo-950 dark:border-indigo-800">
             <CardContent className="p-3">
-              <h3 className="font-medium text-green-800 dark:text-green-200">
+              <h3 className="font-medium text-indigo-800 dark:text-indigo-200">
                 {selectedCustomer.fullName}
               </h3>
-              <p className="text-sm text-green-600 dark:text-green-300">
+              <p className="text-sm text-indigo-600 dark:text-indigo-300">
                 {selectedCustomer.phone}
               </p>
               <Button

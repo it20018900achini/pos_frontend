@@ -44,7 +44,7 @@ const EmployeeTable = ({
                 <Badge
                   className={
                     loginAccess
-                      ? "bg-green-100 text-green-800 hover:bg-green-100/80"
+                      ? "bg-indigo-100 text-indigo-800 hover:bg-indigo-100/80"
                       : "bg-red-100 text-red-800 hover:bg-red-100/80"
                   }
                   variant="secondary"

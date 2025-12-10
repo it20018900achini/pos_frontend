@@ -3,7 +3,7 @@ import { Card, CardContent } from '../../../../components/ui/card'
 
 const CustomerInformation = ({selectedOrder}) => {
   return (
-       <Card className={'border-green-600'}>
+       <Card className={'border-indigo-600'}>
           <CardContent className="p-4">
             <h3 className="font-semibold mb-2">Customer Information</h3>
             <div className="space-y-1 text-sm">

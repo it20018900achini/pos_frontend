@@ -23,7 +23,7 @@ const StatCard = ({ title, value, icon, description, trend }) => (
       <div className="text-2xl font-bold">{value}</div>
       <p className="text-xs text-muted-foreground flex items-center gap-1">
         {trend !== undefined && (
-          <span className={trend > 0 ? "text-green-600" : trend < 0 ? "text-red-600" : ""}>
+          <span className={trend > 0 ? "text-indigo-600" : trend < 0 ? "text-red-600" : ""}>
             {trend > 0 ? "+" : ""}{trend}%
           </span>
         )}
@@ -179,7 +179,7 @@ export default function Dashboard() {
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-center gap-4 p-4 border rounded-lg">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
               <div className="flex-1">
                 <p className="text-sm font-medium">New store registered</p>
                 <p className="text-xs text-muted-foreground">2 minutes ago</p>

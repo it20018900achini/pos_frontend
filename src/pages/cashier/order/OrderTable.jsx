@@ -10,7 +10,6 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { EyeIcon } from "lucide-react";
 import { getFlattenedRefundSummaryWithTotals } from "./getFlattenedRefundSummaryWithTotals";
 
 const OrderTable = ({
@@ -29,103 +28,108 @@ const OrderTable = ({
   }
 
   return (
-    <Table>
+    <Table
+      className="
+        bg-white 
+        dark:bg-slate-900 
+        rounded-lg 
+        shadow-sm 
+        dark:shadow-md
+      "
+    >
       <TableHeader>
-        <TableRow>
-          <TableHead>Order ID</TableHead>
-          <TableHead>Date</TableHead>
-          <TableHead>Customer</TableHead>
-          <TableHead>Total</TableHead>
-          <TableHead>Payment Mode</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+        <TableRow className="bg-slate-100 dark:bg-slate-800">
+          <TableHead className="dark:text-slate-200">Order ID</TableHead>
+          <TableHead className="dark:text-slate-200">Date</TableHead>
+          <TableHead className="dark:text-slate-200">Customer</TableHead>
+          <TableHead className="dark:text-slate-200">Total</TableHead>
+          <TableHead className="dark:text-slate-200">Payment Mode</TableHead>
+          <TableHead className="dark:text-slate-200">Status</TableHead>
+          <TableHead className="text-right dark:text-slate-200">
+            Actions
+          </TableHead>
         </TableRow>
       </TableHeader>
 
       <TableBody>
-        {orders.map((order) => (
-          <Fragment key={order.id}>
-            
-            {/* ✅ ORDER MAIN ROW */}
-            <TableRow className={order.hasReturnCount>0? "bg-red-100 hover:bg-red-200": ""}>
-              <TableCell className="font-medium">{order.id}</TableCell>
+        {orders.map((order) => {
+          const totals = getFlattenedRefundSummaryWithTotals(order)?.totals;
+          const isFullyRefunded =
+            totals?.totalPrice === Number(order.totalAmount);
 
-              <TableCell>
-                {order.createdAt
-                  ? new Date(order.createdAt).toLocaleString()
-                  : "-"}
-              </TableCell>
+          return (
+            <Fragment key={order.id}>
+              {/* ORDER MAIN ROW */}
+              <TableRow
+                className={
+                  order.hasReturnCount > 0
+                    ? "bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/60"
+                    : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                }
+              >
+                <TableCell className="font-medium dark:text-slate-200">
+                  {order.id}
+                </TableCell>
 
-              <TableCell>
-                {order.customer?.fullName || "Walk-in Customer"}
-              </TableCell>
+                <TableCell className="dark:text-slate-300">
+                  {order.createdAt
+                    ? new Date(order.createdAt).toLocaleString()
+                    : "-"}
+                </TableCell>
 
-              <TableCell>
-                
-                LKR {Number(order.totalAmount || 0).toFixed(2)}
-              </TableCell>
+                <TableCell className="dark:text-slate-300">
+                  {order.customer?.fullName || "Walk-in Customer"}
+                </TableCell>
 
-              <TableCell>{order.paymentType || "CASH"}</TableCell>
+                <TableCell className="dark:text-slate-200">
+                  LKR {Number(order.totalAmount || 0).toFixed(2)}
+                </TableCell>
 
-              <TableCell>
-                <Badge
-                  className={
-                    order.hasReturnCount>0
-                      ? "bg-red-500 text-white"
-                      : "bg-green-600 text-white"
-                  }
-                >
-                  {getFlattenedRefundSummaryWithTotals(order)?.totals?.totalPrice==order.totalAmount?"All REFUNDED":order.hasReturnCount>0? "REFUNDED": "COMPLETE"}
-                  {}
-                </Badge>
-              </TableCell>
+                <TableCell className="dark:text-slate-300">
+                  {order.paymentType || "CASH"}
+                </TableCell>
 
-              <TableCell className="text-right">
-                <Button
-                  size="sm"
-                  onClick={() => handleViewOrder(order)}
-                  className="mr-1"
+                <TableCell>
+                  <Badge
+                    className={
+                      isFullyRefunded
+                        ? "bg-red-600 text-white"
+                        : order.hasReturnCount > 0
+                        ? "bg-orange-500 text-white"
+                        : "bg-indigo-600 text-white"
+                    }
+                  >
+                    {isFullyRefunded
+                      ? "All REFUNDED"
+                      : order.hasReturnCount > 0
+                      ? "REFUNDED"
+                      : "COMPLETE"}
+                  </Badge>
+                </TableCell>
 
-                >
-                  Order
-                </Button>
-                {order.hasReturnCount>0?<Button
-                  onClick={() => handleReturnOrder(order)}
-                  size="sm"
-                >
-                  Refunds
-                </Button>:<Button
-                  size="sm"
-                  varient="gost"
-                  disabled="true"
-                >
-                  Refunds
-                </Button>}
-                
-                
-              </TableCell>
-            </TableRow>
+                <TableCell className="text-right">
+                  <Button
+                    size="sm"
+                    onClick={() => handleViewOrder(order)}
+                    className="mr-1"
+                  >
+                    Order
+                  </Button>
 
-            {/* ✅ ITEM ROW (Product List) */}
-            {/* <TableRow className="bg-muted/30">
-              <TableCell colSpan={7} className="py-2">
-                <div className="flex flex-wrap gap-2">
-                  {order.items?.map((it) => (
-                    <Badge key={it.id} className="text-sm px-3 py-1">
-                      {it.product?.name} × {it.quantity}
-                      {it.returned && it.return_quantity > 0 ? (
-                        <span className="ml-2 text-red-500 font-semibold">
-                          | R: {it.return_quantity}
-                        </span>
-                      ) : null}
-                    </Badge>
-                  ))}
-                </div>
-              </TableCell>
-            </TableRow> */}
-
-          </Fragment>
-        ))}
+                  {order.hasReturnCount > 0 ? (
+                    <Button size="sm" onClick={() => handleReturnOrder(order)}>
+                      Refunds
+                    </Button>
+                  ) : (
+                    <Button size="sm" disabled>
+                      Refunds
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            </Fragment>
+          );
+        })}
       </TableBody>
     </Table>
   );

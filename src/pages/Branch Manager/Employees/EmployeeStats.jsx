@@ -21,7 +21,7 @@ const EmployeeStats = ({ employees }) => {
             <h3 className="text-lg font-medium text-gray-500">
               Active Employees
             </h3>
-            <p className="text-3xl font-bold mt-2 text-green-600">
+            <p className="text-3xl font-bold mt-2 text-indigo-600">
               {employees.length}
             </p>
           </div>

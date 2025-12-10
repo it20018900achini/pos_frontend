@@ -106,7 +106,7 @@ const TodayOverview = () => {
         ? `LKR ${todayOverview.totalSales.toLocaleString()}`
         : "-",
       icon: DollarSign,
-      gradient: "bg-gradient-to-tr from-green-400 to-teal-400",
+      gradient: "bg-gradient-to-tr from-indigo-400 to-teal-400",
       change: formatPercent(todayOverview?.salesGrowth),
       changeType: getChangeType(todayOverview?.salesGrowth),
     },

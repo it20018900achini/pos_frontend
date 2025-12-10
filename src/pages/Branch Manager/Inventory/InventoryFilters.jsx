@@ -55,7 +55,7 @@ const InventoryFilters = ({
           <h3 className="text-lg font-medium text-gray-500">
             Total Quantity :{" "}
           </h3>
-          <p className="text-xl font-bold  text-green-600">
+          <p className="text-xl font-bold  text-indigo-600">
             {inventoryRows.reduce((sum, row) => sum + (row.quantity || 0), 0)}
           </p>
         </div>

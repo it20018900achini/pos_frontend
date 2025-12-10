@@ -10,7 +10,7 @@ export default function StoreTopbar() {
       <div className="flex-1 max-w-md relative">
         <Input
           placeholder="Search..."
-          className="w-full rounded-xl border border-gray-300 focus:ring-1 focus:ring-green-500 focus:border-green-500 shadow-sm"
+          className="w-full rounded-xl border border-gray-300 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
         />
       </div>
 
@@ -29,8 +29,8 @@ export default function StoreTopbar() {
 
         {/* Profile */}
         <div className="flex items-center gap-3 cursor-pointer">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shadow-inner">
-            <UserCircle className="w-6 h-6 text-green-600" />
+          <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center shadow-inner">
+            <UserCircle className="w-6 h-6 text-indigo-600" />
           </div>
           <div className="hidden md:flex flex-col">
             <span className="text-sm font-semibold text-gray-800">Store Admin</span>

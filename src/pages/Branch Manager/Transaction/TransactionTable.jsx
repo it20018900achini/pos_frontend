@@ -26,17 +26,17 @@ const TransactionTable = ({filteredTransactions,handleViewTransaction}) => {
                     <TableRow key={transaction.id}>
                       <TableCell>{transaction.createdAt}</TableCell>
                       <TableCell>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${transaction.type === 'Sale' ? 'bg-green-100 text-green-800' : transaction.type === 'Refund' ? 'bg-amber-100 text-amber-800' : transaction.type === 'Purchase' || transaction.type === 'Expense' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${transaction.type === 'Sale' ? 'bg-indigo-100 text-indigo-800' : transaction.type === 'Refund' ? 'bg-amber-100 text-amber-800' : transaction.type === 'Purchase' || transaction.type === 'Expense' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
                           #{transaction.cashierId}
                         </span>
                       </TableCell>
                       <TableCell>{transaction.customer?.fullName}</TableCell>
-                      <TableCell className={transaction.totalAmount > 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                      <TableCell className={transaction.totalAmount > 0 ? 'text-indigo-600 font-medium' : 'text-red-600 font-medium'}>
                         {transaction.totalAmount > 0 ? `+$${transaction.totalAmount.toFixed(2)}` : `-$${Math.abs(transaction.totalAmount).toFixed(2)}`}
                       </TableCell>
                       <TableCell>{transaction.paymentType}</TableCell>
                       <TableCell>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                           {transaction.status}
                         </span>
                       </TableCell>

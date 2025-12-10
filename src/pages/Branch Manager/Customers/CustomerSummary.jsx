@@ -54,7 +54,7 @@ const CustomerSummary = ({ customerId }) => {
               <CardTitle className="flex justify-between overflow-auto">{metric.label}<span>LKR {metric.value}</span></CardTitle>
             </CardHeader>
             <CardContent className="flex justify-between overflow-auto">
-              <p className="text-sm font-semibold text-green-500">CASH {metric.sub?.cash}</p>
+              <p className="text-sm font-semibold text-indigo-500">CASH {metric.sub?.cash}</p>
               <p className="text-sm font-semibold text-red-500">CREDIT {metric.sub?.credit}</p>
             </CardContent>
           </Card>

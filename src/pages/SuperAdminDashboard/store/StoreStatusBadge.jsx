@@ -6,7 +6,7 @@ const statusConfig = {
   active: {
     label: "Active",
     variant: "default",
-    className: "bg-green-100 text-green-800 hover:bg-green-100",
+    className: "bg-indigo-100 text-indigo-800 hover:bg-indigo-100",
     icon: <CheckCircle className="w-3 h-3" />,
   },
   pending: {

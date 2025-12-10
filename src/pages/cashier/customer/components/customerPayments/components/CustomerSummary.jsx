@@ -74,7 +74,7 @@ const CustomerSummary = ({ customerId }) => {
         { label: "Cash", value: formatLKR(summary.totalPaymentCash), color: "green" },
         { label: "Credit", value: formatLKR(summary.totalPaymentCredit), color: "red" },
       ],
-      bg: "bg-green-500",
+      bg: "bg-indigo-500",
     },
   ];
 

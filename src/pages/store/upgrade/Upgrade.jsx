@@ -63,8 +63,8 @@ const Upgrade = () => {
       ) : (
         <>
           {currentSubscription && (
-            <div className="mb-8 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 flex items-center gap-3">
-              <CheckCircle className="w-6 h-6 text-green-500" />
+            <div className="mb-8 p-4 bg-indigo-50 border border-indigo-200 rounded-lg text-indigo-800 flex items-center gap-3">
+              <CheckCircle className="w-6 h-6 text-indigo-500" />
               <div>
                 <div className="font-semibold">Current Plan: {currentSubscription.plan?.name}</div>
                 <div>Status: {currentSubscription.status}</div>
@@ -119,7 +119,7 @@ const Upgrade = () => {
                   )}
                   {plan.maxProducts && (
                     <li className="text-muted-foreground flex items-center gap-2">
-                      <ShoppingCart className="w-5 h-5 text-green-500" />
+                      <ShoppingCart className="w-5 h-5 text-indigo-500" />
                       Max Products: {plan.maxProducts}
                     </li>
                   )}
@@ -159,7 +159,7 @@ const Upgrade = () => {
             ))}
           </div>
           {actionError && <div className="text-center text-red-500 mt-6">{actionError}</div>}
-          {successMsg && <div className="text-center text-green-600 mt-6">{successMsg}</div>}
+          {successMsg && <div className="text-center text-indigo-600 mt-6">{successMsg}</div>}
         </>
       )}
     </div>

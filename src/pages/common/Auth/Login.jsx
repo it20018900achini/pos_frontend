@@ -283,7 +283,7 @@ const Login = () => {
           {/* -------- EMAIL SENT -------- */}
           {forgot.emailSent && (
             <div className="text-center space-y-4">
-              <CheckCircle className="w-12 h-12 mx-auto text-green-600" />
+              <CheckCircle className="w-12 h-12 mx-auto text-indigo-600" />
               <h3 className="text-lg font-semibold">Check Your Email</h3>
               <p className="text-muted-foreground">
                 Reset instructions were sent to:

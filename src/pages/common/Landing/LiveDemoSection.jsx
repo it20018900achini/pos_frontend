@@ -127,7 +127,7 @@ const LiveDemoSection = () => {
                   <div className="flex space-x-2">
                     <div className="w-3 h-3 rounded-full bg-red-500"></div>
                     <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
                   </div>
                   <div className="text-sm font-medium">
                     {activeTab === 'pos' && 'POS Terminal - Checkout'}
@@ -236,7 +236,7 @@ const LiveDemoSection = () => {
                           <div className="flex items-center mt-2">
                             <div className="w-full bg-gray-200 rounded-full h-2">
                               <div 
-                                className={`h-2 rounded-full ${i === 2 ? 'bg-green-500' : 'bg-primary'}`} 
+                                className={`h-2 rounded-full ${i === 2 ? 'bg-indigo-500' : 'bg-primary'}`} 
                                 style={{ width: `${i === 0 ? 65 : i === 1 ? 80 : 85}%` }}
                               ></div>
                             </div>
@@ -304,7 +304,7 @@ const LiveDemoSection = () => {
                           <span className="text-sm">#ORD-{1000 + i}</span>
                           <span className="text-sm">Customer {i}</span>
                           <span className="text-sm">LKR {(i * 450).toFixed(2)}</span>
-                          <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 inline-block text-center w-20">
+                          <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-800 inline-block text-center w-20">
                             Completed
                           </span>
                         </div>
@@ -360,7 +360,7 @@ const LiveDemoSection = () => {
                           </div>
                           <div className="text-sm">LKR {((i + 1) * 499).toFixed(2)}</div>
                           <div>
-                            <span className={`text-xs px-2 py-1 rounded-full ${i === 3 ? 'bg-red-100 text-red-800' : i === 2 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                            <span className={`text-xs px-2 py-1 rounded-full ${i === 3 ? 'bg-red-100 text-red-800' : i === 2 ? 'bg-yellow-100 text-yellow-800' : 'bg-indigo-100 text-indigo-800'}`}>
                               {i === 3 ? 'Out of stock' : i === 2 ? 'Low stock' : `${(i + 1) * 25} in stock`}
                             </span>
                           </div>

@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 
 const OrderInformation = ({selectedOrder}) => {
   return (
-     <Card className={`bg-red-500 text-green-50`}>
+     <Card className={`bg-red-500 text-indigo-50`}>
           <CardContent className="p-4">
             <h3 className="font-semibold mb-2">Order Information</h3>
             <div className="space-y-1 text-sm">

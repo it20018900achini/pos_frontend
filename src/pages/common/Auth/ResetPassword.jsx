@@ -164,8 +164,8 @@ const ResetPassword = () => {
         {/* Success State */}
         {isSuccess ? (
           <div className="bg-card rounded-2xl shadow-xl p-8 text-center">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-green-600" />
+            <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-indigo-600" />
             </div>
             <h3 className="text-xl font-semibold text-foreground mb-2">
               Password Reset Complete

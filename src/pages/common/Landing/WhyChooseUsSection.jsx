@@ -24,7 +24,7 @@ const WhyChooseUsSection = () => {
                   "24x7 Support"
                 ].map((benefit, index) => (
                   <div key={index} className="flex items-center space-x-3">
-                    <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+                    <CheckCircle className="w-6 h-6 text-indigo-500 flex-shrink-0" />
                     <span className="text-foreground">{benefit}</span>
                   </div>
                 ))}

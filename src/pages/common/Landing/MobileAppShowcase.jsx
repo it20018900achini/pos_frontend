@@ -93,12 +93,12 @@ const MobileAppShowcase = () => {
                       <div className="bg-gray-50 p-3 rounded-lg">
                         <p className="text-xs text-gray-500">Today's Sales</p>
                         <p className="text-lg font-bold text-gray-900">LKR 12,450</p>
-                        <p className="text-xs text-green-500">+8% from yesterday</p>
+                        <p className="text-xs text-indigo-500">+8% from yesterday</p>
                       </div>
                       <div className="bg-gray-50 p-3 rounded-lg">
                         <p className="text-xs text-gray-500">Orders</p>
                         <p className="text-lg font-bold text-gray-900">48</p>
-                        <p className="text-xs text-green-500">+5 new today</p>
+                        <p className="text-xs text-indigo-500">+5 new today</p>
                       </div>
                     </div>
                     

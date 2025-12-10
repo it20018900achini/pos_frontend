@@ -23,7 +23,7 @@ import {
 
 const getStatusColor = (status) => {
   if (status === "Active") {
-    return "text-green-500";
+    return "text-indigo-500";
   } else if (status === "Inactive") {
     return "text-red-500";
   } else {

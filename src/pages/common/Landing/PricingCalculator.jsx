@@ -145,7 +145,7 @@ const PricingCalculator = () => {
             <div className="text-right">
               <div className="text-3xl font-bold text-primary">LKR {totalPrice.toLocaleString()}</div>
               {savings > 0 && (
-                <div className="text-sm text-green-600">You save LKR {savings.toLocaleString()}</div>
+                <div className="text-sm text-indigo-600">You save LKR {savings.toLocaleString()}</div>
               )}
             </div>
           </div>

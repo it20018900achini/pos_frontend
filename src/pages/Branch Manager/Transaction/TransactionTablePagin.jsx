@@ -274,7 +274,7 @@ export default function TransactionTablePagin() {
                     <TableCell>{row.customerName}</TableCell>
                     <TableCell>{row.cashierName}</TableCell>
 
-  <TableCell className={`text-center font-medium ${row.type == "ORDER" ? `text-green-600` : row.type == "REFUND" ? ` text-red-600`:"text-blue-600"}`}>
+  <TableCell className={`text-center font-medium ${row.type == "ORDER" ? `text-indigo-600` : row.type == "REFUND" ? ` text-red-600`:"text-blue-600"}`}>
                         {row.type == "ORDER" ? `+LKR ${row.amount.toFixed(2)}` : row.type == "REFUND" ?`-LKR ${row.amount.toFixed(2)}`:`+LKR ${row.amount.toFixed(2)}`}
                       </TableCell>
 

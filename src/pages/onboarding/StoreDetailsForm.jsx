@@ -212,7 +212,7 @@ const StoreDetailsForm = ({ initialValues, onSubmit, onBack }) => {
             <Button
               type="submit"
               disabled={isSubmitting || !isValid}
-              className="flex-1 py-3 text-base font-semibold bg-gradient-to-r from-green-700 to-emerald-900 hover:from-green-700 hover:to-emerald-900 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="flex-1 py-3 text-base font-semibold bg-gradient-to-r from-indigo-700 to-emerald-900 hover:from-indigo-700 hover:to-emerald-900 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center">

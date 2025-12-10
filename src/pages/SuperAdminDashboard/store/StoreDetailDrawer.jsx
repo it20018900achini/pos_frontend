@@ -72,7 +72,7 @@ export default function StoreDetailDrawer({
                   variant="outline"
                   size="sm"
                   onClick={() => onActivateStore?.(store.id)}
-                  className="text-green-600 border-green-200 hover:bg-green-50"
+                  className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
                 >
                   <CheckCircle className="w-4 h-4 mr-1" />
                   Activate

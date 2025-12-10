@@ -100,7 +100,7 @@ export default function CommissionsPage() {
   const getRateChange = (current, previous) => {
     const change = current - previous;
     if (change > 0) {
-      return { value: `+${change}%`, className: "text-green-600", icon: <TrendingUp className="w-3 h-3" /> };
+      return { value: `+${change}%`, className: "text-indigo-600", icon: <TrendingUp className="w-3 h-3" /> };
     } else if (change < 0) {
       return { value: `${change}%`, className: "text-red-600", icon: <TrendingDown className="w-3 h-3" /> };
     } else {

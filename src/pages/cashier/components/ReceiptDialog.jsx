@@ -43,7 +43,7 @@ const ReceiptDialog = ({ showReceiptDialog, setShowReceiptDialog }) => {
 
         <div className="space-y-4">
           <div className="text-center">
-            <Receipt className="w-16 h-16 mx-auto text-green-600 mb-4" />
+            <Receipt className="w-16 h-16 mx-auto text-indigo-600 mb-4" />
             <h3 className="text-lg font-semibold">Payment Successful!</h3>
             <p className="text-sm text-gray-600">Receipt has been printed</p>
           </div>

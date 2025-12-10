@@ -31,10 +31,10 @@ const PurchaseHistory = ({ orders, loading  }) => {
 
   return (
     <div className="p-4 border-t ">
-      <Card className="border-green-300">
+      <Card className="border-indigo-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ShoppingBagIcon className="h-5 w-5 text-green-500" />
+            <ShoppingBagIcon className="h-5 w-5 text-indigo-500" />
             Purchase History
           </CardTitle>
         </CardHeader>

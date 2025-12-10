@@ -322,7 +322,7 @@ const exportExcelMultiSheet = () => {
     <div className="h-full flex flex-col">
       {/* <POSHeader /> */}
 
-      <div className="p-4 bg-card border-b flex justify-between items-center">        <h1 className="text-2xl font-bold flex items-center gap-3"><span className="w-4 h-4 bg-green-500"></span>Order  History</h1>
+      <div className="p-4 bg-card border-b flex justify-between items-center">        <h1 className="text-2xl font-bold flex items-center gap-3"><span className="w-4 h-4 bg-indigo-500"></span>Order  History</h1>
 
         
       </div>

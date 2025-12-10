@@ -26,7 +26,7 @@ import {
 import { createOrder } from "@/Redux Toolkit/features/order/orderThunks";
 
 const paymentMethods = [
-  { key: "CASH", label: "Cash", icon: "💵", color: "from-green-500 to-emerald-600" },
+  { key: "CASH", label: "Cash", icon: "💵", color: "from-indigo-500 to-emerald-600" },
   { key: "CARD", label: "Card", icon: "💳", color: "from-blue-500 to-indigo-600" },
   { key: "QR", label: "QR Pay", icon: "📱", color: "from-purple-500 to-fuchsia-600" },
   { key: "WALLET", label: "Wallet", icon: "🪙", color: "from-amber-500 to-yellow-600" },
@@ -148,7 +148,7 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
                   value={cashAmount}
                   onChange={(e) => setCashAmount(parseFloat(e.target.value) || 0)}
                 />
-                <p className={`text-sm px-3 py-1 rounded-lg w-max font-bold ${credit > 0 ? "bg-red-200 text-red-700" : "bg-green-200 text-green-700"}`}>
+                <p className={`text-sm px-3 py-1 rounded-lg w-max font-bold ${credit > 0 ? "bg-red-200 text-red-700" : "bg-indigo-200 text-indigo-700"}`}>
                   Credit: LKR {credit.toFixed(2)}
                 </p>
               </div>

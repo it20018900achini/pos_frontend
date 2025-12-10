@@ -1,7 +1,7 @@
   export const getStatusColor = (status) => {
     switch (status) {
       case "completed":
-        return "bg-green-100 text-green-800 hover:bg-green-100/80";
+        return "bg-indigo-100 text-indigo-800 hover:bg-indigo-100/80";
       case "processing":
         return "bg-primary/10 text-primary hover:bg-primary/20";
       case "pending":

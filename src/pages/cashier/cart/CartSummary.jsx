@@ -32,7 +32,7 @@ const CartSummary = () => {
         <Separator />
         <div className="flex justify-between text-lg font-bold">
           <span>Total:</span>
-          <span className="text-green-600">LKR {total?.toFixed(2)}</span>
+          <span className="text-indigo-600">LKR {total?.toFixed(2)}</span>
         </div>
       </div>
     </div>

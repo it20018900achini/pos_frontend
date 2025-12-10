@@ -210,7 +210,7 @@ const SubscriptionPlansPage = () => {
                       onCheckedChange={() => handleStatusToggle(plan)}
                       disabled={statusLoadingId === plan.id}
                     />
-                    <span className={plan.active ? 'text-green-600' : 'text-red-500'}>
+                    <span className={plan.active ? 'text-indigo-600' : 'text-red-500'}>
                       {plan.active ? 'Active' : 'Inactive'}
                     </span>
                     {statusLoadingId === plan.id && <span className="text-xs text-gray-400">Updating...</span>}

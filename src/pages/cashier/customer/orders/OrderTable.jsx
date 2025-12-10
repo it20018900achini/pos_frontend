@@ -69,7 +69,7 @@ const OrderTable = ({
                   className={
                     order.status === "REFUNDED"
                       ? "bg-red-500 text-white"
-                      : "bg-green-600 text-white"
+                      : "bg-indigo-600 text-white"
                   }
                 >
                   {order.status || "COMPLETE"}
