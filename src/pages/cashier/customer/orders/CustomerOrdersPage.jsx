@@ -1,16 +1,4 @@
-// src/components/CustomerOrderPage.jsx
-
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchCustomerOrders,
-  setPage,
-  setSort,
-  setFilters,
-  resetFilters
-} from "../../../../Redux Toolkit/features/customer/customerOrders/customerOrderSlice";
-import OrderTable from "./OrderTable";
-import  { Fragment } from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -19,74 +7,57 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-export default function CustomerOrderPage({ customerId }) {
-  const dispatch = useDispatch();
+import { useGetCustomerOrdersQuery } from "@/Redux Toolkit/features/customer/customerOrderApi";
+import { Fragment } from "react";
+import { Loader2 } from "lucide-react";
 
-  const {
-    content,
-    number,
-    totalPages,
+export default function CustomerOrderPage({ customerId }) {
+  const [page, setPage] = useState(0);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortDir, setSortDir] = useState("desc");
+  const [status, setStatus] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const { data, isLoading, isFetching } = useGetCustomerOrdersQuery({
+    customerId,
+    page,
     sortBy,
     sortDir,
     status,
     startDate,
     endDate,
-    loading,
-  } = useSelector((state) => state.customerOrder);
+  });
 
-  // Load data
-  useEffect(() => {
-    dispatch(
-      fetchCustomerOrders({
-        customerId,
-        page: number,
-        sortBy,
-        sortDir,
-        status,
-        startDate,
-        endDate,
-      })
-    );
-  }, [customerId, number, sortBy, sortDir, status, startDate, endDate, dispatch]);
-
-  // Sorting handler
   const handleSort = (field) => {
     const newDir = sortDir === "asc" ? "desc" : "asc";
-    dispatch(setSort({ sortBy: field, sortDir: newDir }));
-  };
-
-  // Filter handler
-  const handleFilterChange = (e) => {
-    dispatch(
-      setFilters({
-        ...{
-          status,
-          startDate,
-          endDate,
-        },
-        [e.target.name]: e.target.value,
-      })
-    );
+    setSortBy(field);
+    setSortDir(newDir);
+    setPage(0);
   };
 
   const clearFilters = () => {
-    dispatch(resetFilters());
+    setStatus("");
+    setStartDate("");
+    setEndDate("");
+    setPage(0);
   };
+
+  const content = data?.content || [];
+  const totalPages = data?.totalPages || 0;
 
   return (
     <div>
       <h2 className="text-lg font-bold mb-2">Customer Orders</h2>
 
-      {/* ========================= FILTERS ========================= */}
+      {/* Filters */}
       <div className="flex gap-3 mb-4">
-        {/* Status Filter */}
         <select
           name="status"
           value={status}
-          onChange={handleFilterChange}
+          onChange={(e) => setStatus(e.target.value)}
           className="border p-1"
         >
           <option value="">All Status</option>
@@ -95,134 +66,100 @@ export default function CustomerOrderPage({ customerId }) {
           <option value="CANCELLED">Cancelled</option>
         </select>
 
-        {/* Date Filter */}
         <input
           type="date"
           name="startDate"
           value={startDate}
-          onChange={handleFilterChange}
+          onChange={(e) => setStartDate(e.target.value)}
           className="border p-1"
         />
-
         <input
           type="date"
           name="endDate"
           value={endDate}
-          onChange={handleFilterChange}
+          onChange={(e) => setEndDate(e.target.value)}
           className="border p-1"
         />
-
-        <button onClick={clearFilters} className="border px-2">
-          Clear
-        </button>
+        <Button onClick={clearFilters}>Clear</Button>
       </div>
 
-      {/* ========================= TABLE ========================= */}
-      {loading ? (
-        <p>Loading...</p>
+      {/* Table */}
+      {isLoading || isFetching ? (
+        <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
+          <Loader2 className="animate-spin h-8 w-8 mb-2" />
+          <p>Loading orders...</p>
+        </div>
+      ) : content.length === 0 ? (
+        <p className="text-center my-3">No data found</p>
       ) : (
-          <Table>
-               <TableHeader>
-                 <TableRow>
-                   <TableHead>Order ID</TableHead>
-                   <TableHead>Date</TableHead>
-                   <TableHead>Customer</TableHead>
-                   <TableHead>Total</TableHead>
-                   <TableHead>Payment Mode</TableHead>
-                   <TableHead>Status</TableHead>
-                   <TableHead className="text-right">Actions</TableHead>
-                 </TableRow>
-               </TableHeader>
-         
-               <TableBody>
-                 {content.map((order) => (
-                   <Fragment key={order.id}>
-                     
-                     {/* ✅ ORDER MAIN ROW */}
-                     <TableRow>
-                       <TableCell className="font-medium">{order.id}</TableCell>
-         
-                       <TableCell>
-                         {order.createdAt
-                           ? new Date(order.createdAt).toLocaleString()
-                           : "-"}
-                       </TableCell>
-         
-                       <TableCell>
-                         {order.customer?.fullName || "Walk-in Customer"}
-                       </TableCell>
-         
-                       <TableCell>
-                         LKR {Number(order.totalAmount || 0).toFixed(2)}
-                       </TableCell>
-         
-                       <TableCell>{order.paymentType || "CASH"}</TableCell>
-         
-                       <TableCell>
-                         <Badge
-                           className={
-                             order.status === "REFUNDED"
-                               ? "bg-red-500 text-white"
-                               : "bg-indigo-600 text-white"
-                           }
-                         >
-                           {order.status || "COMPLETE"}
-                         </Badge>
-                       </TableCell>
-         
-                       <TableCell className="text-right">
-                         {/* <Button
-                           variant="ghost"
-                           size="icon"
-                           onClick={() => handleViewOrder(order)}
-                         >
-                           <EyeIcon className="h-4 w-4" />
-                         </Button> */}
-                       </TableCell>
-                     </TableRow>
-         
-                     {/* ✅ ITEM ROW (Product List) */}
-                     <TableRow className="bg-muted/30">
-                       <TableCell colSpan={7} className="py-2">
-                         <div className="flex flex-wrap gap-2">
-                           {order.items?.map((it) => (
-                             <Badge key={it.id} className="text-sm px-3 py-1">
-                               {it.product?.name} × {it.quantity}
-                               
-                             </Badge>
-                           ))}
-                         </div>
-                       </TableCell>
-                     </TableRow>
-         
-                   </Fragment>
-                 ))}
-               </TableBody>
-             </Table>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead onClick={() => handleSort("id")}>Order ID</TableHead>
+              <TableHead onClick={() => handleSort("createdAt")}>Date</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Total</TableHead>
+              <TableHead>Payment Mode</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {content.map((order) => (
+              <Fragment key={order.id}>
+                <TableRow>
+                  <TableCell>{order.id}</TableCell>
+                  <TableCell>
+                    {order.createdAt
+                      ? new Date(order.createdAt).toLocaleString()
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {order.customer?.fullName || "Walk-in Customer"}
+                  </TableCell>
+                  <TableCell>LKR {Number(order.totalAmount || 0).toFixed(2)}</TableCell>
+                  <TableCell>{order.paymentType || "CASH"}</TableCell>
+                  <TableCell>
+                    <Badge
+                      className={
+                        order.status === "REFUNDED"
+                          ? "bg-red-500 text-white"
+                          : "bg-indigo-600 text-white"
+                      }
+                    >
+                      {order.status || "COMPLETE"}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+
+                <TableRow className="bg-muted/30">
+                  <TableCell colSpan={6} className="py-2">
+                    <div className="flex flex-wrap gap-2">
+                      {order.items?.map((it) => (
+                        <Badge key={it.id} className="text-sm px-3 py-1">
+                          {it.product?.name} × {it.quantity}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              </Fragment>
+            ))}
+          </TableBody>
+        </Table>
       )}
-     
-{/* <pre>{JSON.stringify(content,null,2)}</pre> */}
-      {/* ========================= PAGINATION ========================= */}
+
+      {/* Pagination */}
       <div className="flex justify-between items-center mt-4">
-        <button
-          className="border p-1 px-3"
-          disabled={number === 0}
-          onClick={() => dispatch(setPage(number - 1))}
-        >
+        <Button disabled={page === 0} onClick={() => setPage(page - 1)}>
           Prev
-        </button>
-
+        </Button>
         <span>
-          Page {number + 1} of {totalPages}
+          Page {page + 1} of {totalPages}
         </span>
-
-        <button
-          className="border p-1 px-3"
-          disabled={number + 1 >= totalPages}
-          onClick={() => dispatch(setPage(number + 1))}
-        >
+        <Button disabled={page + 1 >= totalPages} onClick={() => setPage(page + 1)}>
           Next
-        </button>
+        </Button>
       </div>
     </div>
   );

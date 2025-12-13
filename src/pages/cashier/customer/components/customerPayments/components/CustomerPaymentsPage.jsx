@@ -1,107 +1,100 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useMemo } from "react";
 import {
-  fetchPayments,
-  createPayment,
-  updatePayment,
-  deletePayment,
-} from "../../../../../../Redux Toolkit/features/customerPayment/customerPaymentSlice";
-import CustomerPaymentTable from "./CustomerPaymentTable";
+  useGetPaymentsQuery,
+  useCreatePaymentMutation,
+  useUpdatePaymentMutation,
+  useDeletePaymentMutation,
+} from "@/Redux Toolkit/features/customer/customerPaymentApi";
 import CustomerPaymentForm from "./CustomerPaymentForm";
+import CustomerPaymentTable from "./CustomerPaymentTable";
 import Filters from "./Filters";
 import Pagination from "./Pagination";
 import { Loader2 } from "lucide-react";
-import CustomerSummary from "./CustomerSummary";
 
-export default function CustomerPaymentsPage(customer) {
-  const dispatch = useDispatch();
-  const { payments, loading, totalPages, currentPage } = useSelector(
-    (state) => state.customerPayment
-  );
-  const { userProfile, loading: loadingUser } = useSelector((state) => state.user);
-
+export default function CustomerPaymentsPage({ customer }) {
   const [filters, setFilters] = useState({});
-  const [editing, setEditing] = useState(null);
   const [page, setPage] = useState(0);
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortDir, setSortDir] = useState("desc");
+  const [editing, setEditing] = useState(null);
 
-  // Fetch when filters or pagination change
-  useEffect(() => {
-    const params = {
-      ...filters,
+  const { data, isLoading, isFetching } = useGetPaymentsQuery(
+    {
+      customerId: customer?.id,
       page,
       size: 10,
       sortBy,
       sortDir,
-    };
-    params.customerId=customer?.customer?.id
-    dispatch(fetchPayments({ filters: params }));
-    // console.log(filters)
-  }, [filters, page, sortBy, sortDir, dispatch]);
+      ...filters,
+    },
+    { refetchOnMountOrArgChange: true }
+  );
 
-  const handleSave = (data) => {
-    if (editing) {
-      dispatch(updatePayment({ id: editing.id, payment: data }));
-      setEditing(null);
-    } else {
-      dispatch(createPayment(data));
+  const [createPayment, { isLoading: isSaving }] = useCreatePaymentMutation();
+  const [updatePayment] = useUpdatePaymentMutation();
+  const [deletePayment] = useDeletePaymentMutation();
+
+  const handleSave = async (paymentData) => {
+    try {
+      if (editing) {
+        await updatePayment({ id: editing.id, payment: paymentData }).unwrap();
+        setEditing(null);
+      } else {
+        await createPayment({ ...paymentData, customerId: customer?.id }).unwrap();
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this payment?")) {
-      dispatch(deletePayment(id));
+      try {
+        await deletePayment(id).unwrap();
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
+
+  const tableData = useMemo(() => data?.content || [], [data]);
 
   return (
-    <div className="border-t">
-{/* <CustomerSummary customerId={customer?.customer?.id}/> */}
-      
-      <h1 className="text-3xl font-bold">Customer Payments</h1>
-      {/* Filters */}
-
-      {/* Form for Add/Edit */}
-      
-      <CustomerPaymentForm
-        initialData={editing}
-        onSave={handleSave}
-        onCancel={() => setEditing(null)}
-        customer={customer}
-        user={userProfile}
-      />
-      <Filters onFilter={setFilters} />
-
-      {/* Table */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-4">
-        <Loader2 className="animate-spin h-8 w-8 mb-4" />
-        <p>Loading customer payments...</p>
+    <div className="border-t p-4 space-y-4">
+      <div className="flex justify-between items-center gap-2">
+        <Filters onFilter={setFilters} />
+        <CustomerPaymentForm
+          initialData={editing}
+          onSave={handleSave}
+          onCancel={() => setEditing(null)}
+          customer={customer}
+          isLoading={isSaving}
+        />
       </div>
+
+      {isLoading || isFetching ? (
+        <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
+          <Loader2 className="animate-spin h-8 w-8 mb-4" />
+          <p>Loading payments...</p>
+        </div>
+      ) : tableData.length < 1 ? (
+        <p className="text-center text-muted-foreground py-8">No payments found</p>
       ) : (
-        <>
-        {payments?.length<1?<p className="text-center my-3">No data found</p>:<CustomerPaymentTable
-          payments={payments}
+        <CustomerPaymentTable
+          payments={tableData}
           onEdit={setEditing}
           onDelete={handleDelete}
           onSort={(col, dir) => {
             setSortBy(col);
             setSortDir(dir);
           }}
-          user={userProfile}
-        />}
-        
-        
-        
-        </>
+        />
       )}
 
-      {/* Pagination */}
       <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={(p) => setPage(p)}
+        currentPage={data?.number || 0}
+        totalPages={data?.totalPages || 1}
+        onPageChange={setPage}
       />
     </div>
   );

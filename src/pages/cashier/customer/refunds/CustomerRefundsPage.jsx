@@ -1,15 +1,5 @@
 // src/components/CustomerRefundsPage.jsx
-
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchCustomerRefunds,
-  setPage,
-  setSort,
-  setFilters,
-  resetFilters
-} from "../../../../Redux Toolkit/features/customer/customerRefunds/customerRefundSlice";
-import  { Fragment } from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -18,61 +8,58 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-export default function CustomerRefundsPage({ customerId }) {
-  const dispatch = useDispatch();
+import { useGetCustomerRefundsQuery } from "@/Redux Toolkit/features/customer/customerRefundApi";
+import { Loader2 } from "lucide-react";
 
+export default function CustomerRefundsPage({ customerId }) {
+  // ======== FILTER & PAGINATION STATE ========
+  const [filters, setFilters] = useState({
+    status: "",
+    startDate: "",
+    endDate: "",
+  });
+  const [page, setPage] = useState(0);
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortDir, setSortDir] = useState("desc");
+  const size = 10;
+
+  // ======== FETCH DATA ========
   const {
-    content,
-    number,
-    totalPages,
+    data: refundsData,
+    isLoading,
+    isError,
+  } = useGetCustomerRefundsQuery({
+    customerId,
+    page,
+    size,
     sortBy,
     sortDir,
-    status,
-    startDate,
-    endDate,
-    loading,
-  } = useSelector((state) => state.customerRefund);
+    status: filters.status,
+    startDate: filters.startDate,
+    endDate: filters.endDate,
+  });
 
-  // Load data
-  useEffect(() => {
-    dispatch(
-      fetchCustomerRefunds({
-        customerId,
-        page: number,
-        sortBy,
-        sortDir,
-        status,
-        startDate,
-        endDate,
-      })
-    );
-  }, [customerId, number, sortBy, sortDir, status, startDate, endDate, dispatch]);
+  const refunds = refundsData?.content || [];
+  const totalPages = refundsData?.totalPages || 0;
 
-  // Sorting handler
-  const handleSort = (field) => {
-    const newDir = sortDir === "asc" ? "desc" : "asc";
-    dispatch(setSort({ sortBy: field, sortDir: newDir }));
-  };
-
-  // Filter handler
+  // ======== HANDLERS ========
   const handleFilterChange = (e) => {
-    dispatch(
-      setFilters({
-        ...{
-          status,
-          startDate,
-          endDate,
-        },
-        [e.target.name]: e.target.value,
-      })
-    );
+    setFilters((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+    setPage(0); // Reset page when filter changes
   };
 
   const clearFilters = () => {
-    dispatch(resetFilters());
+    setFilters({ status: "", startDate: "", endDate: "" });
+  };
+
+  const handleSort = (field) => {
+    setSortBy(field);
+    setSortDir(sortDir === "asc" ? "desc" : "asc");
   };
 
   return (
@@ -81,10 +68,9 @@ export default function CustomerRefundsPage({ customerId }) {
 
       {/* ========================= FILTERS ========================= */}
       <div className="flex gap-3 mb-4">
-        {/* Status Filter */}
         <select
           name="status"
-          value={status}
+          value={filters.status}
           onChange={handleFilterChange}
           className="border p-1"
         >
@@ -94,134 +80,118 @@ export default function CustomerRefundsPage({ customerId }) {
           <option value="CANCELLED">Cancelled</option>
         </select>
 
-        {/* Date Filter */}
         <input
           type="date"
           name="startDate"
-          value={startDate}
+          value={filters.startDate}
           onChange={handleFilterChange}
           className="border p-1"
         />
-
         <input
           type="date"
           name="endDate"
-          value={endDate}
+          value={filters.endDate}
           onChange={handleFilterChange}
           className="border p-1"
         />
 
-        <button onClick={clearFilters} className="border px-2">
+        <Button variant="outline" size="sm" onClick={clearFilters}>
           Clear
-        </button>
+        </Button>
       </div>
 
       {/* ========================= TABLE ========================= */}
-      {loading ? (
-        <p>Loading...</p>
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center p-4">
+          <Loader2 className="animate-spin h-8 w-8 mb-2" />
+          Loading refunds...
+        </div>
+      ) : isError ? (
+        <p className="text-red-500">Failed to load refunds.</p>
+      ) : refunds.length === 0 ? (
+        <p className="text-center my-4">No refunds found.</p>
       ) : (
-          <Table>
-               <TableHeader>
-                 <TableRow>
-                   <TableHead>Refund ID</TableHead>
-                   <TableHead>Date</TableHead>
-                   <TableHead>Customer</TableHead>
-                   <TableHead>Total</TableHead>
-                   <TableHead>Payment Mode</TableHead>
-                   <TableHead>Status</TableHead>
-                   <TableHead className="text-right">Actions</TableHead>
-                 </TableRow>
-               </TableHeader>
-         
-               <TableBody>
-                 {content.map((refund) => (
-                   <Fragment key={refund.id}>
-                     
-                     {/* ✅ ORDER MAIN ROW */}
-                     <TableRow>
-                       <TableCell className="font-medium">{refund.id}</TableCell>
-         
-                       <TableCell>
-                         {refund.createdAt
-                           ? new Date(refund.createdAt).toLocaleString()
-                           : "-"}
-                       </TableCell>
-         
-                       <TableCell>
-                         {refund.customer?.fullName || "Walk-in Customer"}
-                       </TableCell>
-         
-                       <TableCell>
-                         LKR {Number(refund.totalAmount || 0).toFixed(2)}
-                       </TableCell>
-         
-                       <TableCell>{refund.paymentType || "CASH"}</TableCell>
-         
-                       <TableCell>
-                         <Badge
-                           className={
-                             refund.status === "REFUNDED"
-                               ? "bg-red-500 text-white"
-                               : "bg-indigo-600 text-white"
-                           }
-                         >
-                           {refund.status || "COMPLETE"}
-                         </Badge>
-                       </TableCell>
-         
-                       <TableCell className="text-right">
-                         {/* <Button
-                           variant="ghost"
-                           size="icon"
-                           onClick={() => handleViewRefund(refund)}
-                         >
-                           <EyeIcon className="h-4 w-4" />
-                         </Button> */}
-                       </TableCell>
-                     </TableRow>
-         
-                     {/* ✅ ITEM ROW (Product List) */}
-                     <TableRow className="bg-muted/30">
-                       <TableCell colSpan={7} className="py-2">
-                         <div className="flex flex-wrap gap-2">
-                           {refund.items?.map((it) => (
-                             <Badge key={it.id} className="text-sm px-3 py-1">
-                               {it.product?.name} × {it.quantity}
-                               
-                             </Badge>
-                           ))}
-                         </div>
-                       </TableCell>
-                     </TableRow>
-         
-                   </Fragment>
-                 ))}
-               </TableBody>
-             </Table>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead onClick={() => handleSort("id")}>Refund ID</TableHead>
+              <TableHead onClick={() => handleSort("createdAt")}>Date</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Total</TableHead>
+              <TableHead>Payment Mode</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {refunds.map((refund) => (
+              <React.Fragment key={refund.id}>
+                <TableRow>
+                  <TableCell>{refund.id}</TableCell>
+                  <TableCell>
+                    {refund.createdAt
+                      ? new Date(refund.createdAt).toLocaleString()
+                      : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {refund.customer?.fullName || "Walk-in Customer"}
+                  </TableCell>
+                  <TableCell>
+                    LKR {Number(refund.totalAmount || 0).toFixed(2)}
+                  </TableCell>
+                  <TableCell>{refund.paymentType || "CASH"}</TableCell>
+                  <TableCell>
+                    <Badge
+                      className={
+                        refund.status === "REFUNDED"
+                          ? "bg-red-500 text-white"
+                          : "bg-indigo-600 text-white"
+                      }
+                    >
+                      {refund.status || "COMPLETE"}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+
+                {/* Item Row */}
+                <TableRow className="bg-muted/30">
+                  <TableCell colSpan={6} className="py-2">
+                    <div className="flex flex-wrap gap-2">
+                      {refund.items?.map((it) => (
+                        <Badge key={it.id} className="text-sm px-3 py-1">
+                          {it.product?.name} × {it.quantity}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              </React.Fragment>
+            ))}
+          </TableBody>
+        </Table>
       )}
-     
-{/* <pre>{JSON.stringify(content,null,2)}</pre> */}
+
       {/* ========================= PAGINATION ========================= */}
       <div className="flex justify-between items-center mt-4">
-        <button
-          className="border p-1 px-3"
-          disabled={number === 0}
-          onClick={() => dispatch(setPage(number - 1))}
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={page === 0}
+          onClick={() => setPage(page - 1)}
         >
           Prev
-        </button>
-
+        </Button>
         <span>
-          Page {number + 1} of {totalPages}
+          Page {page + 1} of {totalPages}
         </span>
-
-        <button
-          className="border p-1 px-3"
-          disabled={number + 1 >= totalPages}
-          onClick={() => dispatch(setPage(number + 1))}
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={page + 1 >= totalPages}
+          onClick={() => setPage(page + 1)}
         >
           Next
-        </button>
+        </Button>
       </div>
     </div>
   );

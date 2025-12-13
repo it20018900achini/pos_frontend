@@ -63,26 +63,79 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
 
   const credit = Math.max(total - cashAmount, 0);
   const changeDue = Math.max(givenAmount - cashAmount, 0);
+const printPOSReceipt = useCallback((order) => {
+  const receiptWidth = 380; // ~58mm width for thermal printer
+  const lineHeight = 20;
 
- const printPOSReceipt = useCallback((order) => {
-  const printWindow = window.open("", "Print", "width=300,height=600");
+  const printWindow = window.open("", "Print", `width=${receiptWidth},height=700,top=50,left=50`);
   if (!printWindow) return;
 
+  // Helper to wrap long text
+  const wrapText = (text, maxLength = 25) => {
+    const lines = [];
+    for (let i = 0; i < text.length; i += maxLength) {
+      lines.push(text.slice(i, i + maxLength));
+    }
+    return lines.join("<br/>");
+  };
+
   printWindow.document.write(`
-    <html><head><title>Receipt</title></head>
-    <body style="font-family: monospace; font-size:12px; line-height:1.2;">
-      <h3 style="text-align:center;">Store Name</h3>
-      <p>Order #${order.id}</p>
-      <p>Customer: ${order.customer?.fullName || 'Walk-in'}</p>
-      <hr>
-      ${order.items.map(item => `<p>${item?.product?.name} x${item?.quantity} - LKR ${item?.price?.toFixed(2)}</p>`).join("")}
-      <hr>
-      <p>Total: LKR ${order?.totalAmount?.toFixed(2)}</p>
-      <p>Cash: LKR ${order?.cash?.toFixed(2)}</p>
-      <p>Change: LKR ${order?.changeDue?.toFixed(2)}</p>
-      <hr><p style="text-align:center;">Thank you!</p>
-    </body></html>
+    <html>
+      <head>
+        <title>Receipt</title>
+        <style>
+          body {
+            width: ${receiptWidth}px;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: ${lineHeight}px;
+            padding: 10px;
+            margin: 0;
+          }
+          h3, p { margin: 0; padding: 0; }
+          .center { text-align: center; }
+          .right { text-align: right; }
+          .dashed { border-bottom: 1px dashed #000; margin: 5px 0; }
+          .item { display: flex; justify-content: space-between; margin-bottom: 2px; }
+          .item-name { max-width: 70%; word-wrap: break-word; }
+          .total { font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <h3 class="center">Store Name</h3>
+        <p class="center">🧾 Receipt</p>
+        <p>Order #: ${order.id}</p>
+        <p>Customer: ${order.customer?.fullName || 'Walk-in'}</p>
+        <div class="dashed"></div>
+
+        ${order.items.map(item => `
+          <div class="item">
+            <span class="item-name">${wrapText(item?.product?.name)} x${item?.quantity}</span>
+            <span>LKR ${item?.price.toFixed(2)}</span>
+          </div>
+        `).join('')}
+
+        <div class="dashed"></div>
+
+        <div class="item total">
+          <span>Total</span>
+          <span>LKR ${order?.totalAmount?.toFixed(2)}</span>
+        </div>
+        <div class="item">
+          <span>Cash</span>
+          <span>LKR ${order?.cash?.toFixed(2)}</span>
+        </div>
+        <div class="item">
+          <span>Change</span>
+          <span>LKR ${order?.changeDue?.toFixed(2)}</span>
+        </div>
+
+        <div class="dashed"></div>
+        <p class="center">Thank you for your purchase!</p>
+      </body>
+    </html>
   `);
+
   printWindow.document.close();
   printWindow.focus();
   printWindow.print();
