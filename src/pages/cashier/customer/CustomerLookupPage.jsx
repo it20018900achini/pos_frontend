@@ -1,17 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+"use client";
+
+import React, { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  getAllCustomers,
-} from "@/Redux Toolkit/features/customer/customerThunks";
-import {
-  getOrdersByCustomer,
-} from "@/Redux Toolkit/features/order/orderThunks";
-import {
-  filterCustomers,
-  validatePoints,
-  calculateCustomerStats,
-} from "./utils/customerUtils";
 import {
   CustomerSearch,
   CustomerList,
@@ -20,14 +10,20 @@ import {
 } from "./components";
 import CustomerForm from "./CustomerForm";
 import POSHeader from "../components/POSHeader";
-import { getRefundsByCustomer } from "../../../Redux Toolkit/features/refund/refundThunks";
+import { filterCustomers, validatePoints, calculateCustomerStats } from "./utils/customerUtils";
+import { useGetAllCustomersQuery } from "@/Redux Toolkit/features/customer/customerApi";
 
 const CustomerLookupPage = () => {
-  const dispatch = useDispatch();
   const { toast } = useToast();
 
-  const { customers, loading: customerLoading, error: customerError } = useSelector((state) => state.customer);
-  const { customerOrders, loading: ordersLoading, error: orderError } = useSelector((state) => state.order);
+  // RTK Query to fetch all customers
+  const {
+    data: customers = [],
+    isLoading,
+    isError,
+    error,
+    refetch, // can manually trigger refetch if needed
+  } = useGetAllCustomersQuery();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -35,53 +31,45 @@ const CustomerLookupPage = () => {
   const [pointsToAdd, setPointsToAdd] = useState(0);
   const [showCustomerForm, setShowCustomerForm] = useState(false);
 
-  // Load customers
-  useEffect(() => {
-    dispatch(getAllCustomers());
-  }, [dispatch]);
-
-  // Handle errors
-  useEffect(() => {
-    if (customerError) toast({ title: "Error", description: customerError, variant: "destructive" });
-    if (orderError) toast({ title: "Error", description: orderError, variant: "destructive" });
-    // if (refundError) toast({ title: "Error", description: refundError, variant: "destructive" });
-  }, [customerError, orderError, toast]);
+  if (isError) {
+    toast({
+      title: "Error",
+      description: error?.data?.message || "Failed to fetch customers",
+      variant: "destructive",
+    });
+  }
 
   const filteredCustomers = filterCustomers(customers, searchTerm);
 
   const handleSelectCustomer = (customer) => {
     setSelectedCustomer(customer);
-    // dispatch(clearCustomerOrders());
-    // dispatch(clearCustomerRefunds());
-    if (customer.id) {
-      // dispatch(getOrdersByCustomer(customer.id));
-      // dispatch(getRefundsByCustomer(customer.id));
-    }
   };
 
   const handleAddPoints = () => {
     const error = validatePoints(pointsToAdd);
-    if (error) return toast({ title: "Invalid Points", description: error, variant: "destructive" });
+    if (error)
+      return toast({
+        title: "Invalid Points",
+        description: error,
+        variant: "destructive",
+      });
 
     toast({
       title: "Points Added",
-      description: `${pointsToAdd} points added to ${selectedCustomer.fullName || selectedCustomer.name}'s account`,
+      description: `${pointsToAdd} points added to ${selectedCustomer.fullName}'s account`,
     });
 
     setShowAddPointsDialog(false);
     setPointsToAdd(0);
   };
 
-  // Re-fetch orders/refunds when selected customer changes
-  useEffect(() => {
-    if (selectedCustomer?.id) {
-      dispatch(getOrdersByCustomer(selectedCustomer.id));
-      dispatch(getRefundsByCustomer(selectedCustomer.id));
-    }
-  }, [selectedCustomer, dispatch]);
+  const customerStats = selectedCustomer
+    ? calculateCustomerStats(selectedCustomer.orders || [])
+    : null;
 
-  const customerStats = selectedCustomer ? calculateCustomerStats(customerOrders) : null;
-  const displayCustomer = selectedCustomer ? { ...selectedCustomer, ...customerStats } : null;
+  const displayCustomer = selectedCustomer
+    ? { ...selectedCustomer, ...customerStats }
+    : null;
 
   return (
     <div className="h-full flex flex-col">
@@ -91,7 +79,7 @@ const CustomerLookupPage = () => {
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Column */}
+        {/* Left Column: Search + Customer List */}
         <div className="w-1/3 border-r flex flex-col">
           <CustomerSearch
             searchTerm={searchTerm}
@@ -102,32 +90,17 @@ const CustomerLookupPage = () => {
             customers={filteredCustomers}
             selectedCustomer={selectedCustomer}
             onSelectCustomer={handleSelectCustomer}
-            loading={customerLoading}
+            loading={isLoading}
           />
         </div>
 
-        {/* Right Column */}
+        {/* Right Column: Customer Details */}
         <div className="w-2/3 flex flex-col overflow-y-auto">
-        {/* <pre>{JSON.stringify(displayCustomer,null,2)}</pre> */}
-          <CustomerDetails
-            customer={displayCustomer}
-            customerId={displayCustomer?.id}
-            // onAddPoints={() => setShowAddPointsDialog(true)}
-            // loading={false}
-          />
-          
-
-
-          {/* {selectedCustomer && (
-            tab1 ? (
-              <>
-                <RefundHistory refunds={customerRefunds} loading={loadingR} />
-                <PurchaseHistory orders={customerOrders} loading={ordersLoading} />
-              </>
-            ) : (
-              <PaymentTablePagination customerId={selectedCustomer?.id} />
-            )
-          )} */}
+          {displayCustomer ? (
+            <CustomerDetails customer={displayCustomer} customerId={displayCustomer?.id} />
+          ) : (
+            <p className="text-muted-foreground p-4">Select a customer to see details</p>
+          )}
         </div>
       </div>
 
@@ -140,9 +113,12 @@ const CustomerLookupPage = () => {
         onPointsChange={setPointsToAdd}
         onAddPoints={handleAddPoints}
       />
+
       <CustomerForm
         showCustomerForm={showCustomerForm}
         setShowCustomerForm={setShowCustomerForm}
+        branchId={null} // replace with selected branch ID if needed
+        onCustomerCreated={refetch} // automatically refresh customer list
       />
     </div>
   );

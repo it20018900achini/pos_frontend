@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogContent,
@@ -8,20 +10,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useDispatch, useSelector } from "react-redux";
-import { createCustomer } from "@/Redux Toolkit/features/customer/customerThunks";
 import { toast } from "sonner";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Loader2 } from "lucide-react";
+import { useCreateCustomerMutation } from "@/Redux Toolkit/features/customer/customerApi";
 
-const CustomerForm = ({ showCustomerForm, setShowCustomerForm }) => {
-  const { branch } = useSelector((state) => state.branch);
-  const branchId = branch?.id;
-  const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.customer);
+const CustomerForm = ({ showCustomerForm, setShowCustomerForm, onCustomerCreated }) => {
+  const [createCustomer, { isLoading }] = useCreateCustomerMutation();
 
-  // Validation schema using Yup
   const validationSchema = Yup.object({
     fullName: Yup.string()
       .required("Full name is required")
@@ -41,25 +38,25 @@ const CustomerForm = ({ showCustomerForm, setShowCustomerForm }) => {
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      // Include branchId in the request payload
-      const payload = { ...values, branchId };
+      const payload = { ...values, branchId: 52 }; // ✅ Fixed branchId
+      await createCustomer(payload).unwrap();
 
-      await dispatch(createCustomer(payload)).unwrap();
       toast.success("Customer created successfully!");
 
       // Reset form and close dialog
       resetForm();
       setShowCustomerForm(false);
-    } catch (error) {
-      toast.error(error || "Failed to create customer");
+
+      // Call callback to refresh customer list
+      if (onCustomerCreated) onCustomerCreated();
+    } catch (err) {
+      toast.error(err?.data?.message || "Failed to create customer");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleCancel = () => {
-    setShowCustomerForm(false);
-  };
+  const handleCancel = () => setShowCustomerForm(false);
 
   return (
     <Dialog open={showCustomerForm} onOpenChange={setShowCustomerForm}>
@@ -84,11 +81,7 @@ const CustomerForm = ({ showCustomerForm, setShowCustomerForm }) => {
                   placeholder="Enter customer full name"
                   className={errors.fullName && touched.fullName ? "border-red-500" : ""}
                 />
-                <ErrorMessage
-                  name="fullName"
-                  component="p"
-                  className="text-sm text-red-500"
-                />
+                <ErrorMessage name="fullName" component="p" className="text-sm text-red-500" />
               </div>
 
               <div className="space-y-2">
@@ -100,11 +93,7 @@ const CustomerForm = ({ showCustomerForm, setShowCustomerForm }) => {
                   placeholder="Enter phone number"
                   className={errors.phone && touched.phone ? "border-red-500" : ""}
                 />
-                <ErrorMessage
-                  name="phone"
-                  component="p"
-                  className="text-sm text-red-500"
-                />
+                <ErrorMessage name="phone" component="p" className="text-sm text-red-500" />
               </div>
 
               <div className="space-y-2">
@@ -117,33 +106,27 @@ const CustomerForm = ({ showCustomerForm, setShowCustomerForm }) => {
                   placeholder="Enter email address"
                   className={errors.email && touched.email ? "border-red-500" : ""}
                 />
-                <ErrorMessage
-                  name="email"
-                  component="p"
-                  className="text-sm text-red-500"
-                />
+                <ErrorMessage name="email" component="p" className="text-sm text-red-500" />
               </div>
-<DialogFooter className="flex justify-end gap-2">
-  {/* Cancel button */}
-  <Button 
-    variant="outline" 
-    onClick={handleCancel} 
-    type="button"
-    disabled={isSubmitting || loading} 
-  >
-    Cancel
-  </Button>
 
-  {/* Submit button */}
-  <Button 
-    type="submit" 
-    disabled={isSubmitting || loading} 
-    className="flex items-center gap-2"
-  >
-    {(isSubmitting || loading) && <Loader2 className="animate-spin w-4 h-4" />}
-    {isSubmitting || loading ? "Creating..." : "Create Customer"}
-  </Button>
-</DialogFooter>
+              <DialogFooter className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  type="button"
+                  disabled={isSubmitting || isLoading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || isLoading}
+                  className="flex items-center gap-2"
+                >
+                  {(isSubmitting || isLoading) && <Loader2 className="animate-spin w-4 h-4" />}
+                  {isSubmitting || isLoading ? "Creating..." : "Create Customer"}
+                </Button>
+              </DialogFooter>
             </Form>
           )}
         </Formik>
