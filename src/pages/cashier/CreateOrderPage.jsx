@@ -1,5 +1,6 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import { useToast } from "@/components/ui/use-toast";
 
 // Import components
@@ -13,36 +14,38 @@ import HeldOrdersDialog from "./components/HeldOrdersDialog";
 import CustomerDialog from "./customer/CustomerDialog";
 import InvoiceDialog from "./order/OrderDetails/InvoiceDialog";
 
-import { getAllCustomers } from "@/Redux Toolkit/features/customer/customerThunks";
+import { useGetAllCustomersQuery } from "@/Redux Toolkit/features/customer/customerApi";
 
 const CreateOrderPage = () => {
   const { toast } = useToast();
-  const dispatch = useDispatch();
-
   const searchInputRef = useRef(null);
-  const { error: orderError } = useSelector((state) => state.order);
-  const { customers, loading } = useSelector((state) => state.customer);
 
   const [showCustomerDialog, setShowCustomerDialog] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [showReceiptDialog, setShowReceiptDialog] = useState(false);
   const [showHeldOrdersDialog, setShowHeldOrdersDialog] = useState(false);
 
-  // Fetch all customers ONCE when page loads
-  useEffect(() => {
-    dispatch(getAllCustomers());
-  }, [dispatch]);
+  // ✅ RTK Query for customers
+  const {
+    data: customers = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useGetAllCustomersQuery();
 
+  // Handle errors
   useEffect(() => {
-    if (orderError) {
+    if (isError) {
       toast({
-        title: "Order Error",
-        description: orderError,
+        title: "Customer Fetch Error",
+        description: error?.data?.message || "Failed to load customers",
         variant: "destructive",
       });
     }
-  }, [orderError, toast]);
+  }, [isError, error, toast]);
 
+  // Auto-focus search input
   useEffect(() => {
     if (searchInputRef.current) {
       searchInputRef.current.focus();
@@ -66,7 +69,8 @@ const CreateOrderPage = () => {
         showCustomerDialog={showCustomerDialog}
         setShowCustomerDialog={setShowCustomerDialog}
         customers={customers}
-        loading={loading}
+        loading={isLoading}
+        refetchCustomers={refetch} // optional: refresh after adding a customer
       />
 
       <PaymentDialog
