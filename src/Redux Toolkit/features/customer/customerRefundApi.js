@@ -20,7 +20,7 @@ export const customerRefundApi = apiSlice.injectEndpoints({
         if (startDate) params.append("start", new Date(startDate).toISOString());
         if (endDate) params.append("end", new Date(endDate).toISOString());
 
-        return `/refunds/customer/${customerId}?${params.toString()}`;
+        return `/refunds/customer/t/${customerId}?${params.toString()}`;
       },
       providesTags: (result) =>
         result?.content

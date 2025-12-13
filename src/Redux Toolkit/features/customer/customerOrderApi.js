@@ -19,7 +19,7 @@ export const customerOrderApi = apiSlice.injectEndpoints({
         if (startDate) params.append("start", new Date(startDate).toISOString());
         if (endDate) params.append("end", new Date(endDate).toISOString());
 
-        return `/orders/customer/${customerId}?${params.toString()}`;
+        return `/orders/customer/t/${customerId}?${params.toString()}`;
       },
       providesTags: (result) =>
         result?.content
