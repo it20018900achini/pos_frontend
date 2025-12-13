@@ -72,7 +72,7 @@ const CartItem = ({ item, updateCartItemQuantity, removeFromCart }) => {
             </div>
 
             <div className="text-right">
-              <p className="font-medium">{formatPrice(item.sellingPrice)}</p>
+              <p className=" text-sm text-neutral-400">{formatPrice(item.sellingPrice)}</p>
               <p className="text-sm font-bold text-indigo-600">
                 {formatPrice(item.sellingPrice * item.quantity)}
               </p>

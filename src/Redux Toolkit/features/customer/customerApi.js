@@ -3,12 +3,12 @@ import { apiSlice } from "../../api/apiSlice";
 export const customerApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAllCustomers: builder.query({
-      query: () => "/api/customers",
+      query: () => "/customers",
       providesTags: ["Customer"],
     }),
     // ✅ GET CUSTOMER BY ID
     getCustomerById: builder.query({
-      query: (id) => `/api/customers/${id}`,
+      query: (id) => `/customers/${id}`,
       providesTags: (result, error, id) => [
         { type: "Customer", id },
       ],
@@ -17,7 +17,7 @@ export const customerApi = apiSlice.injectEndpoints({
     // Create new customer
     createCustomer: builder.mutation({
       query: (payload) => ({
-        url: "/api/customers",
+        url: "/customers",
         method: "POST",
         body: payload,
       }),
@@ -26,7 +26,7 @@ export const customerApi = apiSlice.injectEndpoints({
     // ✅ UPDATE CUSTOMER
     updateCustomer: builder.mutation({
       query: ({ id, data }) => ({
-        url: `/api/customers/${id}`,
+        url: `/customers/${id}`,
         method: "PUT",
         body: data,
       }),

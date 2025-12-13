@@ -1,11 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+"use client";
+
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
@@ -21,8 +17,8 @@ import {
   selectTotal,
   setCurrentOrder,
   setPaymentMethod,
+  resetOrder,
 } from "@/Redux Toolkit/features/cart/cartSlice";
-
 import { createOrder } from "@/Redux Toolkit/features/order/orderThunks";
 
 const paymentMethods = [
@@ -53,67 +49,63 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
   const givenRef = useRef(null);
 
   useEffect(() => {
-    if (showPaymentDialog) {
-      setCashAmount(total);
-      setGivenAmount(total);
-      dispatch(setPaymentMethod("CASH"));
+    if (!showPaymentDialog) return;
 
-      setTimeout(() => {
-        givenRef.current?.focus();
-        givenRef.current?.select();
-      }, 100);
-    }
+    setCashAmount(total || 0);
+    setGivenAmount(total || 0);
+    dispatch(setPaymentMethod("CASH"));
+
+    setTimeout(() => {
+      givenRef.current?.focus();
+      givenRef.current?.select();
+    }, 100);
   }, [showPaymentDialog, total, dispatch]);
 
   const credit = Math.max(total - cashAmount, 0);
   const changeDue = Math.max(givenAmount - cashAmount, 0);
 
-  // ✅ Print POS receipt function
-  const printPOSReceipt = (order) => {
-    const printWindow = window.open("", "Print", "width=300,height=600");
-    printWindow.document.write(`<html><head><title>Receipt</title></head><body style="font-family: monospace; font-size:12px; line-height:1.2;">`);
-    printWindow.document.write(`<h3 style="text-align:center;">Store Name</h3>`);
-    printWindow.document.write(`<p>Order #${order.id}</p>`);
-    printWindow.document.write(`<p>Customer: ${order.customer?.fullName || 'Walk-in'}</p>`);
-    printWindow.document.write(`<hr>`);
-    order.items.forEach(item => {
-      printWindow.document.write(`<p>${item?.product?.name} x${item.quantity} - LKR ${item.price.toFixed(2)}</p>`);
-    });
-    printWindow.document.write(`<hr>`);
-    printWindow.document.write(`<p>Total: LKR ${order.totalAmount.toFixed(2)}</p>`);
-    printWindow.document.write(`<p>Cash: LKR ${order.cash.toFixed(2)}</p>`);
-    printWindow.document.write(`<p>Change: LKR ${order.changeDue.toFixed(2)}</p>`);
-    printWindow.document.write(`<hr><p style="text-align:center;">Thank you!</p>`);
-    printWindow.document.write(`</body></html>`);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
-  };
+ const printPOSReceipt = useCallback((order) => {
+  const printWindow = window.open("", "Print", "width=300,height=600");
+  if (!printWindow) return;
 
-  const processPayment = async () => {
-    if (!cart.length) {
-      toast({ title: "Empty Cart", description: "Add items first.", variant: "destructive" });
-      return;
-    }
+  printWindow.document.write(`
+    <html><head><title>Receipt</title></head>
+    <body style="font-family: monospace; font-size:12px; line-height:1.2;">
+      <h3 style="text-align:center;">Store Name</h3>
+      <p>Order #${order.id}</p>
+      <p>Customer: ${order.customer?.fullName || 'Walk-in'}</p>
+      <hr>
+      ${order.items.map(item => `<p>${item?.product?.name} x${item?.quantity} - LKR ${item?.price?.toFixed(2)}</p>`).join("")}
+      <hr>
+      <p>Total: LKR ${order?.totalAmount?.toFixed(2)}</p>
+      <p>Cash: LKR ${order?.cash?.toFixed(2)}</p>
+      <p>Change: LKR ${order?.changeDue?.toFixed(2)}</p>
+      <hr><p style="text-align:center;">Thank you!</p>
+    </body></html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+  printWindow.close();
+}, []);
 
-    if (!selectedCustomer) {
-      toast({ title: "Customer Required", description: "Please select a customer.", variant: "destructive" });
-      return;
-    }
+
+  const processPayment = useCallback(async () => {
+    if (!cart.length) return toast({ title: "Empty Cart", description: "Add items first.", variant: "destructive" });
+    if (!selectedCustomer) return toast({ title: "Customer Required", description: "Please select a customer.", variant: "destructive" });
 
     try {
       setLoading(true);
 
       const orderData = {
-        cash: parseFloat(cashAmount.toFixed(2)),
-        credit: parseFloat(credit.toFixed(2)),
+        cash: parseFloat(cashAmount?.toFixed(2)),
+        credit: parseFloat(credit?.toFixed(2)),
         totalAmount: total,
         discount,
         branchId: branch.id,
         cashierId: userProfile.id,
         customer: selectedCustomer,
-        items: cart.map((i) => ({
+        items: cart.map(i => ({
           productId: i.id,
           name: i.name,
           quantity: i.quantity,
@@ -122,26 +114,28 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
         })),
         paymentType: paymentMethod,
         note: note || "",
-        givenAmount: parseFloat(givenAmount.toFixed(2)),
-        changeDue: parseFloat(changeDue.toFixed(2)),
+        givenAmount: parseFloat(givenAmount?.toFixed(2)),
+        changeDue: parseFloat(changeDue?.toFixed(2)),
       };
 
       const created = await dispatch(createOrder(orderData)).unwrap();
       dispatch(setCurrentOrder(created));
-
-      // ✅ Print POS receipt immediately
       printPOSReceipt(created);
+
+      // Reset cart & state
+      dispatch(resetOrder());
+      setCashAmount(0);
+      setGivenAmount(0);
 
       setShowPaymentDialog(false);
       setShowReceiptDialog(true);
-
       toast({ title: "Payment Successful", description: `Order #${created.id} created.` });
     } catch (e) {
       toast({ title: "Failed", description: e?.message || "Something went wrong.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  };
+  }, [cart, selectedCustomer, cashAmount, credit, total, discount, branch.id, userProfile.id, paymentMethod, note, givenAmount, changeDue, dispatch, printPOSReceipt, toast, setShowPaymentDialog, setShowReceiptDialog]);
 
   return (
     <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
@@ -153,11 +147,12 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
         </DialogHeader>
 
         <div className="flex overflow-hidden w-full">
+          {/* Left Panel */}
           <div className="w-full p-8 py-4 border-r bg-white/40 backdrop-blur-lg flex flex-col overflow-y-auto">
             <div className="rounded-2xl p-2 bg-white shadow-inner border border-slate-200 text-center mb-6 flex-shrink-0">
               <p className="text-sm text-slate-500 font-medium uppercase tracking-wide">Total Amount</p>
               <div className="text-2xl font-extrabold mt-1 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                LKR {total.toFixed(2)}
+                LKR {total?.toFixed(2) || 0}
               </div>
             </div>
 
@@ -171,7 +166,7 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
                   onChange={(e) => setCashAmount(parseFloat(e.target.value) || 0)}
                 />
                 <p className={`text-sm px-3 py-1 rounded-lg w-max font-bold ${credit > 0 ? "bg-red-200 text-red-700" : "bg-indigo-200 text-indigo-700"}`}>
-                  Credit: LKR {credit.toFixed(2)}
+                  Credit: LKR {credit?.toFixed(2)}
                 </p>
               </div>
 
@@ -185,12 +180,13 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
                   onChange={(e) => setGivenAmount(parseFloat(e.target.value) || 0)}
                 />
                 <p className="text-sm px-3 py-1 rounded-lg w-max bg-blue-200 text-blue-700 font-bold">
-                  Change: LKR {changeDue.toFixed(2)}
+                  Change: LKR {changeDue?.toFixed(2)}
                 </p>
               </div>
             </div>
           </div>
 
+          {/* Right Panel */}
           <div className="p-8 overflow-y-auto w-[400px]">
             <div className="sticky top-0 flex flex-col gap-5">
               <p className="text-slate-700 font-semibold text-sm">Payment Options</p>
@@ -220,9 +216,6 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
           >
             Cancel
           </Button>
-<Button  className="h-12 px-6 text-lg rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90 shadow-xl" onClick={()=>setShowReceiptDialog(true)}>
-  show / print
-</Button>
           <Button
             onClick={processPayment}
             disabled={loading}

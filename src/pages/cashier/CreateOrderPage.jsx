@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { useSelector } from "react-redux";
 
 // Import components
 import POSHeader from "./components/POSHeader";
@@ -34,6 +35,9 @@ const CreateOrderPage = () => {
     refetch,
   } = useGetAllCustomersQuery();
 
+  // Selected customer from cart slice
+  const selectedCustomer = useSelector((state) => state.cart.selectedCustomer);
+
   // Handle errors
   useEffect(() => {
     if (isError) {
@@ -51,6 +55,34 @@ const CreateOrderPage = () => {
       searchInputRef.current.focus();
     }
   }, []);
+
+  // -----------------------------
+  // Keyboard shortcuts (F2 for customer, F3 for payment if customer selected)
+  // -----------------------------
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === "F2") {
+      e.preventDefault();
+      setShowCustomerDialog(true);
+    }
+
+    if (e.key === "F3") {
+      e.preventDefault();
+      if (selectedCustomer) {
+        setShowPaymentDialog(true);
+      } else {
+        toast({
+          title: "No Customer Selected",
+          description: "Please select a customer first (F2).",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [selectedCustomer, toast]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   return (
     <div className="h-full flex flex-col bg-background">
