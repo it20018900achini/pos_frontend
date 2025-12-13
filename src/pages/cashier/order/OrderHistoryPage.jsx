@@ -1,34 +1,46 @@
-import React, { useState, useEffect, Fragment } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 
-import { SearchIcon, Loader2, RefreshCw, Download, PrinterIcon } from "lucide-react";
+import {
+  SearchIcon,
+  Loader2,
+  RefreshCw,
+  Download,
+  PrinterIcon,
+} from "lucide-react";
 
 import POSHeader from "../components/POSHeader";
 import OrderTable from "./OrderTable";
 import OrderDetails from "./OrderDetails/OrderDetails";
-
-import { getOrdersByCashier } from "@/Redux Toolkit/features/order/orderThunks";
-import { handleDownloadOrderPDF } from "./pdf/pdfUtils";
 import CompareItems from "./CompareItems";
-import { getFlattenedRefundSummaryWithTotals,  } from "./getFlattenedRefundSummaryWithTotals";
+
+import { handleDownloadOrderPDF } from "./pdf/pdfUtils";
+
+import {
+  useGetOrdersByCashierQuery,
+} from "@/Redux Toolkit/features/order/orderApi";
 
 const OrderHistoryPage = () => {
-
-  const dispatch = useDispatch();
   const { toast } = useToast();
   const { userProfile } = useSelector((state) => state.user);
-  const { orders, pageInfo, loading, error } = useSelector((state) => state.order);
 
+  /* -------------------- UI STATE -------------------- */
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showOrderDetailsDialog, setShowOrderDetailsDialog] = useState(false);
+  const [selectedOrderReturn, setSelectedOrderReturn] = useState(null);
 
-  
-  const [selectedOrderRetuen, setSelectedOrderReturn] = useState(null);
-  const [showOrderReturnDetailsDialog, setShowOrderDetailsReturnDialog] = useState(false);
+  const [showOrderDetailsDialog, setShowOrderDetailsDialog] = useState(false);
+  const [showOrderReturnDetailsDialog, setShowOrderReturnDetailsDialog] =
+    useState(false);
 
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
@@ -37,39 +49,40 @@ const OrderHistoryPage = () => {
   const [endDate, setEndDate] = useState("");
   const [searchText, setSearchText] = useState("");
 
-  const loadOrders = (start = startDate, end = endDate, search = searchText) => {
-    if (!userProfile?.id) return;
+  /* -------------------- RTK QUERY -------------------- */
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+  } = useGetOrdersByCashierQuery(
+    {
+      cashierId: userProfile?.id,
+      page,
+      size,
+      sort: "id,desc",
+      start: startDate ? new Date(startDate).toISOString() : undefined,
+      end: endDate ? new Date(endDate).toISOString() : undefined,
+      search: searchText || undefined,
+    },
+    { skip: !userProfile?.id }
+  );
 
-    const startISO = start ? new Date(start).toISOString() : undefined;
-    const endISO = end ? new Date(end).toISOString() : undefined;
+  const orders = data?.orders || [];
+  const pageInfo = data?.pageInfo || null;
 
-    dispatch(
-      getOrdersByCashier({
-        cashierId: userProfile.id,
-        page,
-        size,
-        sort: "id,desc",
-        start: startISO,
-        end: endISO,
-        search: search || undefined,
-      })
-    );
-  };
-
-  useEffect(() => {
-    loadOrders();
-  }, [userProfile, page, size]);
-
+  /* -------------------- EFFECTS -------------------- */
   useEffect(() => {
     if (error) {
       toast({
-        title: "Error Loading Orders",
-        description: error,
+        title: "Error loading orders",
+        description: error?.data?.message || "Something went wrong",
         variant: "destructive",
       });
     }
   }, [error]);
 
+  /* -------------------- HANDLERS -------------------- */
   const handleViewOrder = (order) => {
     setSelectedOrder(order);
     setShowOrderDetailsDialog(true);
@@ -77,236 +90,167 @@ const OrderHistoryPage = () => {
 
   const handleReturnOrder = (order) => {
     setSelectedOrderReturn(order);
-    setShowOrderDetailsReturnDialog(true);
-  };
-
-  // Ultra-compact thermal receipt printing
-  const handlePrintInvoice = (order, storeName = "STORE NAME", storeLogoUrl) => {
-    if (!order) return;
-
-    const printWindow = window.open("", "_blank", "width=300,height=600");
-    if (!printWindow) return;
-
-    const formatCurrency = (amount) => Number(amount).toFixed(2);
-    const totalAmount = order.items.reduce(
-      (sum, item) => sum + (item.product?.sellingPrice || 0) * item.quantity,
-      0
-    );
-    const cashPaid = Number(order.cash || 0);
-    const creditPaid = Number(order.credit || 0);
-    const changeDue = Math.max(cashPaid + creditPaid - totalAmount, 0);
-    const notes = order.note || "";
-    const barcodeUrl = `https://chart.googleapis.com/chart?cht=code128&chs=200x50&chl=${order.id}`;
-
-    const truncate = (str, max = 20) => (str.length > max ? str.slice(0, max - 3) + "..." : str);
-
-    const fontSize = order.items.length > 15 ? 8 : 10;
-
-    const htmlContent = `
-      <html>
-        <head>
-          <title>Receipt #${order.id}</title>
-          <style>
-            body { font-family: monospace; font-size: ${fontSize}px; padding:2px; width:200px; line-height:1.1; white-space:pre-wrap; }
-            @media print { @page { margin:0.15in; size:58mm auto; } body{ margin:0; } }
-            p, th, td, .line, .center, .right { margin:0; padding:0; }
-            .center { text-align:center; }
-            .right { text-align:right; }
-            .line { border-top:1px dashed #000; margin:2px 0; }
-            table { width:100%; border-collapse:collapse; }
-            th, td { padding:1px 0; vertical-align:top; }
-            td.item { max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-            img.barcode, img.logo { display:block; margin:3px auto; }
-          </style>
-        </head>
-        <body>
-          <div  className="center">
-            ${storeLogoUrl ? `<img  className="logo" src="${storeLogoUrl}" width="80" />` : ""}
-            <p style="font-weight:bold;">${storeName}</p>
-            <p style="margin-top:2px;">Invoice #${order.id}</p>
-            <p style="margin-top:2px;">${new Date(order.createdAt).toLocaleString()}</p>
-          </div>
-
-          <p>Customer: ${order.customer?.name || "Walk-in"}</p>
-          <div  className="line"></div>
-
-          <table>
-            <thead>
-              <tr><th>Item</th><th>Qty</th><th  className="right">Total</th></tr>
-            </thead>
-            <tbody>
-              ${order.items.map(item => `
-                <tr>
-                  <td  className="item">${truncate(item.product?.name || item.name)}</td>
-                  <td>${item.quantity}</td>
-                  <td  className="right">${formatCurrency((item.product?.sellingPrice || 0) * item.quantity)}</td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>
-
-          <div  className="line"></div>
-          <p  className="right">TOTAL: ${formatCurrency(totalAmount)}</p>
-          <p  className="right">CASH: ${formatCurrency(cashPaid)}</p>
-          <p  className="right">CREDIT: ${formatCurrency(creditPaid)}</p>
-          <p  className="right">CHANGE: ${formatCurrency(changeDue)}</p>
-
-          ${notes ? `<div  className="line"></div><p>Notes: ${notes}</p>` : ""}
-          <div  className="line"></div>
-
-          <div  className="center">
-            <img  className="barcode" src="${barcodeUrl}" />
-            <p>Invoice #${order.id}</p>
-          </div>
-
-          <p  className="center">Thank you for your purchase!</p>
-        </body>
-      </html>
-    `;
-
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
-  };
-
-  const handleDownloadPDF = async () => {
-    if (selectedOrder) await handleDownloadOrderPDF(selectedOrder, toast);
-  };
-
-  const handleInitiateReturn = (order) => {
-    toast({
-      title: "Initiate Return",
-      description: `Return process started for order ${order.id}.`,
-    });
+    setShowOrderReturnDetailsDialog(true);
   };
 
   const handleRefreshOrders = () => {
-    loadOrders();
-    toast({ title: "Refreshing Orders", description: "Please wait..." });
+    refetch();
+    toast({ title: "Refreshing orders..." });
   };
 
   const resetFilters = () => {
-    setStartDate(""); setEndDate(""); setSearchText(""); setPage(0); loadOrders("", "", "");
+    setStartDate("");
+    setEndDate("");
+    setSearchText("");
+    setPage(0);
   };
 
-  const nextPage = () => { if (pageInfo && page < pageInfo.totalPages - 1) setPage(page + 1); };
-  const prevPage = () => { if (page > 0) setPage(page - 1); };
+  const nextPage = () => {
+    if (pageInfo && page < pageInfo.totalPages - 1) {
+      setPage((p) => p + 1);
+    }
+  };
 
+  const prevPage = () => {
+    if (page > 0) setPage((p) => p - 1);
+  };
 
+  const handleDownloadPDF = async () => {
+    if (selectedOrder) {
+      await handleDownloadOrderPDF(selectedOrder, toast);
+    }
+  };
 
-
-  
-  // const summaryWithTotals = getFlattenedRefundSummaryWithTotals(selectedOrder);
+  /* -------------------- UI -------------------- */
   return (
     <div className="h-full flex flex-col">
       <POSHeader />
 
-      <div className="p-4 bg-card border-b flex justify-between items-center">        <h1 className="text-2xl font-bold flex items-center gap-3"><span className="w-4 h-4 bg-indigo-500"></span>Order  History</h1>
-
-        <Button variant="outline" onClick={handleRefreshOrders} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} /> Refresh
+      {/* Header */}
+      <div className="p-4 bg-card border-b flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Order History</h1>
+        <Button variant="outline" onClick={handleRefreshOrders}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading && "animate-spin"}`} />
+          Refresh
         </Button>
       </div>
 
-      <div className="p-4 md:flex gap-2 items-center flex-wrap">
-        <input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border p-1 m-1" placeholder="Start Date" />
-        <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border p-1 m-1" placeholder="End Date" />
-        <input type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)} className="border p-1 m-1" placeholder="Search by ID or Customer" />
-        <select value={size} onChange={(e) => setSize(Number(e.target.value))} className="border p-1 m-1">
-          <option value={5}>5 per page</option>
-          <option value={10}>10 per page</option>
-          <option value={20}>20 per page</option>
-          <option value={50}>50 per page</option>
+      {/* Filters */}
+      <div className="p-4 flex gap-2 flex-wrap">
+        <input
+          type="datetime-local"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="border p-1"
+        />
+        <input
+          type="datetime-local"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="border p-1"
+        />
+        <input
+          type="text"
+          placeholder="Search by ID or Customer"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="border p-1"
+        />
+        <select
+          value={size}
+          onChange={(e) => setSize(Number(e.target.value))}
+          className="border p-1"
+        >
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+          <option value={50}>50</option>
         </select>
-        <Button onClick={() => loadOrders()} disabled={loading} size="sm" className="m-1">Filter</Button>
-        <Button variant="outline" onClick={resetFilters} disabled={loading} size="sm" className="m-1">Reset</Button>
+
+        <Button size="sm" onClick={() => refetch()}>
+          Filter
+        </Button>
+        <Button size="sm" variant="outline" onClick={resetFilters}>
+          Reset
+        </Button>
       </div>
 
+      {/* Content */}
       <div className="flex-1 p-4 overflow-auto">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-            <Loader2 className="animate-spin h-16 w-16 text-primary" />
-            <p className="mt-4">Loading orders...</p>
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center h-full">
+            <Loader2 className="animate-spin h-12 w-12" />
+            <p className="mt-2">Loading orders...</p>
           </div>
-        ) : orders && orders.length > 0 ? (
+        ) : orders.length ? (
           <>
-            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-              <div className="text-sm">
-                Showing {pageInfo ? page * size + 1 : 0} - {pageInfo ? Math.min((page + 1) * size, pageInfo.totalElements) : 0} of {pageInfo?.totalElements || 0} orders
-              </div>
-              <div className="flex gap-2 items-center">
-                <Button variant="outline" disabled={page === 0 || loading} onClick={prevPage}>Prev</Button>
-                {pageInfo && Array.from({ length: pageInfo.totalPages }, (_, i) => i)
-                  .slice(Math.max(0, page - 2), Math.min(pageInfo.totalPages, page + 3))
-                  .map((i) => (
-                    <Button key={i} variant={i === page ? "default" : "outline"} onClick={() => setPage(i)} disabled={loading}>{i + 1}</Button>
-                  ))}
-                <Button variant="outline" disabled={pageInfo?.page === pageInfo?.totalPages - 1 || loading} onClick={nextPage}>Next</Button>
-              </div>
-            </div>
-
             <OrderTable
               orders={orders}
               handleViewOrder={handleViewOrder}
               handleReturnOrder={handleReturnOrder}
-              handlePrintInvoice={handlePrintInvoice}
-              handleInitiateReturn={handleInitiateReturn}
             />
+
+            {/* Pagination */}
+            <div className="flex justify-between mt-4">
+              <Button variant="outline" onClick={prevPage} disabled={page === 0}>
+                Prev
+              </Button>
+              <span>
+                Page {page + 1} of {pageInfo?.totalPages || 1}
+              </span>
+              <Button
+                variant="outline"
+                onClick={nextPage}
+                disabled={pageInfo?.last}
+              >
+                Next
+              </Button>
+            </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-            <SearchIcon size={48} strokeWidth={1} />
-            <p className="mt-4">No orders found</p>
-            <p className="text-sm">Try refreshing or adjusting filters</p>
+          <div className="text-center text-muted-foreground">
+            <SearchIcon size={40} />
+            <p>No orders found</p>
           </div>
         )}
       </div>
 
+      {/* Order Details */}
       <Dialog open={showOrderDetailsDialog} onOpenChange={setShowOrderDetailsDialog}>
         {selectedOrder && (
-          <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>Order Details - Invoice</DialogTitle></DialogHeader>
+          <DialogContent className="max-w-[80%]">
+            <DialogHeader>
+              <DialogTitle>Order Details</DialogTitle>
+            </DialogHeader>
+
             <OrderDetails selectedOrder={selectedOrder} />
 
-{/* <pre>
-
-{JSON.stringify(getFlattenedRefundSummaryWithTotals(selectedOrder) ,null,2)}
-</pre> */}
-            {/* <TotalRefundSummary  dataSelected={selectedOrder} /> */}
-            <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={handleDownloadPDF}><Download className="h-4 w-4 mr-2" />Download PDF</Button>
-              <Button onClick={() => handlePrintInvoice(selectedOrder)}><PrinterIcon className="h-4 w-4 mr-2" />Print Invoice</Button>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleDownloadPDF}>
+                <Download className="mr-2 h-4 w-4" />
+                PDF
+              </Button>
+              <Button>
+                <PrinterIcon className="mr-2 h-4 w-4" />
+                Print
+              </Button>
             </DialogFooter>
           </DialogContent>
         )}
       </Dialog>
-      <Dialog open={showOrderReturnDetailsDialog} onOpenChange={setShowOrderDetailsReturnDialog}>
-        {selectedOrderRetuen && (
-          <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>Refund Details - Invoice</DialogTitle></DialogHeader>
-<CompareItems dataSelected={selectedOrderRetuen} />
- {/* <pre> */}
 
-{/* {JSON.stringify(selectedOrderRetuen,null,2)}</pre>  */}
-{/*{JSON.stringify(selectedOrderRetuen?.orderReturns[0]?.order?.items,null,2)}
-*/}
-{/* {
-  selectedOrderRetuen?.orderReturns?.length > 1
-    ? selectedOrderRetuen.orderReturns.map((item, index) => (
-        <Button key={index}>
-          {index}
-        </Button>
-      ))
-    : <Fragment>
+      {/* Refund Dialog */}
+      <Dialog
+        open={showOrderReturnDetailsDialog}
+        onOpenChange={setShowOrderReturnDetailsDialog}
+      >
+        {selectedOrderReturn && (
+          <DialogContent className="max-w-[80%]">
+            <DialogHeader>
+              <DialogTitle>Refund Details</DialogTitle>
+            </DialogHeader>
 
-    </Fragment>
-} */}
-
-            <DialogFooter className="gap-2">
-              {/* <Button onClick={() => handlePrintInvoice(selectedOrder)}><PrinterIcon className="h-4 w-4 mr-2" />Print Invoice</Button> */}
-            </DialogFooter>
+            <CompareItems dataSelected={selectedOrderReturn} />
           </DialogContent>
         )}
       </Dialog>

@@ -7,16 +7,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useDispatch } from "react-redux";
 import { useToast } from "@/components/ui/use-toast";
-
-import { createRefund } from "@/Redux Toolkit/features/refund/refundThunks";
-import { setCurrentOrder, setPaymentMethod } from "@/Redux Toolkit/features/cart/cartSlice";
+import { useDispatch } from "react-redux";
 
 import Todo from "./returnComponents/Todo";
 import OrderInformation from "./OrderInformation";
 import CustomerInformation from "./CustomerInformation";
 import { getFlattenedRefundSummaryWithTotals } from "../getFlattenedRefundSummaryWithTotals";
+
+import { useCreateRefundMutation } from "@/Redux Toolkit/features/refund/refundApi";
+import { setCurrentOrder, setPaymentMethod } from "@/Redux Toolkit/features/cart/cartSlice";
 
 const ReturnMode = ({ showPaymentDialog, setShowPaymentDialog, selectedOrder }) => {
   const dispatch = useDispatch();
@@ -38,21 +38,16 @@ const ReturnMode = ({ showPaymentDialog, setShowPaymentDialog, selectedOrder }) 
   }, [selectedOrder]);
 
   // --------------------- STATE ---------------------
-  const [loading, setLoading] = useState(false);
   const [todos, setTodos] = useState([]);
-
   const [paymentType, setPaymentType] = useState("CASH");
   const [cash, setCash] = useState(0);
   const [credit, setCredit] = useState(0);
-
-  const [errors, setErrors] = useState({
-    cash: "",
-    credit: "",
-    totalMismatch: "",
-  });
+  const [errors, setErrors] = useState({ cash: "", credit: "", totalMismatch: "" });
 
   const cashRef = useRef(null);
   const creditRef = useRef(null);
+
+  const [createRefund, { isLoading }] = useCreateRefundMutation();
 
   // --------------------- TOTAL AMOUNT ---------------------
   const totalAmount = useMemo(
@@ -67,26 +62,17 @@ const ReturnMode = ({ showPaymentDialog, setShowPaymentDialog, selectedOrder }) 
   }, [selectedOrder, availableItems]);
 
   // --------------------- RESET BUTTON ---------------------
-  const resetTodos = () => {
-    setTodos(availableItems);
-  };
+  const resetTodos = () => setTodos(availableItems);
 
-  // --------------------- UPDATE ITEM ---------------------
-  const updateTodo = (id, updatedQuantity) => {
+  // --------------------- UPDATE / REMOVE ITEM ---------------------
+  const updateTodo = (id, updatedQuantity) =>
     setTodos((prev) =>
       prev.map((todo) => (todo.id === id ? { ...todo, quantity: updatedQuantity } : todo))
     );
-  };
 
-  const removeTodo = (id) => {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id));
-  };
+  const removeTodo = (id) => setTodos((prev) => prev.filter((todo) => todo.id !== id));
 
-  // --------------------- CLEAN NUMBER ---------------------
-  const clean = (val) => {
-    const num = Number(val) || 0;
-    return Math.max(0, Number(num.toFixed(2)));
-  };
+  const clean = (val) => Math.max(0, Number(Number(val) || 0).toFixed(2));
 
   // --------------------- AUTO SET PAYMENT INPUTS ---------------------
   useEffect(() => {
@@ -110,72 +96,52 @@ const ReturnMode = ({ showPaymentDialog, setShowPaymentDialog, selectedOrder }) 
   // --------------------- VALIDATION ---------------------
   useEffect(() => {
     let newErrors = { cash: "", credit: "", totalMismatch: "" };
-
     if (cash < 0) newErrors.cash = "Cash cannot be negative";
     if (credit < 0) newErrors.credit = "Credit cannot be negative";
-
     if (paymentType === "MIX" && (cash + credit).toFixed(2) !== totalAmount.toFixed(2)) {
       newErrors.totalMismatch = `Cash + Credit must equal total Rs ${totalAmount.toFixed(2)}`;
     }
-
     setErrors(newErrors);
   }, [cash, credit, paymentType, totalAmount]);
 
-  // --------------------- PAYMENT HANDLERS ---------------------
   const handleCashChange = (val) => {
     const newCash = clean(val);
     setCash(newCash);
-
-    if (paymentType === "MIX") {
-      setCredit(clean(totalAmount - newCash));
-    }
+    if (paymentType === "MIX") setCredit(clean(totalAmount - newCash));
   };
 
   const handleCreditChange = (val) => {
     const newCredit = clean(val);
     setCredit(newCredit);
-
-    if (paymentType === "MIX") {
-      setCash(clean(totalAmount - newCredit));
-    }
+    if (paymentType === "MIX") setCash(clean(totalAmount - newCredit));
   };
 
   // --------------------- KEYBOARD FLOW ---------------------
   const handleKeyDown = (e, field) => {
     if (e.key === "Enter") {
       e.preventDefault();
-
       if (field === "paymentType") {
         if (paymentType === "CASH") cashRef.current?.focus();
         else if (paymentType === "CREDIT") creditRef.current?.focus();
         else cashRef.current?.focus();
       }
-
       if (field === "cash") {
         if (paymentType === "MIX") creditRef.current?.focus();
-        else !errors.cash && processPayment();
+        else !errors.cash && processRefund();
       }
-
       if (field === "credit") {
         if (paymentType === "MIX") cashRef.current?.focus();
-        else !errors.credit && processPayment();
+        else !errors.credit && processRefund();
       }
     }
-
-    if (e.key === "Escape") {
-      setShowPaymentDialog(false);
-      
-    }
+    if (e.key === "Escape") setShowPaymentDialog(false);
   };
 
   // --------------------- API SUBMIT ---------------------
-  const processPayment = async () => {
+  const processRefund = async () => {
     if (!selectedOrder) return;
-
     try {
-      setLoading(true);
-
-      const orderData = {
+      const refundData = {
         cash,
         credit,
         totalAmount,
@@ -183,32 +149,30 @@ const ReturnMode = ({ showPaymentDialog, setShowPaymentDialog, selectedOrder }) 
         cashierId: 13,
         orderId: selectedOrder.id,
         customer: selectedOrder.customer,
-        items: todos.filter(i => Number(i.quantity) > 0)
-  .map(i => ({
-    productId: i.id,
-    quantity: i.quantity,
-    total: i.sellingPrice * i.quantity,
-  })),
+        items: todos
+          .filter((i) => Number(i.quantity) > 0)
+          .map((i) => ({
+            productId: i.id,
+            quantity: i.quantity,
+            total: i.sellingPrice * i.quantity,
+          })),
         note: "",
       };
 
-      const createdRefund = await dispatch(createRefund(orderData)).unwrap();
-
-      dispatch(setCurrentOrder(createdRefund));
+      const result = await createRefund(refundData).unwrap();
+      dispatch(setCurrentOrder(result));
       setShowPaymentDialog(false);
 
       toast({
         title: "Refund Created Successfully",
-        description: `Refund #${createdRefund.id} created successfully`,
+        description: `Refund #${result.id} created successfully`,
       });
-    } catch (error) {
+    } catch (err) {
       toast({
         title: "Refund Failed",
-        description: error?.message || "Failed to create refund",
+        description: err?.data?.message || "Failed to create refund",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -226,7 +190,6 @@ const ReturnMode = ({ showPaymentDialog, setShowPaymentDialog, selectedOrder }) 
           <DialogTitle>Refund</DialogTitle>
         </DialogHeader>
 
-      
         <div className="grid grid-cols-2 gap-4 mb-4">
           <OrderInformation selectedOrder={selectedOrder} />
           <CustomerInformation selectedOrder={selectedOrder} />
@@ -278,9 +241,7 @@ const ReturnMode = ({ showPaymentDialog, setShowPaymentDialog, selectedOrder }) 
               disabled={paymentType === "CREDIT"}
               onChange={(e) => handleCashChange(e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, "cash")}
-              className={`border p-2 rounded-md ${
-                errors.cash ? "border-red-500" : ""
-              } disabled:bg-gray-200`}
+              className={`border p-2 rounded-md ${errors.cash ? "border-red-500" : ""} disabled:bg-gray-200`}
             />
             {errors.cash && <p className="text-red-500 text-sm">{errors.cash}</p>}
           </div>
@@ -294,35 +255,31 @@ const ReturnMode = ({ showPaymentDialog, setShowPaymentDialog, selectedOrder }) 
               disabled={paymentType === "CASH"}
               onChange={(e) => handleCreditChange(e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, "credit")}
-              className={`border p-2 rounded-md ${
-                errors.credit ? "border-red-500" : ""
-              } disabled:bg-gray-200`}
+              className={`border p-2 rounded-md ${errors.credit ? "border-red-500" : ""} disabled:bg-gray-200`}
             />
             {errors.credit && <p className="text-red-500 text-sm">{errors.credit}</p>}
           </div>
 
-          {errors.totalMismatch && (
-            <p className="text-red-500 text-sm">{errors.totalMismatch}</p>
-          )}
+          {errors.totalMismatch && <p className="text-red-500 text-sm">{errors.totalMismatch}</p>}
         </div>
 
         <DialogFooter className="mt-4 flex gap-2">
-          <Button variant="outline" onClick={() => {setShowPaymentDialog(false);
-
-            setTodos(availableItems);
-          }}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowPaymentDialog(false);
+              setTodos(availableItems);
+            }}
+          >
             Cancel
           </Button>
-          {totalAmount>0?<Button
-            onClick={processPayment}
-            disabled={loading || errors.cash || errors.credit || errors.totalMismatch}
+
+          <Button
+            onClick={processRefund}
+            disabled={isLoading || errors.cash || errors.credit || errors.totalMismatch || totalAmount <= 0}
           >
-            {loading ? "Processing..." : "Complete Refund"}
-          </Button>:<Button
-            disabled={true}
-          >
-            {loading ? "Processing..." : "Complete Refund"}
-          </Button>}
+            {isLoading ? "Processing..." : "Complete Refund"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

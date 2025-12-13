@@ -24,7 +24,7 @@ const CustomerSummary = ({ customerId,customer }) => {
     skip: !customerId,
   });
 
-  if (isLoading ) return null;
+  if (isLoading ) return "Loading...";
   if (isError) return <p className="text-red-500 text-sm">Failed to load summary</p>;
   if (!summary) return <p className="text-sm">No summary available</p>;
 

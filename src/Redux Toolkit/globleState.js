@@ -1,4 +1,7 @@
+// src/Redux Toolkit/globleState.js
 import { configureStore } from "@reduxjs/toolkit";
+
+// ✅ Feature slices
 import authReducer from "./features/auth/authSlice.js";
 import storeReducer from "./features/store/storeSlice.js";
 import branchReducer from "./features/branch/branchSlice.js";
@@ -23,17 +26,18 @@ import subscriptionReducer from "./features/subscription/subscriptionSlice.js";
 import paymentReducer from "./features/payment/paymentSlice.js";
 import customerPaymentsSlice from "./features/customerPayment/customerPaymentSlice.js";
 import customerSummaryReducer from "./features/customerSummary/customerSummarySlice.js";
-// import { fetchCustomerOrders } from "./features/customer/customerOrders/customerOrderSlice.js";
-
-// ✅ Import your new customerOrder slice
 import customerOrderReducer from "./features/customer/customerOrders/customerOrderSlice.js";
 import customerRefundReducer from "./features/customer/customerRefunds/customerRefundSlice.js";
 import transactionsReducer from "./features/transactions/transactionsSlice.js";
 
-import { apiSlice } from "./api/apiSlice.js";
+// ✅ RTK Query API
+import { apiSlice } from "./api/apiSlice.js"; // base apiSlice
+// import { orderApi } from "./features/order/orderApi.js"; // injected endpoints
 
+// ✅ Configure store
 const globleState = configureStore({
   reducer: {
+    // Feature reducers
     auth: authReducer,
     store: storeReducer,
     branch: branchReducer,
@@ -58,17 +62,15 @@ const globleState = configureStore({
     payment: paymentReducer,
     customerPayment: customerPaymentsSlice,
     customerSummary: customerSummaryReducer,
-
-    // ✅ Added here
     customerOrder: customerOrderReducer,
     customerRefund: customerRefundReducer,
-        transactions: transactionsReducer,
-  [apiSlice.reducerPath]: apiSlice.reducer,
+    transactions: transactionsReducer,
 
+    // ✅ RTK Query reducers (only apiSlice, orderApi injected here)
+    [apiSlice.reducerPath]: apiSlice.reducer,
   },
-
-    middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware),
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(apiSlice.middleware), // ✅ only once
 });
 
 export default globleState;
