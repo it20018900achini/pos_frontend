@@ -111,9 +111,11 @@ const CustomerLookupPage = () => {
         {/* <pre>{JSON.stringify(displayCustomer,null,2)}</pre> */}
           <CustomerDetails
             customer={displayCustomer}
-            onAddPoints={() => setShowAddPointsDialog(true)}
-            loading={false}
+            customerId={displayCustomer?.id}
+            // onAddPoints={() => setShowAddPointsDialog(true)}
+            // loading={false}
           />
+          
 
 
           {/* {selectedCustomer && (

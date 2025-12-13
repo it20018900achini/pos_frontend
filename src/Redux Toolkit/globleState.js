@@ -30,6 +30,8 @@ import customerOrderReducer from "./features/customer/customerOrders/customerOrd
 import customerRefundReducer from "./features/customer/customerRefunds/customerRefundSlice.js";
 import transactionsReducer from "./features/transactions/transactionsSlice.js";
 
+import { apiSlice } from "./api/apiSlice.js";
+
 const globleState = configureStore({
   reducer: {
     auth: authReducer,
@@ -61,8 +63,12 @@ const globleState = configureStore({
     customerOrder: customerOrderReducer,
     customerRefund: customerRefundReducer,
         transactions: transactionsReducer,
+  [apiSlice.reducerPath]: apiSlice.reducer,
 
   },
+
+    middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(apiSlice.middleware),
 });
 
 export default globleState;

@@ -68,6 +68,29 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
   const credit = Math.max(total - cashAmount, 0);
   const changeDue = Math.max(givenAmount - cashAmount, 0);
 
+  // ✅ Print POS receipt function
+  const printPOSReceipt = (order) => {
+    const printWindow = window.open("", "Print", "width=300,height=600");
+    printWindow.document.write(`<html><head><title>Receipt</title></head><body style="font-family: monospace; font-size:12px; line-height:1.2;">`);
+    printWindow.document.write(`<h3 style="text-align:center;">Store Name</h3>`);
+    printWindow.document.write(`<p>Order #${order.id}</p>`);
+    printWindow.document.write(`<p>Customer: ${order.customer?.fullName || 'Walk-in'}</p>`);
+    printWindow.document.write(`<hr>`);
+    order.items.forEach(item => {
+      printWindow.document.write(`<p>${item?.product?.name} x${item.quantity} - LKR ${item.price.toFixed(2)}</p>`);
+    });
+    printWindow.document.write(`<hr>`);
+    printWindow.document.write(`<p>Total: LKR ${order.totalAmount.toFixed(2)}</p>`);
+    printWindow.document.write(`<p>Cash: LKR ${order.cash.toFixed(2)}</p>`);
+    printWindow.document.write(`<p>Change: LKR ${order.changeDue.toFixed(2)}</p>`);
+    printWindow.document.write(`<hr><p style="text-align:center;">Thank you!</p>`);
+    printWindow.document.write(`</body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  };
+
   const processPayment = async () => {
     if (!cart.length) {
       toast({ title: "Empty Cart", description: "Add items first.", variant: "destructive" });
@@ -81,6 +104,7 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
 
     try {
       setLoading(true);
+
       const orderData = {
         cash: parseFloat(cashAmount.toFixed(2)),
         credit: parseFloat(credit.toFixed(2)),
@@ -91,6 +115,7 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
         customer: selectedCustomer,
         items: cart.map((i) => ({
           productId: i.id,
+          name: i.name,
           quantity: i.quantity,
           price: i.price,
           total: i.price * i.quantity,
@@ -103,6 +128,9 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
 
       const created = await dispatch(createOrder(orderData)).unwrap();
       dispatch(setCurrentOrder(created));
+
+      // ✅ Print POS receipt immediately
+      printPOSReceipt(created);
 
       setShowPaymentDialog(false);
       setShowReceiptDialog(true);
@@ -118,18 +146,14 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
   return (
     <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
       <DialogContent className="sm:max-w-[700px] h-[100vh] max-h-[95vh] w-[850px] p-0 overflow-hidden rounded-3xl shadow-2xl border border-white/40 bg-gradient-to-br from-slate-50 to-slate-200 backdrop-blur-xl flex flex-col">
-        {/* HEADER */}
-         <DialogHeader className="px-8 py-2 border-b bg-white/50 backdrop-blur-md">
+        <DialogHeader className="px-8 py-2 border-b bg-white/50 backdrop-blur-md">
           <DialogTitle className="font-bold text-slate-800 flex items-center gap-3">
             <span className="text-3xl">🧾</span> Payment Summary
           </DialogTitle>
         </DialogHeader>
 
-        {/* MAIN CONTENT */}
-        <div className="flex  overflow-hidden w-full">
-          {/* LEFT SECTION */}
+        <div className="flex overflow-hidden w-full">
           <div className="w-full p-8 py-4 border-r bg-white/40 backdrop-blur-lg flex flex-col overflow-y-auto">
-            {/* TOTAL CARD (fixed at top) */}
             <div className="rounded-2xl p-2 bg-white shadow-inner border border-slate-200 text-center mb-6 flex-shrink-0">
               <p className="text-sm text-slate-500 font-medium uppercase tracking-wide">Total Amount</p>
               <div className="text-2xl font-extrabold mt-1 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -137,9 +161,7 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
               </div>
             </div>
 
-            {/* INPUTS */}
             <div className="space-y-3">
-              {/* CASH */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Cash Amount</label>
                 <Input
@@ -153,7 +175,6 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
                 </p>
               </div>
 
-              {/* CUSTOMER PAID */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700">Customer Paid</label>
                 <Input
@@ -170,7 +191,6 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
             </div>
           </div>
 
-          {/* RIGHT SECTION */}
           <div className="p-8 overflow-y-auto w-[400px]">
             <div className="sticky top-0 flex flex-col gap-5">
               <p className="text-slate-700 font-semibold text-sm">Payment Options</p>
@@ -192,7 +212,6 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
           </div>
         </div>
 
-        {/* FOOTER (sticky) */}
         <DialogFooter className="bg-white/70 backdrop-blur-md px-8 py-5 flex justify-end gap-4 flex-shrink-0">
           <Button
             variant="outline"
@@ -201,7 +220,9 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
           >
             Cancel
           </Button>
-
+<Button  className="h-12 px-6 text-lg rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90 shadow-xl" onClick={()=>setShowReceiptDialog(true)}>
+  show / print
+</Button>
           <Button
             onClick={processPayment}
             disabled={loading}

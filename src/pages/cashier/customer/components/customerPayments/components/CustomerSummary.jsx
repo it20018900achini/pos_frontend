@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { getCustomerSummaryById } from "../../../../../../Redux Toolkit/features/customerSummary/customerSummaryThunks";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 import { ShoppingCart, Package, Repeat, DollarSign } from "lucide-react";
+import { useGetCustomerSummaryByIdQuery } from "@/Redux Toolkit/features/customer/customerSummaryApi";
 
-// Format currency
+// -------------------
+// Helpers
+// -------------------
 const formatLKR = (value) =>
   new Intl.NumberFormat("en-LK", {
     style: "currency",
@@ -15,44 +14,31 @@ const formatLKR = (value) =>
     minimumFractionDigits: 2,
   }).format(value || 0);
 
-// Format numbers
 const formatNumber = (value) => value ?? 0;
 
-const CustomerSummary = ({ customerId }) => {
-  const dispatch = useDispatch();
-  const { summary, loading, error } = useSelector((state) => state.customerSummary);
+// -------------------
+// CustomerSummary Component
+// -------------------
+const CustomerSummary = ({ customerId,customer }) => {
+  const { data: summary, isLoading, isError } = useGetCustomerSummaryByIdQuery(customerId, {
+    skip: !customerId,
+  });
 
-  useEffect(() => {
-    if (customerId) dispatch(getCustomerSummaryById(customerId));
-  }, [dispatch, customerId]);
-
-  // --------------------------
-  // Skeleton
-  // --------------------------
-  if (loading)
-    return (
-      <div className="space-y-6 animate-pulse">
-        <Skeleton className="h-6 w-1/4 rounded-full" />
-        {[...Array(3)].map((_, idx) => (
-          <Skeleton key={idx} className="h-28 rounded-xl w-full" />
-        ))}
-      </div>
-    );
-
-  if (error) return <p className="text-sm text-red-500">Error: {error}</p>;
+  if (isLoading ) return null;
+  if (isError) return <p className="text-red-500 text-sm">Failed to load summary</p>;
   if (!summary) return <p className="text-sm">No summary available</p>;
 
-  // --------------------------
-  // Cards config
-  // --------------------------
+  // -------------------
+  // Panels for total amounts
+  // -------------------
   const panels = [
     {
       title: "Orders",
       icon: <ShoppingCart className="w-6 h-6 text-white" />,
       value: formatLKR(summary.totalAmount),
       details: [
-        { label: "Cash", value: formatLKR(summary.totalCash), color: "green" },
-        { label: "Credit", value: formatLKR(summary.totalCredit), color: "red" },
+        { label: "Cash", value: formatLKR(summary.totalCash), color: "text-green-600" },
+        { label: "Credit", value: formatLKR(summary.totalCredit), color: "text-red-600" },
       ],
       bg: "bg-blue-500",
     },
@@ -61,8 +47,8 @@ const CustomerSummary = ({ customerId }) => {
       icon: <Repeat className="w-6 h-6 text-white" />,
       value: formatLKR(summary.totalRefundAmount),
       details: [
-        { label: "Cash", value: formatLKR(summary.totalRefundCash), color: "green" },
-        { label: "Credit", value: formatLKR(summary.totalRefundCredit), color: "red" },
+        { label: "Cash", value: formatLKR(summary.totalRefundCash), color: "text-green-600" },
+        { label: "Credit", value: formatLKR(summary.totalRefundCredit), color: "text-red-600" },
       ],
       bg: "bg-yellow-500",
     },
@@ -71,13 +57,16 @@ const CustomerSummary = ({ customerId }) => {
       icon: <DollarSign className="w-6 h-6 text-white" />,
       value: formatLKR(summary.totalPaymentAmount),
       details: [
-        { label: "Cash", value: formatLKR(summary.totalPaymentCash), color: "green" },
-        { label: "Credit", value: formatLKR(summary.totalPaymentCredit), color: "red" },
+        { label: "Cash", value: formatLKR(summary.totalPaymentCash), color: "text-green-600" },
+        { label: "Credit", value: formatLKR(summary.totalPaymentCredit), color: "text-red-600" },
       ],
       bg: "bg-indigo-500",
     },
   ];
 
+  // -------------------
+  // Count Panels
+  // -------------------
   const counts = [
     {
       label: "Total Orders",
@@ -104,15 +93,14 @@ const CustomerSummary = ({ customerId }) => {
       bg: "bg-red-500",
     },
   ];
-
-  // --------------------------
-  // Render
-  // --------------------------
+if (customer?.id!==summary?.customer?.id)  return "Loading..."
   return (
     <div className="space-y-8">
-      {/* Customer Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <h1 className="text-2xl font-bold">{summary.customer.fullName}</h1>
+      {/* {JSON.stringify(summary?.customer?.id)}
+      {JSON.stringify(customer?.id!==summary?.customer?.id?"loading":'NL')} */}
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-end items-start md:items-center">
+        {/* <h1 className="text-2xl font-bold">{summary.customer.fullName}</h1> */}
         <p className="text-sm text-gray-500 mt-2 md:mt-0">Customer Dashboard Overview</p>
       </div>
 
@@ -129,7 +117,7 @@ const CustomerSummary = ({ customerId }) => {
             </div>
             <CardContent className="bg-gray-50 flex justify-between p-4">
               {panel.details.map((d) => (
-                <p key={d.label} className={`text-sm font-medium text-${d.color}-600`}>
+                <p key={d.label} className={`text-sm font-medium ${d.color}`}>
                   {d.label}: {d.value}
                 </p>
               ))}
@@ -139,7 +127,7 @@ const CustomerSummary = ({ customerId }) => {
       </div>
 
       {/* Count Panels */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {counts.map((c) => (
           <Card
             key={c.label}
