@@ -9,36 +9,36 @@ const SettingsNavigation = ({ activeSection }) => {
       icon: Store,
       href: "#store-settings"
     },
-    {
-      id: "notification-settings",
-      label: "Notification Settings",
-      icon: Bell,
-      href: "#notification-settings"
-    },
-    {
-      id: "security-settings",
-      label: "Security Settings",
-      icon: Shield,
-      href: "#security-settings"
-    },
-    {
-      id: "payment-settings",
-      label: "Payment Settings",
-      icon: CreditCard,
-      href: "#payment-settings"
-    },
-    {
-      id: "system-settings",
-      label: "System Settings",
-      icon: Database,
-      href: "#system-settings"
-    },
-    {
-      id: "help",
-      label: "Help & Support",
-      icon: HelpCircle,
-      href: "#help"
-    }
+    // {
+    //   id: "notification-settings",
+    //   label: "Notification Settings",
+    //   icon: Bell,
+    //   href: "#notification-settings"
+    // },
+    // {
+    //   id: "security-settings",
+    //   label: "Security Settings",
+    //   icon: Shield,
+    //   href: "#security-settings"
+    // },
+    // {
+    //   id: "payment-settings",
+    //   label: "Payment Settings",
+    //   icon: CreditCard,
+    //   href: "#payment-settings"
+    // },
+    // {
+    //   id: "system-settings",
+    //   label: "System Settings",
+    //   icon: Database,
+    //   href: "#system-settings"
+    // },
+    // {
+    //   id: "help",
+    //   label: "Help & Support",
+    //   icon: HelpCircle,
+    //   href: "#help"
+    // }
   ];
 
   return (
