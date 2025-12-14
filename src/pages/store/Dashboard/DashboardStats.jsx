@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Card, CardContent } from "@/components/ui/card";
 import { DollarSign, Store, ShoppingCart, Users } from "lucide-react";
 import { getStoreOverview } from "@/Redux Toolkit/features/storeAnalytics/storeAnalyticsThunks";
 import { useToast } from "@/components/ui/use-toast";
@@ -8,13 +7,13 @@ import { useToast } from "@/components/ui/use-toast";
 const DashboardStats = () => {
   const dispatch = useDispatch();
   const { toast } = useToast();
-  const { storeOverview, loading } = useSelector((state) => state.storeAnalytics);
+  const { storeOverview, loading } = useSelector(
+    (state) => state.storeAnalytics
+  );
   const { userProfile } = useSelector((state) => state.user);
 
   useEffect(() => {
-    if (userProfile?.id) {
-      fetchStoreOverview();
-    }
+    if (userProfile?.id) fetchStoreOverview();
   }, [userProfile]);
 
   const fetchStoreOverview = async () => {
@@ -29,87 +28,111 @@ const DashboardStats = () => {
     }
   };
 
-  // Format currency
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'LKR',
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "LKR",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
     }).format(amount || 0);
-  };
 
-  // Format percentage change
   const formatChange = (current, previous) => {
-    if (!previous || previous === 0) return "+0%";
+    if (!previous) return "0%";
     const change = ((current - previous) / previous) * 100;
-    const sign = change >= 0 ? "+" : "";
-    return `${sign}${change.toFixed(1)}%`;
+    return `${change >= 0 ? "▲" : "▼"} ${Math.abs(change).toFixed(1)}%`;
   };
 
   const stats = [
-    { 
-      title: "Total Sales", 
-      value: formatCurrency(storeOverview?.totalSales || 0), 
-      icon: <DollarSign className="w-8 h-8 text-emerald-500" />, 
-      change: formatChange(storeOverview?.totalSales, storeOverview?.previousPeriodSales),
-      loading: loading
+    {
+      title: "Revenue",
+      value: formatCurrency(storeOverview?.totalSales),
+      icon: DollarSign,
+      change: formatChange(
+        storeOverview?.totalSales,
+        storeOverview?.previousPeriodSales
+      ),
     },
-    { 
-      title: "Total Branches", 
-      value: storeOverview?.totalBranches || 0, 
-      icon: <Store className="w-8 h-8 text-emerald-500" />, 
-      change: formatChange(storeOverview?.totalBranches, storeOverview?.previousPeriodBranches),
-      loading: loading
+    {
+      title: "Branches",
+      value: storeOverview?.totalBranches || 0,
+      icon: Store,
+      change: formatChange(
+        storeOverview?.totalBranches,
+        storeOverview?.previousPeriodBranches
+      ),
     },
-    { 
-      title: "Total Products", 
-      value: storeOverview?.totalProducts || 0, 
-      icon: <ShoppingCart className="w-8 h-8 text-emerald-500" />, 
-      change: formatChange(storeOverview?.totalProducts, storeOverview?.previousPeriodProducts),
-      loading: loading
+    {
+      title: "Products",
+      value: storeOverview?.totalProducts || 0,
+      icon: ShoppingCart,
+      change: formatChange(
+        storeOverview?.totalProducts,
+        storeOverview?.previousPeriodProducts
+      ),
     },
-    { 
-      title: "Total Employees", 
-      value: storeOverview?.totalEmployees || 0, 
-      icon: <Users className="w-8 h-8 text-emerald-500" />, 
-      change: formatChange(storeOverview?.totalEmployees, storeOverview?.previousPeriodEmployees),
-      loading: loading
+    {
+      title: "Employees",
+      value: storeOverview?.totalEmployees || 0,
+      icon: Users,
+      change: formatChange(
+        storeOverview?.totalEmployees,
+        storeOverview?.previousPeriodEmployees
+      ),
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat, index) => (
-        <Card key={index}>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">{stat.title}</p>
-                <h3 className="text-2xl font-bold mt-1">
-                  {stat.loading ? (
-                    <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"></div>
-                  ) : (
-                    stat.value
-                  )}
-                </h3>
-                <p className={`text-xs font-medium mt-1 ${
-                  stat.change.startsWith('+') ? 'text-emerald-500' : 'text-red-500'
-                }`}>
-                  {stat.loading ? (
-                    <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
-                  ) : (
-                    `${stat.change} from last month`
-                  )}
-                </p>
-              </div>
-              <div className="p-3 bg-emerald-50 rounded-full">
-                {stat.icon}
-              </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      {stats.map((stat, index) => {
+        const Icon = stat.icon;
+        const positive = stat.change.startsWith("▲");
+
+        return (
+          <div
+            key={index}
+            className="
+              relative
+              p-6
+              rounded-xl
+              bg-gray-100 dark:bg-[#0F172A]
+              border border-gray-200 dark:border-gray-800
+              hover:bg-gray-200/70 dark:hover:bg-[#111827]
+              transition-colors
+            "
+          >
+            {/* Icon */}
+            <div className="absolute top-4 right-4 opacity-10">
+              <Icon className="w-16 h-16" />
             </div>
-          </CardContent>
-        </Card>
-      ))}
+
+            {/* Content */}
+            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              {stat.title}
+            </p>
+
+            <h2 className="text-2xl font-extrabold mt-3 tracking-tight">
+              {loading ? (
+                <div className="h-10 w-32 bg-gray-300 dark:bg-gray-700 rounded animate-pulse" />
+              ) : (
+                stat.value
+              )}
+            </h2>
+
+            <div
+              className={`inline-flex items-center mt-4 px-3 py-1 rounded-full text-xs font-semibold ${
+                positive
+                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                  : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+              }`}
+            >
+              {loading ? (
+                <div className="h-4 w-16 bg-gray-300 dark:bg-gray-700 rounded animate-pulse" />
+              ) : (
+                `${stat.change} MoM`
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
