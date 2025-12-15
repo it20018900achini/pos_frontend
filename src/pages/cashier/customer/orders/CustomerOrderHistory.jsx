@@ -1,29 +1,20 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getOrdersByCustomerPagin } from "../../../../Redux Toolkit/features/order/orderThunks";
+import {
+  getOrdersByCustomerPagin,
+} from "../../../../Redux Toolkit/features/order/orderThunks";
 import { clearOrderState } from "../../../../Redux Toolkit/features/order/orderSlice";
-// import {
-//   getOrdersByCustomerPagin,
-//   clearOrderState,
-// } from "@/store/order/orderSlice";
 
 export default function CustomerOrdersHistory({ customerId }) {
   const dispatch = useDispatch();
-
   const { orders, pageInfo, loading } = useSelector((state) => state.order);
 
-  // Page states
   const [pageNumber, setPageNumber] = useState(0);
   const pageSize = 20;
 
-  // Filters
   const [search, setSearch] = useState("");
-  const [dates, setDates] = useState({
-    startDate: "",
-    endDate: "",
-  });
+  const [dates, setDates] = useState({ startDate: "", endDate: "" });
 
-  // Fetch orders (memoized to prevent infinite loop)
   const fetchOrders = useCallback(() => {
     dispatch(
       getOrdersByCustomerPagin({
@@ -35,122 +26,147 @@ export default function CustomerOrdersHistory({ customerId }) {
         pageSize,
       })
     );
-  }, [dispatch, customerId, search, dates.startDate, dates.endDate, pageNumber]);
+  }, [dispatch, customerId, search, dates, pageNumber]);
 
-  // Run fetch on dependency change
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
 
-  // Clear redux state on unmount
   useEffect(() => {
-    return () => {
-      dispatch(clearOrderState());
-    };
+    return () => dispatch(clearOrderState());
   }, [dispatch]);
 
-  // Pagination handlers
-  const goNext = () => {
-    if (!pageInfo?.last) setPageNumber((p) => p + 1);
-  };
-
-  const goPrev = () => {
-    if (pageNumber !== 0) setPageNumber((p) => p - 1);
-  };
-
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Customer Orders</h2>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h2 className="text-2xl font-bold">Order History</h2>
 
-      {/* Filters */}
-      <div className="flex gap-3 mb-4">
-        <input
-          type="text"
-          placeholder="Search invoice or product..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPageNumber(0);
-          }}
-          className="border px-3 py-2 rounded"
-        />
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2">
+          <input
+            type="text"
+            placeholder="Search invoice / product"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPageNumber(0);
+            }}
+            className="px-3 py-2 border rounded-lg text-sm"
+          />
 
-        <input
-          type="date"
-          value={dates.startDate}
-          onChange={(e) => {
-            setDates((prev) => ({ ...prev, startDate: e.target.value }));
-            setPageNumber(0);
-          }}
-          className="border px-3 py-2 rounded"
-        />
+          <input
+            type="date"
+            value={dates.startDate}
+            onChange={(e) => {
+              setDates((p) => ({ ...p, startDate: e.target.value }));
+              setPageNumber(0);
+            }}
+            className="px-3 py-2 border rounded-lg text-sm"
+          />
 
-        <input
-          type="date"
-          value={dates.endDate}
-          onChange={(e) => {
-            setDates((prev) => ({ ...prev, endDate: e.target.value }));
-            setPageNumber(0);
-          }}
-          className="border px-3 py-2 rounded"
-        />
+          <input
+            type="date"
+            value={dates.endDate}
+            onChange={(e) => {
+              setDates((p) => ({ ...p, endDate: e.target.value }));
+              setPageNumber(0);
+            }}
+            className="px-3 py-2 border rounded-lg text-sm"
+          />
+        </div>
       </div>
 
-      {/* Table */}
-      <div className="border rounded p-3">
-        {loading ? (
-          <div className="text-center py-10">Loading...</div>
-        ) : orders.length === 0 ? (
-          <div className="text-center py-10 text-gray-500">No orders found</div>
-        ) : (
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border p-2">ID</th>
-                <th className="border p-2">Total</th>
-                <th className="border p-2">Cash</th>
-                <th className="border p-2">Credit</th>
-                <th className="border p-2">Payment Type</th>
-                <th className="border p-2">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((o) => (
-                <tr key={o.id}>
-                  <td className="border p-2">{o.id}</td>
-                  <td className="border p-2">{o.totalAmount}</td>
-                  <td className="border p-2">{o.cash}</td>
-                  <td className="border p-2">{o.credit}</td>
-                  <td className="border p-2">{o.paymentType}</td>
-                  <td className="border p-2">
+      {/* Content */}
+      {loading ? (
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className="h-20 bg-gray-200 rounded-xl animate-pulse"
+            />
+          ))}
+        </div>
+      ) : orders.length === 0 ? (
+        <div className="py-20 text-center text-gray-500">
+          No orders found
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {orders.map((o) => (
+            <div
+              key={o.id}
+              className="
+                p-4 rounded-xl border
+                bg-white hover:bg-gray-50
+                transition
+              "
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                {/* Left */}
+                <div>
+                  <p className="font-semibold">
+                    Order #{o.id}
+                  </p>
+                  <p className="text-xs text-gray-500">
                     {new Date(o.createdAt).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+                  </p>
+                </div>
+
+                {/* Center */}
+                <div className="flex gap-4 text-sm">
+                  <div>
+                    <p className="text-gray-500 text-xs">Total</p>
+                    <p className="font-semibold">{o.totalAmount}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-xs">Cash</p>
+                    <p>{o.cash}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-xs">Credit</p>
+                    <p>{o.credit}</p>
+                  </div>
+                </div>
+
+                {/* Right */}
+                <div
+                  className={`
+                    px-3 py-1 rounded-full text-xs font-medium
+                    ${
+                      o.paymentType === "CASH"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-blue-100 text-blue-700"
+                    }
+                  `}
+                >
+                  {o.paymentType}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Pagination */}
       {pageInfo && (
-        <div className="flex justify-between mt-4">
+        <div className="flex items-center justify-between pt-4 border-t">
           <button
-            onClick={goPrev}
+            onClick={() => setPageNumber((p) => Math.max(p - 1, 0))}
             disabled={pageNumber === 0}
-            className="px-4 py-2 bg-gray-300 rounded disabled:opacity-40"
+            className="px-4 py-2 rounded-lg border disabled:opacity-40"
           >
-            Prev
+            Previous
           </button>
 
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-500">
             Page {pageInfo.pageNumber + 1} of {pageInfo.totalPages}
           </span>
 
           <button
-            onClick={goNext}
+            onClick={() => setPageNumber((p) => p + 1)}
             disabled={pageInfo.last}
-            className="px-4 py-2 bg-gray-300 rounded disabled:opacity-40"
+            className="px-4 py-2 rounded-lg border disabled:opacity-40"
           >
             Next
           </button>

@@ -176,7 +176,8 @@ export const getOrdersByCustomerPagin = createAsyncThunk(
   async ({ customerId, page = 0, size = 10, sort = "id,desc", start, end, search }, { rejectWithValue }) => {
     try {
       const headers = getAuthHeaders();
-
+console.log("start="+start)
+console.log("end-"+end)
       // Build query params
       const params = new URLSearchParams();
       params.append("page", page);

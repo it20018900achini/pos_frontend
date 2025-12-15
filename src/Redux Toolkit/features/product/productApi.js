@@ -9,7 +9,7 @@ export const productApi = apiSlice.injectEndpoints({
     }),
     searchProducts: builder.query({
       query: ({ storeId, query }) =>
-        `/products/store/${storeId}?search=${encodeURIComponent(query)}`,
+        `/products/store/${storeId}/search?q=${encodeURIComponent(query)}`,
       providesTags: ["Product"],
     }),
   }),

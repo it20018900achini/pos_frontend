@@ -16,6 +16,7 @@ import {
   SelectContent,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useSelector } from "react-redux";
 // import {  useSelector } from "react-redux";
 // import { getCustomerSummaryById } from "../../../../../../Redux Toolkit/features/customerSummary/customerSummaryThunks";
 
@@ -26,10 +27,11 @@ export default function CustomerPaymentForm({
   customer,
   user
 }) {
+  const { userProfile } = useSelector((state) => state.user);
 
   const [form, setForm] = useState({
-    customerId: customer?.customer?.id,
-    cashierId:user?.id,
+    customerId: customer?.id,
+    cashierId:userProfile?.id,
     amount: "",
     paymentMethod: "CASH",
     reference: "",
@@ -67,8 +69,8 @@ export default function CustomerPaymentForm({
 
   const resetForm = () => {
     setForm({
-      customerId: "",
-      cashierId: "",
+      customerId: customer?.id,
+      cashierId: userProfile?.id,
       amount: "",
       paymentMethod: "CASH",
       reference: "",
@@ -90,14 +92,14 @@ export default function CustomerPaymentForm({
       )}
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[100vh] overflow-auto">
           <DialogHeader>
             <DialogTitle>
               {initialData ? "Edit Payment" : "Add Payment"}
             </DialogTitle>
           </DialogHeader>
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div>
+            
               <Input
                 type="number"
                 value={form.customerId}
@@ -105,9 +107,6 @@ export default function CustomerPaymentForm({
                 required
                 className="hidden"
               />
-            </div>
-            <div>
-              <Label>Cashier ID</Label>
               <Input
                 type="number"
                 value={form.cashierId}
@@ -116,7 +115,6 @@ export default function CustomerPaymentForm({
                                 className="hidden"
 
               />
-            </div>
             <div>
               <Label>Amount</Label>
               <Input

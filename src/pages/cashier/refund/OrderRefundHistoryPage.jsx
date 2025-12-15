@@ -35,9 +35,8 @@ const OrderRefundHistoryPage = () => {
   // Load Orders
   const loadOrders = (start = startDate, end = endDate, search = searchText) => {
     if (!userProfile?.id) return;
-
-    const startISO = start ? new Date(start).toISOString() : undefined;
-    const endISO = end ? new Date(end).toISOString() : undefined;
+    const startISO = start ;
+    const endISO = end ;
 
     dispatch(
       getRefundsByCashier({

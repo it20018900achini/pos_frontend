@@ -1,5 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import api from '@/utils/api';
+import { formatDistanceStrict } from 'date-fns';
+import { formatDate } from '../../../pages/cashier/refund/data';
 
 // Helper function to get JWT token
 const getAuthToken = () => {
@@ -145,7 +147,7 @@ export const getRefundsByCashier = createAsyncThunk(
   async ({ cashierId, page = 0, size = 10, sort = "id,desc", start, end, search }, { rejectWithValue }) => {
     try {
       const headers = getAuthHeaders();
-
+// console.log(start)
       // Build query params
       const params = new URLSearchParams();
       params.append("page", page);
@@ -154,6 +156,8 @@ export const getRefundsByCashier = createAsyncThunk(
       if (start) params.append("start", start);   // ISO string e.g. 2025-11-01T00:00:00
       if (end) params.append("end", end);
       if (search) params.append("search", search);
+       console.log(start)
+       console.log(end)
 
       const res = await api.get(`/api/refunds/cashier/${cashierId}?${params.toString()}`, { headers });
 
