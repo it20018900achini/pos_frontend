@@ -8,7 +8,8 @@ import { getTopCashiersByRevenue } from "@/Redux Toolkit/features/branchAnalytic
 
 const CashierPerformance = () => {
   const dispatch = useDispatch();
-  const branchId = useSelector((state) => state.branch.branch?.id);
+     const { branch } = useSelector((state) => state.branch);
+     const branchId = branch?.id;
   const { topCashiers, loading } = useSelector((state) => state.branchAnalytics);
 
   useEffect(() => {

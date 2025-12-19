@@ -17,6 +17,8 @@ import {
 } from "../pages/Branch Manager";
 import { BranchEmployees } from "../pages/Branch Manager/Employees";
 import Refunds from "../pages/Branch Manager/Refunds/Refunds";
+import SalesReport from "../pages/Branch Manager/Reports/SalesReport";
+import InventoryReport from "../pages/Branch Manager/Reports/InventoryReport";
 
 const BranchManagerRoutes = () => {
   return (
@@ -31,6 +33,8 @@ const BranchManagerRoutes = () => {
         <Route path="employees" element={<BranchEmployees />} />
         <Route path="customers" element={<Customers />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="reports/sales" element={<SalesReport />} />
+        <Route path="reports/inventory" element={<InventoryReport />} />
         <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>

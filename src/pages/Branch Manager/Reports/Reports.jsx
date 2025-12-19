@@ -19,7 +19,10 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 
 const Reports = () => {
   const dispatch = useDispatch();
-  const branchId = useSelector((state) => state.branch.branch?.id);
+ 
+   const { branch } = useSelector((state) => state.branch);
+   const branchId = branch?.id;
+ 
   const { dailySales, paymentBreakdown, categorySales, topCashiers } = useSelector((state) => state.branchAnalytics);
 
   // --- Date range state ---

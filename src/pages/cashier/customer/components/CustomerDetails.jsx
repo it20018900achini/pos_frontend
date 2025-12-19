@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, UserIcon, ArrowBigLeft } from "lucide-react";
+import { Loader2, UserIcon, ArrowLeft } from "lucide-react";
 
 import CustomerSummary from "./customerPayments/components/CustomerSummary";
 import CustomerOrdersPage from "../orders/CustomerOrdersPage";
@@ -8,13 +8,11 @@ import CustomerRefundsPage from "../refunds/CustomerRefundsPage";
 import CustomerPaymentsPage from "./customerPayments/components/CustomerPaymentsPage";
 import UpdateCustomerDialog from "./UpdateCustomerDialog";
 
-import {
-  useGetCustomerByIdQuery,
-} from "@/Redux Toolkit/features/customer/customerApi";
+import { useGetCustomerByIdQuery } from "@/Redux Toolkit/features/customer/customerApi";
 
-// Skeleton loader for tabs
+/* Skeleton */
 const TabSkeleton = () => (
-  <div className="space-y-4 animate-pulse p-4">
+  <div className="space-y-4 animate-pulse">
     <div className="h-6 w-1/3 bg-muted rounded" />
     <div className="h-6 w-1/4 bg-muted rounded" />
     <div className="h-40 w-full bg-muted rounded" />
@@ -27,57 +25,62 @@ const CustomerDetails = ({ customerId }) => {
   const [tab, setTab] = useState(0);
   const [tabLoading, setTabLoading] = useState(false);
 
-  const {
-    data: customer,
-    isLoading,
-    isFetching,
-  } = useGetCustomerByIdQuery(customerId, {
-    skip: !customerId,
-  });
+  const { data: customer, isLoading, isFetching } =
+    useGetCustomerByIdQuery(customerId, {
+      skip: !customerId,
+    });
 
-  // Handle tab change
-  const handleTabChange = (newTab) => {
+  const changeTab = (t) => {
     setTabLoading(true);
-    setTab(newTab);
+    setTab(t);
     setTimeout(() => setTabLoading(false), 200);
   };
 
-  // Empty state
+  /* Empty */
   if (!customerId) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+      <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
         <UserIcon size={48} />
-        <p className="mt-2">Select a customer</p>
+        <p className="mt-2 text-sm">Select a customer to view details</p>
       </div>
     );
   }
 
-  // Loading state
+  /* Loading */
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="animate-spin h-8 w-8" />
+      <div className="h-full flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
       </div>
     );
   }
 
   return (
-    <div className="p-4 flex flex-col space-y-4 h-full">
+    <div className="h-full flex flex-col gap-6 p-6 bg-muted/40">
 
-      {/* HEADER */}
-      <div className="md:flex justify-between items-start">
-        <div>
-          <h2 className="text-2xl font-bold">
-            {customer.fullName}
-            {isFetching && (
-              <Loader2 className="inline ml-2 h-4 w-4 animate-spin" />
-            )}
-          </h2>
-          <p className="text-muted-foreground">{customer.phone}</p>
-          <p className="text-muted-foreground">{customer.email}</p>
+      {/* HEADER CARD */}
+      <div className="relative overflow-hidden rounded-2xl border bg-white shadow-sm">
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-600 to-purple-600" />
+
+        <div className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              {customer.fullName}
+              {isFetching && (
+                <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
+              )}
+            </h2>
+            <p className="text-sm text-muted-foreground">{customer.phone}</p>
+            <p className="text-sm text-muted-foreground">{customer.email}</p>
+          </div>
+
+          <Button
+            onClick={() => setOpen(true)}
+            className="rounded-xl bg-indigo-600 hover:bg-indigo-700"
+          >
+            Edit Customer
+          </Button>
         </div>
-
-        <Button onClick={() => setOpen(true)}>Edit</Button>
       </div>
 
       {/* EDIT DIALOG */}
@@ -88,67 +91,59 @@ const CustomerDetails = ({ customerId }) => {
       />
 
       {/* TABS */}
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
         {tab !== 0 && (
           <Button
-            variant="secondary"
-            onClick={() => handleTabChange(0)}
+            size="icon"
+            variant="ghost"
+            onClick={() => changeTab(0)}
+            className="rounded-xl"
           >
-            <ArrowBigLeft />
+            <ArrowLeft />
           </Button>
         )}
 
-        <Button
-          onClick={() => handleTabChange(1)}
-          variant={tab === 1 ? "secondary" : "default"}
-        >
-          Orders
-        </Button>
-
-        <Button
-          onClick={() => handleTabChange(2)}
-          variant={tab === 2 ? "secondary" : "default"}
-        >
-          Refunds
-        </Button>
-
-        <Button
-          onClick={() => handleTabChange(3)}
-          variant={tab === 3 ? "secondary" : "default"}
-        >
-          Payments
-        </Button>
+        <div className="flex gap-1 bg-white border rounded-xl p-1 shadow-sm">
+          {["Overview", "Orders", "Refunds", "Payments"].map((label, index) => (
+            <button
+              key={label}
+              onClick={() => changeTab(index)}
+              className={`
+                px-4 py-2 text-sm font-medium rounded-lg transition-all
+                ${
+                  tab === index
+                    ? "bg-indigo-600 text-white shadow"
+                    : "text-muted-foreground hover:bg-muted"
+                }
+              `}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* TAB CONTENT (YOUR SECTION ✅) */}
-      <div className="flex-1 overflow-y-auto shadow-inner p-2 rounded-md bg-card">
-        {tab === 0 &&
-          (tabLoading ? (
-            <TabSkeleton />
-          ) : (
-            customer&&<CustomerSummary customerId={customer.id} customer={customer} />
-          ))}
+      {/* CONTENT */}
+      <div className="flex-1 overflow-hidden rounded-2xl border bg-white shadow-inner">
+        <div className="h-full overflow-y-auto p-4">
+          {tabLoading && <TabSkeleton />}
 
-        {tab === 1 &&
-          (tabLoading ? (
-            <TabSkeleton />
-          ) : (
+          {!tabLoading && tab === 0 && (
+            <CustomerSummary customerId={customer.id} customer={customer} />
+          )}
+
+          {!tabLoading && tab === 1 && (
             <CustomerOrdersPage customerId={customer.id} />
-          ))}
+          )}
 
-        {tab === 2 &&
-          (tabLoading ? (
-            <TabSkeleton />
-          ) : (
+          {!tabLoading && tab === 2 && (
             <CustomerRefundsPage customerId={customer.id} />
-          ))}
+          )}
 
-        {tab === 3 &&
-          (tabLoading ? (
-            <TabSkeleton />
-          ) : (
+          {!tabLoading && tab === 3 && (
             <CustomerPaymentsPage customer={customer} />
-          ))}
+          )}
+        </div>
       </div>
     </div>
   );

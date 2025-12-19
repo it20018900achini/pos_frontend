@@ -29,6 +29,7 @@ import customerSummaryReducer from "./features/customerSummary/customerSummarySl
 import customerOrderReducer from "./features/customer/customerOrders/customerOrderSlice.js";
 import customerRefundReducer from "./features/customer/customerRefunds/customerRefundSlice.js";
 import transactionsReducer from "./features/transactions/transactionsSlice.js";
+import shiftReducer from "./features/shift/shiftSlice";
 
 // ✅ RTK Query API
 import { apiSlice } from "./api/apiSlice.js"; // base apiSlice
@@ -65,7 +66,7 @@ const globleState = configureStore({
     customerOrder: customerOrderReducer,
     customerRefund: customerRefundReducer,
     transactions: transactionsReducer,
-
+shift: shiftReducer,
     // ✅ RTK Query reducers (only apiSlice, orderApi injected here)
     [apiSlice.reducerPath]: apiSlice.reducer,
   },
