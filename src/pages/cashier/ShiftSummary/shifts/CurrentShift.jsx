@@ -1,38 +1,66 @@
-// src/components/shifts/CurrentShift.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { endShift, fetchCurrentShift } from "../../../../Redux Toolkit/features/shift/shiftSlice";
+import {
+  endShift,
+  fetchCurrentShift,
+} from "../../../../Redux Toolkit/features/shift/shiftSlice";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 const CurrentShift = () => {
   const dispatch = useDispatch();
-  const { currentShift } = useSelector((state) => state.shift);
+  const { currentShift, loading } = useSelector((state) => state.shift);
 
-  const handleEndShift = () => {
+  // ✅ FETCH CURRENT SHIFT ON LOAD
+  useEffect(() => {
+    dispatch(fetchCurrentShift());
+  }, [dispatch]);
+
+  const handleEndShift = async () => {
     const cash = prompt("Enter actual cash at end of shift:");
-    if (cash) {
-      dispatch(endShift({ actualCash: parseFloat(cash) }))
-        .unwrap()
-        .then(() => dispatch(fetchCurrentShift()));
-    }
+    if (!cash || isNaN(cash)) return;
+
+    await dispatch(endShift({ actualCash: Number(cash) })).unwrap();
+    dispatch(fetchCurrentShift()); // refresh
   };
 
-  if (!currentShift) return <p>No open shift</p>;
+  // ✅ Loading state
+  if (loading) {
+    return (
+      <div className="p-4 flex items-center gap-2">
+        <Loader2 className="animate-spin" />
+        Loading current shift...
+      </div>
+    );
+  }
+
+  // ✅ No shift state
+  if (!currentShift) {
+    return (
+      <div className="p-4 border rounded text-muted-foreground">
+        No open shift
+      </div>
+    );
+  }
 
   return (
-    <div className="mb-4 p-4 border border-gray-300 rounded">
-      <h2 className="text-xl font-bold">Current Shift</h2>
+    <div className="mb-4 p-4 ">
+      <h2 className="text-xl font-bold mb-2">Current Shift</h2>
+
       <p>
-        <strong>Start:</strong> {new Date(currentShift.shiftStart).toLocaleString()}
+        <strong>Start:</strong>{" "}
+        {new Date(currentShift.shiftStart).toLocaleString()}
       </p>
+
+      <p>
+        <strong>Opening Cash:</strong> {currentShift.openingCash}
+      </p>
+
       <p>
         <strong>Expected Cash:</strong> {currentShift.expectedCash}
       </p>
-      <button
-        onClick={handleEndShift}
-        className="mt-2 px-3 py-1 bg-red-500 text-white rounded"
-      >
-        End Shift
-      </button>
+
+      
     </div>
   );
 };

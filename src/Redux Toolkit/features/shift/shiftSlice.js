@@ -1,44 +1,41 @@
-// src/redux/features/shift/shiftSlice.js
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, isPending, isRejected } from "@reduxjs/toolkit";
 import api from "@/utils/api";
 
-// ------------------- Helpers -------------------
+/* =========================
+   Helpers
+========================= */
 
-// Get JWT token from localStorage
-const getAuthToken = () => {
-  const token = localStorage.getItem("jwt");
-  if (!token) throw new Error("No JWT token found");
-  return token;
-};
-
-// Prepare headers with JWT
-const getAuthHeaders = () => ({
-  "Authorization": `Bearer ${getAuthToken()}`,
-  "Content-Type": "application/json",
+const authConfig = () => ({
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+    "Content-Type": "application/json",
+  },
 });
 
-// ------------------- Thunks -------------------
+/* =========================
+   Thunks
+========================= */
 
 // Fetch all shifts
 export const fetchShifts = createAsyncThunk(
-  "shift/fetchShifts",
+  "shift/fetchAll",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/api/shifts", { headers: getAuthHeaders() });
-      return response.data;
+      const { data } = await api.get("/api/shifts", authConfig());
+      return data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message);
     }
   }
 );
 
-// Fetch current open shift
+// Fetch current shift
 export const fetchCurrentShift = createAsyncThunk(
-  "shift/fetchCurrentShift",
+  "shift/fetchCurrent",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/api/shifts/current", { headers: getAuthHeaders() });
-      return response.data;
+      const { data } = await api.get("/api/shifts/current", authConfig());
+      return data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message);
     }
@@ -47,52 +44,54 @@ export const fetchCurrentShift = createAsyncThunk(
 
 // Fetch shift by ID
 export const fetchShiftById = createAsyncThunk(
-  "shift/fetchShiftById",
+  "shift/fetchById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/api/shifts/${id}`, { headers: getAuthHeaders() });
-      return response.data;
+      const { data } = await api.get(`/api/shifts/${id}`, authConfig());
+      return data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message);
     }
   }
 );
 
-// Start a shift
+// Start shift
 export const startShift = createAsyncThunk(
-  "shift/startShift",
+  "shift/start",
   async ({ branchId, openingCash }, { rejectWithValue }) => {
     try {
-      const response = await api.post(
+      const { data } = await api.post(
         "/api/shifts/start",
-        null, // No body needed for @RequestParam
-        { params: { branchId, openingCash }, headers: getAuthHeaders() }
+        null,
+        { ...authConfig(), params: { branchId, openingCash } }
       );
-      return response.data;
+      return data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message);
     }
   }
 );
 
-// End a shift
+// End shift
 export const endShift = createAsyncThunk(
-  "shift/endShift",
+  "shift/end",
   async ({ actualCash }, { rejectWithValue }) => {
     try {
-      const response = await api.post(
+      const { data } = await api.post(
         "/api/shifts/end",
-        null, // No body needed
-        { params: { actualCash }, headers: getAuthHeaders() }
+        null,
+        { ...authConfig(), params: { actualCash } }
       );
-      return response.data;
+      return data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message);
     }
   }
 );
 
-// ------------------- Slice -------------------
+/* =========================
+   Slice
+========================= */
 
 const initialState = {
   shifts: [],
@@ -112,42 +111,52 @@ const shiftSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch all shifts
-      .addCase(fetchShifts.pending, (state) => { state.loading = true; state.error = null; })
+
+      // Fetch all
       .addCase(fetchShifts.fulfilled, (state, action) => {
         state.loading = false;
         state.shifts = Array.isArray(action.payload) ? action.payload : [];
       })
-      .addCase(fetchShifts.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
 
-      // Fetch current shift
-      .addCase(fetchCurrentShift.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(fetchCurrentShift.fulfilled, (state, action) => { state.loading = false; state.currentShift = action.payload; })
-      .addCase(fetchCurrentShift.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
+      // Fetch current
+      .addCase(fetchCurrentShift.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentShift = action.payload;
+      })
 
-      // Fetch shift by ID
-      .addCase(fetchShiftById.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(fetchShiftById.fulfilled, (state, action) => { state.loading = false; state.selectedShift = action.payload; })
-      .addCase(fetchShiftById.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
+      // Fetch by ID
+      .addCase(fetchShiftById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedShift = action.payload;
+      })
 
       // Start shift
-      .addCase(startShift.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(startShift.fulfilled, (state, action) => {
         state.loading = false;
         state.currentShift = action.payload;
-        state.shifts.push(action.payload);
+        state.shifts.unshift(action.payload);
       })
-      .addCase(startShift.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
 
       // End shift
-      .addCase(endShift.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(endShift.fulfilled, (state, action) => {
         state.loading = false;
         state.currentShift = null;
-        const index = state.shifts.findIndex(s => s.id === action.payload.id);
-        if (index !== -1) state.shifts[index] = action.payload;
+
+        const idx = state.shifts.findIndex(s => s.id === action.payload.id);
+        if (idx !== -1) state.shifts[idx] = action.payload;
       })
-      .addCase(endShift.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
+
+      // 🔥 Global loading handler
+      .addMatcher(isPending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      // 🔥 Global error handler
+      .addMatcher(isRejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

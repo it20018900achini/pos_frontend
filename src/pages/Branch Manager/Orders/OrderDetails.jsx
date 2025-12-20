@@ -53,8 +53,8 @@ const OrderDetails = ({ selectedOrder }) => {
       </div>
       <Card className={"mb-2"}>
 <div className="flex w-full px-4">
-  <span className="w-full">CASH: LKR{selectedOrder?.cash?.toFixed(2)}</span>
-  <span className="w-full">CREDIT: LKR{selectedOrder?.credit?.toFixed(2)}</span>
+  <span className="w-full">CASH: <br/>LKR{selectedOrder?.cash?.toFixed(2)}</span>
+  <span className="w-full">CREDIT: <br/>LKR{selectedOrder?.credit?.toFixed(2)}</span>
 </div></Card>
        <Card>
         <CardContent className="p-4">
@@ -72,7 +72,7 @@ const OrderDetails = ({ selectedOrder }) => {
             
             
           
-            Return
+            Refund
           </Button>:<span className="text-red-500">All Refunded</span>}
 
           

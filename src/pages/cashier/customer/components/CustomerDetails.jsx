@@ -59,7 +59,7 @@ const CustomerDetails = ({ customerId }) => {
     <div className="h-full flex flex-col gap-6 p-6 bg-muted/40">
 
       {/* HEADER CARD */}
-      <div className="relative overflow-hidden rounded-2xl border bg-white shadow-sm">
+      <div className="relative  rounded-2xl border bg-white shadow-sm">
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-600 to-purple-600" />
 
         <div className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -124,8 +124,8 @@ const CustomerDetails = ({ customerId }) => {
       </div>
 
       {/* CONTENT */}
-      <div className="flex-1 overflow-hidden rounded-2xl border bg-white shadow-inner">
-        <div className="h-full overflow-y-auto p-4">
+      <div className="flex-1  rounded-2xl border bg-white shadow-inner">
+        <div className="h-full p-4">
           {tabLoading && <TabSkeleton />}
 
           {!tabLoading && tab === 0 && (

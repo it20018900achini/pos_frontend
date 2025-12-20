@@ -22,7 +22,7 @@ const ShiftList = ({ onSelect }) => {
         <thead>
           <tr>
             <th>ID</th>
-            <th>Cashier</th>
+            {/* <th>Cashier</th> */}
             <th>Start</th>
             <th>End</th>
             <th>Status</th>
@@ -33,7 +33,7 @@ const ShiftList = ({ onSelect }) => {
           {shifts.map((shift) => (
             <tr key={shift.id} className="text-center border-t border-gray-200">
               <td>{shift.id}</td>
-              <td>{shift.cashier?.fullName || "N/A"}</td>
+              {/* <td>{JSON.stringify(shift)}</td> */}
               <td>{new Date(shift.shiftStart).toLocaleString()}</td>
               <td>{shift.shiftEnd ? new Date(shift.shiftEnd).toLocaleString() : "-"}</td>
               <td>{shift.status}</td>

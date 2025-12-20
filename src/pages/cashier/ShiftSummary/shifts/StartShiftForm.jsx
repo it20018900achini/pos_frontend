@@ -1,43 +1,116 @@
-// src/components/shifts/StartShiftForm.jsx
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { startShift, fetchShifts } from "../../../../Redux Toolkit/features/shift/shiftSlice";
 
-const StartShiftForm = () => {
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
+
+const StartShiftForm = ({ open, onClose }) => {
   const dispatch = useDispatch();
+  const { toast } = useToast();
+
   const [branchId, setBranchId] = useState("");
   const [openingCash, setOpeningCash] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(startShift({ branchId: parseInt(branchId), openingCash: parseFloat(openingCash) }))
-      .unwrap()
-      .then(() => dispatch(fetchShifts()));
+
+    if (!branchId || !openingCash) {
+      toast({
+        title: "Missing fields",
+        description: "Branch ID and Opening Cash are required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await dispatch(
+        startShift({
+          branchId: Number(branchId),
+          openingCash: Number(openingCash),
+        })
+      ).unwrap();
+
+      dispatch(fetchShifts());
+
+      toast({
+        title: "Shift Started",
+        description: "New shift opened successfully",
+      });
+
+      onClose();
+      setBranchId("");
+      setOpeningCash("");
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err || "Failed to start shift",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4 p-4 border border-gray-300 rounded">
-      <h2 className="text-xl font-bold mb-2">Start New Shift</h2>
-      <div className="mb-2">
-        <label className="mr-2">Branch ID:</label>
-        <input
-          type="number"
-          value={branchId}
-          onChange={(e) => setBranchId(e.target.value)}
-          className="border p-1"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="mr-2">Opening Cash:</label>
-        <input
-          type="number"
-          value={openingCash}
-          onChange={(e) => setOpeningCash(e.target.value)}
-          className="border p-1"
-        />
-      </div>
-      <button type="submit" className="px-3 py-1 bg-green-500 text-white rounded">Start Shift</button>
-    </form>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[420px]">
+        <DialogHeader>
+          <DialogTitle>Start New Shift</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1">
+            <Label>Branch ID</Label>
+            <Input
+              type="number"
+              value={branchId}
+              onChange={(e) => setBranchId(e.target.value)}
+              placeholder="Enter branch ID"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <Label>Opening Cash</Label>
+            <Input
+              type="number"
+              value={openingCash}
+              onChange={(e) => setOpeningCash(e.target.value)}
+              placeholder="Enter opening cash"
+            />
+          </div>
+
+          <DialogFooter className="pt-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+
+            <Button type="submit" disabled={loading}>
+              {loading ? "Starting..." : "Start Shift"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 
