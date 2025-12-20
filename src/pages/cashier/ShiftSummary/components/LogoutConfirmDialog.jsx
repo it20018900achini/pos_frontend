@@ -7,7 +7,7 @@ const LogoutConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>End Shift & Logout</DialogTitle>
+          <DialogTitle> Logout</DialogTitle>
         </DialogHeader>
         
         <div className="py-4">
@@ -18,7 +18,7 @@ const LogoutConfirmDialog = ({ isOpen, onClose, onConfirm }) => {
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button variant="destructive" onClick={onConfirm}>
-            End Shift & Logout
+             Logout
           </Button>
         </DialogFooter>
       </DialogContent>

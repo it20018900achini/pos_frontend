@@ -31,7 +31,7 @@ const ShiftSummaryPage = () => {
       />
     </div>
       
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-6 mt-3">
         <ShiftList onSelect={setSelectedShiftId} />
         <ShiftDetails shiftId={selectedShiftId} />
       </div></div>

@@ -16,7 +16,7 @@ const ShiftHeader = ({ onPrintClick, onEndShiftClick }) => {
           </Button>
           <Button variant="destructive" onClick={onEndShiftClick}>
             <ArrowRightIcon className="h-4 w-4 mr-2" />
-            End Shift & Logout
+             Logout
           </Button>
         </div>
       </div>
