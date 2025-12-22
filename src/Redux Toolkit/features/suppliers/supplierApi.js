@@ -1,5 +1,5 @@
 // src/Redux Toolkit/features/supplier/supplierApi.js
-import api, { getAuthHeaders } from '@/utils/api';
+import api, { getAuthHeaders } from '@/utils/api2';
 
 export const fetchSuppliers = async ({ page = 0, size = 10, search = '' }) => {
   const response = await api.get('/api/suppliers', {

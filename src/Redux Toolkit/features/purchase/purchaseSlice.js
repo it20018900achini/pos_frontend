@@ -1,4 +1,3 @@
-// src/Redux Toolkit/features/purchase/purchaseSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as api from './purchaseApi';
 
@@ -24,27 +23,45 @@ export const addPurchase = createAsyncThunk(
   }
 );
 
+const initialState = {
+  purchases: [],
+  total: 0,
+  loading: false,
+  error: null,
+};
+
 export const purchaseSlice = createSlice({
   name: 'purchase',
-  initialState: {
-    purchases: [],
-    total: 0,
-    loading: false,
-    error: null,
-  },
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(getPurchases.pending, (state) => { state.loading = true; state.error = null; })
+      .addCase(getPurchases.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(getPurchases.fulfilled, (state, action) => {
         state.loading = false;
         state.purchases = action.payload.content;
         state.total = action.payload.totalElements;
       })
-      .addCase(getPurchases.rejected, (state, action) => { state.loading = false; state.error = action.payload; })
-      .addCase(addPurchase.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(addPurchase.fulfilled, (state, action) => { state.loading = false; state.purchases.unshift(action.payload); })
-      .addCase(addPurchase.rejected, (state, action) => { state.loading = false; state.error = action.payload; });
+      .addCase(getPurchases.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(addPurchase.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addPurchase.fulfilled, (state, action) => {
+        state.loading = false;
+        state.purchases.unshift(action.payload);
+        state.total += 1;
+      })
+      .addCase(addPurchase.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

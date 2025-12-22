@@ -1,10 +1,9 @@
-// src/Redux Toolkit/features/purchase/purchaseApi.js
-import api, { getAuthHeaders } from '@/utils/api';
+import api, { getAuthHeaders } from '@/utils/api2';
 
 export const fetchPurchases = async ({ page = 0, size = 10, search = '', from, to }) => {
-  const response = await api.get('/api/purchases', {
+  const response = await api.get('/api/purchases/search', {
     headers: getAuthHeaders(),
-    params: { page, size, search, from, to },
+    params: { page, size, supplierKeyword: search, startDate: from, endDate: to },
   });
   return response.data;
 };
