@@ -52,7 +52,7 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
 
     if (!cleanItems.length) return alert("Please add at least one product");
 
-    dispatch(addPurchase({ supplierId, items: cleanItems }));
+    dispatch(addPurchase({ supplierId,branchId:52, items: cleanItems }));
     onClose();
   };
 

@@ -38,6 +38,7 @@ import supplierReducer from "./features/suppliers/supplierSlice.js";
 // ✅ RTK Query API
 import { apiSlice } from "./api/apiSlice.js"; // base apiSlice
 // import { orderApi } from "./features/order/orderApi.js"; // injected endpoints
+import { payrollApi } from "./features/payroll/payrollApi";
 
 // ✅ Configure store
 const globleState = configureStore({
@@ -74,6 +75,7 @@ const globleState = configureStore({
 
     purchase: purchaseReducer,   
     supplier: supplierReducer,   
+    [payrollApi.reducerPath]: payrollApi.reducer,
     // ✅ RTK Query reducers (only apiSlice, orderApi injected here)
     [apiSlice.reducerPath]: apiSlice.reducer,
   },
