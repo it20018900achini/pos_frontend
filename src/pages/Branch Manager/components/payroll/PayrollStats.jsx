@@ -1,32 +1,23 @@
 import { useState } from "react";
 import { useGetPayrollStatsByBranchQuery } from "@/Redux Toolkit/features/payroll/payrollApi";
 
-const months = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December"
-];
+export default function PayrollStats({ branchId, renderChart }) {
+  const [year, setYear] = useState(new Date().getFullYear());
+  const [month, setMonth] = useState(new Date().getMonth() + 1);
 
-// LKR currency formatter
-const formatLKR = (value) =>
-  new Intl.NumberFormat("en-LK", {
-    style: "currency",
-    currency: "LKR",
-  }).format(value || 0);
+  const { data, isLoading } = useGetPayrollStatsByBranchQuery({
+    branchId,
+    year,
+    month,
+  });
 
-export default function PayrollStats({ branchId = 52 }) {
-  const now = new Date();
-
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
-
-  const { data, isLoading } =
-    useGetPayrollStatsByBranchQuery({ branchId, year, month });
+  if (isLoading) return <p>Loading payroll stats...</p>;
+  if (!data) return <p>No data available</p>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Filters */}
-      <div className="flex gap-4">
-        {/* Year */}
+      <div className="flex gap-4 mb-4">
         <select
           value={year}
           onChange={(e) => setYear(Number(e.target.value))}
@@ -39,13 +30,15 @@ export default function PayrollStats({ branchId = 52 }) {
           ))}
         </select>
 
-        {/* Month */}
         <select
           value={month}
           onChange={(e) => setMonth(Number(e.target.value))}
           className="border p-2 rounded"
         >
-          {months.map((name, index) => (
+          {[
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+          ].map((name, index) => (
             <option key={index} value={index + 1}>
               {name}
             </option>
@@ -53,21 +46,20 @@ export default function PayrollStats({ branchId = 52 }) {
         </select>
       </div>
 
-      {/* Loading */}
-      {isLoading && <p>Loading payroll stats...</p>}
+      {/* Stats Table */}
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div>Total Employees: {data.totalEmployees}</div>
+        <div>Paid: {data.paidCount}</div>
+        <div>Pending: {data.pendingCount}</div>
+        <div>Gross Salary: {data.totalGrossSalary}</div>
+        <div>Deductions: {data.totalDeductions}</div>
+        <div>Net Salary: {data.totalNetSalary}</div>
+      </div>
 
-      {/* Stats */}
-      {data && (
-        <div className="grid grid-cols-3 gap-4">
-          <div>Total Employees: <b>{data.totalEmployees}</b></div>
-          <div>Paid: <b>{data.paidCount}</b></div>
-          <div>Pending: <b>{data.pendingCount}</b></div>
+      {/* Render chart if provided */}
+      {renderChart && renderChart(data)}
 
-          <div>Gross Salary: <b>{formatLKR(data.totalGrossSalary)}</b></div>
-          <div>Deductions: <b>{formatLKR(data.totalDeductions)}</b></div>
-          <div>Net Salary: <b>{formatLKR(data.totalNetSalary)}</b></div>
-        </div>
-      )}
+      
     </div>
   );
 }

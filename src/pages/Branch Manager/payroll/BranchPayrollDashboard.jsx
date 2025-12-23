@@ -1,124 +1,184 @@
+"use client";
+
 import { useState } from "react";
 import { useSelector } from "react-redux";
 
-import SalaryForm from "@/components/payroll/SalaryForm";
-import PayrollForm from "@/components/payroll/PayrollForm";
-import PayrollStats from "@/components/payroll/PayrollStats";
-
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-// Optional: Chart library
+import SalaryForm from "../components/payroll/SalaryForm";
+import PayrollForm from "../components/payroll/PayrollForm";
+import PayrollStats from "../components/payroll/PayrollStats";
+import PayrollTable from "../components/payroll/PayrollTable";
+
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import SalaryPayrollModal from "../components/payroll/SalaryPayrollModal";
+import SalaryPayrollDialog from "../components/payroll/SalaryPayrollDialog";
 
 export default function BranchPayrollDashboard() {
   const { branch } = useSelector((state) => state.branch);
   const branchId = branch?.id;
 
-  // Share employeeId between forms
-  const [employeeId, setEmployeeId] = useState("");
-
-  // Track stats data to use in chart
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
   const [statsKey, setStatsKey] = useState(0);
+  const [tableKey, setTableKey] = useState(0);
+  const [modalOpen, setModalOpen] = useState(false);
 
-  // Callback after payroll is generated to refresh stats
-  const handlePayrollGenerated = () => {
-    setStatsKey((prev) => prev + 1); // Forces re-render & refetch
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+  const [year, setYear] = useState(currentYear);
+  const [month, setMonth] = useState(currentMonth);
+
+  const refreshData = () => {
+    setStatsKey((prev) => prev + 1);
+    setTableKey((prev) => prev + 1);
+  };
+
+  // Open modal automatically when an employee is selected from table
+  const handleSelectEmployee = (employeeId) => {
+    setSelectedEmployeeId(employeeId);
+    setModalOpen(true);
   };
 
   return (
     <div className="space-y-6 p-6">
       <h1 className="text-2xl font-bold">Branch Payroll Dashboard</h1>
+<SalaryPayrollDialog/>
+      {/* Year/Month Filter */}
+      <div className="flex gap-4 mb-4">
+        <div>
+          <label className="block text-sm font-medium">Year</label>
+          <select
+            className="border p-1 rounded"
+            value={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+          >
+            {[currentYear - 1, currentYear, currentYear + 1].map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium">Month</label>
+          <select
+            className="border p-1 rounded"
+            value={month}
+            onChange={(e) => setMonth(Number(e.target.value))}
+          >
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+<SalaryPayrollModal
+  employeeId={selectedEmployeeId} // from table or parent state
+  setEmployeeId={setSelectedEmployeeId} // sync back to parent
+  year={year}
+  month={month}
+  onCompleted={() => {
+    refreshData();
+    // refreshTable();
+  }}
+/>
+      {/* Open Modal Button */}
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogTrigger asChild>
+          <Button >Salary & Generate Payroll</Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[1000px] h-screen overflow-auto space-y-4">
+          <DialogHeader>
+            <DialogTitle>Salary & Payroll</DialogTitle>
+          </DialogHeader>
 
-      {/* Salary Form */}
-      <Card>
-        <CardContent>
-          <h2 className="text-xl font-semibold mb-2">
-            Add / Edit Employee Salary
-          </h2>
+          {/* Salary Form */}
           <SalaryForm
-            employeeId={employeeId}
-            setEmployeeId={setEmployeeId}
+            employeeId={selectedEmployeeId}
+            setEmployeeId={setSelectedEmployeeId}
           />
-        </CardContent>
-      </Card>
 
-      {/* Payroll Form */}
-      <Card>
-        <CardContent>
-          <h2 className="text-xl font-semibold mb-2">
-            Generate Payroll
-          </h2>
-
-          {branchId ? (
+          {/* Payroll Form */}
+          {selectedEmployeeId && (
             <PayrollForm
-              employeeId={employeeId}
-              onPayrollGenerated={handlePayrollGenerated}
+              employeeId={selectedEmployeeId}
+              year={year}
+              month={month}
+              onPayrollGenerated={() => {
+                refreshData();
+                setModalOpen(false); // Close modal after payroll generation
+              }}
             />
-          ) : (
-            <p className="text-sm text-gray-500">
-              Load branch info to enable payroll
-            </p>
           )}
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
 
       {/* Payroll Stats */}
-      <Card>
-        <CardContent>
-          <h2 className="text-xl font-semibold mb-2">
-            Branch Payroll Stats
-          </h2>
-
-          {branchId ? (
-            <PayrollStats
-              key={statsKey} // Forces re-fetch after payroll generation
-              branchId={branchId}
-            />
-          ) : (
-            <p className="text-sm text-gray-500">
-              Loading branch information...
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Optional: Pie Chart for Paid vs Pending */}
       {branchId && (
         <Card>
           <CardContent>
-            <h2 className="text-xl font-semibold mb-2">
-              Monthly Payroll Summary
-            </h2>
+            <h2 className="text-xl font-semibold mb-2">Branch Payroll Stats</h2>
             <PayrollStats
-              key={`chart-${statsKey}`}
+              key={statsKey}
               branchId={branchId}
+              year={year}
+              month={month}
               renderChart={(data) => {
+                if (!data) return <p>No data</p>;
                 const chartData = [
                   { name: "Paid", value: data.paidCount },
                   { name: "Pending", value: data.pendingCount },
                 ];
-                const COLORS = ["#4ade80", "#f87171"]; // green / red
+                const COLORS = ["#4ade80", "#f87171"];
+
                 return (
-                  <PieChart width={300} height={200}>
-                    <Pie
-                      data={chartData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={60}
-                      fill="#8884d8"
-                      label
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
+                  <div className="flex items-center gap-6">
+                    <PieChart width={200} height={200}>
+                      <Pie
+                        data={chartData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={60}
+                        label
+                      >
+                        {chartData.map((entry, index) => (
+                          <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>Total Employees: {data.totalEmployees}</div>
+                      <div>Paid: {data.paidCount}</div>
+                      <div>Pending: {data.pendingCount}</div>
+                      <div>Gross Salary: {data.totalGrossSalary}</div>
+                      <div>Deductions: {data.totalDeductions}</div>
+                      <div>Net Salary: {data.totalNetSalary}</div>
+                    </div>
+                  </div>
                 );
               }}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Payroll Table */}
+      {branchId && (
+        <Card>
+          <CardContent>
+            <h2 className="text-xl font-semibold mb-2">Payroll Records</h2>
+            <PayrollTable
+              key={tableKey}
+              branchId={branchId}
+              year={year}
+              month={month}
+              onSelectEmployee={handleSelectEmployee} // auto-fill modal
+              onActionComplete={refreshData}
             />
           </CardContent>
         </Card>
