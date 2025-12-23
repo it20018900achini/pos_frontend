@@ -36,10 +36,20 @@ export const payrollApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Payroll"],
     }),
+
+
+    getPayrollStatsByBranch: builder.query({
+      query: ({ branchId, year, month }) => ({
+        url: `/payrolls/branch/${branchId}/stats`,
+        params: { year, month },
+      }),
+    }),
+
   }),
 });
 
 export const {
+  useGetPayrollStatsByBranchQuery,
   useGetBranchPayrollsQuery,
   useGeneratePayrollMutation,
   useApprovePayrollMutation,

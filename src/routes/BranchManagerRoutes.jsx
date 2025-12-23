@@ -47,7 +47,7 @@ const BranchManagerRoutes = () => {
     <Route path="/payroll/details/:payrollId" element={<PayrollDetails />} />
     <Route path="/payroll/config" element={<PayrollAdmin />} /> */}
 
-      <Route path="/payroll/:branchId" element={<PayrollPage />} />
+      <Route path="/payroll" element={<PayrollPage />} />
       <Route path="/salary/:branchId" element={<SalaryPage />} />
 
         <Route path="orders" element={<Orders />} />

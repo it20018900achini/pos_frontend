@@ -25,7 +25,7 @@ const navLinks = [
   { name: "Refunds", path: "/branch/refunds", icon: RefreshCw },
   { name: "Transactions", path: "/branch/transactions", icon: CreditCard },
   { name: "Inventory", path: "/branch/inventory", icon: Package },
-  { name: "Payroll", path: "/branch/payroll/generate", icon: Users },
+  { name: "Payroll", path: "/branch/payroll", icon: Users },
   { name: "Employees", path: "/branch/employees", icon: Users },
   { name: "Customers", path: "/branch/customers", icon: UserCircle },
 
