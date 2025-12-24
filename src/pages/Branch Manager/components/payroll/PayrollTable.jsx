@@ -8,14 +8,14 @@ import {
   useGetBranchPayrollsQuery,
   useApprovePayrollMutation,
   useMarkPayrollPaidMutation,
-  useCancelPayrollMutation, // <-- new mutation
+  // useCancelPayrollMutation, // <-- new mutation
 } from "@/Redux Toolkit/features/payroll/payrollApi";
 
 export default function PayrollTable({ branchId, year, month, onSelectEmployee, onActionComplete }) {
   const { data: payrolls, isLoading, error } = useGetBranchPayrollsQuery({ branchId, year, month });
   const [approvePayroll] = useApprovePayrollMutation();
   const [markPaid] = useMarkPayrollPaidMutation();
-  const [cancelPayroll] = useCancelPayrollMutation();
+  // const [cancelPayroll] = useCancelPayrollMutation();
 
   if (isLoading) return <p>Loading payrolls...</p>;
   if (error) return <p>Error loading payrolls</p>;
@@ -32,7 +32,7 @@ export default function PayrollTable({ branchId, year, month, onSelectEmployee, 
   };
 
   const handleCancel = async (id) => {
-    await cancelPayroll(id);
+    // await cancelPayroll(id);
     onActionComplete?.();
   };
 
@@ -81,9 +81,9 @@ export default function PayrollTable({ branchId, year, month, onSelectEmployee, 
               {p.status === "APPROVED" && (
                 <Button size="sm" onClick={() => handleMarkPaid(p.id)}>Mark Paid</Button>
               )}
-              {(p.status === "DRAFT" || p.status === "APPROVED" || p.status === "PENDING") && (
+              {/* {(p.status === "DRAFT" || p.status === "APPROVED" || p.status === "PENDING") && (
                 <Button size="sm" variant="destructive" onClick={() => handleCancel(p.id)}>Cancel</Button>
-              )}
+              )} */}
             </td>
           </tr>
         ))}
