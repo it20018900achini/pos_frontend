@@ -23,6 +23,7 @@ const navLinks = [
   { name: "Suppliers", path: "/branch/suppliers", icon: ShoppingBag },
   { name: "Orders", path: "/branch/orders", icon: ShoppingBag },
   { name: "Refunds", path: "/branch/refunds", icon: RefreshCw },
+  { name: "Quotation", path: "/branch/quotations", icon: RefreshCw },
   { name: "Transactions", path: "/branch/transactions", icon: CreditCard },
   { name: "Inventory", path: "/branch/inventory", icon: Package },
   { name: "Payroll", path: "/branch/payroll", icon: Users },
