@@ -5,25 +5,31 @@ import { logout } from "@/Redux Toolkit/features/user/userThunks";
 import {
   LayoutDashboard,
   ShoppingBag,
+  Users,
   CreditCard,
   Package,
-  Users,
   UserCircle,
   FileText,
   Settings,
   LogOut,
   RefreshCw,
   ChevronDown,
+  BarChart2,
+  Activity,
+  Archive,
+  Calendar,
+  Clipboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navLinks = [
   { name: "Dashboard", path: "/branch/dashboard", icon: LayoutDashboard },
   { name: "Purchases", path: "/branch/purchases", icon: ShoppingBag },
-  { name: "Suppliers", path: "/branch/suppliers", icon: ShoppingBag },
+  { name: "Suppliers", path: "/branch/suppliers", icon: Users },
   { name: "Orders", path: "/branch/orders", icon: ShoppingBag },
   { name: "Refunds", path: "/branch/refunds", icon: RefreshCw },
-  { name: "Quotation", path: "/branch/quotations", icon: RefreshCw },
+  { name: "Cheques", path: "/branch/cheques", icon: Calendar },
+  { name: "Quotation", path: "/branch/quotations", icon: Clipboard },
   { name: "Transactions", path: "/branch/transactions", icon: CreditCard },
   { name: "Inventory", path: "/branch/inventory", icon: Package },
   { name: "Payroll", path: "/branch/payroll", icon: Users },
@@ -32,14 +38,13 @@ const navLinks = [
   { name: "Employees", path: "/branch/employees", icon: Users },
   { name: "Customers", path: "/branch/customers", icon: UserCircle },
 
-  // ✅ REPORTS WITH SUB MENU
   {
     name: "Reports",
     icon: FileText,
     children: [
-      { name: "Summary", path: "/branch/reports" },
-      { name: "Sales Report", path: "/branch/reports/sales" },
-      { name: "Inventory Report", path: "/branch/reports/inventory" },
+      { name: "Summary", path: "/branch/reports", icon: BarChart2 },
+      { name: "Sales Report", path: "/branch/reports/sales", icon: Activity },
+      { name: "Inventory Report", path: "/branch/reports/inventory", icon: Archive },
     ],
   },
 
@@ -65,7 +70,6 @@ export default function BranchManagerSidebar() {
 
   return (
     <aside className="w-64 h-full flex flex-col bg-white dark:bg-[#0B1221] shadow-xl">
-
       {/* BRAND */}
       <div className="flex flex-col items-center py-6 border-b border-indigo-100 dark:border-indigo-900">
         <Package className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
@@ -91,15 +95,11 @@ export default function BranchManagerSidebar() {
               <div key={link.name}>
                 <button
                   onClick={() => setOpenReport((p) => !p)}
-                  className={`
-                    w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium
-                    transition-all
-                    ${
-                      isReportActive
-                        ? "bg-indigo-600 text-white shadow-md"
-                        : "hover:bg-indigo-100 dark:hover:bg-indigo-900/40"
-                    }
-                  `}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                    isReportActive
+                      ? "bg-indigo-600 text-white shadow-md"
+                      : "hover:bg-indigo-100 dark:hover:bg-indigo-900/40"
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     <Icon className="w-5 h-5" />
@@ -119,20 +119,19 @@ export default function BranchManagerSidebar() {
                   }`}
                 >
                   {link.children.map((child) => {
+                    const ChildIcon = child.icon;
                     const active = location.pathname === child.path;
                     return (
                       <Link
                         key={child.name}
                         to={child.path}
-                        className={`
-                          block px-4 py-2 rounded-lg text-sm transition-all
-                          ${
-                            active
-                              ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40"
-                              : "hover:bg-muted"
-                          }
-                        `}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all ${
+                          active
+                            ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40"
+                            : "hover:bg-muted"
+                        }`}
                       >
+                        <ChildIcon className="w-4 h-4" />
                         {child.name}
                       </Link>
                     );
@@ -149,14 +148,11 @@ export default function BranchManagerSidebar() {
             <Link
               key={link.name}
               to={link.path}
-              className={`
-                flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all
-                ${
-                  active
-                    ? "bg-indigo-600 text-white shadow-md"
-                    : "hover:bg-indigo-100 dark:hover:bg-indigo-900/40"
-                }
-              `}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                active
+                  ? "bg-indigo-600 text-white shadow-md"
+                  : "hover:bg-indigo-100 dark:hover:bg-indigo-900/40"
+              }`}
             >
               <Icon className="w-5 h-5" />
               {link.name}

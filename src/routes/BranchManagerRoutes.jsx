@@ -33,6 +33,7 @@ import SalaryPage from "../pages/Branch Manager/salary/SalaryPage";
 import ExpensesPage from "../pages/Branch Manager/expense/ExpensesPage";
 import ExpenseCategoriesPage from "../pages/Branch Manager/ExpenseCategories/ExpenseCategoriesPage";
 import QuotationsPage from "../pages/Branch Manager/quotations/QuotationsPage";
+import ChequesPage from "../pages/Branch Manager/Cheques/ChequesPage";
 
 const BranchManagerRoutes = () => {
   return (
@@ -57,6 +58,8 @@ const BranchManagerRoutes = () => {
 
         <Route path="orders" element={<Orders />} />
         <Route path="refunds" element={<Refunds />} />
+        
+        <Route path="cheques" element={<ChequesPage />} />
         <Route path="quotations" element={<QuotationsPage />} />
         <Route path="transactions" element={<Transactions />} />
         <Route path="inventory" element={<Inventory />} />

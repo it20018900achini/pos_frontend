@@ -52,7 +52,7 @@ export default function BranchPayrollDashboard() {
       {branchId && (
         <Card>
           <CardContent>
-            <h2 className="text-xl font-semibold mb-2">Branch Payroll Stats</h2>
+            
             <PayrollStats
               key={statsKey}
               branchId={branchId}

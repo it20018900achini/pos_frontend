@@ -15,9 +15,10 @@ export default function PayrollStats({ branchId, renderChart }) {
   if (!data) return <p>No data available</p>;
 
   return (
-    <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex gap-4 mb-4">
+    <div >
+
+<div className="md:flex w-full justify-between">
+  <h2 className="text-xl font-semibold mb-2">Branch Payroll Stats</h2> <div className="flex gap-4 mb-4">
         <select
           value={year}
           onChange={(e) => setYear(Number(e.target.value))}
@@ -45,6 +46,10 @@ export default function PayrollStats({ branchId, renderChart }) {
           ))}
         </select>
       </div>
+</div>
+    <div className="space-y-4">
+      {/* Filters */}
+     
 
       {/* Stats Table */}
       <div className="grid grid-cols-3 gap-4 mb-4">
@@ -60,6 +65,7 @@ export default function PayrollStats({ branchId, renderChart }) {
       {renderChart && renderChart(data)}
 
       
+    </div>
     </div>
   );
 }
