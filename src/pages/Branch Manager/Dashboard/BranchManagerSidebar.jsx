@@ -26,6 +26,8 @@ const navLinks = [
   { name: "Transactions", path: "/branch/transactions", icon: CreditCard },
   { name: "Inventory", path: "/branch/inventory", icon: Package },
   { name: "Payroll", path: "/branch/payroll", icon: Users },
+  { name: "Expenses", path: "/branch/expense", icon: Users },
+  { name: "Expense Categories", path: "/branch/expense/categories", icon: Users },
   { name: "Employees", path: "/branch/employees", icon: Users },
   { name: "Customers", path: "/branch/customers", icon: UserCircle },
 

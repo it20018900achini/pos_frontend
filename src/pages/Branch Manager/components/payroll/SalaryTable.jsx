@@ -35,7 +35,7 @@ export default function SalaryTable({ branchId }) {
           employeeId={null}
         />
         <Button size="sm" onClick={() => handleAdd(null)}>
-                      Edit / Generate
+                     Configure Salary
                     </Button>
           <h2 className="text-lg font-semibold mb-4">Employee Salaries</h2>
           <table className="w-full table-auto border">

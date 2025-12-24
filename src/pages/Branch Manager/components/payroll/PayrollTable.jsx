@@ -66,7 +66,11 @@ export default function PayrollTable({ branchId, year, month, onSelectEmployee, 
           {payrolls.map((p) => (
             <tr key={p.id} className="hover:bg-gray-50 cursor-pointer">
               <td className="p-2 border" onClick={() => onSelectEmployee?.(p.employee.id)}>
-                {p.employee.name}
+                
+                  <div className="font-medium">{p?.employee?.fullName}</div>
+                    <div className="text-xs text-gray-500">{p?.employee.email}</div>
+                  
+
               </td>
               <td className="p-2 border">{p.basicSalary}</td>
               <td className="p-2 border">{p.allowances}</td>

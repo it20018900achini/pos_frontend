@@ -30,6 +30,8 @@ import Suppliers from "../pages/Branch Manager/supplier/Suppliers";
 // import PayrollBranchManager from "../pages/Branch Manager/components/payroll/PayrollBranchManager";
 import PayrollPage from "../pages/Branch Manager/payroll/PayrollPage";
 import SalaryPage from "../pages/Branch Manager/salary/SalaryPage";
+import ExpensesPage from "../pages/Branch Manager/expense/ExpensesPage";
+import ExpenseCategoriesPage from "../pages/Branch Manager/ExpenseCategories/ExpenseCategoriesPage";
 
 const BranchManagerRoutes = () => {
   return (
@@ -48,6 +50,8 @@ const BranchManagerRoutes = () => {
     <Route path="/payroll/config" element={<PayrollAdmin />} /> */}
 
       <Route path="/payroll" element={<PayrollPage />} />
+      <Route path="/expense" element={<ExpensesPage />} />
+      <Route path="/expense/categories" element={<ExpenseCategoriesPage />} />
       <Route path="/salary/:branchId" element={<SalaryPage />} />
 
         <Route path="orders" element={<Orders />} />

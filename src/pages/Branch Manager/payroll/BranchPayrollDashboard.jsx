@@ -101,9 +101,9 @@ export default function BranchPayrollDashboard() {
           </CardContent>
         </Card>
       )}
+
       <SalaryTable
   branchId={branchId}
-  onSelectEmployee={(employeeId) => setEmployeeId(13)}
 />
       {/* Year/Month Filter */}
       <div className="flex gap-4 mb-4">
