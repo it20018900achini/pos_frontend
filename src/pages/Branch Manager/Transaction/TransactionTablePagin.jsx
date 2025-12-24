@@ -174,7 +174,7 @@ export default function TransactionTablePagin() {
 
           <div className="flex items-end gap-2">
             <Button onClick={() => handleFetch(0, pageSize)}>Search</Button>
-            <Button
+            {/* <Button
               variant="secondary"
               disabled={allLoading}
               onClick={handleFetchAll}
@@ -184,7 +184,7 @@ export default function TransactionTablePagin() {
               ) : (
                 "Fetch All"
               )}
-            </Button>
+            </Button> */}
           </div>
         </CardContent>
       </Card>

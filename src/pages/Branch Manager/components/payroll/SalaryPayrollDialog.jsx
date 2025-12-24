@@ -11,14 +11,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
-export default function SalaryPayrollDialog() {
-  const [open, setOpen] = useState(false);
-  const [employeeId, setEmployeeId] = useState("");
+export default function SalaryPayrollDialog({ open, setOpen, employeeId }) {
   const [form, setForm] = useState({
     basicSalary: "",
     hra: "",
@@ -34,12 +31,11 @@ export default function SalaryPayrollDialog() {
   const [year, setYear] = useState(currentYear);
   const [month, setMonth] = useState(currentMonth);
 
-  // Fetch salary & employee info
   const { data } = useGetSalaryByEmployeeQuery(Number(employeeId), { skip: !employeeId });
   const [saveSalary] = useSaveSalaryMutation();
   const [generatePayroll] = useGeneratePayrollMutation();
 
-  // Populate form if salary exists
+  // Populate form when data changes
   useEffect(() => {
     if (data?.employee) {
       setForm({
@@ -51,12 +47,7 @@ export default function SalaryPayrollDialog() {
         epfPercentage: data.epfPercentage ?? "",
         etfPercentage: data.etfPercentage ?? "",
       });
-    }
-  }, [data]);
-
-  // Reset form if employeeId is empty or data not available
-  useEffect(() => {
-    if (!employeeId || !data?.employee) {
+    } else {
       setForm({
         basicSalary: "",
         hra: "",
@@ -67,7 +58,7 @@ export default function SalaryPayrollDialog() {
         etfPercentage: "",
       });
     }
-  }, [employeeId, data]);
+  }, [data]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -75,7 +66,7 @@ export default function SalaryPayrollDialog() {
     if (!employeeId) return alert("Enter Employee ID");
     try {
       await saveSalary({
-        id: data?.id, // pass existing salary ID to update
+        id: data?.id,
         employee: { id: Number(employeeId) },
         ...form,
       }).unwrap();
@@ -99,11 +90,7 @@ export default function SalaryPayrollDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>Manage Salary & Payroll</Button>
-      </DialogTrigger>
-
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Employee Salary & Payroll</DialogTitle>
           <DialogDescription>
@@ -111,7 +98,6 @@ export default function SalaryPayrollDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Employee Info or Not Found Message */}
         {data?.employee ? (
           <div className="p-3 border rounded bg-gray-50 text-sm space-y-1 mb-4">
             <div><strong>Name:</strong> {data.employee.fullName}</div>
@@ -122,16 +108,15 @@ export default function SalaryPayrollDialog() {
           employeeId && <p className="text-sm text-red-500 mb-4">No employee found for ID {employeeId}</p>
         )}
 
-        {/* Employee ID */}
+        {/* Salary Form */}
         <Input
           type="number"
           placeholder="Employee ID"
           value={employeeId}
-          onChange={(e) => setEmployeeId(e.target.value)}
+          disabled
           className="mb-2"
         />
 
-        {/* Salary Fields */}
         <Input name="basicSalary" type="number" placeholder="Basic Salary" value={form.basicSalary} onChange={handleChange} className="mb-2" />
         <div className="grid grid-cols-2 gap-2 mb-2">
           <Input name="hra" type="number" placeholder="HRA" value={form.hra} onChange={handleChange} />
@@ -146,7 +131,6 @@ export default function SalaryPayrollDialog() {
           <Input name="etfPercentage" type="number" placeholder="ETF %" value={form.etfPercentage} onChange={handleChange} />
         </div>
 
-        {/* Payroll Month/Year */}
         <div className="grid grid-cols-2 gap-2 mb-4">
           <Input type="number" placeholder="Year" value={year} onChange={(e) => setYear(Number(e.target.value))} />
           <Input type="number" placeholder="Month" value={month} onChange={(e) => setMonth(Number(e.target.value))} />

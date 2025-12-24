@@ -15,7 +15,11 @@ export const salaryApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Salary"],
     }),
+      getSalariesByBranch: builder.query({
+      query: (branchId) => `/employee-salaries/branch/${branchId}`,
+      providesTags: ["Salary"],
+    }),
   }),
 });
 
-export const { useGetSalaryByEmployeeQuery, useSaveSalaryMutation } = salaryApi;
+export const {useGetSalariesByBranchQuery, useGetSalaryByEmployeeQuery, useSaveSalaryMutation } = salaryApi;

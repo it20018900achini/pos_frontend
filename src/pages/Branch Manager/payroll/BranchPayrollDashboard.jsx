@@ -15,6 +15,7 @@ import PayrollTable from "../components/payroll/PayrollTable";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 import SalaryPayrollModal from "../components/payroll/SalaryPayrollModal";
 import SalaryPayrollDialog from "../components/payroll/SalaryPayrollDialog";
+import SalaryTable from "../components/payroll/SalaryTable";
 
 export default function BranchPayrollDashboard() {
   const { branch } = useSelector((state) => state.branch);
@@ -24,6 +25,7 @@ export default function BranchPayrollDashboard() {
   const [statsKey, setStatsKey] = useState(0);
   const [tableKey, setTableKey] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
+  const [employeeId, setEmployeeId] = useState(null);
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
@@ -44,74 +46,7 @@ export default function BranchPayrollDashboard() {
   return (
     <div className="space-y-6 p-6">
       <h1 className="text-2xl font-bold">Branch Payroll Dashboard</h1>
-<SalaryPayrollDialog/>
-      {/* Year/Month Filter */}
-      <div className="flex gap-4 mb-4">
-        <div>
-          <label className="block text-sm font-medium">Year</label>
-          <select
-            className="border p-1 rounded"
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-          >
-            {[currentYear - 1, currentYear, currentYear + 1].map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium">Month</label>
-          <select
-            className="border p-1 rounded"
-            value={month}
-            onChange={(e) => setMonth(Number(e.target.value))}
-          >
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-<SalaryPayrollModal
-  employeeId={selectedEmployeeId} // from table or parent state
-  setEmployeeId={setSelectedEmployeeId} // sync back to parent
-  year={year}
-  month={month}
-  onCompleted={() => {
-    refreshData();
-    // refreshTable();
-  }}
-/>
-      {/* Open Modal Button */}
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogTrigger asChild>
-          <Button >Salary & Generate Payroll</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[1000px] h-screen overflow-auto space-y-4">
-          <DialogHeader>
-            <DialogTitle>Salary & Payroll</DialogTitle>
-          </DialogHeader>
 
-          {/* Salary Form */}
-          <SalaryForm
-            employeeId={selectedEmployeeId}
-            setEmployeeId={setSelectedEmployeeId}
-          />
-
-          {/* Payroll Form */}
-          {selectedEmployeeId && (
-            <PayrollForm
-              employeeId={selectedEmployeeId}
-              year={year}
-              month={month}
-              onPayrollGenerated={() => {
-                refreshData();
-                setModalOpen(false); // Close modal after payroll generation
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Payroll Stats */}
       {branchId && (
@@ -166,6 +101,37 @@ export default function BranchPayrollDashboard() {
           </CardContent>
         </Card>
       )}
+      <SalaryTable
+  branchId={branchId}
+  onSelectEmployee={(employeeId) => setEmployeeId(13)}
+/>
+      {/* Year/Month Filter */}
+      <div className="flex gap-4 mb-4">
+        <div>
+          <label className="block text-sm font-medium">Year</label>
+          <select
+            className="border p-1 rounded"
+            value={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+          >
+            {[currentYear - 1, currentYear, currentYear + 1].map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium">Month</label>
+          <select
+            className="border p-1 rounded"
+            value={month}
+            onChange={(e) => setMonth(Number(e.target.value))}
+          >
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {/* Payroll Table */}
       {branchId && (
