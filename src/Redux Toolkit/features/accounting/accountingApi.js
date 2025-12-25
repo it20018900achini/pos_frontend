@@ -54,7 +54,14 @@ export const accountingApi = apiSlice.injectEndpoints({
     }),
 
 
-
+    updateChartOfAccount: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/accounting/coa/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["ChartOfAccount"],
+    }),
 
 
 
@@ -67,6 +74,7 @@ export const accountingApi = apiSlice.injectEndpoints({
 });
 
 export const {
+  useUpdateChartOfAccountMutation,
   useGetChartOfAccountsQuery,
   useCreateChartOfAccountMutation,
   useGetExpensesQuery,
