@@ -3,6 +3,7 @@ import ExpenseForm from './ExpenseForm';
 import { useGetExpensesQuery } from '../../../../Redux Toolkit/features/expenses/expenseApi';
 import { useDeleteExpenseMutation } from '../../../../Redux Toolkit/features/accounting/accountingApi';
 import { useGetExpenseCategoriesQuery } from '../../../../Redux Toolkit/features/expenseCategory/expenseCategoryApi';
+
 export default function ExpenseTable() {
   const [editingExpense, setEditingExpense] = useState(null);
   const [filterCategory, setFilterCategory] = useState('');
@@ -19,13 +20,18 @@ export default function ExpenseTable() {
 
   if (isLoading) return <p>Loading expenses...</p>;
 
+  // Filter categories that have accountCode
+  const validCategories = categories?.content?.filter(cat => cat.accountCode) || [];
+
   return (
     <div>
       <div className="flex gap-2 mb-4 flex-wrap">
         <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="border p-2">
           <option value="">All Categories</option>
           {categories?.content.map((cat) => (
-            <option key={cat.id} value={cat.id}>{cat.name}</option>
+            <option key={cat.id} value={cat.id}>
+              {cat.name}{!cat.accountCode ? ' ⚠ Missing account' : ''}
+            </option>
           ))}
         </select>
         <input type="date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} className="border p-2" />
@@ -39,7 +45,7 @@ export default function ExpenseTable() {
         <ExpenseForm
           expense={editingExpense}
           onClose={() => setEditingExpense(null)}
-          categories={categories?.content || []}
+          categories={validCategories} // ✅ only valid categories
         />
       )}
 
@@ -57,9 +63,13 @@ export default function ExpenseTable() {
           {expenses?.map((exp) => (
             <tr key={exp.id}>
               <td className="border px-2 py-1">{exp.title}</td>
-              <td className="border px-2 py-1">{exp.amount}</td>
-              <td className="border px-2 py-1">{new Date(exp.date).toLocaleDateString()}</td>
-              <td className="border px-2 py-1">{exp.category?.name}</td>
+              <td className="border px-2 py-1">{exp.totalAmount}</td>
+              <td className="border px-2 py-1">
+                {new Date(exp.startDate).toLocaleDateString()} - {new Date(exp.endDate).toLocaleDateString()}
+              </td>
+              <td className="border px-2 py-1">
+                {exp.categoryName} {!exp.accountCode && <span className="text-red-600 text-sm">⚠ Missing account</span>}
+              </td>
               <td className="border px-2 py-1">
                 <button
                   onClick={() => setEditingExpense(exp)}

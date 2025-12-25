@@ -4,7 +4,7 @@ export const expenseApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getExpenses: builder.query({
       query: ({ search, branchId, categoryId, page, size }) => ({
-        url: `/expenses/search`,
+        url: `/expenses`,
         params: { search, branchId, categoryId, page, size },
       }),
       providesTags: ["Expense"],

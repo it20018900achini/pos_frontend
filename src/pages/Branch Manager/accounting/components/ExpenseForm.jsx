@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCreateExpenseMutation, useUpdateExpenseMutation } from '../../../../Redux Toolkit/features/accounting/accountingApi';
 
-export default function ExpenseForm({ expense, onClose, categories, branchId }) {
+export default function ExpenseForm({ expense, onClose, categories, branchId = 52 }) {
   const [title, setTitle] = useState('');
   const [totalAmount, setTotalAmount] = useState('');
   const [expenseType, setExpenseType] = useState('REGULAR');
@@ -24,26 +24,26 @@ export default function ExpenseForm({ expense, onClose, categories, branchId }) 
   }, [expense]);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const payload = {
-    title,
-    totalAmount: Number(totalAmount),
-    expenseType,
-    startDate,
-    endDate,
-    branchId: 52,        // ✅ Hardcoded branch ID
-    categoryId: Number(categoryId),
+    const payload = {
+      title,
+      totalAmount: Number(totalAmount),
+      expenseType,
+      startDate,
+      endDate,
+      branchId,
+      categoryId: Number(categoryId),
+    };
+
+    if (expense?.id) {
+      await updateExpense({ id: expense.id, ...payload });
+    } else {
+      await createExpense(payload);
+    }
+
+    onClose();
   };
-
-  if (expense?.id) {
-    await updateExpense({ id: expense.id, ...payload });
-  } else {
-    await createExpense(payload);
-  }
-
-  onClose();
-};
 
   return (
     <div className="p-4 border mb-4 bg-gray-50">

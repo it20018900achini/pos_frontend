@@ -52,6 +52,16 @@ export const accountingApi = apiSlice.injectEndpoints({
       query: ({ from, to }) => `/accounting/reports/expense?from=${from}&to=${to}`,
       providesTags: ["Expense"],
     }),
+
+
+
+
+
+
+
+
+
+    
   }),
   overrideExisting: false,
 });

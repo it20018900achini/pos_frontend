@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import {
   useGetChartOfAccountsQuery,
   useCreateChartOfAccountMutation,
-} from "@/Redux Toolkit/featues/accounting/accountingApi";
+} from "@/Redux Toolkit/features/accounting/accountingApi";
 
 export default function ChartOfAccounts() {
   const { data: accounts, isLoading, isError, refetch } = useGetChartOfAccountsQuery();
