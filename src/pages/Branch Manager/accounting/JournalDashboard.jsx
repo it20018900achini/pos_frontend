@@ -61,6 +61,7 @@ export default function JournalDashboard() {
             <select
               value={line.accountId}
               onChange={(e) => handleLineChange(idx, "accountId", e.target.value)}
+              className="border p-3 shadow rounded-md"
             >
               <option value="">Select Account</option>
               {accounts.map((acc) => (
