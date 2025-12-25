@@ -39,6 +39,14 @@ export default function ExpenseReport() {
         >
           Fetch
         </button>
+         {fetch && (
+        <button
+          onClick={refetch}
+          className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          Refresh
+        </button>
+      )}
       </div>
 
       {isLoading && <p>Loading...</p>}
@@ -65,14 +73,7 @@ export default function ExpenseReport() {
         ))}
       </div>
 
-      {fetch && (
-        <button
-          onClick={refetch}
-          className="mt-2 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-        >
-          Refresh
-        </button>
-      )}
+     
     </div>
   );
 }
