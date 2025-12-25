@@ -64,7 +64,33 @@ export const accountingApi = apiSlice.injectEndpoints({
     }),
 
 
-
+   getJournals: builder.query({
+      query: () => "/accounting/journals",
+      providesTags: ["Journal"],
+    }),
+    createJournal: builder.mutation({
+      query: (journal) => ({
+        url: "/accounting/journals",
+        method: "POST",
+        body: journal,
+      }),
+      invalidatesTags: ["Journal"],
+    }),
+    updateJournal: builder.mutation({
+      query: ({ id, ...journal }) => ({
+        url: `/accounting/journals/${id}`,
+        method: "PUT",
+        body: journal,
+      }),
+      invalidatesTags: ["Journal"],
+    }),
+    deleteJournal: builder.mutation({
+      query: (id) => ({
+        url: `/accounting/journals/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Journal"],
+    }),
 
 
 
@@ -74,6 +100,10 @@ export const accountingApi = apiSlice.injectEndpoints({
 });
 
 export const {
+    useGetJournalsQuery,
+  useCreateJournalMutation,
+  useUpdateJournalMutation,
+  useDeleteJournalMutation,
   useUpdateChartOfAccountMutation,
   useGetChartOfAccountsQuery,
   useCreateChartOfAccountMutation,

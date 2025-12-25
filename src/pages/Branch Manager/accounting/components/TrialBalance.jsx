@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useGetTrialBalanceQuery } from "@/Redux Toolkit/features/accounting/accountingApi";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function TrialBalance() {
   const { data = [], isLoading, isError, refetch } = useGetTrialBalanceQuery();
@@ -9,31 +10,30 @@ export default function TrialBalance() {
   if (isError) return <p>Error loading Trial Balance</p>;
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold mb-2">Trial Balance</h2>
-
-      <div className="border rounded-md p-2">
-        <div className="grid grid-cols-3 font-semibold border-b pb-1">
-          <span>Account</span>
-          <span>Total Debit</span>
-          <span>Total Credit</span>
-        </div>
-
-        {data.map((tb, idx) => (
-          <div key={idx} className="grid grid-cols-3 border-b last:border-b-0 py-1">
-            <span>{tb.accountName}</span>
-            <span>{tb.totalDebit.toLocaleString()}</span>
-            <span>{tb.totalCredit.toLocaleString()}</span>
-          </div>
-        ))}
-      </div>
-
-      <button
-        onClick={refetch}
-        className="mt-2 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-      >
-        Refresh
-      </button>
-    </div>
+    <Card className="space-y-2">
+      <CardHeader>
+        <CardTitle>Trial Balance</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {data.length > 0 ? (
+          <ul className="pl-4 list-disc space-y-1">
+            {data.map((tb, idx) => (
+              <li key={idx} className="flex justify-between">
+                <span>{tb.accountName}</span>
+                <span>Debit: {tb.totalDebit.toLocaleString()} | Credit: {tb.totalCredit.toLocaleString()}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No trial balance data</p>
+        )}
+        <button
+          onClick={refetch}
+          className="mt-2 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          Refresh
+        </button>
+      </CardContent>
+    </Card>
   );
 }
