@@ -1,25 +1,34 @@
-// src/Redux Toolkit/features/expenseCategory/expenseCategoryApi.js
-import { apiSlice } from "../../api/apiSlice";
+import { apiSlice } from "@/Redux Toolkit/api/apiSlice";
 
 export const expenseCategoryApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    // Get all expense categories
     getExpenseCategories: builder.query({
-      query: ({ search = "", page = 0, size = 10 }) => ({
-        url: "/expense-categories",
-        params: { search, page, size },
-      }),
+      query: () => "/expense-categories",
       providesTags: ["ExpenseCategory"],
     }),
 
+    // Create a new category
     createExpenseCategory: builder.mutation({
-      query: (body) => ({
+      query: (data) => ({
         url: "/expense-categories",
         method: "POST",
-        body,
+        body: data,
       }),
       invalidatesTags: ["ExpenseCategory"],
     }),
 
+    // Update category
+    updateExpenseCategory: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/expense-categories/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["ExpenseCategory"],
+    }),
+
+    // Delete category
     deleteExpenseCategory: builder.mutation({
       query: (id) => ({
         url: `/expense-categories/${id}`,
@@ -28,10 +37,13 @@ export const expenseCategoryApi = apiSlice.injectEndpoints({
       invalidatesTags: ["ExpenseCategory"],
     }),
   }),
+  overrideExisting: false,
 });
 
+// Export hooks
 export const {
   useGetExpenseCategoriesQuery,
   useCreateExpenseCategoryMutation,
+  useUpdateExpenseCategoryMutation,
   useDeleteExpenseCategoryMutation,
 } = expenseCategoryApi;
