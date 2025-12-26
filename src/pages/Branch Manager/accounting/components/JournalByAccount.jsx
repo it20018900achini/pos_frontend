@@ -22,7 +22,7 @@ export default function JournalByAccount() {
     : journals;
 
   return (
-    <div className="space-y-4 bg-red-200">
+    <div className="space-y-4 ">
       <h2 className="text-2xl font-bold">Journal Entries</h2>
 
       {/* Select account */}

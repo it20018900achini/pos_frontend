@@ -62,9 +62,10 @@ const BranchEmployees = () => {
           username: newEmployeeData.email.split("@")[0],
         },
         branchId: branch.id,
+        storeId:2,
         token: localStorage.getItem("jwt"),
       };
-      console.log("branch employee data ", data);
+      console.log("branch employee data -", data);
       dispatch(createBranchEmployee(data));
       setIsAddDialogOpen(false);
     }

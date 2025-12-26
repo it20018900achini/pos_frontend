@@ -1,41 +1,34 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 import {
   createBranch,
   getBranchById,
   getAllBranchesByStore,
   updateBranch,
   deleteBranch,
-  // addEmployeeToBranch,
-  // getEmployeesByBranch
-} from './branchThunks';
+} from "./branchThunks";
 
 const initialState = {
   branch: null,
   branches: [],
-  employees: [],
   loading: false,
   error: null,
 };
 
 const branchSlice = createSlice({
-  name: 'branch',
+  name: "branch",
   initialState,
   reducers: {
-    clearBranchState: (state) => {
-      state.branch = null;
-      state.branches = [];
-      state.employees = [];
-      state.error = null;
-    },
+    clearBranchState: () => initialState,
   },
   extraReducers: (builder) => {
     builder
+
+      /* -------- CREATE -------- */
       .addCase(createBranch.pending, (state) => {
         state.loading = true;
       })
       .addCase(createBranch.fulfilled, (state, action) => {
         state.loading = false;
-        state.branch = action.payload;
         state.branches.push(action.payload);
       })
       .addCase(createBranch.rejected, (state, action) => {
@@ -43,47 +36,38 @@ const branchSlice = createSlice({
         state.error = action.payload;
       })
 
-      .addCase(getBranchById.pending, (state) => {
-        state.loading = true;
-      })
+      /* -------- GET BY ID -------- */
       .addCase(getBranchById.fulfilled, (state, action) => {
-        state.loading = false;
         state.branch = action.payload;
       })
-      .addCase(getBranchById.rejected, (state, action) => {
+
+      /* -------- GET BY STORE -------- */
+      .addCase(getAllBranchesByStore.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getAllBranchesByStore.fulfilled, (state, action) => {
+        state.loading = false;
+        state.branches = action.payload;
+      })
+      .addCase(getAllBranchesByStore.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-      .addCase(getAllBranchesByStore.fulfilled, (state, action) => {
-        state.branches = action.payload;
-      })
-
-      .addCase(updateBranch.pending, (state) => {
-        state.loading = true; // start loading
-        state.error = null;
-      })
+      /* -------- UPDATE -------- */
       .addCase(updateBranch.fulfilled, (state, action) => {
-        state.branch = action.payload;
-        state.loading = false; // stop loading
+        const index = state.branches.findIndex(
+          (b) => b.id === action.payload.id
+        );
+        if (index !== -1) state.branches[index] = action.payload;
       })
-      .addCase(updateBranch.rejected, (state, action) => {
-        state.loading = false; // stop loading
-        state.error = action.error.message;
-      })
+
+      /* -------- DELETE -------- */
       .addCase(deleteBranch.fulfilled, (state, action) => {
-        state.branches = state.branches.filter((b) => b.id !== action.payload);
-      })
-
-
-
-      .addMatcher(
-        (action) => action.type.startsWith('branch/') && action.type.endsWith('/rejected'),
-        (state, action) => {
-          state.error = action.payload;
-          state.loading = false;
-        }
-      );
+        state.branches = state.branches.filter(
+          (b) => b.id !== action.payload
+        );
+      });
   },
 });
 
