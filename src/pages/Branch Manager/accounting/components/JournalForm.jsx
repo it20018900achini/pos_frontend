@@ -14,6 +14,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 
 // ===== Flatten nested accounts helper =====
 const flattenAccounts = (accounts) => {
@@ -29,6 +30,8 @@ const flattenAccounts = (accounts) => {
 };
 
 export default function JournalForm() {
+  const { toast } = useToast();
+  // const { toast } = useToast();
   const { data: accountsNested = [] } = useGetChartOfAccountsQuery();
   const accounts = useMemo(() => flattenAccounts(accountsNested), [accountsNested]);
 
@@ -83,12 +86,20 @@ export default function JournalForm() {
       };
 
       if (payload.lines.length === 0) {
-        alert("Please add at least one valid journal line");
+        
+      toast({
+        title: "Please add at least one valid journal line",
+        description: "",
+      });
         return;
       }
 
       await createJournal(payload).unwrap();
-      alert("Journal entry saved!");
+
+      toast({
+        title: "Journal entry saved!",
+        description: "",
+      });
 
       // Reset form
       setJournal({
@@ -98,7 +109,11 @@ export default function JournalForm() {
       });
     } catch (err) {
       console.error(err);
-      alert("Failed to save journal entry. Check console for details.");
+      
+      toast({
+        title: "Failed to save journal entry. Check console for details.",
+        description: "",
+      });
     }
   };
 
