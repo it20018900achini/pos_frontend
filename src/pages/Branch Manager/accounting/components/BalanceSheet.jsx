@@ -1,11 +1,67 @@
 "use client";
+
 import React from "react";
 import { useGetBalanceSheetQuery } from "@/Redux Toolkit/features/accounting/accountingApi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
+// Recursive function to render nested accounts in table rows
+const renderAccountRows = (accounts, level = 0) => {
+  return accounts.flatMap((acc) => {
+    const isNegative = acc.balance != null && acc.balance < 0;
+    const row = (
+      <tr key={acc.id ?? acc.account}>
+        <td style={{ paddingLeft: `${level * 20}px` }}>
+          {acc.account}
+        </td>
+        <td className={isNegative ? "text-red-600" : ""} align="right">
+          {acc.balance != null
+            ? acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })
+            : "0.00"}
+        </td>
+      </tr>
+    );
+
+    if (acc.children && acc.children.length > 0) {
+      return [row, ...renderAccountRows(acc.children, level + 1)];
+    } else {
+      return [row];
+    }
+  });
+};
+
+// Table renderer for a section (Assets, Liabilities, Equity)
+const renderSectionTable = (title, accounts, total) => (
+  <div>
+    <h3 className="font-semibold mb-2">{title}</h3>
+    <div className="overflow-x-auto">
+      <table className="min-w-full border border-gray-200">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="py-2 px-4 border-b text-left">Account</th>
+            <th className="py-2 px-4 border-b text-right">Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {renderAccountRows(accounts)}
+        </tbody>
+        <tfoot>
+          <tr className="font-semibold bg-gray-50">
+            <td className="py-2 px-4 border-t">Total {title}</td>
+            <td className="py-2 px-4 border-t text-right">
+              {total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+);
 
 export default function BalanceSheet() {
   const { data, isLoading, isError, refetch } = useGetBalanceSheetQuery();
+
+  if (isLoading) return <p>Loading Balance Sheet...</p>;
+  if (isError) return <p>Error loading Balance Sheet</p>;
 
   const assets = data?.assets || [];
   const liabilities = data?.liabilities || [];
@@ -14,37 +70,6 @@ export default function BalanceSheet() {
   const totalAssets = data?.totalAssets ?? 0;
   const totalLiabilities = data?.totalLiabilities ?? 0;
   const totalEquity = data?.totalEquity ?? 0;
-
-  if (isLoading) return <p>Loading Balance Sheet...</p>;
-  if (isError) return <p>Error loading Balance Sheet</p>;
-
-  const renderSection = (title, items, total, color) => (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-1">
-        {items.length > 0 ? (
-          <ul className="pl-4 list-disc">
-            {items.map((item, idx) => (
-              <li key={idx} className="flex justify-between">
-                <span>{item.account}</span>
-                <span>{item.balance.toLocaleString()}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-500">No {title.toLowerCase()}</p>
-        )}
-        <div className="flex justify-between font-semibold mt-2">
-          <span>Total {title}:</span>
-          <Badge variant="outline" className={`border-${color}-500 text-${color}-600`}>
-            {total.toLocaleString()}
-          </Badge>
-        </div>
-      </CardContent>
-    </Card>
-  );
 
   return (
     <div className="space-y-4">
@@ -58,9 +83,26 @@ export default function BalanceSheet() {
         </button>
       </div>
 
-      {renderSection("Assets", assets, totalAssets, "green")}
-      {renderSection("Liabilities", liabilities, totalLiabilities, "red")}
-      {renderSection("Equity", equity, totalEquity, "blue")}
+      {/* Assets Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Assets</CardTitle>
+        </CardHeader>
+        <CardContent>{renderSectionTable("Assets", assets, totalAssets)}</CardContent>
+      </Card>
+
+      {/* Liabilities & Equity Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Liabilities & Equity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {renderSectionTable("Liabilities", liabilities, totalLiabilities)}
+          <div className="mt-4">
+            {renderSectionTable("Equity", equity, totalEquity)}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

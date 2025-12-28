@@ -1,20 +1,31 @@
 "use client";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useGetJournalsQuery, useGetChartOfAccountsQuery } from "@/Redux Toolkit/features/accounting/accountingApi";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+// ===== Flatten nested accounts helper =====
+const flattenAccounts = (accounts) => {
+  let result = [];
+  const traverse = (accList) => {
+    accList.forEach((acc) => {
+      result.push(acc);
+      if (acc.children?.length) traverse(acc.children);
+    });
+  };
+  traverse(accounts);
+  return result;
+};
 export default function JournalByAccount() {
-  const { data: accounts = [], isLoading: loadingAccounts } = useGetChartOfAccountsQuery();
+  const { data: accountsNested = [] } = useGetChartOfAccountsQuery();
+  const accounts = useMemo(() => flattenAccounts(accountsNested), [accountsNested]);
   const [selectedAccount, setSelectedAccount] = useState(null);
 
-  // Fetch all journals (we can filter client-side or call endpoint by account)
   const { data: journals = [], isLoading: loadingJournals, refetch } = useGetJournalsQuery();
 
-  if (loadingAccounts || loadingJournals) return <p>Loading...</p>;
+  if ( loadingJournals) return <p>Loading...</p>;
 
-  // Filter journals by selected account
   const filteredJournals = selectedAccount
     ? journals.filter(journal =>
         journal.lines.some(line => line.account?.code === selectedAccount)
@@ -22,10 +33,10 @@ export default function JournalByAccount() {
     : journals;
 
   return (
-    <div className="space-y-4 ">
+    <div className="space-y-4">
       <h2 className="text-2xl font-bold">Journal Entries</h2>
 
-      {/* Select account */}
+      {/* Account Select */}
       <div className="flex gap-2 items-center">
         <Select value={selectedAccount} onValueChange={setSelectedAccount} className="border">
           <SelectTrigger className="w-60">
@@ -39,12 +50,10 @@ export default function JournalByAccount() {
             ))}
           </SelectContent>
         </Select>
-        <Button onClick={refetch} variant="outline">
-          Refresh
-        </Button>
+        <Button onClick={refetch} variant="outline">Refresh</Button>
       </div>
 
-      {/* Journal List */}
+      {/* Journal Table */}
       {filteredJournals.length === 0 ? (
         <p className="text-gray-500">No journal entries for this account</p>
       ) : (
@@ -54,18 +63,26 @@ export default function JournalByAccount() {
               <CardTitle>{journal.description}</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="pl-4 list-disc">
-                {journal.lines
-                  .filter(line => !selectedAccount || line.account?.code === selectedAccount)
-                  .map((line, idx) => (
-                    <li key={idx} className="flex justify-between">
-                      <span>{line.account?.name || "N/A"}</span>
-                      <span>
-                        Debit: {line.debit?.toLocaleString() || 0} | Credit: {line.credit?.toLocaleString() || 0}
-                      </span>
-                    </li>
-                  ))}
-              </ul>
+              <table className="w-full border-collapse border border-gray-300">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border border-gray-300 p-2 text-left">Account</th>
+                    <th className="border border-gray-300 p-2 text-right">Debit</th>
+                    <th className="border border-gray-300 p-2 text-right">Credit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {journal.lines
+                    .filter(line => !selectedAccount || line.account?.code === selectedAccount)
+                    .map((line, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50">
+                        <td className="border border-gray-300 p-2">{line.account?.name || "N/A"}</td>
+                        <td className="border border-gray-300 p-2 text-right">{line.debit?.toLocaleString() || 0}</td>
+                        <td className="border border-gray-300 p-2 text-right">{line.credit?.toLocaleString() || 0}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </CardContent>
           </Card>
         ))

@@ -2,230 +2,129 @@
 
 import React, { useState } from "react";
 import {
-  useGetJournalsQuery,
-  useCreateJournalMutation,
+  useGetChartOfAccountsQuery,
+  useUpdateChartOfAccountMutation,
 } from "@/Redux Toolkit/features/accounting/accountingApi";
-import { useGetChartOfAccountsQuery } from "@/Redux Toolkit/features/accounting/accountingApi";
-
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, RefreshCw } from "lucide-react";
+import {
+  DollarSign,
+  CreditCard,
+  User,
+  TrendingUp,
+  BookOpen,
+  HelpCircle,
+  Pencil,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import JournalForm from "./components/JournalForm";
 
-export default function JournalDashboard() {
-  const { data: journals = [], isLoading, refetch } =
-    useGetJournalsQuery();
+const TYPE_META = {
+  ASSET: { icon: DollarSign },
+  LIABILITY: { icon: CreditCard },
+  EQUITY: { icon: User },
+  INCOME: { icon: TrendingUp },
+  EXPENSE: { icon: BookOpen },
+  NA: { icon: HelpCircle },
+};
 
-  const { data: accounts = [] } =
+export default function ChartOfAccounts() {
     useGetChartOfAccountsQuery();
 
-  const [createJournal] = useCreateJournalMutation();
 
-  const [description, setDescription] = useState("");
-  const [lines, setLines] = useState([]);
-  const [filterAccount, setFilterAccount] = useState("");
 
-  /* ➕ Add new journal line */
-  const addLine = () => {
-    setLines([
-      ...lines,
-      { accountId: "", debit: "", credit: "" },
-    ]);
-  };
+  const [updateAccount] = useUpdateChartOfAccountMutation();
 
-  /* 🗑 Remove line */
-  const removeLine = (index) => {
-    setLines(lines.filter((_, i) => i !== index));
-  };
+ 
 
-  /* ✏️ Update line */
-  const updateLine = (index, field, value) => {
-    const updated = [...lines];
-    updated[index][field] = value;
-    setLines(updated);
-  };
+  const [editingAccount, setEditingAccount] = useState(null);
 
-  /* 💾 Save Journal */
-  const saveJournal = async () => {
-    if (!description || lines.length === 0) return;
 
-    await createJournal({
-      description,
-      lines: lines.map((l) => ({
-        account: { id: l.accountId },
-        debit: l.debit || 0,
-        credit: l.credit || 0,
-      })),
-    }).unwrap();
-
-    setDescription("");
-    setLines([]);
-    refetch();
-  };
-
-  /* 🔍 Filter journals by account */
-  const filteredJournals = filterAccount
-    ? journals.filter((j) =>
-        j.lines?.some(
-          (l) => l.account?.id === Number(filterAccount)
-        )
-      )
-    : journals;
-
-  if (isLoading) return <p>Loading journals...</p>;
-
+  
   return (
     <div className="space-y-6">
 
-      {/* 🔹 Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Journal Dashboard</h2>
-        <Button variant="outline" onClick={refetch}>
-          <RefreshCw className="w-4 h-4 mr-1" />
-          Refresh
-        </Button>
-      </div>
+      {/* Categorized lists */}
 
-      {/* 🔹 Create Journal */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Create Journal Entry</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
 
-          <Input
-            placeholder="Journal description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-
-          {/* Lines */}
-          {lines.map((line, index) => (
-            <div
-              key={index}
-              className="flex gap-2 items-center"
-            >
+      {/* 🔹 Edit Dialog */}
+      {editingAccount && (
+        <Dialog open onOpenChange={() => setEditingAccount(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Account</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <Input
+                value={editingAccount.code}
+                onChange={(e) =>
+                  setEditingAccount({
+                    ...editingAccount,
+                    code: e.target.value,
+                  })
+                }
+              />
+              <Input
+                value={editingAccount.name}
+                onChange={(e) =>
+                  setEditingAccount({
+                    ...editingAccount,
+                    name: e.target.value,
+                  })
+                }
+              />
               <Select
-                value={line.accountId}
-                onValueChange={(v) =>
-                  updateLine(index, "accountId", v)
+                value={editingAccount.type ?? "NA"}
+                onValueChange={(value) =>
+                  setEditingAccount({
+                    ...editingAccount,
+                    type: value === "NA" ? null : value,
+                  })
                 }
               >
-                <SelectTrigger className="w-60">
-                  <SelectValue placeholder="Account" />
+                <SelectTrigger>
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {accounts.map((acc) => (
-                    <SelectItem
-                      key={acc.id}
-                      value={String(acc.id)}
-                    >
-                      {acc.code} — {acc.name}
-                    </SelectItem>
-                  ))}
+                  {["ASSET", "LIABILITY", "EQUITY", "INCOME", "EXPENSE"].map(
+                    (t) => (
+                      <SelectItem key={t} value={t}>
+                        {t}
+                      </SelectItem>
+                    )
+                  )}
+                  <SelectItem value="NA">N/A</SelectItem>
                 </SelectContent>
               </Select>
-
-              <Input
-                type="number"
-                placeholder="Debit"
-                value={line.debit}
-                onChange={(e) =>
-                  updateLine(index, "debit", e.target.value)
-                }
-              />
-
-              <Input
-                type="number"
-                placeholder="Credit"
-                value={line.credit}
-                onChange={(e) =>
-                  updateLine(index, "credit", e.target.value)
-                }
-              />
-
               <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => removeLine(index)}
+                onClick={async () => {
+                  await updateAccount({
+                    id: editingAccount.id,
+                    code: editingAccount.code,
+                    name: editingAccount.name,
+                    type: editingAccount.type,
+                  }).unwrap();
+                  setEditingAccount(null);
+                }}
               >
-                <Trash2 className="w-4 h-4 text-red-500" />
+                Save Changes
               </Button>
             </div>
-          ))}
-
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={addLine}>
-              <Plus className="w-4 h-4 mr-1" />
-              Add Line
-            </Button>
-            <Button onClick={saveJournal}>Save Journal</Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 🔹 Filter */}
-      <div className="flex gap-2 items-center">
-        <Select value={filterAccount} onValueChange={setFilterAccount}>
-          <SelectTrigger className="w-64">
-            <SelectValue placeholder="Filter by Account" />
-          </SelectTrigger>
-          <SelectContent>
-            {accounts.map((acc) => (
-              <SelectItem key={acc.id} value={String(acc.id)}>
-                {acc.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {filterAccount && (
-          <Button variant="ghost" onClick={() => setFilterAccount("")}>
-            Clear
-          </Button>
-        )}
-      </div>
-
-      {/* 🔹 Journal List */}
-      {filteredJournals.length === 0 ? (
-        <p className="text-muted-foreground">No journals found</p>
-      ) : (
-        filteredJournals.map((j) => (
-          <Card key={j.id}>
-            <CardHeader>
-              <CardTitle>{j.description}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-1">
-                {(j.lines || []).map((l, idx) => (
-                  <li
-                    key={idx}
-                    className="flex justify-between"
-                  >
-                    <span>
-                      {l.account?.name ?? "N/A"}
-                    </span>
-                    <Badge variant="outline">
-                      D: {l.debit || 0} | C: {l.credit || 0}
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        ))
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

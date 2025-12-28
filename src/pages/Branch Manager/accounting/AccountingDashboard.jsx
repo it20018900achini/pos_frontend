@@ -9,6 +9,7 @@ import TrialBalance from "./components/TrialBalance";
 import ChartOfAccounts from "./components/ChartOfAccounts";
 import JournalDashboard from "./JournalDashboard";
 import JournalByAccount from "./components/JournalByAccount";
+import JournalForm from "./components/JournalForm";
 
 export default function AccountingDashboard() {
   const [tab, setTab] = useState("balance-sheet");
@@ -39,6 +40,7 @@ export default function AccountingDashboard() {
         </TabsContent>
 
         <TabsContent value="journals">
+          <JournalForm/>
           <JournalDashboard />
           <JournalByAccount/>
         </TabsContent>

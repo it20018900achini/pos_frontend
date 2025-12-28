@@ -11,8 +11,27 @@ Currently, two official plugins are available:
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
 -
+1.Assets (1000–1999)
+-Fixed Assets (1200–1499)
+-Current Assets (1000–1199)
+
+2.Liabilities (2000–2999)
+-Current Liabilities (2000–2199)
+-Long-term Liabilities (2200–2499)
+
+3.Equity (3000–3999)
+4.Income / Revenue (4000–4999)
+5.Cost of Goods Sold (5000–5999)
+6.Operating Expenses (6000–6999)
+-Administrative Expenses
+-Selling & Distribution Expenses
+-Other Expenses
+
+
 1️⃣ Assets (1000–1999)
 Current Assets (1000–1199)
+
+
 
 1001 Cash
 

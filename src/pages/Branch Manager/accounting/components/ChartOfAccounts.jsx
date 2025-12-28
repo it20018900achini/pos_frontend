@@ -118,7 +118,7 @@ export default function ChartOfAccounts() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Chart of Accounts-</h2>
+      <h2 className="text-xl font-semibold">Chart of Accounts</h2>
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3 justify-end">
