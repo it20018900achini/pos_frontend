@@ -4,58 +4,87 @@ import React from "react";
 import { useGetBalanceSheetQuery } from "@/Redux Toolkit/features/accounting/accountingApi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-// Recursive function to render nested accounts in table rows
-const renderAccountRows = (accounts, level = 0) => {
+// Compute total of leaf nodes under a node
+const computeLeafTotal = (acc) => {
+  if (!acc.children || acc.children.length === 0) return acc.balance ?? 0;
+  return acc.children.reduce((sum, child) => sum + computeLeafTotal(child), 0);
+};
+
+// Recursive render function
+const renderAccountRows = (accounts, level = 0, isTopLevel = true) => {
   return accounts.flatMap((acc) => {
-    const isNegative = acc.balance != null && acc.balance < 0;
-    const row = (
+    const isLeaf = !acc.children || acc.children.length === 0;
+    const childrenRows = acc.children ? renderAccountRows(acc.children, level + 1, false) : [];
+
+    // Leaf row
+    const leafRow = (
       <tr key={acc.id ?? acc.account}>
-        <td style={{ paddingLeft: `${level * 20}px` }}>
-          {acc.account}
+        <td style={{ paddingLeft: `${level * 20}px` }}>{acc.account}</td>
+        <td align="right">
+          {isLeaf ? (acc.balance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) : ""}
         </td>
-        <td className={isNegative ? "text-red-600" : ""} align="right">
-          {acc.balance != null
-            ? acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })
-            : "0.00"}
+        <td align="right">
+          {/* {isLeaf ? (acc.balance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) : ""} */}
         </td>
       </tr>
     );
 
-    if (acc.children && acc.children.length > 0) {
-      return [row, ...renderAccountRows(acc.children, level + 1)];
-    } else {
-      return [row];
+    // Subtotal row for direct children (not top-level)
+    let subtotalRow = null;
+    if (!isLeaf && !isTopLevel) {
+      const subtotal = computeLeafTotal(acc);
+      subtotalRow = (
+        <tr key={acc.id + "-subtotal"} className="font-semibold border-t border-gray-200">
+          <td style={{ paddingLeft: `${level * 20}px` }}>{acc.account} Total</td>
+          <td></td>
+          <td align="right">{subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+        </tr>
+      );
     }
+
+    // Separator after each child subtotal
+    const separatorRow = !isLeaf && !isTopLevel ? (
+      <tr key={acc.id + "-sep"}>
+        <td colSpan={3} className="border-t border-gray-300"></td>
+      </tr>
+    ) : null;
+
+    return [leafRow, ...childrenRows, subtotalRow, separatorRow].filter(Boolean);
   });
 };
 
-// Table renderer for a section (Assets, Liabilities, Equity)
-const renderSectionTable = (title, accounts, total) => (
-  <div>
-    <h3 className="font-semibold mb-2">{title}</h3>
-    <div className="overflow-x-auto">
-      <table className="min-w-full border border-gray-200">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="py-2 px-4 border-b text-left">Account</th>
-            <th className="py-2 px-4 border-b text-right">Balance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {renderAccountRows(accounts)}
-        </tbody>
-        <tfoot>
-          <tr className="font-semibold bg-gray-50">
-            <td className="py-2 px-4 border-t">Total {title}</td>
-            <td className="py-2 px-4 border-t text-right">
-              {total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            </td>
-          </tr>
-        </tfoot>
-      </table>
+// Section table
+const renderSectionTable = (title, accounts) => {
+  const sectionTotal = accounts.reduce((sum, acc) => sum + computeLeafTotal(acc), 0);
+
+  return (
+    <div>
+      <h3 className="font-semibold mb-2">{title}</h3>
+      <div className="overflow-x-auto">
+        <table className="min-w-full border border-gray-200">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="py-2 px-4 border-b text-left">Description</th>
+              <th className="py-2 px-4 border-b text-right">Amount</th>
+              <th className="py-2 px-4 border-b text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>{renderAccountRows(accounts)}</tbody>
+          <tfoot>
+            <tr className="font-bold bg-gray-50 border-t border-gray-300">
+              <td className="py-2 px-4">Total {title}</td>
+              <td></td>
+              <td align="right">{sectionTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+            </tr>
+            <tr>
+              <td colSpan={3}></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default function BalanceSheet() {
   const { data, isLoading, isError, refetch } = useGetBalanceSheetQuery();
@@ -66,10 +95,6 @@ export default function BalanceSheet() {
   const assets = data?.assets || [];
   const liabilities = data?.liabilities || [];
   const equity = data?.equity || [];
-
-  const totalAssets = data?.totalAssets ?? 0;
-  const totalLiabilities = data?.totalLiabilities ?? 0;
-  const totalEquity = data?.totalEquity ?? 0;
 
   return (
     <div className="space-y-4">
@@ -83,24 +108,20 @@ export default function BalanceSheet() {
         </button>
       </div>
 
-      {/* Assets Table */}
       <Card>
         <CardHeader>
           <CardTitle>Assets</CardTitle>
         </CardHeader>
-        <CardContent>{renderSectionTable("Assets", assets, totalAssets)}</CardContent>
+        <CardContent>{renderSectionTable("Assets", assets)}</CardContent>
       </Card>
 
-      {/* Liabilities & Equity Table */}
       <Card>
         <CardHeader>
           <CardTitle>Liabilities & Equity</CardTitle>
         </CardHeader>
         <CardContent>
-          {renderSectionTable("Liabilities", liabilities, totalLiabilities)}
-          <div className="mt-4">
-            {renderSectionTable("Equity", equity, totalEquity)}
-          </div>
+          {renderSectionTable("Liabilities", liabilities)}
+          <div className="mt-4">{renderSectionTable("Equity", equity)}</div>
         </CardContent>
       </Card>
     </div>
