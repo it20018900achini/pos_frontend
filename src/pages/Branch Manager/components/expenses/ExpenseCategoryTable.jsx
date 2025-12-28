@@ -14,6 +14,7 @@ const ExpenseCategoryTable = ({ data }) => {
         <thead className="bg-muted">
           <tr>
             <th className="p-3 text-left">Name</th>
+            <th className="p-3 text-left">code</th>
             <th className="p-3 text-right">Action</th>
           </tr>
         </thead>
@@ -21,6 +22,7 @@ const ExpenseCategoryTable = ({ data }) => {
           {data?.content?.map((cat) => (
             <tr key={cat.id} className="border-t">
               <td className="p-3">{cat.name}</td>
+              <td className="p-3">{cat?.accountCode}</td>
               <td className="p-3 text-right">
                 <Button
                   variant="destructive"

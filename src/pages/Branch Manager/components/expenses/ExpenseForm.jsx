@@ -1,128 +1,114 @@
+"use client";
+
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useCreateJournalMutation, useGetChartOfAccountsQuery } from
+  "@/Redux Toolkit/features/accounting/accountingApi";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
-  SelectContent,
-  SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectItem,
 } from "@/components/ui/select";
 
-import { useCreateExpenseMutation } from "../../../../Redux Toolkit/features/expenses/expenseApi";
-import { useGetExpenseCategoriesQuery } from "../../../../Redux Toolkit/features/expenseCategory/expenseCategoryApi";
+export default function ExpenseForm() {
+  const { data: accounts = [] } = useGetChartOfAccountsQuery();
+  const [createJournal] = useCreateJournalMutation();
 
-const ExpenseForm = ({ branches, onCreated }) => {
-  const [createExpense] = useCreateExpenseMutation();
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [expenseAccount, setExpenseAccount] = useState("");
+  const [paymentAccount, setPaymentAccount] = useState("");
 
-  // ✅ Fetch categories from backend
-  const { data: categoryPage, isLoading: categoryLoading } =
-    useGetExpenseCategoriesQuery({ page: 0, size: 100 });
+  const expenseAccounts = accounts.filter(
+    (a) => a.type === "EXPENSE"
+  );
 
-  const categories = categoryPage?.content || [];
+  const paymentAccounts = accounts
 
-  const [form, setForm] = useState({
-    title: "",
-    amount: "",
-    description: "",
-    branchId: "",
-    categoryId: "",
-  });
+  const saveExpense = async () => {
+    if (!description || !amount || !expenseAccount || !paymentAccount) return;
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const payload = {
+      description,
+      lines: [
+        {
+          account: { id: expenseAccount },
+          debit: amount,
+          credit: 0,
+        },
+        {
+          account: { id: paymentAccount },
+          debit: 0,
+          credit: amount,
+        },
+      ],
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    await createJournal(payload).unwrap();
 
-    await createExpense({
-      ...form,
-      amount: parseFloat(form.amount),
-      branchId: Number(form.branchId),
-      categoryId: Number(form.categoryId),
-    }).unwrap();
-
-    onCreated?.();
-
-    setForm({
-      title: "",
-      amount: "",
-      description: "",
-      branchId: "",
-      categoryId: "",
-    });
+    setDescription("");
+    setAmount("");
+    setExpenseAccount("");
+    setPaymentAccount("");
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Input
-        name="title"
-        placeholder="Title"
-        value={form.title}
-        onChange={handleChange}
-      />
+    <Card className="max-w-xl">
+      <CardHeader>
+        <CardTitle>Create Expense</CardTitle>
+      </CardHeader>
 
-      <Input
-        name="amount"
-        type="number"
-        placeholder="Amount"
-        value={form.amount}
-        onChange={handleChange}
-      />
+      <CardContent className="space-y-4">
+        <Input
+          placeholder="Expense description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
 
-      <Input
-        name="description"
-        placeholder="Description"
-        value={form.description}
-        onChange={handleChange}
-      />
+        {/* Expense Account */}
+        <Select value={expenseAccount} onValueChange={setExpenseAccount}>
+          <SelectTrigger>
+            <SelectValue placeholder="Expense Account" />
+          </SelectTrigger>
+          <SelectContent>
+            {expenseAccounts.map((acc) => (
+              <SelectItem key={acc.id} value={String(acc.id)}>
+                {acc.code} — {acc.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* Branch Select */}
-      <Select
-        value={form.branchId}
-        onValueChange={(value) =>
-          setForm({ ...form, branchId: value })
-        }
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Select Branch" />
-        </SelectTrigger>
-        <SelectContent>
-          {branches.map((b) => (
-            <SelectItem key={b.id} value={String(b.id)}>
-              {b.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {/* Cash / Bank Account */}
+        <Select value={paymentAccount} onValueChange={setPaymentAccount}>
+          <SelectTrigger>
+            <SelectValue placeholder="Paid From (Cash / Bank)" />
+          </SelectTrigger>
+          <SelectContent>
+            {paymentAccounts.map((acc) => (
+              <SelectItem key={acc.id} value={String(acc.id)}>
+                {acc.code} — {acc.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* Category Select */}
-      <Select
-        value={form.categoryId}
-        onValueChange={(value) =>
-          setForm({ ...form, categoryId: value })
-        }
-        disabled={categoryLoading}
-      >
-        <SelectTrigger>
-          <SelectValue
-            placeholder={
-              categoryLoading ? "Loading categories..." : "Select Category"
-            }
-          />
-        </SelectTrigger>
-        <SelectContent>
-          {categories.map((c) => (
-            <SelectItem key={c.id} value={String(c.id)}>
-              {c.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <Input
+          type="number"
+          placeholder="Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
 
-      <Button type="submit">Add Expense</Button>
-    </form>
+        <Button className="w-full" onClick={saveExpense}>
+          Save Expense
+        </Button>
+      </CardContent>
+    </Card>
   );
-};
-
-export default ExpenseForm;
+}
