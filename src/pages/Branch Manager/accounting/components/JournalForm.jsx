@@ -111,7 +111,7 @@ export default function JournalForm() {
       console.error(err);
       
       toast({
-        title: "Failed to save journal entry. Check console for details.",
+        title: "Failed to save journal entry.",
         description: "",
       });
     }
@@ -200,17 +200,21 @@ export default function JournalForm() {
       </table>
 
       {/* Totals */}
-      <div className="flex gap-4 font-bold">
-        <span>Total Debit: {totals.debit.toFixed(2)}</span>
-        <span>Total Credit: {totals.credit.toFixed(2)}</span>
-      </div>
+      
 
       {/* Actions */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 justify-between items-center">
+        <div className="flex gap-2">
+          
         <Button onClick={addRow}>Add Row</Button>
         <Button onClick={handleSubmit} disabled={isLoading}>
           {isLoading ? "Saving..." : "Save Journal"}
         </Button>
+        </div>
+        <div className="flex gap-4 font-bold">
+        <span>Total Debit: {totals.debit.toFixed(2)}</span>
+        <span>Total Credit: {totals.credit.toFixed(2)}</span>
+      </div>
       </div>
     </div>
   );
