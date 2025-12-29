@@ -59,7 +59,7 @@ const renderSectionTable = (title, accounts) => {
 
   return (
     <div>
-      <h3 className="font-semibold mb-2">{title}</h3>
+      {/* <h3 className="font-semibold mb-2">{title}</h3> */}
       <div className="overflow-x-auto">
         <table className="min-w-full border border-gray-200">
           <thead className="bg-gray-100">

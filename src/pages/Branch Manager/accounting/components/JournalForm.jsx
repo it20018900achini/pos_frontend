@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 
-// ===== Flatten nested accounts helper =====
+// Flatten nested accounts helper
 const flattenAccounts = (accounts) => {
   let result = [];
   const traverse = (accList) => {
@@ -31,7 +31,6 @@ const flattenAccounts = (accounts) => {
 
 export default function JournalForm() {
   const { toast } = useToast();
-  // const { toast } = useToast();
   const { data: accountsNested = [] } = useGetChartOfAccountsQuery();
   const accounts = useMemo(() => flattenAccounts(accountsNested), [accountsNested]);
 
@@ -43,7 +42,7 @@ export default function JournalForm() {
     lines: [{ accountId: "", debit: 0, credit: 0 }],
   });
 
-  // ➕ Add row
+  // Add row
   const addRow = () => {
     setJournal((prev) => ({
       ...prev,
@@ -51,7 +50,7 @@ export default function JournalForm() {
     }));
   };
 
-  // 🗑 Remove row
+  // Remove row
   const removeRow = (index) => {
     setJournal((prev) => ({
       ...prev,
@@ -59,7 +58,7 @@ export default function JournalForm() {
     }));
   };
 
-  // ✏️ Update line
+  // Update line
   const handleChange = (index, field, value) => {
     setJournal((prev) => {
       const lines = prev.lines.map((line, i) => {
@@ -70,54 +69,7 @@ export default function JournalForm() {
     });
   };
 
-  // 💾 Submit
-  const handleSubmit = async () => {
-    try {
-      const payload = {
-        entryDate: new Date(journal.date).toISOString(),
-        description: journal.description,
-        lines: journal.lines
-          .filter((l) => l.accountId)
-          .map((l) => ({
-            account: { id: Number(l.accountId) },
-            debit: Number(l.debit) || 0,
-            credit: Number(l.credit) || 0,
-          })),
-      };
-
-      if (payload.lines.length === 0) {
-        
-      toast({
-        title: "Please add at least one valid journal line",
-        description: "",
-      });
-        return;
-      }
-
-      await createJournal(payload).unwrap();
-
-      toast({
-        title: "Journal entry saved!",
-        description: "",
-      });
-
-      // Reset form
-      setJournal({
-        date: "",
-        description: "",
-        lines: [{ accountId: "", debit: 0, credit: 0 }],
-      });
-    } catch (err) {
-      console.error(err);
-      
-      toast({
-        title: "Failed to save journal entry.",
-        description: "",
-      });
-    }
-  };
-
-  // ✅ Real-time totals
+  // Compute totals
   const totals = useMemo(() => {
     return journal.lines.reduce(
       (acc, line) => {
@@ -128,6 +80,57 @@ export default function JournalForm() {
       { debit: 0, credit: 0 }
     );
   }, [journal.lines]);
+
+  // Validation: check all fields and balance
+  const isValid = useMemo(() => {
+    if (!journal.date || !journal.description) return false;
+    if (journal.lines.length === 0) return false;
+    // All lines must have accountId and at least one of debit/credit > 0
+    for (const l of journal.lines) {
+      if (!l.accountId) return false;
+      if (!l.debit && !l.credit) return false;
+    }
+    // Debit must equal Credit
+    if (totals.debit !== totals.credit) return false;
+
+    return true;
+  }, [journal, totals]);
+
+  // Submit
+  const handleSubmit = async () => {
+    if (!isValid) {
+      toast({
+        title: "Please fix errors. Journal must be balanced and all fields filled.",
+      });
+      return;
+    }
+
+    try {
+      const payload = {
+        entryDate: new Date(journal.date).toISOString(),
+        description: journal.description,
+        lines: journal.lines.map((l) => ({
+          account: { id: Number(l.accountId) },
+          debit: Number(l.debit) || 0,
+          credit: Number(l.credit) || 0,
+        })),
+      };
+
+      await createJournal(payload).unwrap();
+
+      toast({ title: "Journal entry saved!" });
+
+      // Reset form
+      setJournal({
+        date: "",
+        description: "",
+        lines: [{ accountId: "", debit: 0, credit: 0 }],
+      });
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Failed to save journal entry." });
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -199,22 +202,18 @@ export default function JournalForm() {
         </tbody>
       </table>
 
-      {/* Totals */}
-      
-
-      {/* Actions */}
-      <div className="flex gap-2 justify-between items-center">
+      {/* Actions & Totals */}
+      <div className="flex justify-between items-center mt-2">
         <div className="flex gap-2">
-          
-        <Button onClick={addRow}>Add Row</Button>
-        <Button onClick={handleSubmit} disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save Journal"}
-        </Button>
+          <Button onClick={addRow}>Add Row</Button>
+          <Button onClick={handleSubmit} disabled={!isValid || isLoading}>
+            {isLoading ? "Saving..." : "Save Journal"}
+          </Button>
         </div>
         <div className="flex gap-4 font-bold">
-        <span>Total Debit: {totals.debit.toFixed(2)}</span>
-        <span>Total Credit: {totals.credit.toFixed(2)}</span>
-      </div>
+          <span>Total Debit: {totals.debit.toFixed(2)}</span>
+          <span>Total Credit: {totals.credit.toFixed(2)}</span>
+        </div>
       </div>
     </div>
   );

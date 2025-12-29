@@ -31,6 +31,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import JournalForm from "./components/JournalForm";
+import Ledger from "./components/Ledger";
 
 const TYPE_META = {
   ASSET: { icon: DollarSign },
@@ -59,7 +60,7 @@ export default function ChartOfAccounts() {
 
       {/* Categorized lists */}
 
-
+<Ledger accountCode={1001}/>
       {/* 🔹 Edit Dialog */}
       {editingAccount && (
         <Dialog open onOpenChange={() => setEditingAccount(null)}>
