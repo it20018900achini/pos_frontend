@@ -1,4 +1,3 @@
-// Ledger.js
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -21,9 +20,9 @@ export default function Ledger({ accountCode }) {
     bfBalance: 0,
     hasMore: true,
   });
-
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const [getLedger, { isLoading, isError }] = useLazyGetLedgerQuery();
 
@@ -34,12 +33,19 @@ export default function Ledger({ accountCode }) {
   }, [accountCode]);
 
   const fetchPage = async (pageNumber) => {
+    const MIN_LOADING_TIME = 500; // 500ms minimum spinner
+
     try {
-      const result = await getLedger({
+      if (pageNumber > 0) setIsLoadingMore(true);
+
+      const delay = new Promise((resolve) => setTimeout(resolve, MIN_LOADING_TIME));
+      const fetchData = getLedger({
         accountCode,
         page: pageNumber,
         size: pageSize,
       }).unwrap();
+
+      const result = await Promise.all([delay, fetchData]).then(([_, data]) => data);
 
       setLedgerData((prev) => ({
         rows: [...prev.rows, ...result.rows],
@@ -50,6 +56,8 @@ export default function Ledger({ accountCode }) {
       setPage(pageNumber);
     } catch (err) {
       console.error("Error fetching ledger:", err);
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -93,9 +101,7 @@ export default function Ledger({ accountCode }) {
             <td colSpan={3}>B/F Balance</td>
             <td className="text-right">0.00</td>
             <td className="text-right">0.00</td>
-            <td className="text-right">
-              {ledgerData.bfBalance.toFixed(2)}
-            </td>
+            <td className="text-right">{ledgerData.bfBalance.toFixed(2)}</td>
           </tr>
 
           {/* Ledger rows */}
@@ -107,14 +113,7 @@ export default function Ledger({ accountCode }) {
                 <tr className={`${rowColor} border-t border-gray-200`}>
                   <td>{row.entryDate ? new Date(row.entryDate).toLocaleDateString() : "-"}</td>
                   <td>{row.description}</td>
-                 
-                  <td className="text-right text-green-700">{row.debit.toFixed(2)}</td>
-                  <td className="text-right text-red-500">{row.credit.toFixed(2)}</td>
-                  <td className={`text-right ${row.balance < 0 ? "text-red-500" : ""}`}>
-                    {row.balance.toFixed(2)}
-                  </td>
-                </tr>
-                 <tr colSpan={5}>
+                  <td>
                     {row.relatedLines?.length > 0
                       ? row.relatedLines.map((r, i) => (
                           <Button
@@ -127,10 +126,44 @@ export default function Ledger({ accountCode }) {
                           </Button>
                         ))
                       : "-"}
-                  </tr>
+                  </td>
+                  <td className="text-right text-green-700">{row.debit.toFixed(2)}</td>
+                  <td className="text-right text-red-500">{row.credit.toFixed(2)}</td>
+                  <td className={`text-right ${row.balance < 0 ? "text-red-500" : ""}`}>
+                    {row.balance.toFixed(2)}
+                  </td>
+                </tr>
               </React.Fragment>
             );
           })}
+      { (isLoadingMore || isLoading)&&<tr>
+  <td colSpan={6} className="text-center py-4">
+    <div className="flex justify-center items-center space-x-2">
+      <svg
+        className="animate-spin h-5 w-5 text-blue-600"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        ></circle>
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+        ></path>
+      </svg>
+      <span>Loading...</span>
+    </div>
+  </td>
+</tr>}
+
         </tbody>
 
         <tfoot className="bg-gray-100 font-semibold">
@@ -143,15 +176,16 @@ export default function Ledger({ accountCode }) {
         </tfoot>
       </table>
 
+      {/* Load More Button */}
       {ledgerData.hasMore && (
-        <Button onClick={() => fetchPage(page + 1)} disabled={isLoading}>
-          {isLoading ? "Loading..." : "Load More"}
+        <Button onClick={() => fetchPage(page + 1)} disabled={isLoadingMore || isLoading}>
+          {(isLoadingMore || isLoading) ? "Loading..." : "Load More"}
         </Button>
       )}
 
       {/* Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[90%] overflow-y-auto h-screen ">
+        <DialogContent className="sm:max-w-[90%] overflow-y-auto h-screen">
           <DialogHeader>
             <DialogTitle>Account Ledger</DialogTitle>
           </DialogHeader>
@@ -164,7 +198,6 @@ export default function Ledger({ accountCode }) {
             </div>
           )}
 
-          {/* Pass selectedAccount.code to LedgerDialog */}
           {selectedAccount && <LedgerDialog accountCode={selectedAccount.code} />}
 
           <DialogClose asChild>
