@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   useGetChartOfAccountsQuery,
   useUpdateChartOfAccountMutation,
 } from "@/Redux Toolkit/features/accounting/accountingApi";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -16,51 +15,64 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  DollarSign,
-  CreditCard,
-  User,
-  TrendingUp,
-  BookOpen,
-  HelpCircle,
-  Pencil,
-} from "lucide-react";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import JournalForm from "./components/JournalForm";
 import Ledger from "./components/Ledger";
 
-const TYPE_META = {
-  ASSET: { icon: DollarSign },
-  LIABILITY: { icon: CreditCard },
-  EQUITY: { icon: User },
-  INCOME: { icon: TrendingUp },
-  EXPENSE: { icon: BookOpen },
-  NA: { icon: HelpCircle },
+// Flatten nested accounts
+const flattenAccounts = (accounts) => {
+  let result = [];
+  const traverse = (accList) => {
+    accList.forEach((acc) => {
+      result.push(acc);
+      if (acc.children?.length) traverse(acc.children);
+    });
+  };
+  traverse(accounts);
+  return result;
 };
 
 export default function ChartOfAccounts() {
+  const { data: accounts = [], isLoading, isError, refetch } =
     useGetChartOfAccountsQuery();
 
-
-
   const [updateAccount] = useUpdateChartOfAccountMutation();
-
- 
-
   const [editingAccount, setEditingAccount] = useState(null);
 
+  // Selected account for Ledger
+  const [selectedAccountCode, setSelectedAccountCode] = useState("");
 
-  
+  // Flattened accounts for select options
+  const flatAccounts = useMemo(() => flattenAccounts(accounts), [accounts]);
+
   return (
     <div className="space-y-6">
+      {/* 🔹 Select Account for Ledger */}
+      <div className="flex items-center space-x-4">
+        <Select
+          value={selectedAccountCode}
+          onValueChange={(code) => setSelectedAccountCode(code)}
+        >
+          <SelectTrigger className="w-64">
+            <SelectValue placeholder="Select Account for Ledger" />
+          </SelectTrigger>
+          <SelectContent>
+            {flatAccounts.map((account) => (
+              <SelectItem key={account.id} value={account.code}>
+                {account.code} - {account.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button onClick={refetch}>Refresh Accounts</Button>
+      </div>
 
-      {/* Categorized lists */}
+      {/* 🔹 Ledger Component */}
+      {selectedAccountCode && <Ledger accountCode={selectedAccountCode} />}
 
-<Ledger accountCode={1001}/>
       {/* 🔹 Edit Dialog */}
       {editingAccount && (
         <Dialog open onOpenChange={() => setEditingAccount(null)}>
@@ -72,19 +84,13 @@ export default function ChartOfAccounts() {
               <Input
                 value={editingAccount.code}
                 onChange={(e) =>
-                  setEditingAccount({
-                    ...editingAccount,
-                    code: e.target.value,
-                  })
+                  setEditingAccount({ ...editingAccount, code: e.target.value })
                 }
               />
               <Input
                 value={editingAccount.name}
                 onChange={(e) =>
-                  setEditingAccount({
-                    ...editingAccount,
-                    name: e.target.value,
-                  })
+                  setEditingAccount({ ...editingAccount, name: e.target.value })
                 }
               />
               <Select

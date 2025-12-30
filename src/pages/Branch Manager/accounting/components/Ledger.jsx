@@ -3,41 +3,49 @@
 import React, { useState, useEffect } from "react";
 import { useLazyGetLedgerQuery } from "@/Redux Toolkit/features/accounting/accountingApi";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 export default function Ledger({ accountCode }) {
+  const pageSize = 5;
   const [page, setPage] = useState(0);
   const [ledgerData, setLedgerData] = useState({
-    bfBalance: 0,
     rows: [],
+    bfBalance: 0,
     hasMore: true,
   });
 
+  // Dialog state
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   const [getLedger, { isLoading, isError }] = useLazyGetLedgerQuery();
 
-  // Reset ledger whenever accountCode changes
   useEffect(() => {
-    setLedgerData({ bfBalance: 0, rows: [], hasMore: true });
+    setLedgerData({ rows: [], bfBalance: 0, hasMore: true });
     setPage(0);
     fetchPage(0);
   }, [accountCode]);
 
   const fetchPage = async (pageNumber) => {
     try {
-      const result = await getLedger({ accountCode, page: pageNumber, size: 5 }).unwrap();
+      const result = await getLedger({
+        accountCode,
+        page: pageNumber,
+        size: pageSize,
+      }).unwrap();
 
-      if (pageNumber === 0) {
-        setLedgerData({
-          bfBalance: result.bfBalance,
-          rows: result.rows,
-          hasMore: result.hasMore,
-        });
-      } else {
-        setLedgerData((prev) => ({
-          ...prev,
-          rows: [...prev.rows, ...result.rows],
-          hasMore: result.hasMore,
-        }));
-      }
+      setLedgerData((prev) => ({
+        rows: [...prev.rows, ...result.rows],
+        bfBalance: pageNumber === 0 ? result.bfBalance : prev.bfBalance,
+        hasMore: result.hasMore,
+      }));
 
       setPage(pageNumber);
     } catch (err) {
@@ -45,31 +53,37 @@ export default function Ledger({ accountCode }) {
     }
   };
 
-  if (isLoading && page === 0) return <p>Loading Ledger...</p>;
-  if (isError) return <p>Error loading ledger</p>;
+  const openAccountDialog = (account) => {
+    setSelectedAccount(account);
+    setIsDialogOpen(true);
+  };
 
-  // Sort rows descending by date, put null dates at bottom
-  const sortedRows = [...ledgerData.rows].sort((a, b) => {
-    if (!a.entryDate) return 1;
-    if (!b.entryDate) return -1;
-    return new Date(b.entryDate) - new Date(a.entryDate);
-  });
+  // Exclude B/F row
+  const normalRows = ledgerData.rows.filter((r) => r.entryDate !== null);
 
-  // Totals
-  const totalDebit = sortedRows.reduce((sum, r) => sum + r.debit, 0);
-  const totalCredit = sortedRows.reduce((sum, r) => sum + r.credit, 0);
-  const endingBalance = ledgerData.bfBalance + totalDebit - totalCredit;
+  const totalDebit = normalRows.reduce((sum, r) => sum + r.debit, 0);
+  const totalCredit = normalRows.reduce((sum, r) => sum + r.credit, 0);
+
+  const endingBalance = normalRows.length
+    ? normalRows[normalRows.length - 1].balance
+    : ledgerData.bfBalance;
+
+  const getRowColor = (row) => {
+    if (row.credit > 0) return "bg-red-50";
+    if (row.debit > 0) return "bg-green-50";
+    return "";
+  };
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold mb-2">Ledger - {accountCode}</h2>
+      <h2 className="text-2xl font-bold mb-2">Ledger – {accountCode}</h2>
 
       <table className="min-w-full border border-gray-300">
         <thead className="bg-gray-100">
           <tr>
             <th className="border px-2 py-1 text-left">Date</th>
             <th className="border px-2 py-1 text-left">Description</th>
-            <th className="border px-2 py-1 text-left">Account</th>
+            <th className="border px-2 py-1 text-left">Related Accounts</th>
             <th className="border px-2 py-1 text-right">Debit</th>
             <th className="border px-2 py-1 text-right">Credit</th>
             <th className="border px-2 py-1 text-right">Balance</th>
@@ -77,83 +91,140 @@ export default function Ledger({ accountCode }) {
         </thead>
 
         <tbody>
-          {/* B/F Balance row */}
-          <tr className="font-semibold bg-gray-50">
-            <td colSpan={5}>B/F Balance</td>
+          {/* B/F Balance */}
+          <tr className="font-semibold bg-gray-100 border-b border-gray-300">
+            <td colSpan={3}>B/F Balance</td>
+            <td className="text-right">0.00</td>
+            <td className="text-right">0.00</td>
             <td className="text-right">
-              {ledgerData.bfBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              {ledgerData.bfBalance.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
             </td>
           </tr>
 
-          {/* Ledger rows with running balance */}
-          {(() => {
-            let runningBalance = ledgerData.bfBalance;
-            return sortedRows.map((row, idx) => {
-              runningBalance += row.debit - row.credit;
+          {/* Ledger rows */}
+          {ledgerData.rows.map((row, idx) => {
+            const rowColor = getRowColor(row);
 
-              // Row background color
-              const rowBgClass =
-                row.debit > 0 ? "bg-green-50" : row.credit > 0 ? "bg-red-50" : "";
-
-              return (
-                <tr key={idx} className={rowBgClass}>
-                  <td>{row.entryDate ? new Date(row.entryDate).toLocaleDateString() : "-"}</td>
-                  <td>{row.description}</td>
+            return (
+              <React.Fragment key={idx}>
+                <tr className={`${rowColor} border-t border-gray-200`}>
                   <td>
-                    {row.accountInfoDTO
-                      ? `${row.accountInfoDTO.code} - ${row.accountInfoDTO.name}`
+                    {row.entryDate
+                      ? new Date(row.entryDate).toLocaleDateString()
                       : "-"}
                   </td>
-                  <td className="text-right font-medium text-green-700">
-                    {row.debit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  <td>{row.description}</td>
+                  <td>
+                    {row.relatedLines && row.relatedLines.length > 0
+                      ? row.relatedLines.map((r, i) => (
+                          <Button
+                            key={i}
+                            variant="link"
+                            className="p-0 text-blue-600 hover:underline text-sm mr-2"
+                            onClick={() => openAccountDialog(r.account)}
+                          >
+                            {r.account.code} - {r.account.name}
+                          </Button>
+                        ))
+                      : "-"}
                   </td>
-                  <td className="text-right font-medium text-red-700">
-                    {row.credit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  <td className="text-right text-green-700">
+                    {row.debit.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
+                  </td>
+                  <td className="text-right text-red-500">
+                    {row.credit.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
                   </td>
                   <td
-                    className={`text-right font-semibold ${
-                      runningBalance < 0 ? "text-red-600" : ""
+                    className={`text-right ${
+                      row.balance < 0 ? "text-red-500" : ""
                     }`}
                   >
-                    {runningBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    {row.balance.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
                   </td>
                 </tr>
-              );
-            });
-          })()}
+
+                {/* Related line breakdown */}
+                {row.relatedLines && row.relatedLines.length > 0 && (
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <td colSpan={6} className="pl-6 text-xs text-gray-600">
+                      {row.relatedLines.map((r, i) => (
+                        <div key={i}>
+                          {r.account.code} – {r.account.name}
+                          {r.debit > 0 && ` | Debit: ${r.debit.toFixed(2)}`}
+                          {r.credit > 0 && ` | Credit: ${r.credit.toFixed(2)}`}
+                        </div>
+                      ))}
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            );
+          })}
         </tbody>
 
-        {/* Totals row */}
         <tfoot className="bg-gray-100 font-semibold">
           <tr>
-            <td colSpan={3} className="text-left">Totals</td>
+            <td colSpan={3}>Totals</td>
             <td className="text-right text-green-800">
-              {totalDebit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              {totalDebit.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
             </td>
             <td className="text-right text-red-800">
-              {totalCredit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              {totalCredit.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
             </td>
             <td className="text-right font-bold">
-              {endingBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            </td>
-          </tr>
-
-          {/* C/F Balance row */}
-          <tr className="font-semibold bg-gray-50">
-            <td colSpan={5}>C/F Balance (Last Balance)</td>
-            <td className="text-right">
-              {endingBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              {endingBalance.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
             </td>
           </tr>
         </tfoot>
       </table>
 
-      {/* Load more button */}
       {ledgerData.hasMore && (
-        <Button onClick={() => fetchPage(page + 1)} disabled={isLoading}>
+        <Button
+          onClick={() => fetchPage(page + 1)}
+          disabled={isLoading}
+        >
           {isLoading ? "Loading..." : "Load More"}
         </Button>
       )}
+
+      {/* Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Account Details</DialogTitle>
+          </DialogHeader>
+          {selectedAccount && (
+            <div className="space-y-2 mt-2">
+              <div>
+                <strong>Code:</strong> {selectedAccount.code}
+              </div>
+              <div>
+                <strong>Name:</strong> {selectedAccount.name}
+              </div>
+              <div>
+                <strong>Type:</strong> {selectedAccount.type}
+              </div>
+            </div>
+          )}
+          <DialogClose asChild>
+            <Button className="mt-4">Close</Button>
+          </DialogClose>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
