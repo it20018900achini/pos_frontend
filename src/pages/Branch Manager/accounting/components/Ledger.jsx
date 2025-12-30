@@ -1,3 +1,4 @@
+// Ledger.js
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,9 +9,9 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+import LedgerDialog from "./LedgerDialog";
 
 export default function Ledger({ accountCode }) {
   const pageSize = 5;
@@ -21,7 +22,6 @@ export default function Ledger({ accountCode }) {
     hasMore: true,
   });
 
-  // Dialog state
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -58,12 +58,9 @@ export default function Ledger({ accountCode }) {
     setIsDialogOpen(true);
   };
 
-  // Exclude B/F row
   const normalRows = ledgerData.rows.filter((r) => r.entryDate !== null);
-
   const totalDebit = normalRows.reduce((sum, r) => sum + r.debit, 0);
   const totalCredit = normalRows.reduce((sum, r) => sum + r.credit, 0);
-
   const endingBalance = normalRows.length
     ? normalRows[normalRows.length - 1].balance
     : ledgerData.bfBalance;
@@ -97,9 +94,7 @@ export default function Ledger({ accountCode }) {
             <td className="text-right">0.00</td>
             <td className="text-right">0.00</td>
             <td className="text-right">
-              {ledgerData.bfBalance.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}
+              {ledgerData.bfBalance.toFixed(2)}
             </td>
           </tr>
 
@@ -110,14 +105,17 @@ export default function Ledger({ accountCode }) {
             return (
               <React.Fragment key={idx}>
                 <tr className={`${rowColor} border-t border-gray-200`}>
-                  <td>
-                    {row.entryDate
-                      ? new Date(row.entryDate).toLocaleDateString()
-                      : "-"}
-                  </td>
+                  <td>{row.entryDate ? new Date(row.entryDate).toLocaleDateString() : "-"}</td>
                   <td>{row.description}</td>
-                  <td>
-                    {row.relatedLines && row.relatedLines.length > 0
+                 
+                  <td className="text-right text-green-700">{row.debit.toFixed(2)}</td>
+                  <td className="text-right text-red-500">{row.credit.toFixed(2)}</td>
+                  <td className={`text-right ${row.balance < 0 ? "text-red-500" : ""}`}>
+                    {row.balance.toFixed(2)}
+                  </td>
+                </tr>
+                 <tr colSpan={5}>
+                    {row.relatedLines?.length > 0
                       ? row.relatedLines.map((r, i) => (
                           <Button
                             key={i}
@@ -129,42 +127,7 @@ export default function Ledger({ accountCode }) {
                           </Button>
                         ))
                       : "-"}
-                  </td>
-                  <td className="text-right text-green-700">
-                    {row.debit.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                    })}
-                  </td>
-                  <td className="text-right text-red-500">
-                    {row.credit.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                    })}
-                  </td>
-                  <td
-                    className={`text-right ${
-                      row.balance < 0 ? "text-red-500" : ""
-                    }`}
-                  >
-                    {row.balance.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                    })}
-                  </td>
-                </tr>
-
-                {/* Related line breakdown */}
-                {row.relatedLines && row.relatedLines.length > 0 && (
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    <td colSpan={6} className="pl-6 text-xs text-gray-600">
-                      {row.relatedLines.map((r, i) => (
-                        <div key={i}>
-                          {r.account.code} – {r.account.name}
-                          {r.debit > 0 && ` | Debit: ${r.debit.toFixed(2)}`}
-                          {r.credit > 0 && ` | Credit: ${r.credit.toFixed(2)}`}
-                        </div>
-                      ))}
-                    </td>
                   </tr>
-                )}
               </React.Fragment>
             );
           })}
@@ -173,53 +136,37 @@ export default function Ledger({ accountCode }) {
         <tfoot className="bg-gray-100 font-semibold">
           <tr>
             <td colSpan={3}>Totals</td>
-            <td className="text-right text-green-800">
-              {totalDebit.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}
-            </td>
-            <td className="text-right text-red-800">
-              {totalCredit.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}
-            </td>
-            <td className="text-right font-bold">
-              {endingBalance.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}
-            </td>
+            <td className="text-right text-green-800">{totalDebit.toFixed(2)}</td>
+            <td className="text-right text-red-800">{totalCredit.toFixed(2)}</td>
+            <td className="text-right font-bold">{endingBalance.toFixed(2)}</td>
           </tr>
         </tfoot>
       </table>
 
       {ledgerData.hasMore && (
-        <Button
-          onClick={() => fetchPage(page + 1)}
-          disabled={isLoading}
-        >
+        <Button onClick={() => fetchPage(page + 1)} disabled={isLoading}>
           {isLoading ? "Loading..." : "Load More"}
         </Button>
       )}
 
       {/* Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[90%] overflow-y-auto h-screen ">
           <DialogHeader>
-            <DialogTitle>Account Details</DialogTitle>
+            <DialogTitle>Account Ledger</DialogTitle>
           </DialogHeader>
+
           {selectedAccount && (
             <div className="space-y-2 mt-2">
-              <div>
-                <strong>Code:</strong> {selectedAccount.code}
-              </div>
-              <div>
-                <strong>Name:</strong> {selectedAccount.name}
-              </div>
-              <div>
-                <strong>Type:</strong> {selectedAccount.type}
-              </div>
+              <div><strong>Code:</strong> {selectedAccount.code}</div>
+              <div><strong>Name:</strong> {selectedAccount.name}</div>
+              <div><strong>Type:</strong> {selectedAccount.type}</div>
             </div>
           )}
+
+          {/* Pass selectedAccount.code to LedgerDialog */}
+          {selectedAccount && <LedgerDialog accountCode={selectedAccount.code} />}
+
           <DialogClose asChild>
             <Button className="mt-4">Close</Button>
           </DialogClose>
