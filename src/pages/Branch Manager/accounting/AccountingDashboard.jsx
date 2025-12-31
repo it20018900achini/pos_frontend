@@ -41,7 +41,9 @@ export default function AccountingDashboard() {
 
         <TabsContent value="journals">
           <JournalForm/>
+          <hr className="my-8"/>
           <JournalDashboard />
+
           <JournalByAccount/>
         </TabsContent>
 

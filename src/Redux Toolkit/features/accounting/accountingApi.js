@@ -69,8 +69,17 @@ getProfitLoss: builder.query({
     return `/accounting/reports/profit-loss?${params.toString()}`;
   }
 }),
+getBalanceSheet: builder.query({
+  query: ({ start, end }) => {
+    const params = new URLSearchParams({
+      start, // e.g., "2026-01-01T00:00:00"
+      end,   // e.g., "2026-01-31T23:59:59"
+    });
+    return `/accounting/reports/balance-sheet?${params.toString()}`;
+  },
+}),
 
-    getBalanceSheet: builder.query({ query: () => "/accounting/reports/balance-sheet" }),
+    
     getTotalExpensesPerCategory: builder.query({ query: () => "/accounting/reports/expenses-by-category" }),
     getExpenseReport: builder.query({
       query: ({ from, to }) => `/accounting/reports/expense?from=${from}&to=${to}`,
