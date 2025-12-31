@@ -51,24 +51,7 @@ export default function ChartOfAccounts() {
   return (
     <div className="space-y-6">
       {/* 🔹 Select Account for Ledger */}
-      <div className="flex items-center space-x-4">
-        <Select
-          value={selectedAccountCode}
-          onValueChange={(code) => setSelectedAccountCode(code)}
-        >
-          <SelectTrigger className="w-64">
-            <SelectValue placeholder="Select Account for Ledger" />
-          </SelectTrigger>
-          <SelectContent>
-            {flatAccounts.map((account) => (
-              <SelectItem key={account.id} value={account.code}>
-                {account.code} - {account.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button onClick={refetch}>Refresh Accounts</Button>
-      </div>
+     
 
       {/* 🔹 Ledger Component */}
       {selectedAccountCode && <Ledger accountCode={selectedAccountCode} />}

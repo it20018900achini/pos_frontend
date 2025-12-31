@@ -4,6 +4,7 @@ import {
   useGetChartOfAccountsQuery,
   useCreateChartOfAccountMutation,
 } from "@/Redux Toolkit/featues/accounting/accountingApi";
+import LedgerDialog from "./LedgerDialog";
 
 export default function ChartOfAccounts() {
   const { data: accounts, isLoading, isError, refetch } = useGetChartOfAccountsQuery();
@@ -30,7 +31,7 @@ export default function ChartOfAccounts() {
       <h2 className="text-xl font-semibold mb-2">Chart of Accounts</h2>
       <ul>
         {accounts?.map(acc => (
-          <li key={acc.id}>{acc.code} - {acc.name}</li>
+          <li key={acc.id}>{acc.code} - {acc.name}<LedgerDialog accountCode={acc.code}/></li>
         ))}
       </ul>
 

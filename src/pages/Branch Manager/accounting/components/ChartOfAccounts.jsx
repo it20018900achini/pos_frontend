@@ -34,6 +34,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import LedgerDialog from "./LedgerDialog";
+import LedgerWithDialog from "./LedgerWithDialog";
 
 /* 🔹 Tailwind + Icon config */
 const TYPE_META = {
@@ -99,6 +101,8 @@ export default function ChartOfAccounts() {
             <Badge variant="outline" className={meta.badge}>
               {acc.type ?? "N/A"}
             </Badge>
+            
+            <LedgerWithDialog accountCode={acc?.code}/>
           </div>
 
           <Button
