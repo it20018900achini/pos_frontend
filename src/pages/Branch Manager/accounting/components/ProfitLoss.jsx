@@ -1,77 +1,147 @@
 "use client";
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { useGetProfitLossQuery } from "@/Redux Toolkit/features/accounting/accountingApi";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
 
-export default function ProfitLoss() {
-  const { data, isLoading, isError, refetch } = useGetProfitLossQuery();
+export default function ProfitLossReport() {
+  const today = new Date();
+
+  const defaultStart = useMemo(
+    () => new Date(today.getFullYear(), today.getMonth(), 1).toISOString(),
+    [today]
+  );
+  const defaultEnd = useMemo(
+    () => new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59).toISOString(),
+    [today]
+  );
+
+  const [start, setStart] = useState(defaultStart);
+  const [end, setEnd] = useState(defaultEnd);
+
+  const { data: report, isLoading, isError, refetch } = useGetProfitLossQuery({ start, end });
 
   if (isLoading) return <p>Loading Profit & Loss...</p>;
-  if (isError) return <p>Error loading Profit & Loss</p>;
+  if (isError) return <p>Error loading report.</p>;
 
-  const { income = [], expenses = [], totalIncome = 0, totalExpense = 0, netProfit = 0 } = data;
+  // Group accounts by type
+  const incomes = report?.incomes || [];
+  const expenses = report?.expenses || [];
 
-  const renderList = (items) =>
-    items.map((item) => (
-      <div key={item.id} className="flex justify-between pl-4">
-        <span>{item.name}</span>
-        <Badge variant="outline" className="border-gray-300 text-gray-700">
-          {item.amount?.toLocaleString() ?? 0}
-        </Badge>
-      </div>
-    ));
+  const totalIncome = incomes.reduce((sum, acc) => sum + acc.credit - acc.debit, 0);
+  const totalExpense = expenses.reduce((sum, acc) => sum + acc.debit - acc.credit, 0);
+  const netProfit = totalIncome - totalExpense;
 
   return (
-    <div className="space-y-4">
-      <Card className="space-y-2">
-        <CardHeader>
-          <CardTitle>Revenue</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1">
-          {income.length > 0 ? renderList(income) : <p className="text-gray-500">No income</p>}
-          <div className="flex justify-between font-semibold mt-2">
-            <span>Total Revenue:</span>
-            <Badge variant="outline" className="border-teal-500 text-teal-600">
-              {totalIncome.toLocaleString()}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Profit & Loss Statement</h2>
 
-      <Card className="space-y-2">
-        <CardHeader>
-          <CardTitle>Expenses</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-1">
-          {expenses.length > 0 ? renderList(expenses) : <p className="text-gray-500">No expenses</p>}
-          <div className="flex justify-between font-semibold mt-2">
-            <span>Total Expenses:</span>
-            <Badge variant="outline" className="border-orange-500 text-orange-600">
-              {totalExpense.toLocaleString()}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Date Inputs */}
+      <div className="flex gap-2 items-center mb-4">
+        <label>
+          Start:
+          <Input
+            type="date"
+            value={format(new Date(start), "yyyy-MM-dd")}
+            onChange={(e) => {
+              const d = new Date(e.target.value);
+              d.setHours(0, 0, 0, 0);
+              setStart(d.toISOString());
+            }}
+            className="ml-2"
+          />
+        </label>
+        <label>
+          End:
+          <Input
+            type="date"
+            value={format(new Date(end), "yyyy-MM-dd")}
+            onChange={(e) => {
+              const d = new Date(e.target.value);
+              d.setHours(23, 59, 59, 999);
+              setEnd(d.toISOString());
+            }}
+            className="ml-2"
+          />
+        </label>
+        <Button onClick={refetch} variant="outline">
+          Refresh
+        </Button>
+      </div>
 
+      {/* Statement Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Net Profit</CardTitle>
+          <CardTitle>Profit & Loss</CardTitle>
         </CardHeader>
-        <CardContent className="flex justify-between font-semibold">
-          <span>Net Profit:</span>
-          <Badge variant="outline" className="border-green-500 text-green-600">
-            {netProfit.toLocaleString()}
-          </Badge>
+        <CardContent>
+          <table className="w-full border-collapse border border-gray-300">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border border-gray-300 p-2 text-left">Account</th>
+                <th className="border border-gray-300 p-2 text-left">Code</th>
+                <th className="border border-gray-300 p-2 text-right">Debit</th>
+                <th className="border border-gray-300 p-2 text-right">Credit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* Income Section */}
+              <tr className="bg-gray-200 font-bold">
+                <td colSpan={4}>INCOME</td>
+              </tr>
+              {incomes.map((acc, idx) => (
+                <tr key={acc.accountCode} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                  <td className="border border-gray-300 p-2">{acc.accountName}</td>
+                  <td className="border border-gray-300 p-2">{acc.accountCode}</td>
+                  <td className="border border-gray-300 p-2 text-right">0.00</td>
+                  <td className="border border-gray-300 p-2 text-right">
+                    {acc.credit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </td>
+                </tr>
+              ))}
+              <tr className="font-bold bg-gray-100">
+                <td colSpan={2} className="text-right border border-gray-300 p-2">Total Income</td>
+                <td className="border border-gray-300 p-2 text-right">0.00</td>
+                <td className="border border-gray-300 p-2 text-right">
+                  {totalIncome.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </td>
+              </tr>
+
+              {/* Expense Section */}
+              <tr className="bg-gray-200 font-bold">
+                <td colSpan={4}>EXPENSES</td>
+              </tr>
+              {expenses.map((acc, idx) => (
+                <tr key={acc.accountCode} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                  <td className="border border-gray-300 p-2">{acc.accountName}</td>
+                  <td className="border border-gray-300 p-2">{acc.accountCode}</td>
+                  <td className="border border-gray-300 p-2 text-right">
+                    {acc.debit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="border border-gray-300 p-2 text-right">0.00</td>
+                </tr>
+              ))}
+              <tr className="font-bold bg-gray-100">
+                <td colSpan={2} className="text-right border border-gray-300 p-2">Total Expenses</td>
+                <td className="border border-gray-300 p-2 text-right">
+                  {totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </td>
+                <td className="border border-gray-300 p-2 text-right">0.00</td>
+              </tr>
+
+              {/* Net Profit/Loss */}
+              <tr className="font-bold bg-gray-300">
+                <td colSpan={2} className="text-right border border-gray-300 p-2">Net Profit / Loss</td>
+                <td colSpan={2} className="border border-gray-300 p-2 text-right">
+                  {netProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </CardContent>
       </Card>
-
-      <button
-        onClick={refetch}
-        className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-      >
-        Refresh
-      </button>
     </div>
   );
 }

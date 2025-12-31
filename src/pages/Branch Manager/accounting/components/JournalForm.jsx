@@ -5,6 +5,8 @@ import {
   useCreateJournalMutation,
   useGetChartOfAccountsQuery,
 } from "@/Redux Toolkit/features/accounting/accountingApi";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -133,8 +135,13 @@ export default function JournalForm() {
   };
 
   return (
-    <div className="space-y-4">
+    <Card className="space-y-4 p-3">
       {/* Header */}
+         <CardHeader>
+              <CardTitle className="text-xl font-bold">Journal Entry</CardTitle>
+            </CardHeader>
+                  <CardContent className="space-y-3 text-sm">
+            
       <div className="flex gap-2">
         <Input
           type="date"
@@ -214,7 +221,7 @@ export default function JournalForm() {
           <span>Total Debit: {totals.debit.toFixed(2)}</span>
           <span>Total Credit: {totals.credit.toFixed(2)}</span>
         </div>
-      </div>
-    </div>
+      </div></CardContent>
+    </Card>
   );
 }

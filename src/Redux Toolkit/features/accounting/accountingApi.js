@@ -34,8 +34,16 @@ export const accountingApi = apiSlice.injectEndpoints({
       query: ({ id, ...journal }) => ({ url: `/accounting/journals/${id}`, method: "PUT", body: journal }),
       invalidatesTags: ["Journal"],
     }),
+
+
+
+    updateJournalEntry: builder.mutation({
+      query: ({ id, ...journal }) => ({ url: `/accounting/journals/entry/${id}`, method: "PUT", body: journal }),
+      invalidatesTags: ["Journal"],
+    }),
+
     deleteJournal: builder.mutation({
-      query: (id) => ({ url: `/accounting/journals/${id}`, method: "DELETE" }),
+      query: (id) => ({ url: `/accounting/journals/entry/${id}`, method: "DELETE" }),
       invalidatesTags: ["Journal"],
     }),
     postSalary: builder.mutation({
@@ -55,7 +63,13 @@ export const accountingApi = apiSlice.injectEndpoints({
 
     // ===== Reports =====
     getTrialBalance: builder.query({ query: () => "/accounting/reports/trial-balance" }),
-    getProfitLoss: builder.query({ query: () => "/accounting/reports/profit-loss" }),
+getProfitLoss: builder.query({
+  query: ({ start, end }) => {
+    const params = new URLSearchParams({ start, end });
+    return `/accounting/reports/profit-loss?${params.toString()}`;
+  }
+}),
+
     getBalanceSheet: builder.query({ query: () => "/accounting/reports/balance-sheet" }),
     getTotalExpensesPerCategory: builder.query({ query: () => "/accounting/reports/expenses-by-category" }),
     getExpenseReport: builder.query({
@@ -88,6 +102,8 @@ export const {
   useGetJournalsQuery,
   useCreateJournalMutation,
   useUpdateJournalMutation,
+
+  useUpdateJournalEntryMutation,
   useDeleteJournalMutation,
   usePostSalaryMutation,
   // Expenses
