@@ -16,6 +16,8 @@ const initialState = {
   selectedUser: null,
   loading: false,
   error: null,
+    initialized: false, // 👈 KEY FIX
+
 };
 
 const userSlice = createSlice({
@@ -33,15 +35,21 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(getUserProfile.pending, (state) => { state.loading = true; })
-      .addCase(getUserProfile.fulfilled, (state, action) => {
-        state.loading = false;
-        state.userProfile = action.payload;
-      })
-      .addCase(getUserProfile.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(getUserProfile.pending, (state) => {
+  state.loading = true;
+})
+
+.addCase(getUserProfile.fulfilled, (state, action) => {
+  state.userProfile = action.payload
+  state.loading = false
+  state.initialized = true
+})
+
+.addCase(getUserProfile.rejected, (state) => {
+  state.loading = false
+  state.initialized = true
+  state.userProfile = null
+})
 
       .addCase(getCustomers.fulfilled, (state, action) => {
         state.customers = action.payload;

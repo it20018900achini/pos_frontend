@@ -1,21 +1,37 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import api from '@/utils/api';
 
-// 🔹 Get user profile from JWT
-export const getUserProfile = createAsyncThunk('user/getProfile', async (token, { rejectWithValue }) => {
-  try {
-    const res = await api.get('/api/users/profile', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    
-    console.log('Get user profile success:', res.data);
-    return res.data;
-  } catch (err) {
-    console.error('Get user profile error:', err);
-    return rejectWithValue(err.response?.data?.message || 'Failed to fetch profile');
-  }
-});
+export const getUserProfile = createAsyncThunk(
+  "user/getProfile",
+  async (token, { rejectWithValue }) => {
+    try {
+      const res = await api.get("/api/users/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
+      console.log("✅ Get user profile success:", res.data);
+      return res.data;
+    } catch (err) {
+      // Extract backend error info if available
+      const message =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        "Failed to fetch profile";
+
+      console.error("❌ Get user profile error:", {
+        status: err.response?.status,
+        url: err.config?.url,
+        method: err.config?.method,
+        message,
+        data: err.response?.data,
+      });
+
+      // Pass the error message to rejected action
+      return rejectWithValue(message);
+    }
+  }
+);
 // 🔹 Get all customers
 export const getCustomers = createAsyncThunk('user/getCustomers', async (token, { rejectWithValue }) => {
   try {
