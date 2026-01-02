@@ -4,10 +4,10 @@
 import React from "react";
 import Ledger from "./Ledger";
 
-function LedgerDialog({ accountCode }) {
+function LedgerDialog({ accountId }) {
   return (
     <div className="mt-4">
-      <Ledger accountCode={accountCode} />
+      <Ledger accountId={accountId} />
     </div>
   );
 }

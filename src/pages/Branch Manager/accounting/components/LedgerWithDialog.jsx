@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import Ledger from "./Ledger";
 
-export default function LedgerWithDialog({ accountCode }) {
+export default function LedgerWithDialog({ accountId }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -26,11 +26,11 @@ export default function LedgerWithDialog({ accountCode }) {
 
         <DialogContent className="sm:max-w-[90%] overflow-y-auto h-screen">
         <DialogHeader>
-          <DialogTitle>Ledger – {accountCode}</DialogTitle>
+          <DialogTitle>Ledger – {accountId}</DialogTitle>
         </DialogHeader>
 
         {/* Ledger inside dialog */}
-        <Ledger accountCode={accountCode} />
+        <Ledger accountId={accountId} />
       </DialogContent>
     </Dialog>
   );

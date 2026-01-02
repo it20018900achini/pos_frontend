@@ -43,7 +43,7 @@ const formatAmount = (val) =>
   Math.abs(val).toLocaleString(undefined, { minimumFractionDigits: 2 });
 
 /* ================= COMPONENT ================= */
-export default function Ledger({ accountCode, accountType = "ASSET" }) {
+export default function Ledger({ accountId, accountType = "ASSET" }) {
   const pageSize = 5;
   const [page, setPage] = useState(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -61,7 +61,7 @@ export default function Ledger({ accountCode, accountType = "ASSET" }) {
     setLedgerData({ rows: [], bfBalance: 0, hasMore: true });
     setPage(0);
     fetchPage(0);
-  }, [accountCode]);
+  }, [accountId]);
 
   const fetchPage = async (pageNumber) => {
     const MIN_LOADING = 500;
@@ -69,7 +69,7 @@ export default function Ledger({ accountCode, accountType = "ASSET" }) {
       if (pageNumber > 0) setIsLoadingMore(true);
 
       const delay = new Promise((r) => setTimeout(r, MIN_LOADING));
-      const request = getLedger({ accountCode, page: pageNumber, size: pageSize }).unwrap();
+      const request = getLedger({ accountId, page: pageNumber, size: pageSize }).unwrap();
       const [, result] = await Promise.all([delay, request]);
 
       setLedgerData((prev) => ({
@@ -112,7 +112,7 @@ export default function Ledger({ accountCode, accountType = "ASSET" }) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">Ledger – {accountCode}</h2>
+      <h2 className="text-xl font-bold">Ledger – {accountId}</h2>
 
       <table className="min-w-full border border-gray-300">
         <thead className="bg-gray-100">
@@ -213,7 +213,8 @@ export default function Ledger({ accountCode, accountType = "ASSET" }) {
           <DialogHeader>
             <DialogTitle>Account Ledger</DialogTitle>
           </DialogHeader>
-          {selectedAccount && <LedgerDialog accountCode={selectedAccount.code} />}
+          {JSON.stringify(selectedAccount)}
+          {selectedAccount && <LedgerDialog accountId={selectedAccount.id} />}
           <DialogClose asChild>
             <Button className="mt-4">Close</Button>
           </DialogClose>

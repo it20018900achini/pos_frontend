@@ -118,7 +118,7 @@ export default function JournalForm() {
         })),
       };
 
-      await createJournal(payload).unwrap();
+      await createJournal({branchId:52,...payload}).unwrap();
 
       toast({ title: "Journal entry saved!" });
 

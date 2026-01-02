@@ -143,7 +143,7 @@ export default function ChartOfAccounts() {
               {acc.type}
             </Badge>
 
-            <LedgerWithDialog accountCode={acc.code} />
+            <LedgerWithDialog accountId={acc.id} />
           </div>
 
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">

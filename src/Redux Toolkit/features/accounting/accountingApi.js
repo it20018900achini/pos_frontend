@@ -26,10 +26,15 @@ export const accountingApi = apiSlice.injectEndpoints({
       query: () => "/accounting/journals",
       providesTags: ["Journal"],
     }),
-    createJournal: builder.mutation({
-      query: (journal) => ({ url: "/accounting/journals", method: "POST", body: journal }),
-      invalidatesTags: ["Journal"],
-    }),
+createJournal: builder.mutation({
+  query: ({ branchId, ...journal }) => ({
+    url: `/accounting/journals?branchId=${branchId}`,
+    method: "POST",
+    body: journal,
+  }),
+  invalidatesTags: ["Journal"],
+}),
+
     updateJournal: builder.mutation({
       query: ({ id, ...journal }) => ({ url: `/accounting/journals/${id}`, method: "PUT", body: journal }),
       invalidatesTags: ["Journal"],
@@ -90,8 +95,8 @@ getBalanceSheet: builder.query({
     // Ledger endpoint
 
         getLedger: builder.query({
-      query: ({ accountCode, page = 0, size = 5 }) =>
-        `/accounting/journals/account/${accountCode}?page=${page}&size=${size}`,
+      query: ({ accountId, page = 0, size = 5 }) =>
+        `/accounting/journals/account/${accountId}?page=${page}&size=${size}`,
       providesTags: ["Ledger"],
     }),
   }),
