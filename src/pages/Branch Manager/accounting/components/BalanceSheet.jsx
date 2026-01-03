@@ -2,10 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useGetBalanceSheetQuery } from "@/Redux Toolkit/features/accounting/accountingApi";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 /* ===================== HELPERS ===================== */
-// Recursively compute total balance
 const computeTotal = (acc) =>
   !acc.children || acc.children.length === 0
     ? acc.balance ?? 0
@@ -15,9 +13,9 @@ const formatAmount = (val) =>
   (val ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 });
 
 /* ===================== ROW RENDER ===================== */
-const BalanceRow = ({ acc, level, expanded, toggle }) => {
+const BalanceRow = ({ acc, level, expandedMap, toggle }) => {
   const hasChildren = acc.children?.length > 0;
-  const isExpanded = expanded.has(acc.id);
+  const isExpanded = expandedMap[acc.id] || false;
   const total = computeTotal(acc);
 
   const colorClass =
@@ -52,7 +50,7 @@ const BalanceRow = ({ acc, level, expanded, toggle }) => {
             key={child.id ?? child.account}
             acc={child}
             level={level + 1}
-            expanded={expanded}
+            expandedMap={expandedMap}
             toggle={toggle}
           />
         ))}
@@ -61,7 +59,7 @@ const BalanceRow = ({ acc, level, expanded, toggle }) => {
 };
 
 /* ===================== SECTION TABLE ===================== */
-const SectionTable = ({ title, accounts, expanded, toggle }) => {
+const SectionTable = ({ title, accounts, expandedMap, toggle }) => {
   const sectionTotal = accounts.reduce((sum, a) => sum + computeTotal(a), 0);
 
   return (
@@ -81,7 +79,7 @@ const SectionTable = ({ title, accounts, expanded, toggle }) => {
               key={acc.id ?? acc.account}
               acc={acc}
               level={0}
-              expanded={expanded}
+              expandedMap={expandedMap}
               toggle={toggle}
             />
           ))}
@@ -100,14 +98,10 @@ const SectionTable = ({ title, accounts, expanded, toggle }) => {
 
 /* ===================== MAIN COMPONENT ===================== */
 export default function BalanceSheet() {
-  const [expanded, setExpanded] = useState(new Set());
+  const [expandedMap, setExpandedMap] = useState({});
 
   const toggle = (id) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+    setExpandedMap((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const [startDate, setStartDate] = useState(() => {
@@ -122,7 +116,6 @@ export default function BalanceSheet() {
     end: `${endDate}T23:59:59`,
   });
 
-  /* ===================== SAFE ASYNC REFETCH ===================== */
   useEffect(() => {
     const fetchData = async () => {
       await refetch();
@@ -181,9 +174,14 @@ export default function BalanceSheet() {
         {!isBalanced && <div>⚠ Balance Sheet NOT balanced</div>}
       </div>
 
-      <SectionTable title="Assets" accounts={assets} expanded={expanded} toggle={toggle} />
-      <SectionTable title="Liabilities" accounts={liabilities} expanded={expanded} toggle={toggle} />
-      <SectionTable title="Equity" accounts={equity} expanded={expanded} toggle={toggle} />
+      <SectionTable title="Assets" accounts={assets} expandedMap={expandedMap} toggle={toggle} />
+      <SectionTable
+        title="Liabilities"
+        accounts={liabilities}
+        expandedMap={expandedMap}
+        toggle={toggle}
+      />
+      <SectionTable title="Equity" accounts={equity} expandedMap={expandedMap} toggle={toggle} />
     </div>
   );
 }
