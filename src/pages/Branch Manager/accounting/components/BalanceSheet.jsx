@@ -12,6 +12,24 @@ const computeTotal = (acc) =>
 const formatAmount = (val) =>
   (val ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 });
 
+// Automatically expand accounts if they have children AND balance != 0
+const initializeExpandedMap = (accounts) => {
+  const map = {};
+  const traverse = (accList) => {
+    accList.forEach((acc) => {
+      const total = computeTotal(acc);
+      if ((acc.children && acc.children.length > 0) && total !== 0) {
+        map[acc.id] = true;
+      }
+      if (acc.children && acc.children.length > 0) {
+        traverse(acc.children);
+      }
+    });
+  };
+  traverse(accounts);
+  return map;
+};
+
 /* ===================== ROW RENDER ===================== */
 const BalanceRow = ({ acc, level, expandedMap, toggle }) => {
   const hasChildren = acc.children?.length > 0;
@@ -116,12 +134,17 @@ export default function BalanceSheet() {
     end: `${endDate}T23:59:59`,
   });
 
+  // Initialize expandedMap when data loads
   useEffect(() => {
-    const fetchData = async () => {
-      await refetch();
-    };
-    fetchData();
-  }, [startDate, endDate, refetch]);
+    if (data) {
+      const initialExpanded = {
+        ...initializeExpandedMap(data.assets),
+        ...initializeExpandedMap(data.liabilities),
+        ...initializeExpandedMap(data.equity),
+      };
+      setExpandedMap(initialExpanded);
+    }
+  }, [data]);
 
   if (isLoading) return <p>Loading Balance Sheet…</p>;
   if (isError) return <p>Error loading Balance Sheet</p>;

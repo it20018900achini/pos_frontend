@@ -1,8 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, Plus } from "lucide-react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { branchAdminRole } from "../../../utils/userRole";
 
 import EmployeeStats from "./EmployeeStats";
@@ -13,176 +10,159 @@ import {
   ResetPasswordDialog,
   PerformanceDialog,
 } from "./EmployeeDialogs";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
+
 import {
   createBranchEmployee,
   findBranchEmployees,
   updateEmployee,
 } from "../../../Redux Toolkit/features/employee/employeeThunks";
 
-const getStatusColor = (status) => {
-  if (status === "Active") {
-    return "text-indigo-500";
-  } else if (status === "Inactive") {
-    return "text-red-500";
-  } else {
-    return "text-gray-500";
-  }
-};
-
+/* -----------------------------
+   Component
+------------------------------ */
 const BranchEmployees = () => {
-  // const [employees, setEmployees] = useState([]); // Initialize with empty array
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] =
-    useState(false);
-  const [isPerformanceDialogOpen, setIsPerformanceDialogOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const dispatch = useDispatch();
-  // const { store } = useSelector((state) => state);
+
+  /* -----------------------------
+     Redux State
+  ------------------------------ */
   const { branch } = useSelector((state) => state.branch);
-  const {employees}=useSelector((state)=>state.employee)
+  const { employees, loading } = useSelector((state) => state.employee);
   const { userProfile } = useSelector((state) => state.user);
 
+  /* -----------------------------
+     UI State
+  ------------------------------ */
+  const [dialogs, setDialogs] = useState({
+    add: false,
+    edit: false,
+    resetPassword: false,
+    performance: false,
+  });
 
-  console.log("branch employees", employees);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
+  /* -----------------------------
+     Fetch Employees
+  ------------------------------ */
+  useEffect(() => {
+    if (branch?.id) {
+      dispatch(findBranchEmployees({ branchId: branch.id }));
+    }
+  }, [dispatch, branch?.id]);
 
-  const handleAddEmployee = (newEmployeeData) => {
-    if (branch?.id && userProfile.branchId) {
-      const data = {
+  /* -----------------------------
+     Dialog Helpers
+  ------------------------------ */
+  const openDialog = useCallback((type, employee = null) => {
+    setSelectedEmployee(employee);
+    setDialogs((prev) => ({ ...prev, [type]: true }));
+  }, []);
+
+  const closeDialog = useCallback((type) => {
+    setDialogs((prev) => ({ ...prev, [type]: false }));
+    setSelectedEmployee(null);
+  }, []);
+
+  /* -----------------------------
+     Handlers
+  ------------------------------ */
+  const handleAddEmployee = (employeeData) => {
+    if (!branch?.id || !userProfile?.branchId) return;
+
+    dispatch(
+      createBranchEmployee({
         employee: {
-          ...newEmployeeData,
-
-          username: newEmployeeData.email.split("@")[0],
+          ...employeeData,
+          username: employeeData.email.split("@")[0],
         },
         branchId: branch.id,
-        storeId:2,
-        token: localStorage.getItem("jwt"),
-      };
-      console.log("branch employee data -", data);
-      dispatch(createBranchEmployee(data));
-      setIsAddDialogOpen(false);
-    }
+        storeId: 2,
+      })
+    );
+
+    closeDialog("add");
   };
 
-  const handleEditEmployee = (updatedEmployeeData) => {
-    if (selectedEmployee?.id && localStorage.getItem("jwt")) {
-      const data={
-          employeeId: selectedEmployee.id,
-          employeeDetails: updatedEmployeeData,
-          token: localStorage.getItem("jwt"),
+  const handleEditEmployee = (employeeDetails) => {
+    if (!selectedEmployee?.id) return;
 
-        }
-      dispatch(
-        updateEmployee(data)
-      );
-      setIsEditDialogOpen(false);
-    }
+    dispatch(
+      updateEmployee({
+        employeeId: selectedEmployee.id,
+        employeeDetails,
+      })
+    );
+
+    closeDialog("edit");
   };
-
-    useEffect(() => {
-      if (branch?.id) {
-        dispatch(
-          findBranchEmployees({
-            branchId: branch?.id
-          })
-        );
-      }
-    }, [dispatch, branch?.id]);
-
-  // const handleEditEmployee = (updatedEmployeeData) => {
-  //   const updatedEmployees = employees.map((employee) =>
-  //     employee.id === updatedEmployeeData.id
-  //       ? {
-  //           ...updatedEmployeeData,
-  //           status: updatedEmployeeData.loginAccess ? "Active" : "Inactive",
-  //         }
-  //       : employee
-  //   );
-  //   setEmployees(updatedEmployees);
-  //   setIsEditDialogOpen(false);
-  // };
 
   const handleToggleAccess = (employee) => {
-    const updatedEmployees = employees.map((emp) =>
-      emp.id === employee.id
-        ? {
-            ...emp,
-            loginAccess: !emp.loginAccess,
-            status: !emp.loginAccess ? "Inactive" : "Active",
-          }
-        : emp
+    dispatch(
+      updateEmployee({
+        employeeId: employee.id,
+        employeeDetails: {
+          loginAccess: !employee.loginAccess,
+        },
+      })
     );
-    // setEmployees(updatedEmployees);
   };
 
-  const handleResetPassword = () => {
-    console.log(`Password reset for ${selectedEmployee.name}`);
-    setIsResetPasswordDialogOpen(false);
-  };
-
-  const openEditDialog = (employee) => {
-    setSelectedEmployee(employee);
-    setIsEditDialogOpen(true);
-  };
-
-  const openResetPasswordDialog = (employee) => {
-    setSelectedEmployee(employee);
-    setIsResetPasswordDialogOpen(true);
-  };
-
-  const openPerformanceDialog = (employee) => {
-    setSelectedEmployee(employee);
-    setIsPerformanceDialogOpen(true);
-  };
-
+  /* -----------------------------
+     Render
+  ------------------------------ */
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">
           Employee Management
         </h1>
+
         <AddEmployeeDialog
-          isAddDialogOpen={isAddDialogOpen}
-          setIsAddDialogOpen={setIsAddDialogOpen}
+          isAddDialogOpen={dialogs.add}
+          setIsAddDialogOpen={() => openDialog("add")}
           handleAddEmployee={handleAddEmployee}
           roles={branchAdminRole}
         />
       </div>
-      <EmployeeStats employees={employees} />
+
+      <EmployeeStats employees={employees} loading={loading} />
+
       <EmployeeTable
         employees={employees}
-        getStatusColor={getStatusColor}
+        loading={loading}
         handleToggleAccess={handleToggleAccess}
-        openEditDialog={openEditDialog}
-        openResetPasswordDialog={openResetPasswordDialog}
-        openPerformanceDialog={openPerformanceDialog}
+        openEditDialog={(emp) => openDialog("edit", emp)}
+        openResetPasswordDialog={(emp) =>
+          openDialog("resetPassword", emp)
+        }
+        openPerformanceDialog={(emp) =>
+          openDialog("performance", emp)
+        }
       />
 
+      {/* ---------------- Dialogs ---------------- */}
       <EditEmployeeDialog
-        isEditDialogOpen={isEditDialogOpen}
-        setIsEditDialogOpen={setIsEditDialogOpen}
+        isEditDialogOpen={dialogs.edit}
+        setIsEditDialogOpen={() => closeDialog("edit")}
         selectedEmployee={selectedEmployee}
         handleEditEmployee={handleEditEmployee}
         roles={branchAdminRole}
       />
 
       <ResetPasswordDialog
-        isResetPasswordDialogOpen={isResetPasswordDialogOpen}
-        setIsResetPasswordDialogOpen={setIsResetPasswordDialogOpen}
+        isResetPasswordDialogOpen={dialogs.resetPassword}
+        setIsResetPasswordDialogOpen={() =>
+          closeDialog("resetPassword")
+        }
         selectedEmployee={selectedEmployee}
-        handleResetPassword={handleResetPassword}
       />
 
       <PerformanceDialog
-        isPerformanceDialogOpen={isPerformanceDialogOpen}
-        setIsPerformanceDialogOpen={setIsPerformanceDialogOpen}
+        isPerformanceDialogOpen={dialogs.performance}
+        setIsPerformanceDialogOpen={() =>
+          closeDialog("performance")
+        }
         selectedEmployee={selectedEmployee}
       />
     </div>

@@ -17,7 +17,7 @@ const PageNotFound = () => {
     const jwt = localStorage.getItem("jwt");
 
     if (!jwt) {
-      navigate(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`, {
+      navigate(`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`, {
         replace: true,
       });
       return;
@@ -29,7 +29,7 @@ const PageNotFound = () => {
 
     if (error) {
       localStorage.removeItem("jwt");
-      navigate(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`, {
+      navigate(`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`, {
         replace: true,
       });
     }
