@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { login, signup, forgotPassword, resetPassword } from './authThunk';
+import { login, signup, forgotPassword, resetPassword, logoutThunk } from './authThunk';
 
 const authSlice = createSlice({
   name: 'auth',
@@ -101,7 +101,14 @@ const authSlice = createSlice({
         state.resetPasswordLoading = false;
         state.resetPasswordError = action.payload;
         state.resetPasswordSuccess = false;
-      });
+      })
+          .addCase(logoutThunk.fulfilled, (state) => {
+      state.user = null;
+      state.isAuthenticated = false;
+    })
+    .addCase(logoutThunk.rejected, (state, action) => {
+      console.error("Logout failed:", action.payload);
+    });
   },
 });
 

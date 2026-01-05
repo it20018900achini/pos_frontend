@@ -8,6 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import { logout } from "../../../Redux Toolkit/features/user/userThunks";
 import { ThemeToggle } from "../../../components/theme-toggle";
 import BranchInfo from "./BranchInfo";
+import { disconnectPresenceSocket } from "@/utils/presenceSocket";
+import { logoutThunk } from "../../../Redux Toolkit/features/auth/authThunk";
 
 const CashierSideBar = ({ navItems, onClose }) => {
   const dispatch = useDispatch();
@@ -27,7 +29,23 @@ const CashierSideBar = ({ navItems, onClose }) => {
     }
   }, [dispatch, userProfile]);
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
+
+ const jwt = localStorage.getItem("jwt");
+
+      // 2️⃣ Call backend logout
+      if (jwt) await dispatch(logoutThunk(jwt)).unwrap();
+
+      // 3️⃣ Disconnect WebSocket
+      disconnectPresenceSocket();
+
+      // 4️⃣ Navigate to login FIRST
+      navigate("/", { replace: true });
+
+      // 5️⃣ Clear Redux state + localStorage AFTER navigating
+      dispatch(logout());
+
+
     dispatch(logout());
     navigate("/");
   };

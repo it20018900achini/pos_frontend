@@ -1,14 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import api from "../../../utils/api";
 
-// ✅ Helper for clean error extraction
-const getErrorMessage = (err, fallback = "Request failed") => {
-  return (
-    err?.response?.data?.message ||
-    err?.message ||
-    fallback
-  );
-};
+
 
 // ✅ SIGNUP
 export const signup = createAsyncThunk(
@@ -91,6 +84,39 @@ export const resetPassword = createAsyncThunk(
     } catch (err) {
       console.error("❌ Reset password error:", err);
       return rejectWithValue(getErrorMessage(err, "Failed to reset password"));
+    }
+  }
+);
+// ✅ Helper for clean error extraction
+const getErrorMessage = (err, fallback = "Request failed") => {
+  return err?.response?.data?.message || err?.message || fallback;
+};
+
+// ---------------- LOGOUT ----------------
+export const logoutThunk = createAsyncThunk(
+  "auth/logout",
+  async (jwt, { rejectWithValue }) => {
+    try {
+      // If JWT not provided, try localStorage
+      const token = jwt || localStorage.getItem("jwt");
+      if (!token) throw new Error("No JWT found");
+
+      const res = await api.post(
+        "/auth/logout",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("✅ Logout success:", res.data);
+
+      return res.data;
+    } catch (err) {
+      console.error("❌ Logout error:", err);
+      return rejectWithValue(getErrorMessage(err, "Logout failed"));
     }
   }
 );
