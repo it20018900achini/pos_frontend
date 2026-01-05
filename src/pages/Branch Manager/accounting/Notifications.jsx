@@ -2,9 +2,40 @@
 import React, { useEffect, useState } from "react";
 import { connectPresenceSocket, disconnectPresenceSocket } from "@/utils/presenceSocket";
 
+const STORAGE_KEY = "notifications"; 
+const MAX_MESSAGES = 15; 
+
 export default function Notifications() {
   const [onlineUsers, setOnlineUsers] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  const [selfJoined, setSelfJoined] = useState(false);
+
+  const currentUserId = (() => {
+    try {
+      const jwt = localStorage.getItem("jwt");
+      if (!jwt) return null;
+      const payload = JSON.parse(atob(jwt.split(".")[1]));
+      return payload.userId || null;
+    } catch {
+      return null;
+    }
+  })();
+
+  // Detect device from userAgent
+  const getDevice = () => {
+    const ua = navigator.userAgent;
+    if (/iPhone|iPad|iPod/i.test(ua)) return "iPhone/iPad";
+    if (/Android/i.test(ua)) return "Android";
+    if (/Windows/i.test(ua)) return "Windows PC";
+    if (/Macintosh/i.test(ua)) return "Mac";
+    return "Unknown device";
+  };
+
+  const device = getDevice();
 
   useEffect(() => {
     const jwt = localStorage.getItem("jwt");
@@ -16,19 +47,31 @@ export default function Notifications() {
 
         // ------------------ ONLINE USERS ------------------
         if (Array.isArray(data)) {
-          // Full list of online users
           setOnlineUsers(data);
-        } else if (data.event === "userJoined") {
+
+          if (!selfJoined && currentUserId) {
+            addNotification(`✅ You joined the system from ${device}`);
+            setSelfJoined(true);
+          }
+        } 
+        else if (data.event === "userJoined") {
+          if (data.user.id !== currentUserId) {
+            addNotification(`${data.user.fullName || data.user.email} joined from ${device}`);
+          }
+
           setOnlineUsers((prev) => {
             if (prev.some((u) => u.id === data.user.id)) return prev;
             return [...prev, data.user];
           });
-          addNotification(`${data.user.fullName || data.user.email} joined the system`);
-        } else if (data.event === "userLeft") {
+        } 
+        else if (data.event === "userLeft") {
+          if (data.user.id !== currentUserId) {
+            addNotification(`${data.user.fullName || data.user.email} left the system`);
+          }
+
           setOnlineUsers((prev) =>
             prev.filter((u) => u.id !== data.user.id)
           );
-          addNotification(`${data.user.fullName || data.user.email} left the system`);
         }
 
         // ------------------ SYSTEM NOTIFICATIONS ------------------
@@ -43,14 +86,16 @@ export default function Notifications() {
     connectPresenceSocket(jwt, handleSocketMessage);
 
     return () => disconnectPresenceSocket();
-  }, []);
+  }, [currentUserId, selfJoined, device]);
 
-  // Add a notification and auto-remove after 5s
   const addNotification = (msg) => {
-    setNotifications((prev) => [...prev, msg]);
-    setTimeout(() => {
-      setNotifications((prev) => prev.slice(1));
-    }, 5000);
+    const timestamp = new Date().toLocaleTimeString();
+    setNotifications((prev) => {
+      const newList = [...prev, { msg, timestamp }];
+      const limitedList = newList.slice(-MAX_MESSAGES);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(limitedList));
+      return limitedList;
+    });
   };
 
   return (
@@ -68,13 +113,14 @@ export default function Notifications() {
       </div>
 
       {/* Notifications */}
-      <div className="fixed top-2 right-2 w-64 space-y-1 z-50">
-        {notifications.map((msg, i) => (
+      <div className="fixed top-2 right-2 w-72 space-y-1 z-50">
+        {notifications.map((n, i) => (
           <div
             key={i}
-            className="bg-green-200 p-2 rounded shadow text-sm"
+            className="bg-green-200 p-2 rounded shadow text-sm flex justify-between"
           >
-            {msg}
+            <span>{n.msg}</span>
+            <span className="text-gray-600 text-xs ml-2">{n.timestamp}</span>
           </div>
         ))}
       </div>
