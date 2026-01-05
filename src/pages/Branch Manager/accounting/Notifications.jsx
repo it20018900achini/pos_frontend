@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { connectPresenceSocket, disconnectPresenceSocket } from "@/utils/presenceSocket";
 
-const STORAGE_KEY = "notifications"; 
-const MAX_MESSAGES = 15; 
+const STORAGE_KEY = "notifications";
+const MAX_MESSAGES = 15;
 
 export default function Notifications() {
   const [onlineUsers, setOnlineUsers] = useState([]);
@@ -11,9 +11,31 @@ export default function Notifications() {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : [];
   });
+  const [localIP, setLocalIP] = useState("Fetching IP...");
 
-  const [selfJoined, setSelfJoined] = useState(false);
+  // Detect device from userAgent
+  const getDevice = () => {
+    const ua = navigator.userAgent;
+    if (/iPhone|iPad|iPod/i.test(ua)) return "iPhone/iPad";
+    if (/Android/i.test(ua)) return "Android";
+    if (/Windows/i.test(ua)) return "Windows PC";
+    if (/Macintosh/i.test(ua)) return "Mac";
+    return "Unknown device";
+  };
+  const device = getDevice();
 
+  // Get public IP from frontend (no backend needed)
+  const fetchPublicIP = async () => {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      setLocalIP(data.ip || "Unknown IP");
+    } catch {
+      setLocalIP("Unknown IP");
+    }
+  };
+
+  // Get current user ID from JWT
   const currentUserId = (() => {
     try {
       const jwt = localStorage.getItem("jwt");
@@ -25,21 +47,13 @@ export default function Notifications() {
     }
   })();
 
-  // Detect device from userAgent
-  const getDevice = () => {
-    const ua = navigator.userAgent;
-    if (/iPhone|iPad|iPod/i.test(ua)) return "iPhone/iPad";
-    if (/Android/i.test(ua)) return "Android";
-    if (/Windows/i.test(ua)) return "Windows PC";
-    if (/Macintosh/i.test(ua)) return "Mac";
-    return "Unknown device";
-  };
-
-  const device = getDevice();
-
   useEffect(() => {
+    fetchPublicIP(); // fetch IP on load
+
     const jwt = localStorage.getItem("jwt");
     if (!jwt) return;
+
+    let selfJoined = false;
 
     const handleSocketMessage = (event) => {
       try {
@@ -50,23 +64,25 @@ export default function Notifications() {
           setOnlineUsers(data);
 
           if (!selfJoined && currentUserId) {
-            addNotification(`✅ You joined the system from ${device}`);
-            setSelfJoined(true);
+            addNotification(`✅ You joined from ${device} (${localIP})`);
+            selfJoined = true;
           }
-        } 
-        else if (data.event === "userJoined") {
+        } else if (data.event === "userJoined") {
           if (data.user.id !== currentUserId) {
-            addNotification(`${data.user.fullName || data.user.email} joined from ${device}`);
+            addNotification(
+              `${data.user.fullName || data.user.email} joined from ${device} (${localIP})`
+            );
           }
 
           setOnlineUsers((prev) => {
             if (prev.some((u) => u.id === data.user.id)) return prev;
             return [...prev, data.user];
           });
-        } 
-        else if (data.event === "userLeft") {
+        } else if (data.event === "userLeft") {
           if (data.user.id !== currentUserId) {
-            addNotification(`${data.user.fullName || data.user.email} left the system`);
+            addNotification(
+              `${data.user.fullName || data.user.email} left the system`
+            );
           }
 
           setOnlineUsers((prev) =>
@@ -84,10 +100,10 @@ export default function Notifications() {
     };
 
     connectPresenceSocket(jwt, handleSocketMessage);
-
     return () => disconnectPresenceSocket();
-  }, [currentUserId, selfJoined, device]);
+  }, [currentUserId, device, localIP]);
 
+  // Add notification and save last 15 in localStorage
   const addNotification = (msg) => {
     const timestamp = new Date().toLocaleTimeString();
     setNotifications((prev) => {
