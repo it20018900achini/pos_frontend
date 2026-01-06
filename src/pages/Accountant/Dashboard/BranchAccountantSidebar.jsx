@@ -23,18 +23,25 @@ import {
 import { Button } from "@/components/ui/button";
 
 const navLinks = [
-  { name: "Dashboard", path: "/branch/dashboard", icon: LayoutDashboard },
-  { name: "Accounts", path: "/branch/acc/chart-of-accounts", icon: ShoppingBag },
+  { name: "Dashboard", path: "/acc/dashboard", icon: LayoutDashboard },
+  { name: "Cart of Accounts", path: "/acc/chart-of-accounts", icon: ShoppingBag },
+  { name: "Balance Sheet", path: "/acc/balance-sheet", icon: ShoppingBag },
+  { name: "Profit Loss", path: "/acc/profit-loss", icon: ShoppingBag },
 
-  {
-    name: "Reports",
-    icon: FileText,
-    children: [
-      { name: "Summary", path: "/branch/reports", icon: BarChart2 },
-      { name: "Sales Report", path: "/branch/reports/sales", icon: Activity },
-      { name: "Inventory Report", path: "/branch/reports/inventory", icon: Archive },
-    ],
-  },
+
+  { name: "Trial Balance", path: "/acc/trial-balance", icon: ShoppingBag },
+  // { name: "Balance Sheet", path: "/acc/balance-sheet", icon: ShoppingBag },
+  // { name: "Balance Sheet", path: "/acc/balance-sheet", icon: ShoppingBag },
+
+  // {
+  //   name: "Reports",
+  //   icon: FileText,
+  //   children: [
+  //     { name: "Summary", path: "/branch/reports", icon: BarChart2 },
+  //     { name: "Sales Report", path: "/branch/reports/sales", icon: Activity },
+  //     { name: "Inventory Report", path: "/branch/reports/inventory", icon: Archive },
+  //   ],
+  // },
 
   { name: "Settings", path: "/branch/settings", icon: Settings },
 ];

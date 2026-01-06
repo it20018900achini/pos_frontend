@@ -101,7 +101,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Navigate to="/branch" replace />} />
           <Route path="/branch/*" element={<BranchManagerRoutes />} />
-          <Route path="/branch/acc/*" element={<BranchAccountantRoutes />} />
+          <Route path="/acc/*" element={<BranchAccountantRoutes />} />
           <Route
             path="*"
             element={<PageNotFound/>}

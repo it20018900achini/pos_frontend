@@ -25,6 +25,10 @@ import {
 import PayrollPage from "../pages/Branch Manager/payroll/PayrollPage";
 import BranchAccountantDashboard from "../pages/Accountant/Dashboard/BranchAccountantDashboard";
 import AccountingDashboard from "../pages/Branch Manager/accounting/AccountingDashboard";
+import ChartOfAccounts from "../pages/Branch Manager/accounting/components/ChartOfAccounts";
+import BalanceSheet from "../pages/Accountant/accounting/components/BalanceSheet";
+import ProfitLossReport from "../pages/Accountant/accounting/components/ProfitLoss";
+import TrialBalance from "../pages/Accountant/accounting/components/TrialBalance";
 
 const BranchAccountantRoutes = () => {
   return (
@@ -33,13 +37,11 @@ const BranchAccountantRoutes = () => {
         <Route index element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
 
-        <Route path="chart-of-accounts" element={<AccountingDashboard />} />
-            {/* <Route path="/payroll/overview" element={<PayrollOverview />} />
-    <Route path="/payroll/generate" element={<PayrollGenerate />} />
-    <Route path="/payroll/branch/:branchId" element={<BranchPayroll />} />
-    <Route path="/payroll/employee/:employeeId" element={<EmployeePayroll />} />
-    <Route path="/payroll/details/:payrollId" element={<PayrollDetails />} />
-    <Route path="/payroll/config" element={<PayrollAdmin />} /> */}
+        <Route path="chart-of-accounts" element={<ChartOfAccounts />} />
+        <Route path="balance-sheet" element={<BalanceSheet />} />
+        <Route path="profit-loss" element={<ProfitLossReport />} />
+            <Route path="/trial-balance" element={<TrialBalance />} />
+   
 
       <Route path="/payroll" element={<PayrollPage />} />
         <Route path="settings" element={<Settings />} />
