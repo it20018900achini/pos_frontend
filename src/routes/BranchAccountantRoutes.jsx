@@ -15,12 +15,6 @@ import {
   Reports,
   Settings
 } from "../pages/Branch Manager";
-import { BranchEmployees } from "../pages/Branch Manager/Employees";
-import Refunds from "../pages/Branch Manager/Refunds/Refunds";
-import SalesReport from "../pages/Branch Manager/Reports/SalesReport";
-import InventoryReport from "../pages/Branch Manager/Reports/InventoryReport";
-import Purchase from "../pages/Branch Manager/purchase/Purchase";
-import Suppliers from "../pages/Branch Manager/supplier/Suppliers";
 // import PayrollOverview from "../pages/Branch Manager/payroll/PayrollOverview";
 // import PayrollGenerate from "../pages/Branch Manager/payroll/PayrollGenerate";
 // import BranchPayroll from "../pages/Branch Manager/payroll/BranchPayroll";
@@ -29,13 +23,8 @@ import Suppliers from "../pages/Branch Manager/supplier/Suppliers";
 // import PayrollAdmin from "../pages/Branch Manager/components/payroll/PayrollAdmin";
 // import PayrollBranchManager from "../pages/Branch Manager/components/payroll/PayrollBranchManager";
 import PayrollPage from "../pages/Branch Manager/payroll/PayrollPage";
-import SalaryPage from "../pages/Branch Manager/salary/SalaryPage";
-import ExpensesPage from "../pages/Branch Manager/expense/ExpensesPage";
-import ExpenseCategoriesPage from "../pages/Branch Manager/ExpenseCategories/ExpenseCategoriesPage";
-import QuotationsPage from "../pages/Branch Manager/quotations/QuotationsPage";
-import ChequesPage from "../pages/Branch Manager/Cheques/ChequesPage";
+import BranchAccountantDashboard from "../pages/Accountant/Dashboard/BranchAccountantDashboard";
 import AccountingDashboard from "../pages/Branch Manager/accounting/AccountingDashboard";
-import UserActivities from "../pages/Branch Manager/accounting/UserActivities";
 
 const BranchAccountantRoutes = () => {
   return (
@@ -44,6 +33,7 @@ const BranchAccountantRoutes = () => {
         <Route index element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
 
+        <Route path="chart-of-accounts" element={<AccountingDashboard />} />
             {/* <Route path="/payroll/overview" element={<PayrollOverview />} />
     <Route path="/payroll/generate" element={<PayrollGenerate />} />
     <Route path="/payroll/branch/:branchId" element={<BranchPayroll />} />

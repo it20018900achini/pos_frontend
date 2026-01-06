@@ -62,7 +62,6 @@ const BranchManagerRoutes = () => {
         <Route path="orders" element={<Orders />} />
         <Route path="refunds" element={<Refunds />} />
         
-        <Route path="aaa" element={<AccountingDashboard />} />
         <Route path="cheques" element={<ChequesPage />} />
         <Route path="quotations" element={<QuotationsPage />} />
         <Route path="transactions" element={<Transactions />} />
