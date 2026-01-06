@@ -112,7 +112,7 @@ export default function JournalForm() {
         entryDate: new Date(journal.date).toISOString(),
         description: journal.description,
         lines: journal.lines.map((l) => ({
-          account: { id: Number(l.accountId) },
+          accountId:  Number(l.accountId) ,
           debit: Number(l.debit) || 0,
           credit: Number(l.credit) || 0,
         })),
