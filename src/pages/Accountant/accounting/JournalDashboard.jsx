@@ -35,7 +35,7 @@ const flattenAccounts = (accounts) => {
   return result;
 };
 
-export default function ChartOfAccounts() {
+export default function JournalDashboard() {
   const { data: accounts = [], isLoading, isError, refetch } =
     useGetChartOfAccountsQuery();
 

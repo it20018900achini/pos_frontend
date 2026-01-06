@@ -29,6 +29,8 @@ import ChartOfAccounts from "../pages/Branch Manager/accounting/components/Chart
 import BalanceSheet from "../pages/Accountant/accounting/components/BalanceSheet";
 import ProfitLossReport from "../pages/Accountant/accounting/components/ProfitLoss";
 import TrialBalance from "../pages/Accountant/accounting/components/TrialBalance";
+import JournalDashboard from "../pages/Accountant/accounting/JournalDashboard";
+import Journals from "../pages/Accountant/accounting/Journals";
 
 const BranchAccountantRoutes = () => {
   return (
@@ -41,10 +43,9 @@ const BranchAccountantRoutes = () => {
         <Route path="balance-sheet" element={<BalanceSheet />} />
         <Route path="profit-loss" element={<ProfitLossReport />} />
             <Route path="/trial-balance" element={<TrialBalance />} />
-            {/* <Route path="/journal-dashboard" element={<JournalDashboard />} /> */}
+            <Route path="/journals" element={<Journals />} />
    
 
-      <Route path="/payroll" element={<PayrollPage />} />
         <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>

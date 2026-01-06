@@ -80,10 +80,10 @@ export default function JournalByAccount() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Journal Entries</h2>
+      <h2 className="text-2xl font-bold mt-10">Journal Entries</h2>
 
       {/* Account Select */}
-      <div className="flex gap-2 items-center">
+      {/* <div className="flex gap-2 items-center">
         <Select value={selectedAccount} onValueChange={setSelectedAccount} className="border">
           <SelectTrigger className="w-60">
             <SelectValue placeholder="Select Account" />
@@ -99,7 +99,7 @@ export default function JournalByAccount() {
         <Button onClick={refetch} variant="outline">
           Refresh
         </Button>
-      </div>
+      </div> */}
 
       {/* Journal Table */}
       {filteredJournals.length === 0 ? (

@@ -19,31 +19,50 @@ import {
   Archive,
   Calendar,
   Clipboard,
+  BookOpen,
+  ClipboardList,
+  Scale,
+  BarChart3,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navLinks = [
-  { name: "Dashboard", path: "/acc/dashboard", icon: LayoutDashboard },
-  { name: "Cart of Accounts", path: "/acc/chart-of-accounts", icon: ShoppingBag },
-  { name: "Balance Sheet", path: "/acc/balance-sheet", icon: ShoppingBag },
-  { name: "Profit Loss", path: "/acc/profit-loss", icon: ShoppingBag },
-
-
-  { name: "Trial Balance", path: "/acc/trial-balance", icon: ShoppingBag },
-  // { name: "Balance Sheet", path: "/acc/balance-sheet", icon: ShoppingBag },
-  // { name: "Balance Sheet", path: "/acc/balance-sheet", icon: ShoppingBag },
-
-  // {
-  //   name: "Reports",
-  //   icon: FileText,
-  //   children: [
-  //     { name: "Summary", path: "/branch/reports", icon: BarChart2 },
-  //     { name: "Sales Report", path: "/branch/reports/sales", icon: Activity },
-  //     { name: "Inventory Report", path: "/branch/reports/inventory", icon: Archive },
-  //   ],
-  // },
-
-  { name: "Settings", path: "/branch/settings", icon: Settings },
+  {
+    name: "Dashboard",
+    path: "/acc/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    name: "Chart of Accounts",
+    path: "/acc/chart-of-accounts",
+    icon: BookOpen,
+  },
+  {
+    name: "Journals",
+    path: "/acc/journals",
+    icon: ClipboardList,
+  },
+  {
+    name: "Trial Balance",
+    path: "/acc/trial-balance",
+    icon: Scale,
+  },
+  {
+    name: "Balance Sheet",
+    path: "/acc/balance-sheet",
+    icon: BarChart3,
+  },
+  {
+    name: "Profit & Loss",
+    path: "/acc/profit-loss",
+    icon: TrendingUp,
+  },
+  {
+    name: "Settings",
+    path: "/acc/settings",
+    icon: Settings,
+  },
 ];
 
 export default function BranchAccountantSidebar() {
