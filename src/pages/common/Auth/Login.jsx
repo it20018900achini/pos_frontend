@@ -107,6 +107,8 @@ const Login = () => {
           navigate("/store");
         } else if (role === UserRoles.BRANCH_MANAGER) {
           navigate("/branch");
+        } else if (role === UserRoles.BRANCH_ACCOUNTANT) {
+          navigate("/accountant");
         } else {
           navigate("/");
         }

@@ -13,6 +13,7 @@ import Onboarding from "./pages/onboarding/Onboarding";
 import { getStoreByAdmin } from "./Redux Toolkit/features/store/storeThunks";
 import SuperAdminRoutes from "./routes/SuperAdminRoutes";
 import PageNotFound from "./pages/common/PageNotFound";
+import BranchAccountantRoutes from "./routes/BranchAccountantRoutes";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -92,12 +93,15 @@ const App = () => {
       }
     } else if (
       userProfile.role === "BRANCH_MANAGER" ||
-      userProfile.role === "BRANCH_ADMIN"
+      userProfile.role === "BRANCH_ADMIN" ||
+      userProfile.role === "BRANCH_ACCOUNTANT" 
+      
     ) {
       content = (
         <Routes>
           <Route path="/" element={<Navigate to="/branch" replace />} />
           <Route path="/branch/*" element={<BranchManagerRoutes />} />
+          <Route path="/branch/acc/*" element={<BranchAccountantRoutes />} />
           <Route
             path="*"
             element={<PageNotFound/>}
