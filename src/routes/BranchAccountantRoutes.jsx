@@ -41,6 +41,7 @@ const BranchAccountantRoutes = () => {
         <Route path="balance-sheet" element={<BalanceSheet />} />
         <Route path="profit-loss" element={<ProfitLossReport />} />
             <Route path="/trial-balance" element={<TrialBalance />} />
+            {/* <Route path="/journal-dashboard" element={<JournalDashboard />} /> */}
    
 
       <Route path="/payroll" element={<PayrollPage />} />
