@@ -35,6 +35,7 @@ import ExpenseCategoriesPage from "../pages/Branch Manager/ExpenseCategories/Exp
 import QuotationsPage from "../pages/Branch Manager/quotations/QuotationsPage";
 import ChequesPage from "../pages/Branch Manager/Cheques/ChequesPage";
 import AccountingDashboard from "../pages/Branch Manager/accounting/AccountingDashboard";
+import UserActivities from "../pages/Branch Manager/accounting/UserActivities";
 
 const BranchManagerRoutes = () => {
   return (
@@ -53,6 +54,7 @@ const BranchManagerRoutes = () => {
     <Route path="/payroll/config" element={<PayrollAdmin />} /> */}
 
       <Route path="/payroll" element={<PayrollPage />} />
+      <Route path="/user-activities" element={<UserActivities />} />
       <Route path="/expense" element={<ExpensesPage />} />
       <Route path="/expense/categories" element={<ExpenseCategoriesPage />} />
       <Route path="/salary/:branchId" element={<SalaryPage />} />
