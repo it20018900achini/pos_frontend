@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -21,18 +21,21 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { settings } from "../../../constant";
 import { useStartShiftMutation } from "../../../Redux Toolkit/features/shift/shiftApi";
 
+const UserRoles = {
+  CASHIER: "BRANCH_CASHIER",
+  STORE_ADMIN: "STORE_ADMIN",
+  STORE_MANAGER: "STORE_MANAGER",
+  BRANCH_MANAGER: "BRANCH_MANAGER",
+};
+
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-
-  const [startShift] = useStartShiftMutation();
   const { loading } = useSelector((state) => state.auth);
 
-  // 🔑 callback url
-  const callbackUrl =
-    new URLSearchParams(location.search).get("callbackUrl");
+  const [startShift] = useStartShiftMutation();
 
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
@@ -40,14 +43,15 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [shake, setShake] = useState(false);
 
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formState, setFormState] = useState({
+    mode: "login", // "login" | "forgot" | "emailSent"
+    email: "",
+    password: "",
+  });
+
   const [errors, setErrors] = useState({});
 
-  const [forgot, setForgot] = useState({
-    show: false,
-    email: "",
-    emailSent: false,
-  });
+  const callbackUrl = new URLSearchParams(location.search).get("callbackUrl");
 
   useEffect(() => {
     emailRef.current?.focus();
@@ -55,102 +59,100 @@ const Login = () => {
 
   useEffect(() => {
     const errs = {};
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email))
+    if (formState.email && !/\S+@\S+\.\S+/.test(formState.email))
       errs.email = "Enter a valid email";
-    if (formData.password && formData.password.length < 4)
+    if (formState.password && formState.password.length < 4)
       errs.password = "At least 4 characters required";
     setErrors(errs);
-  }, [formData]);
+  }, [formState.email, formState.password]);
 
-  const isFormValid =
-    formData.email && formData.password && !errors.email && !errors.password;
+  const isLoginValid = formState.email && formState.password && !errors.email && !errors.password;
 
   const triggerShake = () => {
     setShake(true);
     setTimeout(() => setShake(false), 400);
   };
 
-  // 🔐 LOGIN
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    if (!isFormValid) return triggerShake();
+  const handleLogin = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (!isLoginValid) return triggerShake();
 
-    try {
-      const res = await dispatch(login(formData)).unwrap();
+      try {
+        const res = await dispatch(login({ email: formState.email, password: formState.password })).unwrap();
 
-      toast({ title: "Success", description: "Login successful!" });
+        toast({ title: "Success", description: "Login successful!" });
 
-      const jwt = localStorage.getItem("jwt");
-      dispatch(getUserProfile(jwt));
+        const jwt = localStorage.getItem("jwt");
+        dispatch(getUserProfile(jwt));
 
-      const user = res.user;
-      const role = user.role;
+        const user = res.user;
+        const role = user.role;
 
-      // ✅ CALLBACK FIRST
-      if (callbackUrl) {
-        navigate(callbackUrl, { replace: true });
-        return;
-      }
-
-      // 🔁 ROLE FALLBACK
-      if (role === "ROLE_BRANCH_CASHIER") {
-        try {
-          await startShift({
-            branchId: user.branchId,
-            openingCash: 0,
-          }).unwrap();
-        } catch (e) {
-          console.log("Shift already active");
+        // CALLBACK URL
+        if (callbackUrl) {
+          navigate(callbackUrl, { replace: true });
+          return;
         }
-        navigate("/cashier");
-      } else if (
-        role === "ROLE_STORE_ADMIN" ||
-        role === "ROLE_STORE_MANAGER"
-      ) {
-        navigate("/store");
-      } else if (
-        role === "ROLE_BRANCH_ADMIN" ||
-        role === "ROLE_BRANCH_MANAGER"
-      ) {
-        navigate("/branch");
-      } else {
-        navigate("/");
+
+        // ROLE NAVIGATION
+        if (role === UserRoles.CASHIER) {
+          try {
+            await startShift({ branchId: user.branchId, openingCash: 0 }).unwrap();
+          } catch {
+            console.log("Shift already active");
+          }
+          navigate("/cashier");
+        } else if (role === UserRoles.STORE_ADMIN || role === UserRoles.STORE_MANAGER) {
+          navigate("/store");
+        } else if (role === UserRoles.BRANCH_MANAGER) {
+          navigate("/branch");
+        } else {
+          navigate("/");
+        }
+      } catch (err) {
+        triggerShake();
+        toast({
+          title: "Login Failed",
+          description: err?.message || "Invalid email or password",
+          variant: "destructive",
+        });
       }
-    } catch (err) {
-      triggerShake();
-      toast({
-        title: "Login Failed",
-        description: err || "Invalid email or password",
-        variant: "destructive",
-      });
-    }
-  };
+    },
+    [formState.email, formState.password, callbackUrl]
+  );
 
-  // 🔁 FORGOT PASSWORD
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    if (!forgot.email || !/\S+@\S+\.\S+/.test(forgot.email))
-      return toast({
-        title: "Invalid Email",
-        description: "Enter a valid email address.",
-        variant: "destructive",
-      });
+  const handleForgotPassword = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (!formState.email || !/\S+@\S+\.\S+/.test(formState.email)) {
+        return toast({
+          title: "Invalid Email",
+          description: "Enter a valid email address.",
+          variant: "destructive",
+        });
+      }
 
-    try {
-      await dispatch(forgotPassword(forgot.email)).unwrap();
-      toast({
-        title: "Email Sent",
-        description: "Check your inbox for reset instructions.",
-      });
-      setForgot({ ...forgot, emailSent: true });
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: err || "Failed to send reset email",
-        variant: "destructive",
-      });
-    }
-  };
+      try {
+        await dispatch(forgotPassword(formState.email)).unwrap();
+        toast({
+          title: "Email Sent",
+          description: "Check your inbox for reset instructions.",
+        });
+        setFormState((prev) => ({ ...prev, mode: "emailSent" }));
+      } catch (err) {
+        toast({
+          title: "Error",
+          description: err?.message || "Failed to send reset email",
+          variant: "destructive",
+        });
+      }
+    },
+    [formState.email]
+  );
+
+  const resetForm = () =>
+    setFormState({ mode: "login", email: "", password: "" });
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -164,9 +166,7 @@ const Login = () => {
       >
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
         <div className="relative z-10 p-12 flex flex-col justify-end h-full text-white">
-          <h1 className="text-4xl font-bold mb-3">
-            {settings?.businessName}
-          </h1>
+          <h1 className="text-4xl font-bold mb-3">{settings?.businessName}</h1>
           <p className="text-lg text-white/80">
             Smart POS — Manage your store effortlessly.
           </p>
@@ -179,11 +179,7 @@ const Login = () => {
           <ThemeToggle />
         </div>
 
-        <div
-          className={`w-full max-w-md rounded-2xl p-8 ${
-            shake ? "animate-shake" : ""
-          }`}
-        >
+        <div className={`w-full max-w-md rounded-2xl p-8 ${shake ? "animate-shake" : ""}`}>
           <div className="text-center mb-8">
             <div className="flex justify-center mb-3">
               <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
@@ -192,11 +188,13 @@ const Login = () => {
             </div>
             <h1 className="text-2xl font-bold">Welcome Back</h1>
             <p className="text-muted-foreground text-sm mt-1">
-              {forgot.show ? "Reset your password" : "Sign in to continue"}
+              {formState.mode === "login" && "Sign in to continue"}
+              {formState.mode === "forgot" && "Reset your password"}
+              {formState.mode === "emailSent" && "Check your email"}
             </p>
           </div>
 
-          {!forgot.show && !forgot.emailSent && (
+          {formState.mode === "login" && (
             <form className="space-y-5" onSubmit={handleLogin}>
               <div>
                 <label className="text-sm font-medium">Email</label>
@@ -205,11 +203,10 @@ const Login = () => {
                   <Input
                     ref={emailRef}
                     type="email"
+                    disabled={loading}
                     className="pl-10 py-6 rounded-xl"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
+                    value={formState.email}
+                    onChange={(e) => setFormState({ ...formState, email: e.target.value })}
                   />
                 </div>
               </div>
@@ -221,14 +218,14 @@ const Login = () => {
                   <Input
                     ref={passwordRef}
                     type={showPassword ? "text" : "password"}
+                    disabled={loading}
                     className="pl-10 pr-12 py-6 rounded-xl"
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
+                    value={formState.password}
+                    onChange={(e) => setFormState({ ...formState, password: e.target.value })}
                   />
                   <button
                     type="button"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                     className="absolute right-3 top-3"
                     onClick={() => setShowPassword(!showPassword)}
                   >
@@ -241,16 +238,13 @@ const Login = () => {
                 <button
                   type="button"
                   className="text-sm text-primary"
-                  onClick={() => setForgot({ ...forgot, show: true })}
+                  onClick={() => setFormState({ ...formState, mode: "forgot" })}
                 >
                   Forgot password?
                 </button>
               </div>
 
-              <Button
-                disabled={loading}
-                className="w-full py-6 rounded-xl"
-              >
+              <Button disabled={loading} className="w-full py-6 rounded-xl">
                 {loading ? (
                   <>
                     <Loader2 className="animate-spin w-5 h-5 mr-2" />
@@ -263,25 +257,17 @@ const Login = () => {
             </form>
           )}
 
-          {forgot.show && !forgot.emailSent && (
+          {formState.mode === "forgot" && (
             <form onSubmit={handleForgotPassword} className="space-y-5">
               <Input
-                value={forgot.email}
-                onChange={(e) =>
-                  setForgot({ ...forgot, email: e.target.value })
-                }
+                type="email"
+                value={formState.email}
+                onChange={(e) => setFormState({ ...formState, email: e.target.value })}
                 placeholder="you@example.com"
                 className="py-6 rounded-xl"
               />
               <div className="flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    setForgot({ show: false, email: "", emailSent: false })
-                  }
-                  className="flex-1 py-6"
-                >
+                <Button type="button" variant="outline" onClick={resetForm} className="flex-1 py-6">
                   Back
                 </Button>
                 <Button type="submit" className="flex-1 py-6">
@@ -291,16 +277,11 @@ const Login = () => {
             </form>
           )}
 
-          {forgot.emailSent && (
+          {formState.mode === "emailSent" && (
             <div className="text-center space-y-4">
               <CheckCircle className="w-12 h-12 mx-auto text-indigo-600" />
               <h3 className="text-lg font-semibold">Check Your Email</h3>
-              <Button
-                className="w-full py-6"
-                onClick={() =>
-                  setForgot({ show: false, email: "", emailSent: false })
-                }
-              >
+              <Button className="w-full py-6" onClick={resetForm}>
                 Back to Login
               </Button>
             </div>

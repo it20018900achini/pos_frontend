@@ -39,7 +39,7 @@ const Onboarding = () => {
         setLocalLoading(true);
         try {
           const userRes = await dispatch(getUserProfile(jwt)).unwrap();
-          if (userRes && userRes.role === 'ROLE_STORE_ADMIN') {
+          if (userRes && userRes.role === 'STORE_ADMIN') {
             try {
               const storeRes = await dispatch(getStoreByAdmin(jwt)).unwrap();
               if (storeRes && storeRes.id) {
@@ -79,7 +79,7 @@ const Onboarding = () => {
           fullName: updatedFormData.fullName,
           email: updatedFormData.email,
           password: updatedFormData.password,
-          role: 'ROLE_STORE_ADMIN',
+          role: 'STORE_ADMIN',
         })).unwrap();
         if (signupRes && signupRes.jwt) {
           localStorage.setItem('jwt', signupRes.data.jwt);

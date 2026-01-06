@@ -77,7 +77,7 @@ const Login = () => {
       const role = user.role;
 
       // Auto-start shift for cashiers if no active shift
-      if (role === "ROLE_BRANCH_CASHIER") {
+      if (role === "BRANCH_CASHIER") {
         try {
           // Check if shift already exists
           const currentShift = await startShift({ branchId: user.branchId, openingCash: 0 }).unwrap();
@@ -88,9 +88,9 @@ const Login = () => {
           console.log("Shift already active or error:", err);
         }
         
-      } else if (role === "ROLE_STORE_ADMIN" || role === "ROLE_STORE_MANAGER") {
+      } else if (role === "STORE_ADMIN" || role === "STORE_MANAGER") {
         navigate("/store");
-      } else if (role === "ROLE_BRANCH_MANAGER" || role === "ROLE_BRANCH_ADMIN") {
+      } else if (role === "BRANCH_MANAGER" || role === "BRANCH_ADMIN") {
         navigate("/branch");
       } else {
         navigate("/");

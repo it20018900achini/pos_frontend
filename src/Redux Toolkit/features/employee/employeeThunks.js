@@ -46,23 +46,21 @@ export const createBranchEmployee = createAsyncThunk(
   "employee/createBranchEmployee",
   async ({ employee, branchId, token }, { rejectWithValue }) => {
     try {
-      const res = await api.post(`/api/employees/branch/${branchId}`, employee, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("createBranchEmployee fulfilled:", res.data);
+      const res = await api.post(
+        `/api/employees/branch/${Number(branchId)}`,
+        employee,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return res.data;
     } catch (err) {
-      console.error(
-        "createBranchEmployee rejected:",
-        err.response?.data?.message || "Failed to create branch employee"
-      );
       return rejectWithValue(
         err.response?.data?.message || "Failed to create branch employee"
       );
     }
   }
 );
-
 // 🔹 Update Employee
 export const updateEmployee = createAsyncThunk(
   "employee/updateEmployee",

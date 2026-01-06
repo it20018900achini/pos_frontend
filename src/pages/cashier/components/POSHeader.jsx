@@ -13,7 +13,7 @@ const POSHeader = () => {
   // Extract useful data
   const fullName = userProfile?.fullName || "User";
   const role =
-    userProfile?.role?.replace("ROLE_", "").replace(/_/g, " ") || "";
+    userProfile?.role?.replace("", "").replace(/_/g, " ") || "";
   const branchName = userProfile?.branch?.name || "Unknown Branch";
   const storeName = userProfile?.branch?.store?.brand || "Unknown Store";
   const navigate = useNavigate();

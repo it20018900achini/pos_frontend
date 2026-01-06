@@ -11,7 +11,7 @@ export default function BranchManagerTopbar() {
 
   const fullName = userProfile?.fullName || "Branch Manager";
   const email = userProfile?.email || "manager@example.com";
-  const role = userProfile?.role?.replace("ROLE_", "").replace(/_/g, " ") || "Manager";
+  const role = userProfile?.role?.replace("", "").replace(/_/g, " ") || "Manager";
   const branchName = branch?.name || "Branch Dashboard";
 
   return (

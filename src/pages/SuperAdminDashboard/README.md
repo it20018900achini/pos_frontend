@@ -117,7 +117,7 @@ src/pages/SuperAdminDashboard/
 
 ## 🚀 Getting Started
 
-1. **Access**: Navigate to `/super-admin` with `ROLE_SUPER_ADMIN` role
+1. **Access**: Navigate to `/super-admin` with `SUPER_ADMIN` role
 2. **Dashboard**: Start with the overview dashboard
 3. **Stores**: Manage store registrations and statuses
 4. **Requests**: Review and approve pending store requests

@@ -27,7 +27,7 @@ const App = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (userProfile && userProfile.role === "ROLE_STORE_ADMIN") {
+    if (userProfile && userProfile.role === "STORE_ADMIN") {
       dispatch(getStoreByAdmin(userProfile.jwt));
     }
   }, [dispatch, userProfile]);
@@ -38,7 +38,7 @@ const App = () => {
 
   if (userProfile && userProfile.role) {
     // User is logged in
-    if (userProfile.role === "ROLE_ADMIN") {
+    if (userProfile.role === "ADMIN") {
       content = (
         <Routes>
           <Route path="/" element={<Navigate to="/super-admin" replace />} />
@@ -49,7 +49,7 @@ const App = () => {
           />
         </Routes>
       );
-    } else if (userProfile.role === "ROLE_BRANCH_CASHIER") {
+    } else if (userProfile.role === "BRANCH_CASHIER") {
       content = (
         <Routes>
           <Route path="/" element={<Navigate to="/cashier" replace />} />
@@ -61,8 +61,8 @@ const App = () => {
         </Routes>
       );
     } else if (
-      userProfile.role === "ROLE_STORE_ADMIN" ||
-      userProfile.role === "ROLE_STORE_MANAGER"
+      userProfile.role === "STORE_ADMIN" ||
+      userProfile.role === "STORE_MANAGER"
     ) {
       // console.log("get inside", store);
       if (!store) {
@@ -91,8 +91,8 @@ const App = () => {
         );
       }
     } else if (
-      userProfile.role === "ROLE_BRANCH_MANAGER" ||
-      userProfile.role === "ROLE_BRANCH_ADMIN"
+      userProfile.role === "BRANCH_MANAGER" ||
+      userProfile.role === "BRANCH_ADMIN"
     ) {
       content = (
         <Routes>

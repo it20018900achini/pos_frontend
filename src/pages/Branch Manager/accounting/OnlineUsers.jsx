@@ -4,7 +4,7 @@ import { connectPresenceSocket, disconnectPresenceSocket } from "@/utils/presenc
 
 export default function OnlineUsers() {
   const [onlineUsers, setOnlineUsers] = useState([]);
-  const [loading, setLoading] = useState(true); // ✅ loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const jwt = localStorage.getItem("jwt");
@@ -17,12 +17,31 @@ export default function OnlineUsers() {
       try {
         const data = JSON.parse(event.data);
 
-        // Full online users list
+        // 1️⃣ Initial online users list
         if (Array.isArray(data)) {
           setOnlineUsers(data);
-          setLoading(false); // ✅ stop loading once data arrives
+          setLoading(false);
+          return;
         }
-      } catch {
+
+        // 2️⃣ User joined
+        if (data.event === "userJoined") {
+          setOnlineUsers((prev) =>
+            prev.some((u) => u.id === data.user.id)
+              ? prev
+              : [...prev, data.user]
+          );
+          return;
+        }
+
+        // 3️⃣ User left
+        if (data.event === "userLeft") {
+          setOnlineUsers((prev) =>
+            prev.filter((u) => u.id !== data.user.id)
+          );
+        }
+      } catch (err) {
+        console.error("Socket parse error", err);
         setLoading(false);
       }
     };
@@ -46,7 +65,7 @@ export default function OnlineUsers() {
       {onlineUsers.length === 0 ? (
         <p className="text-sm text-gray-500">No users online</p>
       ) : (
-        <ul className="text-sm">
+        <ul className="text-sm space-y-1">
           {onlineUsers.map((u) => (
             <li key={u.id}>
               {u.fullName || u.email || "Unknown"}

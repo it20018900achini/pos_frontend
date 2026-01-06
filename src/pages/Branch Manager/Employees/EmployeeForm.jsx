@@ -57,7 +57,7 @@ export default function EmployeeForm({ initialData, onSubmit, roles }) {
       password: "",
       phone: "",
       role: "",
-      branchId: "",
+      branchId: 52,
       ...initialData,
     },
     validationSchema,
@@ -104,7 +104,7 @@ export default function EmployeeForm({ initialData, onSubmit, roles }) {
           </SelectContent>
         </Select>
       </div>
-test
+test1
       {(formik.values.role === "BRANCH_MANAGER" ||
         formik.values.role === "CASHIER") && (
         <div>--
