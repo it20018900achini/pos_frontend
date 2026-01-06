@@ -22,10 +22,20 @@ export const accountingApi = apiSlice.injectEndpoints({
     }),
 
     // ===== Journals =====
-    getJournals: builder.query({
-      query: () => "/accounting/journals",
-      providesTags: ["Journal"],
-    }),
+getJournals: builder.query({
+  // Accept query params
+  query: ({ entryId, from, to, page = 0, size = 10 } = {}) => {
+    const params = new URLSearchParams();
+    if (entryId) params.append("entryId", entryId);
+    if (from) params.append("from", from);   // ISO string e.g., "2026-01-01T00:00:00"
+    if (to) params.append("to", to);         // ISO string e.g., "2026-01-31T23:59:59"
+    params.append("page", page);
+    params.append("size", size);
+    return `/accounting/journals?${params.toString()}`;
+  },
+  providesTags: ["Journal"],
+}),
+
 createJournal: builder.mutation({
   query: ({ branchId, ...journal }) => ({
     url: `/accounting/journals?branchId=${branchId}`,
