@@ -27,7 +27,7 @@ const SettingsContent = ({
         onChange={onStoreSettingsChange}
       />
 
-      <NotificationSettings
+      {/* <NotificationSettings
         settings={notificationSettings}
         onChange={onNotificationSettingsChange}
       />
@@ -44,7 +44,7 @@ const SettingsContent = ({
 
       <Button className="" variant={"outline"} onClick={onSave}>
         <Save className="mr-2 h-4 w-4" /> Save All Settings
-      </Button>
+      </Button> */}
     </div>
   );
 };

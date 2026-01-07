@@ -3,10 +3,15 @@ import api from "@/utils/api";
 
 // Helper function to get JWT token
 const getAuthToken = () => {
-  const token = localStorage.getItem('jwt');
+  let token = localStorage.getItem("jwt");
+
   if (!token) {
-    throw new Error('No JWT token found');
+    throw new Error("No JWT token found");
   }
+
+  // 🚑 Fix common issues
+  token = token.replace(/^Bearer\s+/i, "").trim();
+
   return token;
 };
 

@@ -22,6 +22,7 @@ const navLinks = [
   { name: "Branches", path: "/store/branches", icon: <Store /> },
   { name: "Products", path: "/store/products", icon: <ShoppingCart /> },
   { name: "Categories", path: "/store/categories", icon: <Tag /> },
+  { name: "Brands", path: "/store/brands", icon: <Tag /> },
   { name: "Employees", path: "/store/employees", icon: <Users /> },
   { name: "Alerts", path: "/store/alerts", icon: <Truck /> },
   { name: "Sales", path: "/store/sales", icon: <BarChart2 /> },
