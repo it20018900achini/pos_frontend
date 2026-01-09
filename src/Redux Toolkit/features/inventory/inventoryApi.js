@@ -3,6 +3,12 @@ import { apiSlice } from "../../api/apiSlice";
 
 export const inventoryApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+ getStockStatement: builder.query({
+      query: ({ branchId, startDate, endDate }) =>
+        `/inventories/stock-statement?branchId=${branchId}&startDate=${startDate}&endDate=${endDate}`,
+      providesTags: ["Inventory"],
+    }),
+
     getInventoriesByBranch: builder.query({
       query: (branchId) => `/inventories/branch/${branchId}`,
       providesTags: ["Inventory"],
@@ -38,6 +44,7 @@ export const inventoryApi = apiSlice.injectEndpoints({
 });
 
 export const {
+    useGetStockStatementQuery,
   useGetInventoriesByBranchQuery,
   useGetInventoryByIdQuery,
   useCreateInventoryMutation,

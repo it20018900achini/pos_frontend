@@ -4,7 +4,10 @@ import React, { useState } from "react";
 import InventoryForm from "./components/InventoryForm";
 import { useDeleteInventoryMutation,useGetInventoriesByBranchQuery,
   useCreateInventoryMutation,
-  useUpdateInventoryMutation } from "../../../Redux Toolkit/features/inventory/inventoryApi";
+  useUpdateInventoryMutation,
+   } from "../../../Redux Toolkit/features/inventory/inventoryApi";
+import StockStatement from "./StockStatement";
+import StockStatementTable from "./StockStatementTable";
 
 const InventoryPage = ({ branchId = 1 }) => {
   const { data: inventories, isLoading } = useGetInventoriesByBranchQuery(branchId);
@@ -32,7 +35,8 @@ const InventoryPage = ({ branchId = 1 }) => {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Inventory List</h1>
-
+      {/* <StockStatementTable/> */}
+<StockStatement branchId={52}/>
       <InventoryForm
         key={editingInventory?.id || "new"}
         initialData={editingInventory}
