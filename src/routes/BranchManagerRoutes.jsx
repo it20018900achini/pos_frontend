@@ -36,6 +36,7 @@ import QuotationsPage from "../pages/Branch Manager/quotations/QuotationsPage";
 import ChequesPage from "../pages/Branch Manager/Cheques/ChequesPage";
 import AccountingDashboard from "../pages/Branch Manager/accounting/AccountingDashboard";
 import UserActivities from "../pages/Branch Manager/accounting/UserActivities";
+import InventoryPage from "../pages/Branch Manager/Inventory/InventoryPage";
 
 const BranchManagerRoutes = () => {
   return (
@@ -44,6 +45,7 @@ const BranchManagerRoutes = () => {
         <Route index element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="purchases" element={<Purchase />} />
+        <Route path="aaa" element={<InventoryPage />} />
         <Route path="suppliers" element={<Suppliers />} />
 
             {/* <Route path="/payroll/overview" element={<PayrollOverview />} />

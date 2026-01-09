@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useLocation } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -13,10 +15,8 @@ import {
   ChefHat,
   Loader2,
 } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
 import { login, forgotPassword } from "@/Redux Toolkit/features/auth/authThunk";
 import { getUserProfile } from "@/Redux Toolkit/features/user/userThunks";
-import { useNavigate, useLocation } from "react-router";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { settings } from "../../../constant";
 import { useStartShiftMutation } from "../../../Redux Toolkit/features/shift/shiftApi";
@@ -26,6 +26,7 @@ const UserRoles = {
   STORE_ADMIN: "STORE_ADMIN",
   STORE_MANAGER: "STORE_MANAGER",
   BRANCH_MANAGER: "BRANCH_MANAGER",
+  BRANCH_ACCOUNTANT: "BRANCH_ACCOUNTANT",
 };
 
 const Login = () => {
@@ -34,7 +35,6 @@ const Login = () => {
   const location = useLocation();
   const { toast } = useToast();
   const { loading } = useSelector((state) => state.auth);
-
   const [startShift] = useStartShiftMutation();
 
   const emailRef = useRef(null);
@@ -42,6 +42,8 @@ const Login = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [shake, setShake] = useState(false);
+
+  const callbackUrl = new URLSearchParams(location.search).get("callbackUrl");
 
   const [formState, setFormState] = useState({
     mode: "login", // "login" | "forgot" | "emailSent"
@@ -51,18 +53,16 @@ const Login = () => {
 
   const [errors, setErrors] = useState({});
 
-  const callbackUrl = new URLSearchParams(location.search).get("callbackUrl");
-
+  // Auto-focus email input
   useEffect(() => {
     emailRef.current?.focus();
   }, []);
 
+  // Form validation
   useEffect(() => {
     const errs = {};
-    if (formState.email && !/\S+@\S+\.\S+/.test(formState.email))
-      errs.email = "Enter a valid email";
-    if (formState.password && formState.password.length < 4)
-      errs.password = "At least 4 characters required";
+    if (formState.email && !/\S+@\S+\.\S+/.test(formState.email)) errs.email = "Enter a valid email";
+    if (formState.password && formState.password.length < 4) errs.password = "At least 4 characters required";
     setErrors(errs);
   }, [formState.email, formState.password]);
 
@@ -73,6 +73,7 @@ const Login = () => {
     setTimeout(() => setShake(false), 400);
   };
 
+  // -------------------- Login Handler --------------------
   const handleLogin = useCallback(
     async (e) => {
       e.preventDefault();
@@ -82,20 +83,16 @@ const Login = () => {
         const res = await dispatch(login({ email: formState.email, password: formState.password })).unwrap();
 
         toast({ title: "Success", description: "Login successful!" });
-
         const jwt = localStorage.getItem("jwt");
         dispatch(getUserProfile(jwt));
 
         const user = res.user;
         const role = user.role;
 
-        // CALLBACK URL
-        if (callbackUrl) {
-          navigate(callbackUrl, { replace: true });
-          return;
-        }
+        // Callback URL navigation
+        if (callbackUrl) return navigate(callbackUrl, { replace: true });
 
-        // ROLE NAVIGATION
+        // Role-based navigation
         if (role === UserRoles.CASHIER) {
           try {
             await startShift({ branchId: user.branchId, openingCash: 0 }).unwrap();
@@ -108,7 +105,7 @@ const Login = () => {
         } else if (role === UserRoles.BRANCH_MANAGER) {
           navigate("/branch");
         } else if (role === UserRoles.BRANCH_ACCOUNTANT) {
-          navigate("/accountant");
+          navigate("/acc");
         } else {
           navigate("/");
         }
@@ -124,6 +121,7 @@ const Login = () => {
     [formState.email, formState.password, callbackUrl]
   );
 
+  // -------------------- Forgot Password Handler --------------------
   const handleForgotPassword = useCallback(
     async (e) => {
       e.preventDefault();
@@ -153,25 +151,27 @@ const Login = () => {
     [formState.email]
   );
 
-  const resetForm = () =>
-    setFormState({ mode: "login", email: "", password: "" });
+  // -------------------- Reset Form --------------------
+  const resetForm = useCallback(() => {
+    if (callbackUrl) {
+      navigate(callbackUrl, { replace: true }); // Redirect to callback URL if exists
+    } else {
+      setFormState({ mode: "login", email: "", password: "" });
+    }
+  }, [callbackUrl]);
 
+  // -------------------- JSX --------------------
   return (
     <div className="min-h-screen flex bg-background">
       {/* LEFT PANEL */}
       <div
         className="hidden lg:flex w-1/2 bg-cover bg-center relative"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&q=80&w=2000')",
-        }}
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&q=80&w=2000')" }}
       >
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
         <div className="relative z-10 p-12 flex flex-col justify-end h-full text-white">
           <h1 className="text-4xl font-bold mb-3">{settings?.businessName}</h1>
-          <p className="text-lg text-white/80">
-            Smart POS — Manage your store effortlessly.
-          </p>
+          <p className="text-lg text-white/80">Smart POS — Manage your store effortlessly.</p>
         </div>
       </div>
 
@@ -196,6 +196,7 @@ const Login = () => {
             </p>
           </div>
 
+          {/* Login Form */}
           {formState.mode === "login" && (
             <form className="space-y-5" onSubmit={handleLogin}>
               <div>
@@ -227,7 +228,6 @@ const Login = () => {
                   />
                   <button
                     type="button"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
                     className="absolute right-3 top-3"
                     onClick={() => setShowPassword(!showPassword)}
                   >
@@ -247,18 +247,12 @@ const Login = () => {
               </div>
 
               <Button disabled={loading} className="w-full py-6 rounded-xl">
-                {loading ? (
-                  <>
-                    <Loader2 className="animate-spin w-5 h-5 mr-2" />
-                    Please wait...
-                  </>
-                ) : (
-                  "Sign In"
-                )}
+                {loading ? <><Loader2 className="animate-spin w-5 h-5 mr-2" />Please wait...</> : "Sign In"}
               </Button>
             </form>
           )}
 
+          {/* Forgot Password Form */}
           {formState.mode === "forgot" && (
             <form onSubmit={handleForgotPassword} className="space-y-5">
               <Input
@@ -279,6 +273,7 @@ const Login = () => {
             </form>
           )}
 
+          {/* Email Sent */}
           {formState.mode === "emailSent" && (
             <div className="text-center space-y-4">
               <CheckCircle className="w-12 h-12 mx-auto text-indigo-600" />
