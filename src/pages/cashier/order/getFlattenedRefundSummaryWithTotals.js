@@ -22,17 +22,17 @@ export function getFlattenedRefundSummaryWithTotals(dataSelected) {
   data.forEach((order) => {
     order.items?.forEach((item) => {
       const key = item.productId;
-      const sellingPrice = item.product.sellingPrice;
+      const sellingPrice = item.product?.sellingPrice;
 
       if (!productTotals[key]) {
         // In case a returned item does NOT exist in originalItems
         productTotals[key] = {
           productId: key,
-          productName: item.product.name,
+          productName: item.product?.name,
           price: sellingPrice,
           totalQty: 0,
           totalAmount: 0,
-          availableStock: item.product.available || 0,
+          availableStock: item.product?.available || 0,
         };
       }
 
@@ -54,10 +54,10 @@ export function getFlattenedRefundSummaryWithTotals(dataSelected) {
         orderDate: format(order?.createdAt, "yyyy-MM-dd h:mm a"),
         customerPhone: order?.customer?.phone || null,
         productId: key,
-        productName: item.product.name,
+        productName: item.product?.name,
         quantity: item.quantity || 0,
-        sellingPrice: item.product.sellingPrice,
-        totalPrice: (item.quantity || 0) * item.product.sellingPrice,
+        sellingprice: item.product?.sellingPrice,
+        totalPrice: (item?.quantity || 0) * item?.product?.sellingPrice,
         orderTotalAmount: order.totalAmount || 0,
       });
     });

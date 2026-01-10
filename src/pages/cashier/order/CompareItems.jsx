@@ -27,7 +27,7 @@ function SummaryCard({ dataSelected }) {
       name: item.product.name,
       qty: 0, // total returned quantity
       total: 0, // total returned amount
-      price: item.product.sellingPrice,
+      price: item.product?.sellingPrice,
       available: item.quantity, // original stock
     };
   });

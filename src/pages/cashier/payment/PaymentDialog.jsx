@@ -159,7 +159,7 @@ const printPOSReceipt = useCallback((order) => {
         cashierId: userProfile.id,
         customer: selectedCustomer,
         items: cart.map(i => ({
-          productId: i.id,
+          productVariantId: i.id,
           name: i.name,
           quantity: i.quantity,
           price: i.price,
@@ -184,7 +184,8 @@ const printPOSReceipt = useCallback((order) => {
       setShowReceiptDialog(true);
       toast({ title: "Payment Successful", description: `Order #${created.id} created.` });
     } catch (e) {
-      toast({ title: "Failed", description: e?.message || "Something went wrong.", variant: "destructive" });
+      
+      toast({ title: "Failed", description: e || "Something went wrong.", variant: "destructive" });
     } finally {
       setLoading(false);
     }

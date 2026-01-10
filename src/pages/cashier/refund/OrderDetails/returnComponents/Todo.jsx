@@ -18,7 +18,7 @@ export default function Todo({ todo, updateTodo, removeTodo  }) {
       <div className="w-full font-medium">{todo.name}</div>
 
       {/* Selling Price */}
-      <div className="w-[120px]">LKR {todo.sellingPrice.toFixed(2)}</div>
+      <div className="w-[120px]">LKR {todo?.sellingPrice?.toFixed(2)}</div>
 
       {/* Quantity */}
       <div className="flex items-center gap-1">
