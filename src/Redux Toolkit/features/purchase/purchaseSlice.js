@@ -22,7 +22,16 @@ export const addPurchase = createAsyncThunk(
     }
   }
 );
-
+export const returnPurchaseThunk = createAsyncThunk(
+  'purchase/returnPurchase',
+  async ({ purchaseId, items }, { rejectWithValue }) => {
+    try {
+      return await api.returnPurchase(purchaseId, { items });
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message);
+    }
+  }
+);
 const initialState = {
   purchases: [],
   total: 0,
@@ -61,7 +70,18 @@ export const purchaseSlice = createSlice({
       .addCase(addPurchase.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+      .addCase(returnPurchaseThunk.pending, (state) => {
+  state.loading = true;
+})
+.addCase(returnPurchaseThunk.fulfilled, (state) => {
+  state.loading = false;
+})
+.addCase(returnPurchaseThunk.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload;
+});
+
   },
 });
 

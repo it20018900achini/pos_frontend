@@ -12,3 +12,11 @@ export const createPurchase = async (data) => {
   const response = await api.post('/api/purchases', data, { headers: getAuthHeaders() });
   return response.data;
 };
+export const returnPurchase = async (purchaseId, data) => {
+  const response = await api.post(
+    `/api/purchases/${purchaseId}/returns`,
+    data,
+    { headers: getAuthHeaders() }
+  );
+  return response.data;
+};
