@@ -1,67 +1,68 @@
+// src/components/purchase/PurchaseRow.jsx
 import React from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Select from "react-select";
 
-const PurchaseRow = ({ value, onChange, onRemove, products = [] }) => {
-  // Map products to react-select options safely
-  const options = products.map((p) => ({ value: p.id, label: p.name }));
+const PurchaseRow = ({ value, products, onChange, onRemove }) => {
+  const handleProductChange = (e) => {
+    const variantId = Number(e.target.value);
+    const selected = products.find((p) => p.id === variantId);
 
-  // Calculate total
-  const total = (value.quantity || 0) * (value.costPrice || 0);
+    if (!selected) return;
+
+    onChange({
+      ...value,
+      productVariantId: selected.id,     // ✅ REQUIRED BY BACKEND
+      costPrice: selected.price ?? 0,     // default price
+    });
+  };
 
   return (
-    <div className="flex gap-3 items-end">
-      {/* Product select */}
-      <div className="w-full">
+    <div className="flex gap-2 items-center">
+      {/* Product Select */}
+      <select
+        className="border rounded p-2 flex-1"
+        value={value.productVariantId ?? ""}
+        onChange={handleProductChange}
+      >
+        <option value="">Select Product</option>
+        {products.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.name} ({p.sku}) — Stock: {p.stockQty}
+          </option>
+        ))}
+      </select>
 
-      <Select
-        options={options}
-        className="w-full"
-        placeholder="Select product..."
-        value={options.find((opt) => opt.value === value.productId) || null}
-        onChange={(selected) =>
-          onChange({ ...value, productId: selected ? selected.value : null })
-        }
-        isClearable
-      />
-
-      </div>
-
-      {/* Quantity input */}
-      <Input
+      {/* Quantity */}
+      <input
         type="number"
-        min={1}
-        placeholder="Qty"
+        min="1"
+        className="border rounded p-2 w-20"
         value={value.quantity}
         onChange={(e) =>
-          onChange({ ...value, quantity: Math.max(1, Number(e.target.value)) })
+          onChange({
+            ...value,
+            quantity: Number(e.target.value),
+          })
         }
       />
 
-      {/* Cost Price input */}
-      <Input
+      {/* Cost Price */}
+      <input
         type="number"
-        min={0}
-        step="0.01"
-        placeholder="Cost Price"
-        value={value.costPrice ?? ""}
+        min="0"
+        className="border rounded p-2 w-28"
+        value={value.costPrice}
         onChange={(e) =>
-          onChange({ ...value, costPrice: Number(e.target.value) })
+          onChange({
+            ...value,
+            costPrice: Number(e.target.value),
+          })
         }
       />
 
-      {/* Total amount (read-only) */}
-      <Input
-        type="number"
-        value={total.toFixed(2)}
-        readOnly
-        className="bg-gray-100"
-      />
-
-      {/* Remove button */}
-      <Button variant="destructive" type="button" onClick={onRemove}>
-        Remove
+      {/* Remove */}
+      <Button variant="outline" onClick={onRemove}>
+        ✕
       </Button>
     </div>
   );
