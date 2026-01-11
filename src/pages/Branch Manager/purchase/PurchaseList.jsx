@@ -108,7 +108,7 @@ const PurchaseList = () => {
                       {p.items.map((item) => (
                         <tr key={item.id} className="bg-gray-50">
                           <td className="p-2"></td>
-                          <td className="p-2">{item.productName}</td>
+                          <td className="p-2">{item.variantName}</td>
                           <td className="p-2">{item.quantity}</td>
                           <td className="p-2">Rs. {item.price}</td>
                         </tr>
