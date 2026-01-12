@@ -28,9 +28,11 @@ import { createOrder } from "@/Redux Toolkit/features/order/orderThunks";
 
 const paymentMethodsList = [
   { key: "CASH", label: "Cash", icon: "💵" },
+  { key: "CREDIT", label: "Credit", icon: "💳" },
   { key: "CARD", label: "Card", icon: "💳" },
-  { key: "QR", label: "QR Pay", icon: "📱" },
-  { key: "WALLET", label: "Wallet", icon: "🪙" },
+  { key: "BANK_TRANSFER", label: "Bank Transfer", icon: "🏦" },
+  { key: "MOBILE_PAYMENT", label: "Mobile Pay", icon: "📱" },
+  { key: "CHEQUE", label: "Cheque", icon: "📝" },
 ];
 
 const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceiptDialog }) => {
