@@ -148,7 +148,7 @@ export const deleteProduct = createAsyncThunk(
 );
 
 // 🔹 Get products by store
-export const getProductsByStore = createAsyncThunk(
+export const getProductVariantsByStore = createAsyncThunk(
   "product/getByStore",
   async (storeId, { rejectWithValue }) => {
     try {

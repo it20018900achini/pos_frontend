@@ -9,7 +9,7 @@ import {
   updateInventory 
 } from "@/Redux Toolkit/features/inventory/inventoryThunks";
 
-import { getProductsByStore } from "@/Redux Toolkit/features/product/productThunks";
+import { getProductVariantsByStore } from "@/Redux Toolkit/features/product/productThunks";
 
 import InventoryTable from "./InventoryTable";
 import InventoryStats from "./InventoryStats";
@@ -40,7 +40,7 @@ const Inventory = () => {
 
   useEffect(() => {
     if (branch?.id) dispatch(getInventoryByBranch(branch?.id));
-    if (branch?.storeId) dispatch(getProductsByStore(branch?.storeId));
+    if (branch?.storeId) dispatch(getProductVariantsByStore(branch?.storeId));
   }, [branch, dispatch]);
 
   // Map inventory to show products

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 
-import { getProductsByStore } from "@/Redux Toolkit/features/product/productThunks";
+import { getProductVariantsByStore } from "@/Redux Toolkit/features/product/productThunks";
 import ProductTable from "./ProductTable";
 import ProductForm from "./ProductForm";
 import ProductSearch from "./ProductSearch";
@@ -36,7 +36,7 @@ export default function Products() {
   const fetchProducts = useCallback(async () => {
     if (!store?.id) return;
     try {
-      await dispatch(getProductsByStore(store.id)).unwrap();
+      await dispatch(getProductVariantsByStore(store.id)).unwrap();
     } catch (err) {
       toast({
         title: "Error",

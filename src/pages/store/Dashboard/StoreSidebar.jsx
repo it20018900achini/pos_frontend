@@ -13,14 +13,17 @@ import {
   Tag,
   Truck,
   LogOut,
+  List,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ProductVariants from "../ProductVariants/ProductVariants";
 
 const navLinks = [
   { name: "Dashboard", path: "/store/dashboard", icon: <LayoutDashboard /> },
   { name: "Stores", path: "/store/stores", icon: <Store /> },
   { name: "Branches", path: "/store/branches", icon: <Store /> },
   { name: "Products", path: "/store/products", icon: <ShoppingCart /> },
+  { name: "Product Variants", path: "/store/product-variants", icon: <List /> },
   { name: "Categories", path: "/store/categories", icon: <Tag /> },
   { name: "Brands", path: "/store/brands", icon: <Tag /> },
   { name: "Employees", path: "/store/employees", icon: <Users /> },

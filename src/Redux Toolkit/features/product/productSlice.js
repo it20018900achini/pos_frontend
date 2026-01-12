@@ -4,7 +4,7 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
-  getProductsByStore,
+  getProductVariantsByStore,
   searchProducts
 } from './productThunks';
 import { getRecentOrdersByBranchPagin } from '../order/orderThunks';
@@ -60,7 +60,7 @@ const productSlice = createSlice({
         state.products = state.products.filter((p) => p.id !== action.payload);
       })
 
-      .addCase(getProductsByStore.fulfilled, (state, action) => {
+      .addCase(getProductVariantsByStore.fulfilled, (state, action) => {
         state.products = action.payload;
       })
 
