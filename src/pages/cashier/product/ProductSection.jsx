@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Search, X } from "lucide-react";
-import { usegetProductVariantsByStoreQuery, useSearchProductsQuery } from "@/Redux Toolkit/features/product/productApi";
+import { useGetProductVariantsByStoreQuery, useSearchProductsQuery } from "@/Redux Toolkit/features/product/productApi";
 import ProductCard from "./ProductCard";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -11,7 +11,7 @@ const ProductSection = ({ searchInputRef, storeId = 2 }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch all products for the store
-  const { data: products = [], isLoading, isError } = usegetProductVariantsByStoreQuery(storeId);
+  const { data: products = [], isLoading, isError } = useGetProductVariantsByStoreQuery(storeId);
 
   // Search products
   const { data: searchResults = [] } = useSearchProductsQuery(

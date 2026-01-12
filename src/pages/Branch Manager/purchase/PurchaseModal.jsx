@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { addPurchase } from "@/Redux Toolkit/features/purchase/purchaseSlice";
 import { getSuppliers } from "@/Redux Toolkit/features/suppliers/supplierSlice";
-import { usegetProductVariantsByStoreQuery } from "@/Redux Toolkit/features/product/productApi";
+import { useGetProductVariantsByStoreQuery } from "@/Redux Toolkit/features/product/productApi";
 
 import {
   Dialog,
@@ -38,7 +38,7 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
   const dispatch = useDispatch();
   const { suppliers } = useSelector((state) => state.supplier);
 
-  const { data: products = [] } = usegetProductVariantsByStoreQuery(storeId);
+  const { data: products = [] } = useGetProductVariantsByStoreQuery(storeId);
 
   const [supplierId, setSupplierId] = useState(null);
   const [items, setItems] = useState([INITIAL_ITEM]);

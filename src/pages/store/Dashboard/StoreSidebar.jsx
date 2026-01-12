@@ -16,7 +16,6 @@ import {
   List,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ProductVariants from "../ProductVariants/ProductVariants";
 
 const navLinks = [
   { name: "Dashboard", path: "/store/dashboard", icon: <LayoutDashboard /> },
