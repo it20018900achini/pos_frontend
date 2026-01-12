@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useCreateProductVariantMutation, useUpdateProductVariantMutation } from "../../../Redux Toolkit/features/product/productApi";
+import { uploadToCloudinary } from "../../../utils/uploadToCloudinary";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { useSelector } from "react-redux";
 
-export default function VariantForm({ variant = null,  onSuccess }) {
-      const { products, loading, error, searchResults } = useSelector(
-        (state) => state.product
-      );
+export default function VariantForm({ variant = null, onSuccess }) {
   const [formData, setFormData] = useState({
     productId: "",
     name: "",
@@ -30,6 +27,7 @@ export default function VariantForm({ variant = null,  onSuccess }) {
     imageUrl: "",
   });
 
+  const [imageFile, setImageFile] = useState(null); // Preview
   const [createVariant] = useCreateProductVariantMutation();
   const [updateVariant] = useUpdateProductVariantMutation();
 
@@ -37,9 +35,17 @@ export default function VariantForm({ variant = null,  onSuccess }) {
     if (variant) setFormData({ ...formData, ...variant });
   }, [variant]);
 
-  // Generic change handler
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(URL.createObjectURL(file));
+      const uploadedUrl = await uploadToCloudinary(file);
+      handleChange("imageUrl", uploadedUrl);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -53,46 +59,113 @@ export default function VariantForm({ variant = null,  onSuccess }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 p-4 border rounded">
-      {/* Product Select */}
-      {/* <div className="flex flex-col">
-        <Label>Product</Label>
-        <select
-          className="border p-2 rounded"
-          value={formData.productId}
-          onChange={(e) => handleChange("productId", e.target.value)}
-          required
-        >
-          <option value="">Select product</option>
-          {products.map(p => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
-      </div> */}
+    <div className="bg-white p-6 rounded-lg shadow-md max-w-4xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">{variant ? "Edit Variant" : "Create Variant"}</h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
 
-      <Input placeholder="productId" value={formData.productId} onChange={e => handleChange("productId", e.target.value)} />
-      <Input placeholder="Name" value={formData.name} onChange={e => handleChange("name", e.target.value)} />
-      <Input placeholder="SKU" value={formData.sku} onChange={e => handleChange("sku", e.target.value)} />
-      <Input placeholder="Barcode" value={formData.barcode} onChange={e => handleChange("barcode", e.target.value)} />
-      <Input placeholder="Unit" value={formData.unit} onChange={e => handleChange("unit", e.target.value)} />
-      <Input placeholder="Image URL" value={formData.imageUrl} onChange={e => handleChange("imageUrl", e.target.value)} />
+        {/* Product & Name */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col">
+            <Label>Product ID</Label>
+            <Input
+              placeholder="Product ID"
+              value={formData.productId}
+              onChange={e => handleChange("productId", e.target.value)}
+              required
+            />
+          </div>
 
-      <Input type="number" placeholder="Selling Price" value={formData.sellingPrice} onChange={e => handleChange("sellingPrice", parseFloat(e.target.value))} />
-      <Input type="number" placeholder="Cost Price" value={formData.costPrice} onChange={e => handleChange("costPrice", parseFloat(e.target.value))} />
-      <Input type="number" placeholder="Weight" value={formData.weight} onChange={e => handleChange("weight", parseFloat(e.target.value))} />
-      <Input type="number" placeholder="Length" value={formData.length} onChange={e => handleChange("length", parseFloat(e.target.value))} />
-      <Input type="number" placeholder="Width" value={formData.width} onChange={e => handleChange("width", parseFloat(e.target.value))} />
-      <Input type="number" placeholder="Height" value={formData.height} onChange={e => handleChange("height", parseFloat(e.target.value))} />
-      <Input type="number" placeholder="Tax Rate (%)" value={formData.taxRate} onChange={e => handleChange("taxRate", parseFloat(e.target.value))} />
+          <div className="flex flex-col">
+            <Label>Name</Label>
+            <Input
+              placeholder="Variant Name"
+              value={formData.name}
+              onChange={e => handleChange("name", e.target.value)}
+              required
+            />
+          </div>
+        </div>
 
-      <Input type="date" placeholder="Expiry Date" value={formData.expiryDate} onChange={e => handleChange("expiryDate", e.target.value)} />
+        {/* SKU & Barcode */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col">
+            <Label>SKU</Label>
+            <Input placeholder="SKU" value={formData.sku} onChange={e => handleChange("sku", e.target.value)} />
+          </div>
+          <div className="flex flex-col">
+            <Label>Barcode</Label>
+            <Input placeholder="Barcode" value={formData.barcode} onChange={e => handleChange("barcode", e.target.value)} />
+          </div>
+        </div>
 
-      <div className="flex gap-4">
-        <Checkbox checked={formData.isActive} onCheckedChange={val => handleChange("isActive", val)}>Active</Checkbox>
-        <Checkbox checked={formData.isFeatured} onCheckedChange={val => handleChange("isFeatured", val)}>Featured</Checkbox>
-      </div>
+        {/* Pricing & Unit */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex flex-col">
+            <Label>Selling Price</Label>
+            <Input type="number" placeholder="Selling Price" value={formData.sellingPrice} onChange={e => handleChange("sellingPrice", parseFloat(e.target.value))} />
+          </div>
+          <div className="flex flex-col">
+            <Label>Cost Price</Label>
+            <Input type="number" placeholder="Cost Price" value={formData.costPrice} onChange={e => handleChange("costPrice", parseFloat(e.target.value))} />
+          </div>
+          <div className="flex flex-col">
+            <Label>Unit</Label>
+            <Input placeholder="Unit" value={formData.unit} onChange={e => handleChange("unit", e.target.value)} />
+          </div>
+        </div>
 
-      <Button type="submit">{variant ? "Update Variant" : "Create Variant"}</Button>
-    </form>
+        {/* Dimensions */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="flex flex-col">
+            <Label>Weight</Label>
+            <Input type="number" value={formData.weight} onChange={e => handleChange("weight", parseFloat(e.target.value))} />
+          </div>
+          <div className="flex flex-col">
+            <Label>Length</Label>
+            <Input type="number" value={formData.length} onChange={e => handleChange("length", parseFloat(e.target.value))} />
+          </div>
+          <div className="flex flex-col">
+            <Label>Width</Label>
+            <Input type="number" value={formData.width} onChange={e => handleChange("width", parseFloat(e.target.value))} />
+          </div>
+          <div className="flex flex-col">
+            <Label>Height</Label>
+            <Input type="number" value={formData.height} onChange={e => handleChange("height", parseFloat(e.target.value))} />
+          </div>
+        </div>
+
+        {/* Tax & Expiry */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex flex-col">
+            <Label>Tax Rate (%)</Label>
+            <Input type="number" value={formData.taxRate} onChange={e => handleChange("taxRate", parseFloat(e.target.value))} />
+          </div>
+          <div className="flex flex-col">
+            <Label>Expiry Date</Label>
+            <Input type="date" value={formData.expiryDate} onChange={e => handleChange("expiryDate", e.target.value)} />
+          </div>
+        </div>
+
+        {/* Image Upload */}
+        <div className="flex flex-col">
+          <Label>Variant Image</Label>
+          <Input type="file" accept="image/*" onChange={handleImageChange} />
+          {imageFile && (
+            <img src={imageFile} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded border" />
+          )}
+          {formData.imageUrl && !imageFile && (
+            <img src={formData.imageUrl} alt="Current" className="mt-2 w-32 h-32 object-cover rounded border" />
+          )}
+        </div>
+
+        {/* Flags */}
+        <div className="flex gap-6 items-center">
+          <Checkbox checked={formData.isActive} onCheckedChange={val => handleChange("isActive", val)}>Active</Checkbox>
+          <Checkbox checked={formData.isFeatured} onCheckedChange={val => handleChange("isFeatured", val)}>Featured</Checkbox>
+        </div>
+
+        <Button type="submit" className="w-full">{variant ? "Update Variant" : "Create Variant"}</Button>
+      </form>
+    </div>
   );
 }
