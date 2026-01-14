@@ -1,61 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-
+import { useSelector, useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
-
-import {
-  SearchIcon,
-  Loader2,
-  RefreshCw,
-  Download,
-  PrinterIcon,
-} from "lucide-react";
-
+import { Loader2, RefreshCw, SearchIcon } from "lucide-react";
 import POSHeader from "../components/POSHeader";
 import OrderTable from "./OrderTable";
-import OrderDetails from "./OrderDetails/OrderDetails";
-import CompareItems from "./CompareItems";
-
-import { handleDownloadOrderPDF } from "./pdf/pdfUtils";
-
-import {
-  useGetOrdersByCashierQuery,
-} from "@/Redux Toolkit/features/order/orderApi";
+import RefundModal from "./RefundModal";
+import { useToast } from "@/components/ui/use-toast";
+import { setCurrentOrder } from "@/Redux Toolkit/features/order/orderSlice";
+import { useGetOrdersByCashierQuery } from "@/Redux Toolkit/features/order/orderApi";
 
 const OrderHistoryPage = () => {
+  const dispatch = useDispatch();
   const { toast } = useToast();
   const { userProfile } = useSelector((state) => state.user);
 
-  /* -------------------- UI STATE -------------------- */
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [selectedOrderReturn, setSelectedOrderReturn] = useState(null);
-
-  const [showOrderDetailsDialog, setShowOrderDetailsDialog] = useState(false);
-  const [showOrderReturnDetailsDialog, setShowOrderReturnDetailsDialog] =
-    useState(false);
-
+  const [showRefundModal, setShowRefundModal] = useState(false);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
-
+  const [searchText, setSearchText] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [searchText, setSearchText] = useState("");
 
-  /* -------------------- RTK QUERY -------------------- */
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-  } = useGetOrdersByCashierQuery(
+  const { data, isLoading, error, refetch } = useGetOrdersByCashierQuery(
     {
       cashierId: userProfile?.id,
       page,
@@ -71,7 +37,6 @@ const OrderHistoryPage = () => {
   const orders = data?.orders || [];
   const pageInfo = data?.pageInfo || null;
 
-  /* -------------------- EFFECTS -------------------- */
   useEffect(() => {
     if (error) {
       toast({
@@ -82,18 +47,22 @@ const OrderHistoryPage = () => {
     }
   }, [error]);
 
-  /* -------------------- HANDLERS -------------------- */
   const handleViewOrder = (order) => {
-    setSelectedOrder(order);
-    setShowOrderDetailsDialog(true);
+    dispatch(setCurrentOrder(order));
   };
 
-  const handleReturnOrder = (order) => {
-    setSelectedOrderReturn(order);
-    setShowOrderReturnDetailsDialog(true);
+  const handleRefundOrder = (order) => {
+    dispatch(setCurrentOrder(order));
+    setShowRefundModal(true);
   };
 
-  const handleRefreshOrders = () => {
+  const handleRefundSubmit = (updatedOrder) => {
+    dispatch(setCurrentOrder(updatedOrder));
+    setShowRefundModal(false);
+    toast({ title: "Refund processed successfully" });
+  };
+
+  const handleRefresh = () => {
     refetch();
     toast({ title: "Refreshing orders..." });
   };
@@ -106,22 +75,15 @@ const OrderHistoryPage = () => {
   };
 
   const nextPage = () => {
-    if (pageInfo && page < pageInfo.totalPages - 1) {
-      setPage((p) => p + 1);
-    }
+    if (pageInfo && page < pageInfo.totalPages - 1) setPage(p => p + 1);
   };
 
   const prevPage = () => {
-    if (page > 0) setPage((p) => p - 1);
+    if (page > 0) setPage(p => p - 1);
   };
 
-  const handleDownloadPDF = async () => {
-    if (selectedOrder) {
-      await handleDownloadOrderPDF(selectedOrder, toast);
-    }
-  };
+  const selectedOrder = useSelector(state => state.order.selectedOrder);
 
-  /* -------------------- UI -------------------- */
   return (
     <div className="h-full flex flex-col">
       <POSHeader />
@@ -129,7 +91,7 @@ const OrderHistoryPage = () => {
       {/* Header */}
       <div className="p-4 bg-card border-b flex justify-between items-center">
         <h1 className="text-2xl font-bold">Order History</h1>
-        <Button variant="outline" onClick={handleRefreshOrders}>
+        <Button variant="outline" onClick={handleRefresh}>
           <RefreshCw className={`h-4 w-4 mr-2 ${isLoading && "animate-spin"}`} />
           Refresh
         </Button>
@@ -137,45 +99,20 @@ const OrderHistoryPage = () => {
 
       {/* Filters */}
       <div className="p-4 flex gap-2 flex-wrap">
-        <input
-          type="datetime-local"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className="border p-1"
-        />
-        <input
-          type="datetime-local"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          className="border p-1"
-        />
-        <input
-          type="text"
-          placeholder="Search by ID or Customer"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          className="border p-1"
-        />
-        <select
-          value={size}
-          onChange={(e) => setSize(Number(e.target.value))}
-          className="border p-1"
-        >
+        <input type="datetime-local" value={startDate} onChange={e => setStartDate(e.target.value)} className="border p-1" />
+        <input type="datetime-local" value={endDate} onChange={e => setEndDate(e.target.value)} className="border p-1" />
+        <input type="text" placeholder="Search by ID or Customer" value={searchText} onChange={e => setSearchText(e.target.value)} className="border p-1" />
+        <select value={size} onChange={e => setSize(Number(e.target.value))} className="border p-1">
           <option value={5}>5</option>
           <option value={10}>10</option>
           <option value={20}>20</option>
           <option value={50}>50</option>
         </select>
-
-        <Button size="sm" onClick={() => refetch()}>
-          Filter
-        </Button>
-        <Button size="sm" variant="outline" onClick={resetFilters}>
-          Reset
-        </Button>
+        <Button size="sm" onClick={() => refetch()}>Filter</Button>
+        <Button size="sm" variant="outline" onClick={resetFilters}>Reset</Button>
       </div>
 
-      {/* Content */}
+      {/* Orders Table */}
       <div className="flex-1 p-4 overflow-auto">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center h-full">
@@ -187,24 +124,14 @@ const OrderHistoryPage = () => {
             <OrderTable
               orders={orders}
               handleViewOrder={handleViewOrder}
-              handleReturnOrder={handleReturnOrder}
+              handleRefundOrder={handleRefundOrder}
             />
 
             {/* Pagination */}
             <div className="flex justify-between mt-4">
-              <Button variant="outline" onClick={prevPage} disabled={page === 0}>
-                Prev
-              </Button>
-              <span>
-                Page {page + 1} of {pageInfo?.totalPages || 1}
-              </span>
-              <Button
-                variant="outline"
-                onClick={nextPage}
-                disabled={pageInfo?.last}
-              >
-                Next
-              </Button>
+              <Button variant="outline" onClick={prevPage} disabled={page === 0}>Prev</Button>
+              <span>Page {page + 1} of {pageInfo?.totalPages || 1}</span>
+              <Button variant="outline" onClick={nextPage} disabled={pageInfo?.last}>Next</Button>
             </div>
           </>
         ) : (
@@ -215,45 +142,15 @@ const OrderHistoryPage = () => {
         )}
       </div>
 
-      {/* Order Details */}
-      <Dialog open={showOrderDetailsDialog} onOpenChange={setShowOrderDetailsDialog}>
-        {selectedOrder && (
-          <DialogContent className="max-w-[80%]">
-            <DialogHeader>
-              <DialogTitle>Order Details</DialogTitle>
-            </DialogHeader>
-
-            <OrderDetails selectedOrder={selectedOrder} />
-
-            <DialogFooter>
-              <Button variant="outline" onClick={handleDownloadPDF}>
-                <Download className="mr-2 h-4 w-4" />
-                PDF
-              </Button>
-              <Button>
-                <PrinterIcon className="mr-2 h-4 w-4" />
-                Print
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        )}
-      </Dialog>
-
-      {/* Refund Dialog */}
-      <Dialog
-        open={showOrderReturnDetailsDialog}
-        onOpenChange={setShowOrderReturnDetailsDialog}
-      >
-        {selectedOrderReturn && (
-          <DialogContent className="max-w-[80%]">
-            <DialogHeader>
-              <DialogTitle>Refund Details</DialogTitle>
-            </DialogHeader>
-
-            <CompareItems dataSelected={selectedOrderReturn} />
-          </DialogContent>
-        )}
-      </Dialog>
+      {/* Refund Modal */}
+      {selectedOrder && (
+        <RefundModal
+          open={showRefundModal}
+          order={selectedOrder}
+          onClose={() => setShowRefundModal(false)}
+          onSubmit={handleRefundSubmit}
+        />
+      )}
     </div>
   );
 };

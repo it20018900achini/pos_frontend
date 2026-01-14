@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 import {
   createOrder,
   getOrderById,
@@ -9,37 +9,29 @@ import {
   getOrdersByCustomer,
   getRecentOrdersByBranch,
   getOrdersByCustomerPagin,
-  getRecentOrdersByBranchPagin
-} from './orderThunks';
+  getRecentOrdersByBranchPagin,
+} from "./orderThunks";
 
 const initialState = {
   orders: [],
   todayOrders: [],
   customerOrders: [],
-  selectedOrder: null,
+  selectedOrder: null,       // <-- track current order
   loading: false,
   error: null,
   recentOrders: [],
   pageInfo: null,
-  search: '',
+  search: "",
   startDate: null,
   endDate: null,
 };
 
 const orderSlice = createSlice({
-  name: 'order',
+  name: "order",
   initialState,
   reducers: {
     clearOrderState: (state) => {
-      state.orders = [];
-      state.pageInfo = null;
-      state.todayOrders = [];
-      state.customerOrders = [];
-      state.selectedOrder = null;
-      state.error = null;
-      state.search = '';
-      state.startDate = null;
-      state.endDate = null;
+      Object.assign(state, initialState);
     },
     clearCustomerOrders: (state) => {
       state.customerOrders = [];
@@ -52,14 +44,19 @@ const orderSlice = createSlice({
       state.startDate = startDate;
       state.endDate = endDate;
     },
+    setCurrentOrder: (state, action) => {
+      state.selectedOrder = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
       // Create Order
-      .addCase(createOrder.pending, (state) => { state.loading = true; })
+      .addCase(createOrder.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(createOrder.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders.unshift(action.payload); // add to top
+        state.orders.unshift(action.payload);
         state.selectedOrder = action.payload;
       })
       .addCase(createOrder.rejected, (state, action) => {
@@ -72,15 +69,15 @@ const orderSlice = createSlice({
         state.selectedOrder = action.payload;
       })
 
-      // Get Orders by Branch
+      // Orders by Branch
       .addCase(getOrdersByBranch.fulfilled, (state, action) => {
         state.orders = action.payload;
       })
 
-
-
-      // Get Orders by Cashier (with pagination, search, date filter)
-      .addCase(getOrdersByCashier.pending, (state) => { state.loading = true; })
+      // Orders by Cashier (pagination)
+      .addCase(getOrdersByCashier.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(getOrdersByCashier.fulfilled, (state, action) => {
         state.orders = action.payload.orders || [];
         state.pageInfo = action.payload.pageInfo || null;
@@ -92,41 +89,39 @@ const orderSlice = createSlice({
         state.orders = [];
       })
 
-.addCase(getOrdersByCustomerPagin.pending, (state) => {
-  state.loading = true;
-})
+      // Orders by Customer (pagination)
+      .addCase(getOrdersByCustomerPagin.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getOrdersByCustomerPagin.fulfilled, (state, action) => {
+        const data = action.payload;
+        state.orders = data.content || [];
+        state.pageInfo = {
+          pageNumber: data.number ?? 0,
+          pageSize: data.size ?? 20,
+          totalPages: data.totalPages ?? 0,
+          totalElements: data.totalElements ?? 0,
+          first: data.first ?? false,
+          last: data.last ?? false,
+          numberOfElements: data.numberOfElements ?? 0,
+        };
+        state.loading = false;
+      })
+      .addCase(getOrdersByCustomerPagin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.orders = [];
+      })
 
-.addCase(getOrdersByCustomerPagin.fulfilled, (state, action) => {
-  const data = action.payload; // Spring Boot Page JSON
-
-  state.loading = false;
-
-  // FIXED: map correctly
-  state.orders = data.content || [];
-
-  state.pageInfo = {
-    pageNumber: data.number ?? 0,
-    pageSize: data.size ?? 20,
-    totalPages: data.totalPages ?? 0,
-    totalElements: data.totalElements ?? 0,
-    first: data.first ?? false,
-    last: data.last ?? false,
-    numberOfElements: data.numberOfElements ?? 0,
-  };
-})
-
-.addCase(getOrdersByCustomerPagin.rejected, (state, action) => {
-  state.loading = false;
-  state.error = action.payload;
-  state.orders = [];
-})
       // Today Orders
       .addCase(getTodayOrdersByBranch.fulfilled, (state, action) => {
         state.todayOrders = action.payload;
       })
 
       // Customer Orders
-      .addCase(getOrdersByCustomer.pending, (state) => { state.loading = true; })
+      .addCase(getOrdersByCustomer.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(getOrdersByCustomer.fulfilled, (state, action) => {
         state.loading = false;
         state.customerOrders = action.payload;
@@ -143,34 +138,41 @@ const orderSlice = createSlice({
 
       // Delete Order
       .addCase(deleteOrder.fulfilled, (state, action) => {
-        state.orders = state.orders.filter(o => o.id !== action.payload);
+        state.orders = state.orders.filter((o) => o.id !== action.payload);
       })
 
-
-
-.addCase(getRecentOrdersByBranchPagin.pending, (state) => {
-  state.loading = true;
-  state.error = null;
-})
-.addCase(getRecentOrdersByBranchPagin.rejected, (state, action) => {
-  state.loading = false;
-  state.error = action.payload;
-})
-.addCase(getRecentOrdersByBranchPagin.fulfilled, (state, action) => {
-  state.loading = false;
-  state.pageInfo = action.payload.pageInfo || null;
-  state.orders=action.payload.orders||[]
-})
-
-
+      // Recent Orders (pagination)
+      .addCase(getRecentOrdersByBranchPagin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getRecentOrdersByBranchPagin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orders = action.payload.orders || [];
+        state.pageInfo = action.payload.pageInfo || null;
+      })
+      .addCase(getRecentOrdersByBranchPagin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
 
       // Generic error matcher
       .addMatcher(
-        (action) => action.type.startsWith('order/') && action.type.endsWith('/rejected'),
-        (state, action) => { state.error = action.payload; }
+        (action) =>
+          action.type.startsWith("order/") && action.type.endsWith("/rejected"),
+        (state, action) => {
+          state.error = action.payload;
+        }
       );
   },
 });
 
-export const { clearOrderState, clearCustomerOrders, setSearchFilter, setDateFilter } = orderSlice.actions;
+export const {
+  clearOrderState,
+  clearCustomerOrders,
+  setSearchFilter,
+  setDateFilter,
+  setCurrentOrder, // ✅ added
+} = orderSlice.actions;
+
 export default orderSlice.reducer;

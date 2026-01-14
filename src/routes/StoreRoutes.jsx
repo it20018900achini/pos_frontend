@@ -21,6 +21,7 @@ import Upgrade from "../pages/store/upgrade/Upgrade";
 import Alerts from "../pages/store/Alerts/Alerts";
 import BrandsPage from "../pages/store/Brand/BrandsPage";
 import ProductVariantsPage from "../pages/store/ProductVariants/ProductVariantsPage";
+import PageNotFound from "../pages/common/PageNotFound";
 
 const StoreRoutes = () => {
   return (
@@ -44,6 +45,10 @@ const StoreRoutes = () => {
         <Route path="alerts" element={<Alerts />} />
         {/* Add more store-specific routes here as needed */}
       </Route>
+       <Route
+        path="*"
+        element={<PageNotFound/>}
+      />
     </Routes>
   );
 };
