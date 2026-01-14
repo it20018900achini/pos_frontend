@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCreateRefundMutation } from "@/Redux Toolkit/features/refund/refundApi";
 import { useToast } from "@/components/ui/use-toast";
@@ -21,7 +19,6 @@ const RefundModal = ({ open, order, onClose, onSubmit }) => {
   const [paymentMethod, setPaymentMethod] = useState("CASH");
   const [refundItems, setRefundItems] = useState([]);
 
-  // Reset when order changes
   useEffect(() => {
     if (order) {
       setRefundItems([]);
@@ -31,27 +28,42 @@ const RefundModal = ({ open, order, onClose, onSubmit }) => {
 
   if (!order) return null;
 
-  const toggleItem = (item) => {
-    const exists = refundItems.find((i) => i.itemId === item.id);
+  /**
+   * ✅ IMPORTANT
+   * Refund options must come ONLY from order.items
+   * NOT from product.variants
+   */
+  const refundOptions = order.items.map((item) => ({
+    orderItemId: item.id,
+    variantId: item.productVariantId,
+    productName: item.product?.name,
+    originalQty: item.quantity,
+    refundedQty: item.refundedQuantity || 0,
+    maxQty: item.quantity - (item.refundedQuantity || 0),
+  }));
+
+  const toggleItem = (option) => {
+    const exists = refundItems.find(
+      (i) => i.orderItemId === option.orderItemId
+    );
+
     if (exists) {
-      setRefundItems(refundItems.filter((i) => i.itemId !== item.id));
+      setRefundItems(
+        refundItems.filter((i) => i.orderItemId !== option.orderItemId)
+      );
     } else {
       setRefundItems([
         ...refundItems,
-        {
-          itemId: item.id,
-          productVariantId: "",
-          quantity: 1,
-          reason: "",
-          maxQty: item.quantity,
-        },
+        { ...option, quantity: 1, reason: "" },
       ]);
     }
   };
 
-  const updateItem = (itemId, field, value) => {
+  const updateItem = (orderItemId, field, value) => {
     setRefundItems((prev) =>
-      prev.map((i) => (i.itemId === itemId ? { ...i, [field]: value } : i))
+      prev.map((i) =>
+        i.orderItemId === orderItemId ? { ...i, [field]: value } : i
+      )
     );
   };
 
@@ -61,12 +73,33 @@ const RefundModal = ({ open, order, onClose, onSubmit }) => {
       return;
     }
 
-    // Build payload
+    for (const item of refundItems) {
+      if (
+        !item.quantity ||
+        item.quantity <= 0 ||
+        item.quantity > item.maxQty
+      ) {
+        toast({
+          title: `Invalid quantity for ${item.productName}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!item.reason || item.reason.trim() === "") {
+        toast({
+          title: `Reason required for ${item.productName}`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     const payload = {
       orderId: order.id,
       paymentMethod,
       items: refundItems.map((i) => ({
-        productVariantId: Number(i.productVariantId),
+        productVariantId: i.variantId,
         quantity: Number(i.quantity),
         reason: i.reason,
       })),
@@ -74,8 +107,8 @@ const RefundModal = ({ open, order, onClose, onSubmit }) => {
 
     try {
       const result = await createRefund(payload).unwrap();
-      toast({ title: "Refund successful" });
-      onSubmit(result); // pass the updated order back
+      toast({ title: "Refund processed successfully" });
+      onSubmit(result);
       onClose();
     } catch (err) {
       toast({
@@ -94,79 +127,76 @@ const RefundModal = ({ open, order, onClose, onSubmit }) => {
         </DialogHeader>
 
         {/* Payment Method */}
-        <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select Payment Method" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="CASH">Cash</SelectItem>
-            <SelectItem value="CARD">Card</SelectItem>
-            <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="mt-2">
+          <select
+            value={paymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value)}
+            className="w-full p-2 border rounded"
+          >
+            <option value="CASH">Cash</option>
+            <option value="CARD">Card</option>
+            <option value="BANK_TRANSFER">Bank Transfer</option>
+          </select>
+        </div>
 
         {/* Refund Items */}
         <div className="mt-4 space-y-4 max-h-[400px] overflow-y-auto">
-          {order.items.map((item) => {
-            const selected = refundItems.find((i) => i.itemId === item.id);
+          {refundOptions.map((option) => {
+            const selected = refundItems.find(
+              (i) => i.orderItemId === option.orderItemId
+            );
 
             return (
-              <div key={item.id} className="border p-3 rounded">
+              <div key={option.orderItemId} className="border p-3 rounded">
                 <div className="flex gap-3 items-center">
                   <Checkbox
                     checked={!!selected}
-                    onCheckedChange={() => toggleItem(item)}
+                    disabled={option.maxQty <= 0}
+                    onCheckedChange={() => toggleItem(option)}
                   />
                   <div>
-                    <p className="font-medium">{item.product?.name}</p>
+                    <p className="font-medium">
+                      {option.productName} — Variant #{option.variantId}
+                      {option.maxQty <= 0 && (
+                        <span className="ml-2 text-xs text-red-500">
+                          (Fully Refunded)
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      Qty: {item.quantity}
+                      Purchased: {option.originalQty} | Refunded:{" "}
+                      {option.refundedQty} | Available: {option.maxQty}
                     </p>
                   </div>
                 </div>
 
-                {selected && (
-                  <div className="grid grid-cols-3 gap-2 mt-3">
-                    {/* Variant Selector */}
-                    <Select
-                      value={selected.productVariantId}
-                      onValueChange={(v) =>
-                        updateItem(item.id, "productVariantId", v)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Variant" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {item.product.variants.map((v) => (
-                          <SelectItem key={v.id} value={String(v.id)}>
-                            {v.name || `Variant #${v.id}`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    {/* Quantity */}
+                {selected && option.maxQty > 0 && (
+                  <div className="grid grid-cols-2 gap-2 mt-3">
                     <Input
                       type="number"
                       min={1}
-                      max={item.quantity}
+                      max={option.maxQty}
                       value={selected.quantity}
-                      onChange={(e) =>
-                        updateItem(
-                          item.id,
-                          "quantity",
-                          Math.min(item.quantity, e.target.value)
-                        )
-                      }
+                      onChange={(e) => {
+                        const val = Math.max(
+                          1,
+                          Math.min(
+                            option.maxQty,
+                            parseInt(e.target.value) || 1
+                          )
+                        );
+                        updateItem(option.orderItemId, "quantity", val);
+                      }}
                     />
-
-                    {/* Reason */}
                     <Textarea
-                      placeholder="Reason"
+                      placeholder="Refund reason"
                       value={selected.reason}
                       onChange={(e) =>
-                        updateItem(item.id, "reason", e.target.value)
+                        updateItem(
+                          option.orderItemId,
+                          "reason",
+                          e.target.value
+                        )
                       }
                     />
                   </div>
@@ -184,9 +214,11 @@ const RefundModal = ({ open, order, onClose, onSubmit }) => {
           <Button
             onClick={submit}
             disabled={
+              isLoading ||
               refundItems.length === 0 ||
-              refundItems.some((i) => !i.productVariantId) ||
-              isLoading
+              refundItems.some(
+                (i) => i.quantity <= 0 || i.quantity > i.maxQty
+              )
             }
           >
             {isLoading ? "Processing..." : "Process Refund"}
