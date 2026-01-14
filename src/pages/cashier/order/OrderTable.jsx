@@ -52,7 +52,7 @@ const OrderTable = ({ orders = [], handleViewOrder, handleRefundOrder }) => {
           <TableHead>Order ID</TableHead>
           <TableHead>Date</TableHead>
           <TableHead>Customer</TableHead>
-          <TableHead>Total (LKR)</TableHead>
+          <TableHead>Net Amount (LKR)</TableHead>
           <TableHead>Payment</TableHead>
           <TableHead>Status</TableHead>
           <TableHead className="text-right">Actions</TableHead>
@@ -89,7 +89,7 @@ const OrderTable = ({ orders = [], handleViewOrder, handleRefundOrder }) => {
                 </TableCell>
 
                 <TableCell>
-                  {Number(order.totalAmount || 0).toFixed(2)}
+                  {Number(order.netAmount || 0).toFixed(2)}
                 </TableCell>
 
                 <TableCell>
