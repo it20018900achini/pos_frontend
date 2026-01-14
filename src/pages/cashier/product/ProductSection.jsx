@@ -1,27 +1,41 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, X } from "lucide-react";
-import { useGetProductVariantsByStoreQuery, useSearchProductsQuery } from "@/Redux Toolkit/features/product/productApi";
+import {
+  Loader2,
+  Search,
+  X,
+  LayoutGrid,
+  List,
+} from "lucide-react";
+import {
+  useGetProductVariantsByStoreQuery,
+  useSearchProductsQuery,
+} from "@/Redux Toolkit/features/product/productApi";
 import ProductCard from "./ProductCard";
+import ProductListRow from "./ProductListRow";
 import { useToast } from "@/components/ui/use-toast";
 
 const ProductSection = ({ searchInputRef, storeId = 2 }) => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [view, setView] = useState("card"); // card | list
 
-  // Fetch all products for the store
-  const { data: products = [], isLoading, isError } = useGetProductVariantsByStoreQuery(storeId);
+  const {
+    data: products = [],
+    isLoading,
+    isError,
+  } = useGetProductVariantsByStoreQuery(storeId);
 
-  // Search products
   const { data: searchResults = [] } = useSearchProductsQuery(
     { storeId, query: searchTerm },
     { skip: searchTerm.trim() === "" }
   );
 
-  const displayProducts = searchTerm.trim() ? searchResults : products;
+  const displayProducts = searchTerm.trim()
+    ? searchResults
+    : products;
 
-  // Handle errors
   useEffect(() => {
     if (isError) {
       toast({
@@ -32,17 +46,20 @@ const ProductSection = ({ searchInputRef, storeId = 2 }) => {
     }
   }, [isError, toast]);
 
-  // ---------------------------
-  // POS Keyboard Support (F1 focus)
-  // ---------------------------
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === "F1") {
-      e.preventDefault();
-      if (searchInputRef?.current) {
-        searchInputRef.current.focus();
+  // POS Keyboard Support (F1 focus search)
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === "F1") {
+        e.preventDefault();
+        searchInputRef?.current?.focus();
       }
-    }
-  }, [searchInputRef]);
+      if (e.key === "F2") {
+        e.preventDefault();
+        setView((v) => (v === "card" ? "list" : "card"));
+      }
+    },
+    [searchInputRef]
+  );
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -51,16 +68,16 @@ const ProductSection = ({ searchInputRef, storeId = 2 }) => {
 
   return (
     <div className="w-2/5 flex flex-col bg-white dark:bg-gray-900 border-r dark:border-gray-700 shadow-lg">
-      {/* Search */}
-      <div className="p-4 border-b bg-gray-100 dark:bg-gray-800 backdrop-blur">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-300" />
+      {/* Search + View Toggle */}
+      <div className="p-4 border-b bg-gray-100 dark:bg-gray-800 flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <Input
             ref={searchInputRef}
-            placeholder="Search products or scan barcode (F1)"
+            placeholder="Search or scan barcode (F1)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-12 pr-4 py-3 text-lg rounded-xl shadow-sm focus:ring-primary dark:bg-gray-700 dark:text-gray-200 dark:placeholder:text-gray-400"
+            className="pl-12 pr-4 py-3 text-lg rounded-xl"
             disabled={isLoading}
           />
           {searchTerm && (
@@ -74,26 +91,47 @@ const ProductSection = ({ searchInputRef, storeId = 2 }) => {
             </Button>
           )}
         </div>
+
+        {/* View Toggle */}
+        <div className="flex gap-1">
+          <Button
+            size="icon"
+            variant={view === "card" ? "default" : "outline"}
+            onClick={() => setView("card")}
+            title="Card View (F2)"
+          >
+            <LayoutGrid className="w-4 h-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant={view === "list" ? "default" : "outline"}
+            onClick={() => setView("list")}
+          >
+            <List className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
-      {/* Products grid */}
+      {/* Products */}
       <div className="flex-1 overflow-y-auto p-4">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-64 space-y-3">
-            <Loader2 className="animate-spin w-8 h-8 text-gray-500 dark:text-gray-400" />
-            <p className="text-gray-500 dark:text-gray-300">Loading products...</p>
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="animate-spin w-8 h-8" />
           </div>
         ) : displayProducts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-center">
-            <Search className="w-12 h-12 text-gray-300 dark:text-gray-500 mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">
-              {searchTerm ? "No matching products found" : "No products available"}
-            </p>
+          <div className="text-center text-gray-500 py-10">
+            No products found
           </div>
-        ) : (
-          <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-3 animate-in fade-in">
+        ) : view === "card" ? (
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-3">
             {displayProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {displayProducts.map((product) => (
+              <ProductListRow key={product.id} product={product} />
             ))}
           </div>
         )}
