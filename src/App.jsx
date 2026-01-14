@@ -18,6 +18,7 @@ import PageNotFound from "./pages/common/PageNotFound";
 /* THUNKS */
 import { getUserProfile } from "./Redux Toolkit/features/user/userThunks";
 import { getStoreByAdmin } from "./Redux Toolkit/features/store/storeThunks";
+import BranchInventoryManagerRoutes from "./routes/BranchInventoryManagerRoutes";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -100,6 +101,16 @@ const App = () => {
         </Routes>
       );
     }
+
+    else if (userProfile.role === "BRANCH_INVENTORY_MANAGER") {
+  content = (
+    <Routes>
+      <Route path="/" element={<Navigate to="/inventory" replace />} />
+      <Route path="/inventory/*" element={<BranchInventoryManagerRoutes />} />
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
+  );
+}
 
     /* 🏪 BRANCH ADMIN / MANAGER */
     else if (

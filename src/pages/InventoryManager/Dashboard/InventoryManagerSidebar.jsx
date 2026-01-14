@@ -30,39 +30,13 @@ import { Button } from "@/components/ui/button";
 const navLinks = [
   {
     name: "Dashboard",
-    path: "/acc/dashboard",
+    path: "/inventory/dashboard",
     icon: LayoutDashboard,
   },
-  {
-    name: "Chart of Accounts",
-    path: "/acc/chart-of-accounts",
-    icon: BookOpen,
-  },
-  {
-    name: "Journals",
-    path: "/acc/journals",
-    icon: ClipboardList,
-  },
-  {
-    name: "Trial Balance",
-    path: "/acc/trial-balance",
-    icon: Scale,
-  },
-  {
-    name: "Balance Sheet",
-    path: "/acc/balance-sheet",
-    icon: BarChart3,
-  },
-  {
-    name: "Profit & Loss",
-    path: "/acc/profit-loss",
-    icon: TrendingUp,
-  },
-  {
-    name: "Settings",
-    path: "/acc/settings",
-    icon: Settings,
-  },
+    { name: "Purchases", path: "/branch/purchases", icon: ShoppingBag },
+    { name: "Suppliers", path: "/branch/suppliers", icon: Users },
+   { name: "Inventory", path: "/branch/inventory", icon: Package },
+
 ];
 
 export default function InventoryManagerSidebar() {
@@ -87,7 +61,7 @@ export default function InventoryManagerSidebar() {
       {/* BRAND */}
       <div className="flex flex-col items-center py-6 border-b border-indigo-100 dark:border-indigo-900">
         <Package className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
-        <h1 className="text-xl font-bold mt-2">Branch Accountant</h1>
+        <h1 className="text-xl font-bold mt-2"> Inventory Manager</h1>
       </div>
 
       {/* BRANCH INFO */}
