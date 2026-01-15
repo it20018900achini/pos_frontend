@@ -145,13 +145,13 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
   /* -------------------- render -------------------- */
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="w-full max-w-[90%] overflow-y-auto h-screen">
         <DialogHeader>
           <DialogTitle>Create Purchase</DialogTitle>
         </DialogHeader>
 
         {/* Supplier */}
-        <div className="mb-4 space-y-2">
+        <div className=" space-y-2">
           <Label>Supplier</Label>
           <select
             className="w-full rounded-md border p-2"

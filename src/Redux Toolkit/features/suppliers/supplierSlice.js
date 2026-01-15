@@ -8,17 +8,17 @@ import {
 } from "./supplierApi";
 
 // ---------------- THUNKS ----------------
-
 export const getSuppliers = createAsyncThunk(
   "supplier/getSuppliers",
-  async (params, { rejectWithValue }) => {
+  async ({ page = 0, size = 10, search = "" }, { rejectWithValue }) => {
     try {
-      return await fetchSuppliers(params);
+      return await fetchSuppliers({ page, size, search });
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
+
 
 export const addSupplier = createAsyncThunk(
   "supplier/addSupplier",
@@ -68,13 +68,20 @@ const supplierSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // GET
+     
+
+
       .addCase(getSuppliers.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(getSuppliers.fulfilled, (state, action) => {
         state.loading = false;
         state.suppliers = action.payload.content ?? [];
         state.total = action.payload.totalElements ?? 0;
+        state.totalPages = action.payload.totalPages ?? 0;
+        state.page = action.payload.number ?? 0;
+        state.size = action.payload.size ?? 10;
       })
       .addCase(getSuppliers.rejected, (state, action) => {
         state.loading = false;
