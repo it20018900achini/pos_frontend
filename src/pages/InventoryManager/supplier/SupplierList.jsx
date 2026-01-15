@@ -3,27 +3,29 @@ import { useDispatch, useSelector } from "react-redux";
 // import {
 //   getSuppliers,
 //   removeSupplier,
-// } from "@/Redux Toolkit/features/supplier/supplierSlice";
+// } from "../../../Redux Toolkit/features/suppliers/supplierSlice";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+
+import EditSupplierDialog from "./EditSupplierDialog";
 import { getSuppliers, removeSupplier } from "../../../Redux Toolkit/features/suppliers/supplierSlice";
 
 const PAGE_SIZE = 10;
 
 const SupplierList = () => {
   const dispatch = useDispatch();
-  const {
-    suppliers,
-    total,
-    totalPages,
-    loading,
-  } = useSelector((state) => state.supplier);
+  const { suppliers, total, totalPages, loading } = useSelector(
+    (state) => state.supplier
+  );
 
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
-  const [editingSupplier, setEditingSupplier] = useState(null);
+
+  // ✅ Dialog state
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
 
   useEffect(() => {
     dispatch(
@@ -58,7 +60,16 @@ const SupplierList = () => {
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Suppliers ({total})</CardTitle>
-        <Button onClick={() => setEditingSupplier({})}>+ Add Supplier</Button>
+
+        {/* ✅ ADD */}
+        <Button
+          onClick={() => {
+            setSelectedSupplier(null); // add mode
+            setOpenDialog(true);
+          }}
+        >
+          + Add Supplier
+        </Button>
       </CardHeader>
 
       <CardContent>
@@ -84,7 +95,9 @@ const SupplierList = () => {
                   <th className="px-4 py-2 border-b">Name</th>
                   <th className="px-4 py-2 border-b">Phone</th>
                   <th className="px-4 py-2 border-b">Email</th>
-                  <th className="px-4 py-2 border-b text-center">Actions</th>
+                  <th className="px-4 py-2 border-b text-center">
+                    Actions
+                  </th>
                 </tr>
               </thead>
 
@@ -103,13 +116,19 @@ const SupplierList = () => {
                       <td className="px-4 py-2">{s.phone || "-"}</td>
                       <td className="px-4 py-2">{s.email || "-"}</td>
                       <td className="px-4 py-2 text-center space-x-2">
+                        {/* ✏️ EDIT */}
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setEditingSupplier(s)}
+                          onClick={() => {
+                            setSelectedSupplier(s);
+                            setOpenDialog(true);
+                          }}
                         >
                           Edit
                         </Button>
+
+                        {/* 🗑️ DELETE */}
                         <Button
                           size="sm"
                           variant="destructive"
@@ -148,25 +167,12 @@ const SupplierList = () => {
         )}
       </CardContent>
 
-      {/* ✏️ Add/Edit Modal placeholder */}
-      {editingSupplier !== null && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-md w-[400px]">
-            <h2 className="text-lg font-semibold mb-4">
-              {editingSupplier.id ? "Edit Supplier" : "Add Supplier"}
-            </h2>
-
-            {/* FORM GOES HERE */}
-
-            <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" onClick={() => setEditingSupplier(null)}>
-                Cancel
-              </Button>
-              <Button>Save</Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ✅ SINGLE SOURCE OF TRUTH */}
+      <EditSupplierDialog
+        open={openDialog}
+        supplier={selectedSupplier}
+        onClose={() => setOpenDialog(false)}
+      />
     </Card>
   );
 };

@@ -5,7 +5,6 @@ import SupplierForm from './SupplierForm'
 function Suppliers() {
   return (
     <div>
-        <SupplierForm/>
         <SupplierList/>
     </div>
   )
