@@ -33,9 +33,9 @@ const navLinks = [
     path: "/inventory/dashboard",
     icon: LayoutDashboard,
   },
-    { name: "Purchases", path: "/branch/purchases", icon: ShoppingBag },
-    { name: "Suppliers", path: "/branch/suppliers", icon: Users },
-   { name: "Inventory", path: "/branch/inventory", icon: Package },
+    { name: "Purchases", path: "/inventory/purchases", icon: ShoppingBag },
+    { name: "Suppliers", path: "/inventory/suppliers", icon: Users },
+   { name: "Inventory", path: "/inventory/inventory", icon: Package },
 
 ];
 
