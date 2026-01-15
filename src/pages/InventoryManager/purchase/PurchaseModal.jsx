@@ -202,9 +202,12 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
                   })
                 }
               >
-                <option value="CASH">Cash</option>
-                <option value="CARD">Card</option>
-                <option value="BANK_TRANSFER">Bank Transfer</option>
+         <option value="CASH">Cash</option>
+<option value="CARD">Card</option>
+<option value="BANK_TRANSFER">Bank Transfer</option>
+<option value="MOBILE_PAYMENT">Mobile Payment</option>
+<option value="CHEQUE">Cheque</option>
+<option value="CREDIT">Credit</option>
               </select>
 
               <input
