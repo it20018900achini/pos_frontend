@@ -29,6 +29,7 @@ import CashierSideBar from "./Sidebar/CashierSideBar";
 
 import { SidebarProvider } from "../../context/SidebarProvider";
 import { useSidebar } from "../../context/hooks/useSidebar";
+import POSHeader from "./components/POSHeader";
 
 // import { getAllCustomersPaginated } from "@/Redux Toolkit/features/customer/customerThunks";
 
@@ -89,7 +90,9 @@ const CashierDashboardLayout = () => {
   
 
   return (
+
     <SidebarProvider>
+{/* <POSHeader /> */}
 
       {/* Sidebar + Outlet */}
       <LayoutContent/>

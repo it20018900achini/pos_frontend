@@ -27,15 +27,19 @@ import {
 import { createOrder } from "@/Redux Toolkit/features/order/orderThunks";
 
 const paymentMethodsList = [
-  { key: "CASH", label: "Cash", icon: "💵" },
-  { key: "CREDIT", label: "Credit", icon: "💳" },
-  { key: "CARD", label: "Card", icon: "💳" },
-  { key: "BANK_TRANSFER", label: "Bank Transfer", icon: "🏦" },
-  { key: "MOBILE_PAYMENT", label: "Mobile Pay", icon: "📱" },
-  { key: "CHEQUE", label: "Cheque", icon: "📝" },
+  { key: "CASH", label: "Cash" },
+  { key: "CREDIT", label: "Credit" },
+  { key: "CARD", label: "Card" },
+  { key: "BANK_TRANSFER", label: "Bank Transfer" },
+  { key: "MOBILE_PAYMENT", label: "Mobile Pay" },
+  { key: "CHEQUE", label: "Cheque" },
 ];
 
-const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceiptDialog }) => {
+const PaymentDialog = ({
+  showPaymentDialog,
+  setShowPaymentDialog,
+  setShowReceiptDialog,
+}) => {
   const dispatch = useDispatch();
   const { toast } = useToast();
 
@@ -49,7 +53,18 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
 
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(false);
+
   const givenRef = useRef(null);
+
+  // ---------------- SAFE NUMBERS (CRITICAL FIX) ----------------
+  const safeTotal = Number(total || 0);
+
+  const discountValue =
+    typeof discount === "object"
+      ? Number(discount?.value || 0)
+      : Number(discount || 0);
+
+  const netTotal = safeTotal - discountValue;
 
   // ---------------- INIT DEFAULT CASH ----------------
   useEffect(() => {
@@ -59,7 +74,7 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
       {
         id: Date.now(),
         paymentMethod: "CASH",
-        amount: Number(total || 0),
+        amount: safeTotal,
       },
     ]);
 
@@ -67,93 +82,32 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
       givenRef.current?.focus();
       givenRef.current?.select();
     }, 100);
-  }, [showPaymentDialog, total]);
+  }, [showPaymentDialog, safeTotal]);
 
-  const totalPaid = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-  const changeDue = Math.max(totalPaid - total, 0);
-  const remaining = Math.max(total - totalPaid, 0);
-
-  // ---------------- PRINT RECEIPT ----------------
-  const printPOSReceipt = useCallback(
-    (order) => {
-      const printWindow = window.open("", "Print", "width=380,height=700");
-      if (!printWindow) return;
-
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Receipt</title>
-            <style>
-              body { font-family: monospace; font-size: 12px; padding: 10px; }
-              .center { text-align: center; }
-              .item { display: flex; justify-content: space-between; }
-              .bold { font-weight: bold; }
-              hr { border-top: 1px dashed #000; margin: 5px 0; }
-            </style>
-          </head>
-          <body>
-            <p class="center bold">🧾 RECEIPT</p>
-            <p>Order #: ${order.id}</p>
-            <p>Customer: ${order.customer?.name || "Walk-in"}</p>
-            <hr />
-            ${order.items
-              .map(
-                (i) => `
-              <div class="item">
-                <span>${i.product?.name || i.productVariant?.name} x${i.quantity}</span>
-                <span>LKR ${Number(i.price).toFixed(2)}</span>
-              </div>
-            `
-              )
-              .join("")}
-            <hr />
-            <div class="item bold">
-              <span>Subtotal</span>
-              <span>LKR ${Number(order.subtotal).toFixed(2)}</span>
-            </div>
-            <div class="item">
-              <span>Discount</span>
-              <span>LKR ${Number(order.discountAmount || 0).toFixed(2)}</span>
-            </div>
-            <div class="item bold">
-              <span>Total</span>
-              <span>LKR ${Number(order.netAmount).toFixed(2)}</span>
-            </div>
-            ${order.payments
-              .map(
-                (p) => `
-              <div class="item">
-                <span>${p.paymentMethod}</span>
-                <span>LKR ${Number(p.amount).toFixed(2)}</span>
-              </div>
-            `
-              )
-              .join("")}
-            <div class="item">
-              <span>Change</span>
-              <span>LKR ${Number(changeDue).toFixed(2)}</span>
-            </div>
-            <hr />
-            <p class="center">Thank you!</p>
-          </body>
-        </html>
-      `);
-
-      printWindow.document.close();
-      printWindow.print();
-      printWindow.close();
-    },
-    [changeDue]
+  const totalPaid = payments.reduce(
+    (sum, p) => sum + (Number(p.amount) || 0),
+    0
   );
+  const changeDue = Math.max(totalPaid - netTotal, 0);
+  const remaining = Math.max(netTotal - totalPaid, 0);
 
   // ---------------- PROCESS PAYMENT ----------------
   const processPayment = useCallback(async () => {
     if (!cart.length)
-      return toast({ title: "Empty Cart", description: "Add items first", variant: "destructive" });
-    if (!selectedCustomer)
-      return toast({ title: "Customer Required", description: "Select a customer", variant: "destructive" });
+      return toast({
+        title: "Empty Cart",
+        description: "Add items first",
+        variant: "destructive",
+      });
 
-    if (totalPaid < total)
+    if (!selectedCustomer)
+      return toast({
+        title: "Customer Required",
+        description: "Select a customer",
+        variant: "destructive",
+      });
+
+    if (totalPaid < netTotal)
       return toast({
         title: "Payment Incomplete",
         description: `Remaining: LKR ${remaining.toFixed(2)}`,
@@ -171,9 +125,9 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
           name: selectedCustomer.name,
           phone: selectedCustomer.phone,
         },
-        subtotal: Number(total || 0),
-        discountAmount: Number(discount || 0),
-        netAmount: Number(total - (discount || 0)),
+        subtotal: safeTotal,
+        discountAmount: discountValue,
+        netAmount: netTotal,
         items: cart.map((i) => ({
           productId: i.productId,
           productVariantId: i.id,
@@ -189,115 +143,188 @@ const PaymentDialog = ({ showPaymentDialog, setShowPaymentDialog, setShowReceipt
       };
 
       const created = await dispatch(createOrder(orderData)).unwrap();
+
       dispatch(setCurrentOrder(created));
-      printPOSReceipt(created);
       dispatch(resetOrder());
+
       setShowPaymentDialog(false);
       setShowReceiptDialog(true);
 
-      toast({ title: "Payment Successful", description: `Order #${created.id} created` });
+      toast({
+        title: "Payment Successful",
+        description: `Order #${created.id} created`,
+      });
     } catch (e) {
-      toast({ title: "Payment Failed", description: e?.message || "Something went wrong", variant: "destructive" });
+      toast({
+        title: "Payment Failed",
+        description: e?.message || "Something went wrong",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
-  }, [cart, selectedCustomer, payments, total, discount, totalPaid, remaining, branch.id, userProfile.id, dispatch, printPOSReceipt, toast, setShowPaymentDialog, setShowReceiptDialog]);
+  }, [
+    cart,
+    selectedCustomer,
+    payments,
+    safeTotal,
+    discountValue,
+    netTotal,
+    totalPaid,
+    remaining,
+    branch.id,
+    userProfile.id,
+    dispatch,
+    toast,
+    setShowPaymentDialog,
+    setShowReceiptDialog,
+  ]);
 
   return (
     <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-      <DialogContent className="sm:max-w-[700px] max-h-[95vh] w-[850px] p-0 overflow-hidden rounded-3xl shadow-2xl border border-white/40 bg-gradient-to-br from-slate-50 to-slate-200 backdrop-blur-xl flex flex-col">
-        <DialogHeader className="px-8 py-2 border-b bg-white/50 backdrop-blur-md">
-          <DialogTitle className="font-bold text-slate-800 flex items-center gap-3">
-            <span className="text-3xl">🧾</span> Payment Summary
+      <DialogContent className="w-[900px] max-h-[95vh] p-0 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-50 to-slate-200 flex flex-col">
+        <DialogHeader className="px-8 py-3 border-b bg-white/60">
+          <DialogTitle className="text-xl font-bold">
+            🧾 Payment Summary
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex overflow-hidden w-full">
-          {/* Left Panel */}
-          <div className="w-full p-8 py-4 border-r bg-white/40 backdrop-blur-lg flex flex-col overflow-y-auto">
-            <div className="rounded-2xl p-2 bg-white shadow-inner border border-slate-200 text-center mb-6 flex-shrink-0">
-              <p className="text-sm text-slate-500 font-medium uppercase tracking-wide">Total Amount</p>
-              <div className="text-2xl font-extrabold mt-1 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                LKR {Number(total || 0).toFixed(2)}
-              </div>
+        {/* BODY */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* LEFT – PAYMENTS */}
+          <div className="w-[55%] p-8 py-4 border-r bg-white/50 overflow-y-auto">
+            <div className="rounded-2xl p-3 bg-white text-center mb-6 shadow-inner">
+              <p className="text-sm text-slate-500 uppercase">Total Amount</p>
+              <p className="text-2xl font-bold text-indigo-600">
+                LKR {netTotal.toFixed(2)}
+              </p>
             </div>
 
-            <div className="space-y-4">
-              <p className="font-semibold">Payments</p>
-              {payments.map((p, idx) => (
-                <div key={p.id} className="flex items-center gap-3">
-                  <select
-                    className="h-12 px-3 rounded-lg border border-slate-300"
-                    value={p.paymentMethod}
-                    onChange={(e) => {
-                      const newPayments = [...payments];
-                      newPayments[idx].paymentMethod = e.target.value;
-                      setPayments(newPayments);
-                    }}
+            <p className="font-semibold mb-3">Payments</p>
+
+            {payments.map((p, idx) => (
+              <div key={p.id} className="flex items-center gap-3 mb-3">
+                <select
+                  className="h-11 px-3 rounded-lg border"
+                  value={p.paymentMethod}
+                  onChange={(e) => {
+                    const list = [...payments];
+                    list[idx].paymentMethod = e.target.value;
+                    setPayments(list);
+                  }}
+                >
+                  {paymentMethodsList.map((m) => (
+                    <option key={m.key} value={m.key}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+
+                <Input
+                  ref={idx === 0 ? givenRef : null}
+                  type="number"
+                  className="h-11 w-32"
+                  value={p.amount}
+                  onChange={(e) => {
+                    const list = [...payments];
+                    list[idx].amount = Number(e.target.value) || 0;
+                    setPayments(list);
+                  }}
+                />
+
+                {idx > 0 && (
+                  <Button
+                    variant="destructive"
+                    className="h-11 w-11"
+                    onClick={() =>
+                      setPayments(payments.filter((_, i) => i !== idx))
+                    }
                   >
-                    {paymentMethodsList.map((m) => (
-                      <option key={m.key} value={m.key}>
-                        {m.label}
-                      </option>
-                    ))}
-                  </select>
+                    <Trash2 size={16} />
+                  </Button>
+                )}
+              </div>
+            ))}
 
-                  <Input
-                    type="number"
-                    className="h-12 w-32"
-                    value={p.amount}
-                    onChange={(e) => {
-                      const newPayments = [...payments];
-                      newPayments[idx].amount = Number(e.target.value) || 0;
-                      setPayments(newPayments);
-                    }}
-                  />
+            <Button
+              variant="outline"
+              className="mt-2"
+              onClick={() =>
+                setPayments([
+                  ...payments,
+                  {
+                    id: Date.now(),
+                    paymentMethod: "CASH",
+                    amount: remaining,
+                  },
+                ])
+              }
+            >
+              <Plus size={16} className="mr-2" /> Add Payment
+            </Button>
 
-                  {idx > 0 && (
-                    <Button
-                      variant="destructive"
-                      onClick={() => setPayments(payments.filter((_, i) => i !== idx))}
-                      className="h-12 w-12 flex items-center justify-center"
-                    >
-                      <Trash2 size={16} />
-                    </Button>
-                  )}
-                </div>
-              ))}
-
-              <Button
-                variant="outline"
-                onClick={() =>
-                  setPayments([...payments, { id: Date.now(), paymentMethod: "CASH", amount: remaining }])
-                }
-                className="mt-2 h-10 flex items-center gap-2"
-              >
-                <Plus size={16} /> Add Payment
-              </Button>
-
-              <p className="text-sm font-bold">
-                Total Paid: LKR {totalPaid.toFixed(2)} | Remaining: LKR {remaining.toFixed(2)}
+            <div className="mt-4 text-sm font-semibold">
+              <p>Total Paid: LKR {totalPaid.toFixed(2)}</p>
+              <p>Remaining: LKR {remaining.toFixed(2)}</p>
+              <p className="text-green-700">
+                Change: LKR {changeDue.toFixed(2)}
               </p>
-              <p className="text-sm font-bold text-green-700">Change: LKR {changeDue.toFixed(2)}</p>
+            </div>
+          </div>
+
+          {/* RIGHT – ITEMS */}
+          <div className="w-[45%] p-6 bg-white/70 overflow-y-auto">
+            <p className="font-semibold mb-4">Items</p>
+
+            {cart.map((item) => (
+              <div
+                key={item.id}
+                className="bg-white rounded-xl p-3 mb-3 border shadow-sm"
+              >
+                <p className="font-medium">
+                  {item.product?.name || item.productVariant?.name}
+                </p>
+                <p className="text-xs text-slate-500">
+                  Qty: {item.quantity} × LKR {Number(item.sellingPrice).toFixed(2)}
+                </p>
+                <p className="font-semibold mt-1">
+                  LKR {(item.quantity * item.sellingPrice).toFixed(2)}
+                </p>
+              </div>
+            ))}
+
+            <div className="border-t pt-4 mt-4 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>LKR {safeTotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-red-600">
+                <span>Discount</span>
+                <span>- LKR {discountValue.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-bold text-lg">
+                <span>Total</span>
+                <span>LKR {netTotal.toFixed(2)}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <DialogFooter className="bg-white/70 backdrop-blur-md px-8 py-5 flex justify-end gap-4 flex-shrink-0">
-          <Button
-            variant="outline"
-            onClick={() => setShowPaymentDialog(false)}
-            className="h-12 px-6 text-lg rounded-xl border-slate-300 hover:bg-slate-100"
-          >
+        {/* FOOTER */}
+        <DialogFooter className="px-8 py-4 bg-white/80">
+          <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
             Cancel
           </Button>
+
           <Button
             onClick={processPayment}
-            disabled={loading || totalPaid < total}
-            className="h-12 px-6 text-lg rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90 shadow-xl"
+            disabled={loading || totalPaid < netTotal}
+            className="bg-indigo-600 text-white"
           >
-            {loading && <Loader2 className="w-5 h-5 animate-spin mr-2" />}
-            {loading ? "Processing…" : "Confirm Payment"}
+            {loading && (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            )}
+            Confirm Payment
           </Button>
         </DialogFooter>
       </DialogContent>
