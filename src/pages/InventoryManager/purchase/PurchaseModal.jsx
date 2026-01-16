@@ -41,8 +41,8 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
   const { data: products = [] } = useGetProductVariantsByStoreQuery(storeId);
 
   const [supplierId, setSupplierId] = useState(null);
-  const [items, setItems] = useState([INITIAL_ITEM]);
-  const [payments, setPayments] = useState([INITIAL_PAYMENT]);
+  const [items, setItems] = useState([{ ...INITIAL_ITEM }]);
+  const [payments, setPayments] = useState([{ ...INITIAL_PAYMENT }]);
 
   /* -------------------- effects -------------------- */
   useEffect(() => {
@@ -50,7 +50,8 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
   }, [dispatch]);
 
   /* -------------------- item handlers -------------------- */
-  const addItem = () => setItems((prev) => [...prev, INITIAL_ITEM]);
+  const addItem = () =>
+    setItems((prev) => [...prev, { ...INITIAL_ITEM }]);
 
   const updateItem = (index, updated) =>
     setItems((prev) =>
@@ -62,7 +63,7 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
 
   /* -------------------- payment handlers -------------------- */
   const addPayment = () =>
-    setPayments((prev) => [...prev, INITIAL_PAYMENT]);
+    setPayments((prev) => [...prev, { ...INITIAL_PAYMENT }]);
 
   const updatePayment = (index, updated) =>
     setPayments((prev) =>
@@ -92,43 +93,37 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
     [payments]
   );
 
+  /* -------------------- validation -------------------- */
+  const hasValidSupplier = !!supplierId;
+
+  const hasValidItems = items.some(
+    (i) => i.productVariantId && i.quantity > 0 && i.costPrice >= 0
+  );
+
+  const hasValidPayments = payments.some(
+    (p) => p.paymentMethod && p.amount > 0
+  );
+
+  const isPaymentMatch =
+    Number(paymentTotal.toFixed(2)) === Number(grandTotal.toFixed(2));
+
+  const canSave =
+    hasValidSupplier &&
+    hasValidItems &&
+    hasValidPayments &&
+    isPaymentMatch;
+
   /* -------------------- submit -------------------- */
   const handleSubmit = () => {
-    if (!supplierId) {
-      alert("Please select a supplier");
-      return;
-    }
+    if (!canSave) return;
 
-    const cleanItems = items
-      .filter(
-        ({ productVariantId, quantity, costPrice }) =>
-          productVariantId && quantity > 0 && costPrice >= 0
-      )
-      .map(({ productVariantId, quantity, costPrice }) => ({
-        productVariantId,
-        quantity,
-        price: costPrice,
-      }));
+    const cleanItems = items.map(({ productVariantId, quantity, costPrice }) => ({
+      productVariantId,
+      quantity,
+      price: costPrice,
+    }));
 
-    if (!cleanItems.length) {
-      
-      alert(JSON.stringify(items));
-      return;
-    }
-
-    const cleanPayments = payments.filter(
-      ({ paymentMethod, amount }) => paymentMethod && amount > 0
-    );
-
-    if (!cleanPayments.length) {
-      alert("Please add at least one payment");
-      return;
-    }
-
-    if (paymentTotal !== grandTotal) {
-      alert("Payment total must match grand total");
-      return;
-    }
+    const cleanPayments = payments.filter((p) => p.amount > 0);
 
     dispatch(
       addPurchase({
@@ -145,13 +140,13 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
   /* -------------------- render -------------------- */
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-[90%] overflow-y-auto h-screen">
+      <DialogContent className="sm:max-w-[90%] overflow-y-auto h-screen">
         <DialogHeader>
           <DialogTitle>Create Purchase</DialogTitle>
         </DialogHeader>
 
         {/* Supplier */}
-        <div className=" space-y-2">
+        <div className="space-y-2">
           <Label>Supplier</Label>
           <select
             className="w-full rounded-md border p-2"
@@ -191,7 +186,7 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
           <Label>Payments</Label>
 
           {payments.map((p, index) => (
-            <div key={index} className="flex gap-2">
+            <div key={index} className="flex w-full">
               <select
                 className="rounded border p-2"
                 value={p.paymentMethod}
@@ -202,18 +197,17 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
                   })
                 }
               >
-         <option value="CASH">Cash</option>
-<option value="CARD">Card</option>
-<option value="BANK_TRANSFER">Bank Transfer</option>
-<option value="MOBILE_PAYMENT">Mobile Payment</option>
-<option value="CHEQUE">Cheque</option>
-<option value="CREDIT">Credit</option>
+                <option value="CASH">Cash</option>
+                <option value="CARD">Card</option>
+                <option value="BANK_TRANSFER">Bank Transfer</option>
+                <option value="MOBILE_PAYMENT">Mobile Payment</option>
+                <option value="CHEQUE">Cheque</option>
+                <option value="CREDIT">Credit</option>
               </select>
 
               <input
                 type="number"
                 className="w-32 rounded border p-2"
-                placeholder="Amount"
                 value={p.amount}
                 onChange={(e) =>
                   updatePayment(index, {
@@ -236,10 +230,7 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
                 }
               />
 
-              <Button
-                variant="outline"
-                onClick={() => removePayment(index)}
-              >
+              <Button variant="outline" onClick={() => removePayment(index)}>
                 ✕
               </Button>
             </div>
@@ -262,11 +253,19 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
             <span>{paymentTotal.toFixed(2)}</span>
           </div>
 
+          {!isPaymentMatch && (
+            <p className="text-sm text-red-500">
+              Payment total must match grand total
+            </p>
+          )}
+
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit}>Save Purchase</Button>
+            <Button onClick={handleSubmit} disabled={!canSave}>
+              Save Purchase
+            </Button>
           </div>
         </DialogFooter>
       </DialogContent>
