@@ -57,7 +57,7 @@ const PaymentDialog = ({
 
   const givenRef = useRef(null);
 
-  // ---------------- SAFE NUMBERS (CRITICAL FIX) ----------------
+  // ---------------- SAFE NUMBERS ----------------
   const safeTotal = Number(total || 0);
 
   const discountValue =
@@ -84,6 +84,17 @@ const PaymentDialog = ({
       givenRef.current?.select();
     }, 100);
   }, [showPaymentDialog, safeTotal]);
+
+  // ---------------- AUTO HIDE ERROR MSG ----------------
+  useEffect(() => {
+    if (!errorMsg) return;
+
+    const timer = setTimeout(() => {
+      setErrorMsg("");
+    }, 5000); // 10 seconds
+
+    return () => clearTimeout(timer);
+  }, [errorMsg]);
 
   const totalPaid = payments.reduce(
     (sum, p) => sum + (Number(p.amount) || 0),
@@ -156,11 +167,11 @@ const PaymentDialog = ({
         description: `Order #${created.id} created`,
       });
     } catch (e) {
+      setErrorMsg(e?.message || e?.toString() || "Something went wrong");
 
-      setErrorMsg(e)
       toast({
         title: "Payment Failed",
-        description: e || "Something went wrong",
+        description: e?.message || e?.toString() || "Something went wrong",
         variant: "destructive",
       });
     } finally {
@@ -288,7 +299,8 @@ const PaymentDialog = ({
                   {item.product?.name || item.productVariant?.name}
                 </p>
                 <p className="text-xs text-slate-500">
-                  Qty: {item.quantity} × LKR {Number(item.sellingPrice).toFixed(2)}
+                  Qty: {item.quantity} × LKR{" "}
+                  {Number(item.sellingPrice).toFixed(2)}
                 </p>
                 <p className="font-semibold mt-1">
                   LKR {(item.quantity * item.sellingPrice).toFixed(2)}
@@ -315,9 +327,7 @@ const PaymentDialog = ({
 
         {/* FOOTER */}
         <DialogFooter className="px-8 py-4 bg-white/80 flex items-center ">
-        <div className="text-red-500">
-          {errorMsg}
-        </div>
+          <div className="text-red-500 flex-1">{errorMsg}</div>
           <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
             Cancel
           </Button>
@@ -327,9 +337,7 @@ const PaymentDialog = ({
             disabled={loading || totalPaid < netTotal}
             className="bg-indigo-600 text-white"
           >
-            {loading && (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            )}
+            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Confirm Payment
           </Button>
         </DialogFooter>
