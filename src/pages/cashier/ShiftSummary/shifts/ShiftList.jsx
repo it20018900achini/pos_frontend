@@ -40,7 +40,7 @@ const ShiftList = ({ onSelect }) => {
       <CardContent>
         <div className="overflow-x-auto">
           <table className="w-full table-auto border border-gray-200 rounded-md">
-            <thead className="bg-gray-50">
+            <thead className="">
               <tr>
                 <th className="px-4 py-2 border-b text-left">ID</th>
                 <th className="px-4 py-2 border-b text-left">Start</th>
@@ -54,7 +54,7 @@ const ShiftList = ({ onSelect }) => {
                 <tr
                   key={shift.id}
                   className={`border-b cursor-pointer transition ${
-                    shift.id === selectedId ? "bg-indigo-100 font-semibold" : ""
+                    shift.id === selectedId ? "bg-indigo-100 dark:bg-neutral-600 font-semibold" : ""
                   }`}
                   onClick={() => handleSelect(shift.id)}
                 >

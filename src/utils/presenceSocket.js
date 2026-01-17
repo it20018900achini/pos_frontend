@@ -1,34 +1,34 @@
 let socket = null;
-let reconnectTimeout = null;
 
-export function connectPresenceSocket(token, onMessage) {
-  if (!token) return;
+export function connectPresenceSocket(jwt, onMessage) {
+  if (socket && socket.readyState === WebSocket.OPEN) return socket; // reuse if already connected
 
-  const wsUrl = `ws://localhost:5000/ws/presence?token=${token}`;
-  socket = new WebSocket(wsUrl);
+  socket = new WebSocket(`ws://localhost:5000/ws/presence?token=${jwt}`);
 
-  socket.onopen = () => console.log("✅ Presence WS connected");
+  socket.onopen = () => console.log("✅ WS connected");
   socket.onmessage = onMessage;
+  socket.onerror = (err) => console.error("WebSocket error", err);
+  socket.onclose = (e) => console.log("❌ WS disconnected", e);
 
-  socket.onclose = (event) => {
-    console.log("❌ Presence WS disconnected", event.reason);
-    reconnectTimeout = setTimeout(() => connectPresenceSocket(token, onMessage), 2000);
-  };
-
-  socket.onerror = (err) => {
-    console.error("WebSocket error", err);
-    socket?.close();
-  };
+  return socket;
 }
 
 export function disconnectPresenceSocket() {
-  if (reconnectTimeout) {
-    clearTimeout(reconnectTimeout);
-    reconnectTimeout = null;
-  }
   if (socket) {
-    socket.close();
-    socket = null;
-    console.log("🛑 WS manually disconnected");
+    try {
+      if (socket.readyState === WebSocket.OPEN) socket.close();
+    } catch (err) {
+      console.warn("WS disconnect error", err);
+    } finally {
+      socket = null;
+    }
+  }
+}
+
+export function sendPresenceMessage(payload) {
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify(payload));
+  } else {
+    console.warn("Cannot send, WS not open yet");
   }
 }

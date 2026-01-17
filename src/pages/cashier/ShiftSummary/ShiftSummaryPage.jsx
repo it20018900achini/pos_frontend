@@ -30,7 +30,7 @@ const ShiftSummaryPage = () => {
         </div>
 
         {/* 📌 Current Shift */}
-        <div className="p-4 flex justify-between gap-3 border rounded-lg w-full bg-white shadow-sm">
+        <div className="p-4 flex justify-between gap-3 border rounded-lg w-full  shadow-sm">
           <div className="w-full">
             <CurrentShift />
           </div>

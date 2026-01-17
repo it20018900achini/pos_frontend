@@ -18,7 +18,7 @@ export default function UserActivities() {
               : "text-gray-500 hover:text-blue-600"
           }`}
         >
-          Online Users
+          Online Users-
         </button>
 
         <button

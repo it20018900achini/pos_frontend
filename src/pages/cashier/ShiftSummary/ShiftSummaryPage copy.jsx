@@ -151,13 +151,13 @@ function ShiftSummaryPage() {
       <h2 className="text-2xl font-bold mb-4">Shift Management</h2>
 
       {/* Current Shift */}
-      <div className="bg-white p-4 rounded shadow mb-6">
+      <div className=" p-4 rounded shadow mb-6">
         <h3 className="font-semibold mb-2">Current Shift</h3>
         {currentShift ? renderShiftDetails(currentShift) : <p>No shift currently open</p>}
       </div>
 
       {/* Start Shift */}
-      <div className="bg-white p-4 rounded shadow mb-6">
+      <div className=" p-4 rounded shadow mb-6">
         <h3 className="font-semibold mb-2">Start Shift</h3>
         <input
           type="number"
@@ -182,7 +182,7 @@ function ShiftSummaryPage() {
       </div>
 
       {/* End Shift */}
-      <div className="bg-white p-4 rounded shadow mb-6">
+      <div className=" p-4 rounded shadow mb-6">
         <h3 className="font-semibold mb-2">End Shift</h3>
         <input
           type="number"
@@ -200,7 +200,7 @@ function ShiftSummaryPage() {
       </div>
 
       {/* All Shifts */}
-      <div className="bg-white p-4 rounded shadow">
+      <div className=" p-4 rounded shadow">
         <h3 className="font-semibold mb-2">All Shifts</h3>
         {shifts.map((shift) => (
           <div key={shift.id} className="border-b py-2">
