@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { ShoppingCart, Package, Repeat, DollarSign } from "lucide-react";
+import { ShoppingCart, Package, Repeat, DollarSign, BatteryPlus } from "lucide-react";
 import { useGetCustomerSummaryByIdQuery } from "@/Redux Toolkit/features/customer/customerSummaryApi";
 
 // -------------------
@@ -77,7 +77,7 @@ const CustomerSummary = ({ customerId,customer }) => {
     {
       label: "Order Items",
       value: formatNumber(summary.totalOrderItems),
-      icon: <Package className="w-5 h-5 text-white" />,
+      icon: <BatteryPlus className="w-5 h-5 text-white" />,
       bg: "bg-purple-500",
     },
     {
@@ -89,7 +89,7 @@ const CustomerSummary = ({ customerId,customer }) => {
     {
       label: "Refund Items",
       value: formatNumber(summary.totalRefundItems),
-      icon: <Package className="w-5 h-5 text-white" />,
+      icon: <BatteryPlus className="w-5 h-5 text-white" />,
       bg: "bg-red-500",
     },
   ];

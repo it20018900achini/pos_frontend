@@ -175,7 +175,7 @@ const ProductForm = ({ initialValues = {}, onSubmit, onCancel, isEditing = false
           {/* Buttons */}
           <div className="flex justify-end gap-3 pt-4">
             {onCancel && <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>}
-            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700" disabled={isSubmitting}>
+            <Button type="submit" className="" disabled={isSubmitting}>
               {isSubmitting ? (isEditing ? "Updating..." : "Adding...") : isEditing ? "Update Product" : "Add Product"}
             </Button>
           </div>

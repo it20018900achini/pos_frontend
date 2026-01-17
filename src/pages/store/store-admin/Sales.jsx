@@ -99,7 +99,7 @@ export default function Sales() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Sales Management</h1>
-        <Button className="bg-emerald-600 hover:bg-emerald-700">
+        <Button className="">
           <Plus className="mr-2 h-4 w-4" /> New Sale
         </Button>
       </div>

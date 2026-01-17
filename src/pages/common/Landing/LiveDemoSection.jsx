@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, BarChart3, Users, Package, Calendar, Settings, ChevronRight, Play, Pause } from 'lucide-react';
+import { ShoppingCart, BarChart3, Users, Package, Calendar, Settings, ChevronRight, Play, Pause, BatteryPlus } from 'lucide-react';
 
 const LiveDemoSection = () => {
   const [activeTab, setActiveTab] = useState('pos');
@@ -9,7 +9,7 @@ const LiveDemoSection = () => {
   const tabs = [
     { id: 'pos', label: 'POS Terminal', icon: <ShoppingCart className="w-5 h-5" /> },
     { id: 'analytics', label: 'Analytics', icon: <BarChart3 className="w-5 h-5" /> },
-    { id: 'inventory', label: 'Inventory', icon: <Package className="w-5 h-5" /> },
+    { id: 'inventory', label: 'Inventory', icon: <BatteryPlus className="w-5 h-5" /> },
     { id: 'customers', label: 'Customers', icon: <Users className="w-5 h-5" /> },
   ];
 
@@ -369,7 +369,7 @@ const LiveDemoSection = () => {
                               <Settings className="w-4 h-4" />
                             </button>
                             <button className="p-1 text-primary hover:text-primary-dark">
-                              <Package className="w-4 h-4" />
+                              <BatteryPlus className="w-4 h-4" />
                             </button>
                           </div>
                         </div>

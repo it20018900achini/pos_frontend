@@ -12,8 +12,8 @@ import {
   Mail,
   Lock,
   CheckCircle,
-  ChefHat,
   Loader2,
+  ShoppingCart,
 } from "lucide-react";
 import { login, forgotPassword } from "@/Redux Toolkit/features/auth/authThunk";
 import { getUserProfile } from "@/Redux Toolkit/features/user/userThunks";
@@ -166,7 +166,7 @@ const Login = () => {
       {/* LEFT PANEL */}
       <div
         className="hidden lg:flex w-1/2 bg-cover bg-center relative"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&q=80&w=2000')" }}
+        style={{ backgroundImage: "url(/bg-img.jpg)" }}
       >
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
         <div className="relative z-10 p-12 flex flex-col justify-end h-full text-white">
@@ -185,7 +185,7 @@ const Login = () => {
           <div className="text-center mb-8">
             <div className="flex justify-center mb-3">
               <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-                <ChefHat className="w-7 h-7 text-primary-foreground" />
+                <ShoppingCart className="w-7 h-7 text-primary-foreground" />
               </div>
             </div>
             <h1 className="text-2xl font-bold">Welcome Back</h1>

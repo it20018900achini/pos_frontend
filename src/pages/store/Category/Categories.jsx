@@ -47,7 +47,7 @@ export default function Categories() {
         <h1 className="text-3xl font-bold tracking-tight">Category Management</h1>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-emerald-600 hover:bg-emerald-700">
+            <Button className="">
               <Plus className="mr-2 h-4 w-4" /> Add Category
             </Button>
           </DialogTrigger>

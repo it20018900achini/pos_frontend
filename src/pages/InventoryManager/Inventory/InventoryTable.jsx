@@ -17,7 +17,6 @@ const InventoryTable = ({ rows = [], onEdit }) => {
       <TableHeader>
         <TableRow>
           <TableHead>ID</TableHead>
-          <TableHead>Product</TableHead>
           <TableHead>Variant</TableHead>
           <TableHead>Quantity</TableHead>
           <TableHead>Reorder Level</TableHead>
@@ -34,10 +33,8 @@ const InventoryTable = ({ rows = [], onEdit }) => {
             return (
               <TableRow key={row.id}>
                 <TableCell>{row.id}</TableCell>
-                <TableCell className="font-medium">
-                  {row.productName}
-                </TableCell>
-                <TableCell>{row.variantName}</TableCell>
+                
+                <TableCell>{row.variantName}<br/>{row.productName}</TableCell>
                 <TableCell>{row.quantity}</TableCell>
                 <TableCell>{row.reorderLevel}</TableCell>
                 <TableCell>

@@ -98,7 +98,7 @@ const CategoryForm = ({ initialValues, onSubmit, onCancel, isEditing = false }) 
             )}
             <Button
               type="submit"
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className=""
               disabled={isSubmitting || loading}
             >
               {isSubmitting || loading ? (

@@ -132,7 +132,7 @@ export default function Products() {
         <h1 className="text-3xl font-bold tracking-tight">Product Management</h1>
 
         <Button
-          className="bg-emerald-600 hover:bg-emerald-700"
+          className=""
           onClick={() => handleOpenDialog()}
         >
           <Plus className="mr-2 h-4 w-4" />

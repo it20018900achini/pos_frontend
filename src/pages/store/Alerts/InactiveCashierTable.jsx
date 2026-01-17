@@ -1,7 +1,7 @@
 
 import { useSelector } from "react-redux";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { Tag } from "lucide-react";
+import { BatteryPlus, Tag } from "lucide-react";
 import { Package } from "lucide-react";
 import { formatDateTime } from "../../../utils/formateDate";
 import { useDispatch } from "react-redux";
@@ -32,7 +32,7 @@ const InactiveCashierTable = () => {
           <TableRow key={cashier.id}>
                     <TableCell>
               <div className="flex items-center gap-1">
-                <Package className="h-4 w-4 text-gray-400" />
+                <BatteryPlus className="h-4 w-4 text-gray-400" />
                 {cashier.id}
               </div>
             </TableCell>

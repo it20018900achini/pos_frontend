@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tag, DollarSign, Package, Calendar, Barcode, Palette, Image as ImageIcon } from "lucide-react";
+import { Tag, DollarSign, Package, Calendar, Barcode, Palette, Image as ImageIcon, BatteryPlus } from "lucide-react";
 
 const ProductDetails = ({ product }) => {
   if (!product) return null;
@@ -81,7 +81,7 @@ const ProductDetails = ({ product }) => {
             </div>
 
             <div className="flex items-center gap-2">
-              <Package className="h-5 w-5 text-gray-500" />
+              <BatteryPlus className="h-5 w-5 text-gray-500" />
               <div>
                 <div className="text-sm text-gray-500">Stock</div>
                 <div className="font-medium">

@@ -1,4 +1,4 @@
-import { ShoppingCart, Menu, X, ChevronDown, ForkKnife, ChefHat } from 'lucide-react'
+import { ShoppingCart, Menu, X, ChevronDown, ForkKnife, } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import { Button } from '../../../components/ui/button'
 import { useNavigate } from 'react-router'
@@ -36,7 +36,7 @@ const Header = () => {
             <div className="flex items-center">
               <div className="flex items-center space-x-2 group cursor-pointer" onClick={() => navigate('/')}>
                 <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300 transform group-hover:scale-105">
-                  <ChefHat className="w-6 h-6 text-primary-foreground" />
+                  <ShoppingCart className="w-6 h-6 text-primary-foreground" />
                 </div>
                 <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{settings?.businessName}</span>
               </div>

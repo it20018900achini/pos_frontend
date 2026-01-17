@@ -19,6 +19,7 @@ import {
   Archive,
   Calendar,
   Clipboard,
+  BatteryPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -44,8 +45,8 @@ const navLinks = [
     icon: FileText,
     children: [
       { name: "Summary", path: "/branch/reports", icon: BarChart2 },
-      { name: "Sales Report", path: "/branch/reports/sales", icon: Activity },
-      { name: "Inventory Report", path: "/branch/reports/inventory", icon: Archive },
+      // { name: "Sales Report", path: "/branch/reports/sales", icon: Activity },
+      // { name: "Inventory Report", path: "/branch/reports/inventory", icon: Archive },
     ],
   },
 
@@ -73,7 +74,7 @@ export default function BranchManagerSidebar() {
     <aside className="w-64 h-full flex flex-col bg-white dark:bg-[#0B1221] shadow-xl">
       {/* BRAND */}
       <div className="flex flex-col items-center py-6 border-b border-indigo-100 dark:border-indigo-900">
-        <Package className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
+        <BatteryPlus className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
         <h1 className="text-xl font-bold mt-2">Branch Manager</h1>
       </div>
 

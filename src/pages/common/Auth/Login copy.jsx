@@ -8,8 +8,8 @@ import {
   Mail,
   Lock,
   CheckCircle,
-  ChefHat,
   Loader2,
+  ShoppingCart,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { login, forgotPassword } from "@/Redux Toolkit/features/auth/authThunk";
@@ -160,7 +160,7 @@ const Login = () => {
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-3">
               <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-md">
-                <ChefHat className="w-7 h-7 text-primary-foreground" />
+                <ShoppingCart className="w-7 h-7 text-primary-foreground" />
               </div>
             </div>
             <h1 className="text-2xl font-bold tracking-tight">Welcome Back</h1>

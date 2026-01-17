@@ -51,6 +51,7 @@ const PaymentDialog = ({
   const branch = useSelector((state) => state.branch);
   const { userProfile } = useSelector((state) => state.user);
 
+  const [errorMsg, setErrorMsg] = useState("");
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -155,9 +156,11 @@ const PaymentDialog = ({
         description: `Order #${created.id} created`,
       });
     } catch (e) {
+
+      setErrorMsg(e)
       toast({
         title: "Payment Failed",
-        description: e?.message || "Something went wrong",
+        description: e || "Something went wrong",
         variant: "destructive",
       });
     } finally {
@@ -182,7 +185,7 @@ const PaymentDialog = ({
 
   return (
     <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-      <DialogContent className="w-[900px] max-h-[95vh] p-0 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-50 to-slate-200 flex flex-col">
+      <DialogContent className="sm:max-w-[90%] w-[90%] max-h-[95vh] p-0 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-50 to-slate-200 flex flex-col">
         <DialogHeader className="px-8 py-3 border-b bg-white/60">
           <DialogTitle className="text-xl font-bold">
             🧾 Payment Summary
@@ -203,7 +206,7 @@ const PaymentDialog = ({
             <p className="font-semibold mb-3">Payments</p>
 
             {payments.map((p, idx) => (
-              <div key={p.id} className="flex items-center gap-3 mb-3">
+              <div key={p.id} className="flex w-full items-center gap-3 mb-3">
                 <select
                   className="h-11 px-3 rounded-lg border"
                   value={p.paymentMethod}
@@ -223,7 +226,7 @@ const PaymentDialog = ({
                 <Input
                   ref={idx === 0 ? givenRef : null}
                   type="number"
-                  className="h-11 w-32"
+                  className="h-11 w-full"
                   value={p.amount}
                   onChange={(e) => {
                     const list = [...payments];
@@ -311,7 +314,10 @@ const PaymentDialog = ({
         </div>
 
         {/* FOOTER */}
-        <DialogFooter className="px-8 py-4 bg-white/80">
+        <DialogFooter className="px-8 py-4 bg-white/80 flex items-center ">
+        <div className="text-red-500">
+          {errorMsg}
+        </div>
           <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
             Cancel
           </Button>
