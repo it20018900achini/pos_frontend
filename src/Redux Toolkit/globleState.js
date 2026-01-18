@@ -31,6 +31,7 @@ import customerRefundReducer from "./features/customer/customerRefunds/customerR
 import transactionsReducer from "./features/transactions/transactionsSlice.js";
 import shiftReducer from "./features/shift/shiftSlice";
 
+import presenceReducer from "./features/presence/presenceSlice";
 
 
 import purchaseReducer from "./features/purchase/purchaseSlice.js";
@@ -76,6 +77,10 @@ const globleState = configureStore({
 
     purchase: purchaseReducer,   
     supplier: supplierReducer,   
+
+    presence: presenceReducer,
+
+
     [payrollApi.reducerPath]: payrollApi.reducer,
     [expenseApi.reducerPath]: expenseApi.reducer,
 

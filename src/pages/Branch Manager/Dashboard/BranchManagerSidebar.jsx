@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 const navLinks = [
   { name: "Dashboard", path: "/branch/dashboard", icon: LayoutDashboard },
   { name: "User Activities", path: "/branch/user-activities", icon: ShoppingBag },
+  { name: "Chat", path: "/branch/chat", icon: ShoppingBag },
   { name: "Purchases", path: "/branch/purchases", icon: ShoppingBag },
   { name: "Suppliers", path: "/branch/suppliers", icon: Users },
   { name: "Orders", path: "/branch/orders", icon: ShoppingBag },

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Notifications from "./Notifications";
 import OnlineUsers from "./OnlineUsers";
+import ChatPage from "./ChatPage";
 
 export default function UserActivities() {
   const [activeTab, setActiveTab] = useState("online");
@@ -9,6 +10,7 @@ export default function UserActivities() {
   return (
     <div className="bg-white border rounded shadow p-3 w-full">
       {/* Tabs */}
+      <ChatPage/>
       <div className="flex border-b mb-3">
         <button
           onClick={() => setActiveTab("online")}

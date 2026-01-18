@@ -8,6 +8,7 @@ export default function UserActivities() {
 
   return (
     <div className="bg-white border rounded shadow p-3 w-full">
+      
       {/* Tabs */}
       <div className="flex border-b mb-3">
         <button

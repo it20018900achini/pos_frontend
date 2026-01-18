@@ -1,14 +1,17 @@
 let socket = null;
 
 export function connectPresenceSocket(jwt, onMessage) {
-  if (socket && socket.readyState === WebSocket.OPEN) return socket; // reuse if already connected
+  if (socket && socket.readyState === WebSocket.OPEN) return socket;
 
   socket = new WebSocket(`ws://localhost:5000/ws/presence?token=${jwt}`);
 
-  socket.onopen = () => console.log("✅ WS connected");
-  socket.onmessage = onMessage;
-  socket.onerror = (err) => console.error("WebSocket error", err);
-  socket.onclose = (e) => console.log("❌ WS disconnected", e);
+  socket.onopen = () => console.log("✅ Presence WS connected");
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    onMessage(data);
+  };
+  socket.onerror = (err) => console.error("Presence WS error", err);
+  socket.onclose = () => console.log("❌ Presence WS disconnected");
 
   return socket;
 }
@@ -17,8 +20,6 @@ export function disconnectPresenceSocket() {
   if (socket) {
     try {
       if (socket.readyState === WebSocket.OPEN) socket.close();
-    } catch (err) {
-      console.warn("WS disconnect error", err);
     } finally {
       socket = null;
     }
@@ -28,7 +29,5 @@ export function disconnectPresenceSocket() {
 export function sendPresenceMessage(payload) {
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.send(JSON.stringify(payload));
-  } else {
-    console.warn("Cannot send, WS not open yet");
   }
 }
