@@ -1,11 +1,22 @@
+// src/components/PresenceListener.jsx
+"use client";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { connectPresenceSocket, disconnectPresenceSocket } from "@/Redux Toolkit/features/presence/presenceSocket";
-import { setOnlineUsers, wsConnected, wsDisconnected } from "@/Redux Toolkit/features/presence/presenceSlice";
+import {
+  setOnlineUsers,
+  addOnlineUser,
+  removeOnlineUser,
+  wsConnected,
+  wsDisconnected,
+} from "@/Redux Toolkit/features/presence/presenceSlice";
+import {
+  connectPresenceSocket,
+  disconnectPresenceSocket,
+} from "@/Redux Toolkit/features/presence/presenceSocket";
 
 export default function PresenceListener() {
   const dispatch = useDispatch();
-  const userProfile = useSelector(state => state.user.userProfile);
+  const userProfile = useSelector((state) => state.user.userProfile);
 
   useEffect(() => {
     if (!userProfile) return;
@@ -13,18 +24,28 @@ export default function PresenceListener() {
     const token = localStorage.getItem("jwt");
     if (!token) return;
 
-    const socket = connectPresenceSocket(token, {
-      onOpen: () => dispatch(wsConnected()),
-      onMessage: (data) => {
-        if (data.type === "ONLINE_USERS") {
-          dispatch(setOnlineUsers(data.users));
-        }
-      },
-      onClose: () => dispatch(wsDisconnected()),
-      onError: () => dispatch(wsDisconnected()),
+    connectPresenceSocket(token, (data) => {
+      if (!data || typeof data !== "object") return;
+
+      if (data.type === "ONLINE_USERS") {
+        dispatch(setOnlineUsers(data.users));
+      }
+
+      if (data.event === "userJoined" && data.user?.id) {
+        dispatch(addOnlineUser(data.user.id));
+      }
+
+      if (data.event === "userLeft" && data.user?.id) {
+        dispatch(removeOnlineUser(data.user.id));
+      }
     });
 
-    return () => disconnectPresenceSocket();
+    dispatch(wsConnected());
+
+    return () => {
+      dispatch(wsDisconnected());
+      disconnectPresenceSocket();
+    };
   }, [dispatch, userProfile]);
 
   return null;

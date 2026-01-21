@@ -1,57 +1,70 @@
-// src/Redux Toolkit/features/presence/presenceSocket.js
-let socket = null;
+let presenceSocket = null;
+let chatSocket = null;
 
-/**
- * Connects to the presence WebSocket.
- * @param {string} jwt - The JWT token
- * @param {function} onMessage - Callback for incoming messages
- * @returns {WebSocket} The socket instance
- */
+// 1️⃣ Presence WebSocket
 export function connectPresenceSocket(jwt, onMessage) {
-  if (socket && socket.readyState === WebSocket.OPEN) return socket;
+  if (presenceSocket && presenceSocket.readyState === WebSocket.OPEN) return presenceSocket;
 
-  socket = new WebSocket(`ws://localhost:5000/ws/presence?token=${jwt}`);
+  presenceSocket = new WebSocket(`ws://localhost:5000/ws/presence?token=${jwt}`);
 
-  socket.onopen = () => console.log("✅ Presence WS connected");
-socket.onmessage = (event) => {
-  if (!event?.data) return;
+  presenceSocket.onopen = () => console.log("✅ Presence WS connected");
+  presenceSocket.onmessage = (event) => {
+    if (!event?.data) return;
+    try {
+      const data = JSON.parse(event.data);
+      onMessage(data);
+    } catch {
+      console.warn("⚠️ WS ignored non-JSON:", event.data);
+    }
+  };
+  presenceSocket.onerror = (err) => console.error("Presence WS error:", err);
+  presenceSocket.onclose = () => console.log("❌ Presence WS disconnected");
 
-  try {
-    const data = JSON.parse(event.data);
-    onMessage(data);
-  } catch {
-    console.warn("⚠️ WS ignored non-JSON:", event.data);
-  }
+  return presenceSocket;
 };
 
+// 2️⃣ Chat WebSocket
+export function connectChatSocket(jwt, onMessage) {
+  if (chatSocket && chatSocket.readyState === WebSocket.OPEN) return chatSocket;
 
-  socket.onerror = (err) => console.error("Presence WS error:", err);
-  socket.onclose = () => console.log("❌ Presence WS disconnected");
+  chatSocket = new WebSocket(`ws://localhost:5000/ws/chat?token=${jwt}`);
 
-  return socket;
-}
-
-/**
- * Disconnects the presence WebSocket
- */
-export function disconnectPresenceSocket() {
-  if (socket) {
+  chatSocket.onopen = () => console.log("✅ Chat WS connected");
+  chatSocket.onmessage = (event) => {
+    if (!event?.data) return;
     try {
-      if (socket.readyState === WebSocket.OPEN) socket.close();
-    } finally {
-      socket = null;
+      const data = JSON.parse(event.data);
+      onMessage(data);
+    } catch {
+      console.warn("⚠️ Chat WS ignored non-JSON:", event.data);
     }
+  };
+  chatSocket.onerror = (err) => console.error("Chat WS error:", err);
+  chatSocket.onclose = () => console.log("❌ Chat WS disconnected");
+
+  return chatSocket;
+};
+
+// 3️⃣ Send message (via chat socket)
+export function sendChatMessage(payload) {
+  if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+    chatSocket.send(JSON.stringify(payload));
+  } else {
+    console.warn("⚠️ Cannot send chat message, chat socket not open");
   }
 }
 
-/**
- * Sends a message through the presence WebSocket
- * @param {object} payload - The message to send
- */
-export function sendPresenceMessage(payload) {
-  if (socket && socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify(payload));
-  } else {
-    console.warn("⚠️ Cannot send message, socket not open");
+// 4️⃣ Disconnect sockets
+export function disconnectPresenceSocket() {
+  if (presenceSocket) {
+    if (presenceSocket.readyState === WebSocket.OPEN) presenceSocket.close();
+    presenceSocket = null;
+  }
+}
+
+export function disconnectChatSocket() {
+  if (chatSocket) {
+    if (chatSocket.readyState === WebSocket.OPEN) chatSocket.close();
+    chatSocket = null;
   }
 }

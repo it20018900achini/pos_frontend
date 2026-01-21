@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { connectPresenceSocket, disconnectPresenceSocket, sendPresenceMessage } from "@/Redux Toolkit/features/presence/presenceSocket";
+import { connectPresenceSocket, disconnectPresenceSocket,  } from "@/Redux Toolkit/features/presence/presenceSocket";
 import ChatBox from "./ChatBox";
 import ChatPage from "./ChatPage";
 

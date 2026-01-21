@@ -11,24 +11,37 @@ const presenceSlice = createSlice({
   initialState,
   reducers: {
     setOnlineUsers: (state, action) => {
-      state.onlineUsers = action.payload;
+      state.onlineUsers = Array.isArray(action.payload)
+        ? action.payload
+        : [];
     },
     addOnlineUser: (state, action) => {
-      if (!state.onlineUsers.includes(action.payload)) {
-        state.onlineUsers.push(action.payload);
+      const id = action.payload;
+      if (!state.onlineUsers.includes(id)) {
+        state.onlineUsers.push(id);
       }
     },
     removeOnlineUser: (state, action) => {
-      state.onlineUsers = state.onlineUsers.filter((id) => id !== action.payload);
+      state.onlineUsers = state.onlineUsers.filter(
+        (id) => id !== action.payload
+      );
     },
     wsConnected: (state) => {
       state.wsConnected = true;
     },
     wsDisconnected: (state) => {
       state.wsConnected = false;
+      state.onlineUsers = []; // reset on disconnect
     },
   },
 });
 
-export const { setOnlineUsers, addOnlineUser, removeOnlineUser, wsConnected, wsDisconnected } = presenceSlice.actions;
+export const {
+  setOnlineUsers,
+  addOnlineUser,
+  removeOnlineUser,
+  wsConnected,
+  wsDisconnected,
+} = presenceSlice.actions;
+
 export default presenceSlice.reducer;
