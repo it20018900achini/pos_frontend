@@ -32,6 +32,7 @@ import transactionsReducer from "./features/transactions/transactionsSlice.js";
 import shiftReducer from "./features/shift/shiftSlice";
 
 import presenceReducer from "./features/presence/presenceSlice";
+import chatReducer from "./features/presence/chatSlice";
 
 
 import purchaseReducer from "./features/purchase/purchaseSlice.js";
@@ -80,7 +81,7 @@ const globleState = configureStore({
 
     presence: presenceReducer,
 
-
+    chat: chatReducer,
     [payrollApi.reducerPath]: payrollApi.reducer,
     [expenseApi.reducerPath]: expenseApi.reducer,
 

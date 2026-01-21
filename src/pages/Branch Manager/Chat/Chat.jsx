@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { connectPresenceSocket, sendPresenceMessage, disconnectPresenceSocket } from "@/utils/presenceSocket";
+import { connectPresenceSocket, sendPresenceMessage, disconnectPresenceSocket } from "@/Redux Toolkit/features/presence/presenceSocket";
 
 export default function Chat({ jwt, user, receiverId }) {
   const [messages, setMessages] = useState([]);

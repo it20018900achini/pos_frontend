@@ -1,10 +1,13 @@
-import React from 'react'
-import AppContent from './AppContent'
+import PresenceListener from "./PresenceListener";
+import ChatListener from "./ChatListener";
+import OnlineUsers from "./OnlineUsers";
 
-function ChatPage() {
+export default function ChatPage() {
   return (
-    <div><AppContent/></div>
-  )
+    <div>
+      <PresenceListener />
+      <ChatListener />
+      <OnlineUsers />
+    </div>
+  );
 }
-
-export default ChatPage

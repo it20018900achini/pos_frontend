@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { connectPresenceSocket, disconnectPresenceSocket } from "@/utils/presenceSocket";
+import { connectPresenceSocket, disconnectPresenceSocket } from "@/Redux Toolkit/features/presence/presenceSocket";
 import { userJoined, userLeft } from "@/Redux Toolkit/features/presence/presenceSlice";
 
 export default function usePresenceSocket() {

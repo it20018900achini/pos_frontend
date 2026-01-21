@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { connectPresenceSocket, disconnectPresenceSocket } from "@/utils/presenceSocket";
+import { connectPresenceSocket, disconnectPresenceSocket } from "@/Redux Toolkit/features/presence/presenceSocket";
 
 export default function OnlineUsers() {
   const [onlineUsers, setOnlineUsers] = useState([]);

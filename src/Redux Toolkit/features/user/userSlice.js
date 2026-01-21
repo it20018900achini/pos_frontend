@@ -13,6 +13,7 @@ const initialState = {
   users: [],
   customers: [],
   cashiers: [],
+  usersById: {},
   selectedUser: null,
   loading: false,
   error: null,
@@ -39,6 +40,8 @@ const userSlice = createSlice({
   state.loading = true;
 })
 
+     
+
 .addCase(getUserProfile.fulfilled, (state, action) => {
   state.userProfile = action.payload
   state.loading = false
@@ -59,8 +62,12 @@ const userSlice = createSlice({
         state.cashiers = action.payload;
       })
 
-      .addCase(getAllUsers.fulfilled, (state, action) => {
+       .addCase(getAllUsers.fulfilled, (state, action) => {
         state.users = action.payload;
+        state.usersById = action.payload.reduce((acc, user) => {
+          acc[user.id] = user;
+          return acc;
+        }, {});
       })
 
       .addCase(getUserById.fulfilled, (state, action) => {

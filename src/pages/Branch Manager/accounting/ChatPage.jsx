@@ -3,7 +3,7 @@ import ChatBox from "./ChatBox";
 import {
   connectPresenceSocket,
   disconnectPresenceSocket,
-} from "@/utils/presenceSocket";
+} from "@/Redux Toolkit/features/presence/presenceSocket";
 
 export default function ChatPage() {
   const [sender, setSender] = useState(null);

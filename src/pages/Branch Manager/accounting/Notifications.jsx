@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { connectPresenceSocket, disconnectPresenceSocket } from "@/utils/presenceSocket";
+import { connectPresenceSocket, disconnectPresenceSocket } from "@/Redux Toolkit/features/presence/presenceSocket";
 import { useSelector } from "react-redux";
 
 const STORAGE_KEY = "notifications";

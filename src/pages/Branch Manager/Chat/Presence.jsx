@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { connectPresenceSocket, disconnectPresenceSocket,  sendPresenceMessage} from "@/utils/presenceSocket";
+import { connectPresenceSocket, disconnectPresenceSocket,  sendPresenceMessage} from "@/Redux Toolkit/features/presence/presenceSocket";
 
 export default function Presence({ jwt, user }) {
   const [onlineUsers, setOnlineUsers] = useState([]);

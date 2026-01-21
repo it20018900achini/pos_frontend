@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { logout } from "../../../Redux Toolkit/features/user/userThunks";
 import { ThemeToggle } from "../../../components/theme-toggle";
 import BranchInfo from "./BranchInfo";
-import { disconnectPresenceSocket } from "@/utils/presenceSocket";
+import { disconnectPresenceSocket } from "@/Redux Toolkit/features/presence/presenceSocket";
 import { logoutThunk } from "../../../Redux Toolkit/features/auth/authThunk";
 
 const CashierSideBar = ({ navItems, onClose }) => {
