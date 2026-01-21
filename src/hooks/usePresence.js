@@ -6,7 +6,7 @@ export const usePresence = (jwt) => {
   const [onlineUsers, setOnlineUsers] = useState([]);
 
   // WebSocket URL (replace with your backend)
-  const WS_URL = `ws://localhost:8080/ws/presence?token=${jwt}`;
+  const WS_URL = `ws://localhost:5000/ws/presence?token=${jwt}`;
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(WS_URL, {
     shouldReconnect: () => true,
