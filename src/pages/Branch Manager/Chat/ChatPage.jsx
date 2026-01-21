@@ -27,6 +27,7 @@ export default function ChatPage() {
   );
   const userProfile = useSelector((s) => s.user.userProfile);
   const wsIsConnected = useSelector((s) => s.presence.wsConnected);
+
   const [onlineIds, setOnlineIds] = useState([]);
   const messagesEndRef = useRef(null);
   const [text, setText] = useState("");
@@ -78,6 +79,7 @@ export default function ChatPage() {
 
     const handleChatMessage = (data) => {
       if (data.type === "CHAT_MESSAGE") {
+        // store the incoming message in the chat slice
         dispatch(addChatMessage(data));
       }
     };
@@ -86,31 +88,28 @@ export default function ChatPage() {
     return () => disconnectChatSocket();
   }, [dispatch, userProfile]);
 
-  // 4️⃣ Auto-scroll
+  // 4️⃣ Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 5️⃣ Send message (offline fallback)
+  // 5️⃣ Send message (WebSocket or fallback)
   const sendMessage = () => {
     if (!text.trim() || !selectedUser) return;
 
+    const payload = {
+      type: "CHAT_MESSAGE",
+      senderId: userProfile?.id,
+      receiverId: selectedUser.id,
+      content: text,
+      timestamp: Date.now(),
+    };
+
     if (wsIsConnected) {
-      sendChatMessage({
-        type: "CHAT_MESSAGE",
-        receiverId: selectedUser.id,
-        content: text,
-        senderId: userProfile?.id,
-      });
+      sendChatMessage(payload);
     } else {
-      // fallback: store locally in Redux
-      dispatch(
-        addChatMessage({
-          senderId: userProfile?.id,
-          receiverId: selectedUser.id,
-          content: text,
-        })
-      );
+      // store locally if offline
+      dispatch(addChatMessage(payload));
       console.warn("⚠️ WebSocket offline, message stored locally");
     }
 
@@ -178,7 +177,9 @@ export default function ChatPage() {
                     >
                       {!isMine && (
                         <div className="text-xs font-semibold mb-1">
-                          {selectedUser.fullName || selectedUser.email || "Unknown"}
+                          {usersById[m.senderId]?.fullName ||
+                            usersById[m.senderId]?.email ||
+                            "Unknown"}
                         </div>
                       )}
                       {m.content}
