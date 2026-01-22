@@ -1,38 +1,72 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const initialState = {
+  selectedUser: null,        // user currently chatting with
+  messagesByUser: {},        // { userId: [messages] }
+};
+
 const chatSlice = createSlice({
   name: "chat",
-  initialState: {
-    selectedUser: null,        // The user you are currently chatting with
-    messagesByUser: {},        // { userId: [message1, message2, ...] }
-  },
+  initialState,
   reducers: {
-    // Select a user to chat with
+
+    /* ---------------- SELECT USER ---------------- */
     selectUser: (state, action) => {
       state.selectedUser = action.payload;
+
+      // 💾 remember last chat
+      if (action.payload?.id) {
+        localStorage.setItem(
+          "lastChatUserId",
+          action.payload.id.toString()
+        );
+      }
     },
 
-    // Add a chat message (sent or received)
+    /* ---------------- ADD MESSAGE ---------------- */
     addChatMessage: (state, action) => {
-      const { senderId, receiverId, content, timestamp } = action.payload;
+      const {
+        senderId,
+        receiverId,
+        content,
+        timestamp,
+        myId, // 👈 REQUIRED (current logged-in user id)
+      } = action.payload;
 
-      // Determine the "chat key" (the other user's id)
-      const chatUserId = senderId === state.selectedUser?.id ? senderId : receiverId;
+      if (!myId) return;
+
+      // 🧠 determine "other user"
+      const chatUserId =
+        senderId === myId ? receiverId : senderId;
+
+      if (!chatUserId) return;
 
       if (!state.messagesByUser[chatUserId]) {
         state.messagesByUser[chatUserId] = [];
       }
 
-      // Push the message
       state.messagesByUser[chatUserId].push({
         senderId,
         receiverId,
         content,
-        timestamp: timestamp || Date.now(), // optional timestamp
+        timestamp: timestamp || Date.now(),
       });
+
+      // 🔁 keep messages ordered
+      state.messagesByUser[chatUserId].sort(
+        (a, b) => a.timestamp - b.timestamp
+      );
     },
+
+    /* ---------------- CLEAR CHAT ---------------- */
+    clearChatState: () => initialState,
   },
 });
 
-export const { selectUser, addChatMessage } = chatSlice.actions;
+export const {
+  selectUser,
+  addChatMessage,
+  clearChatState,
+} = chatSlice.actions;
+
 export default chatSlice.reducer;

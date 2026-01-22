@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -17,9 +18,11 @@ import {
   wsConnected,
   wsDisconnected,
 } from "@/Redux Toolkit/features/presence/presenceSlice";
+import { loadChatHistory } from "@/Redux Toolkit/features/presence/chatThunks";
 
 export default function ChatPage() {
   const dispatch = useDispatch();
+
   const usersById = useSelector((s) => s.user.usersById);
   const selectedUser = useSelector((s) => s.chat.selectedUser);
   const messages = useSelector(
@@ -29,35 +32,48 @@ export default function ChatPage() {
   const wsIsConnected = useSelector((s) => s.presence.wsConnected);
 
   const [onlineIds, setOnlineIds] = useState([]);
-  const messagesEndRef = useRef(null);
   const [text, setText] = useState("");
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
-  // 1️⃣ Load all users
+  const messagesRef = useRef(null);
+  const messagesEndRef = useRef(null);
+
+  /* ---------------- LOAD USERS ---------------- */
   useEffect(() => {
     dispatch(getAllUsers());
   }, [dispatch]);
 
-  // 2️⃣ Presence socket: online users
+  /* -------- RESTORE LAST CHAT AFTER REFRESH -------- */
+  useEffect(() => {
+    if (!usersById || !userProfile) return;
+
+    const lastChatUserId = localStorage.getItem("lastChatUserId");
+    if (!lastChatUserId) return;
+
+    const lastUser = usersById[lastChatUserId];
+    if (lastUser && lastUser.id !== userProfile.id) {
+      dispatch(selectUser(lastUser));
+    }
+  }, [usersById, userProfile, dispatch]);
+
+  /* ---------------- PRESENCE SOCKET ---------------- */
   useEffect(() => {
     if (!userProfile) return;
+
     const token = localStorage.getItem("jwt");
     if (!token) return;
 
     const handlePresenceMessage = (data) => {
-      if (!data || typeof data !== "object") return;
-
-      if (data.type === "ONLINE_USERS" && Array.isArray(data.users)) {
-        setOnlineIds(data.users);
-        dispatch(setOnlineUsers(data.users));
+      if (data?.type === "ONLINE_USERS") {
+        setOnlineIds(data.users || []);
+        dispatch(setOnlineUsers(data.users || []));
       }
-      if (data.event === "userJoined" && data.user?.id) {
-        setOnlineIds((prev) =>
-          prev.includes(data.user.id) ? prev : [...prev, data.user.id]
-        );
+
+      if (data?.event === "userJoined") {
         dispatch(addOnlineUser(data.user.id));
       }
-      if (data.event === "userLeft" && data.user?.id) {
-        setOnlineIds((prev) => prev.filter((id) => id !== data.user.id));
+
+      if (data?.event === "userLeft") {
         dispatch(removeOnlineUser(data.user.id));
       }
     };
@@ -71,35 +87,46 @@ export default function ChatPage() {
     };
   }, [dispatch, userProfile]);
 
-  // 3️⃣ Chat socket: incoming messages
+  /* ---------------- CHAT SOCKET ---------------- */
   useEffect(() => {
     if (!userProfile) return;
+
     const token = localStorage.getItem("jwt");
     if (!token) return;
 
-    const handleChatMessage = (data) => {
-      if (data.type === "CHAT_MESSAGE") {
-        // store the incoming message in the chat slice
-        dispatch(addChatMessage(data));
+    connectChatSocket(token, (data) => {
+      if (data?.type === "CHAT_MESSAGE") {
+        dispatch(addChatMessage({ ...data, myId: userProfile.id }));
       }
-    };
+    });
 
-    connectChatSocket(token, handleChatMessage);
     return () => disconnectChatSocket();
   }, [dispatch, userProfile]);
 
-  // 4️⃣ Auto-scroll to bottom
+  /* -------- LOAD CHAT HISTORY WHEN USER SELECTED -------- */
+  useEffect(() => {
+    if (!selectedUser) return;
+    dispatch(loadChatHistory(selectedUser.id));
+  }, [dispatch, selectedUser]);
+
+  /* -------- AUTO SCROLL TO BOTTOM -------- */
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 5️⃣ Send message (WebSocket or fallback)
+  /* -------- SCROLL TOP BUTTON -------- */
+  const handleScroll = () => {
+    if (!messagesRef.current) return;
+    setShowScrollTop(messagesRef.current.scrollTop > 200);
+  };
+
+  /* ---------------- SEND MESSAGE ---------------- */
   const sendMessage = () => {
     if (!text.trim() || !selectedUser) return;
 
     const payload = {
       type: "CHAT_MESSAGE",
-      senderId: userProfile?.id,
+      senderId: userProfile.id,
       receiverId: selectedUser.id,
       content: text,
       timestamp: Date.now(),
@@ -108,100 +135,112 @@ export default function ChatPage() {
     if (wsIsConnected) {
       sendChatMessage(payload);
     } else {
-      // store locally if offline
-      dispatch(addChatMessage(payload));
-      console.warn("⚠️ WebSocket offline, message stored locally");
+      dispatch(addChatMessage({ ...payload, myId: userProfile.id }));
     }
 
     setText("");
   };
 
-  // 6️⃣ Map online IDs to user objects
-  const onlineUsers = onlineIds.map((id) => usersById[id]).filter(Boolean);
+  /* ---------------- USERS FILTER ---------------- */
+  const me = userProfile;
+  const onlineUsers = onlineIds
+    .map((id) => usersById[id])
+    .filter((u) => u && u.id !== me?.id);
 
+  /* ======================= UI ======================= */
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Left: Online Users */}
-      <div className="w-1/3 border-r bg-white p-2">
-        <h2 className="font-bold text-lg mb-2">
+
+      {/* ---------- LEFT PANEL ---------- */}
+      <div className="w-1/3 bg-white border-r p-3">
+
+        {/* ME */}
+        {me && (
+          <div className="mb-4 p-2 rounded bg-green-100 font-semibold">
+            👤 You: {me.fullName || me.email}
+          </div>
+        )}
+
+        <h2 className="font-bold mb-2">
           Users Online ({onlineUsers.length})
         </h2>
+
         {onlineUsers.length === 0 ? (
           <p className="text-sm text-gray-500">No users online</p>
         ) : (
-          <ul className="text-sm space-y-1 max-h-64 overflow-auto">
+          <ul className="space-y-1">
             {onlineUsers.map((u) => (
               <li
                 key={u.id}
-                className={`cursor-pointer p-1 rounded hover:bg-gray-100 ${
-                  selectedUser?.id === u.id ? "bg-blue-100 font-bold" : ""
-                }`}
                 onClick={() => dispatch(selectUser(u))}
+                className={`cursor-pointer p-2 rounded hover:bg-gray-100 ${
+                  selectedUser?.id === u.id
+                    ? "bg-blue-100 font-bold"
+                    : ""
+                }`}
               >
-                {u.fullName || u.email || "Unknown"} ({u.role})
+                {u.fullName || u.email} ({u.role})
               </li>
             ))}
           </ul>
         )}
       </div>
 
-      {/* Right: Chat Box */}
-      <div className="flex-1 p-2 flex flex-col">
+      {/* ---------- RIGHT PANEL ---------- */}
+      <div className="flex-1 flex flex-col p-3">
+
         {!selectedUser ? (
-          <div className="border p-2 rounded bg-white shadow text-gray-500">
+          <div className="text-gray-500">
             Select a user to start chatting
           </div>
         ) : (
-          <div className="flex flex-col flex-1 border rounded p-2 bg-white shadow">
-            <h4 className="font-bold mb-2">
-              Chat with {selectedUser.fullName || selectedUser.email || "Unknown"}
-              {!wsIsConnected && (
-                <span className="ml-2 text-xs text-red-500">(Offline)</span>
-              )}
-            </h4>
+          <>
+            <h3 className="font-bold mb-2">
+              Chat with {selectedUser.fullName || selectedUser.email}
+            </h3>
 
-            <div className="flex-1 overflow-auto border p-2 space-y-1 mb-2 flex flex-col">
-              {messages.length === 0 ? (
-                <p className="text-sm text-gray-500">No messages yet</p>
-              ) : (
-                messages.map((m, i) => {
-                  const isMine = m.senderId === userProfile?.id;
-                  return (
-                    <div
-                      key={i}
-                      className={`p-2 rounded max-w-xs break-words text-sm ${
-                        isMine
-                          ? "bg-blue-500 text-white self-end ml-auto"
-                          : "bg-gray-200 text-gray-800 self-start"
-                      }`}
-                    >
-                      {!isMine && (
-                        <div className="text-xs font-semibold mb-1">
-                          {usersById[m.senderId]?.fullName ||
-                            usersById[m.senderId]?.email ||
-                            "Unknown"}
-                        </div>
-                      )}
-                      {m.content}
-                    </div>
-                  );
-                })
-              )}
+            <div
+              ref={messagesRef}
+              onScroll={handleScroll}
+              className="flex-1 overflow-auto border rounded p-2 bg-white space-y-1"
+            >
+              {messages.map((m, i) => {
+                const isMine = m.senderId === me?.id;
+                return (
+                  <div
+                    key={i}
+                    className={`max-w-xs p-2 rounded text-sm ${
+                      isMine
+                        ? "bg-blue-500 text-white ml-auto"
+                        : "bg-gray-200"
+                    }`}
+                  >
+                    {m.content}
+                  </div>
+                );
+              })}
               <div ref={messagesEndRef} />
             </div>
 
+            {showScrollTop && (
+              <button
+                onClick={() =>
+                  messagesRef.current.scrollTo({ top: 0, behavior: "smooth" })
+                }
+                className="text-xs text-blue-500 mt-1"
+              >
+                ⬆ Scroll to top
+              </button>
+            )}
+
             <input
-              className="border p-1 w-full"
-              placeholder={
-                wsIsConnected
-                  ? "Type a message..."
-                  : "Offline, message will save locally"
-              }
+              className="border p-2 mt-2 rounded"
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+              placeholder="Type a message..."
             />
-          </div>
+          </>
         )}
       </div>
     </div>
