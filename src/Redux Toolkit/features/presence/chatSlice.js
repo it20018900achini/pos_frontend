@@ -2,19 +2,17 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   selectedUser: null,
-  messagesByUser: {}, // Only store in Redux
+  messagesByUser: {}, // { userId: [messages] }
 };
 
 const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
-    // Select user
     selectUser: (state, action) => {
       state.selectedUser = action.payload;
     },
 
-    // Add message to Redux
     addChatMessage: (state, action) => {
       const { senderId, receiverId, content, timestamp, myId, id, seen } = action.payload;
       if (!myId) return;
@@ -24,7 +22,7 @@ const chatSlice = createSlice({
 
       if (!state.messagesByUser[chatUserId]) state.messagesByUser[chatUserId] = [];
 
-      // Avoid duplicates
+      // avoid duplicates
       if (!state.messagesByUser[chatUserId].some((m) => m.id === id)) {
         state.messagesByUser[chatUserId].push({
           id,
@@ -36,15 +34,12 @@ const chatSlice = createSlice({
         });
       }
 
-      // Keep messages sorted
       state.messagesByUser[chatUserId].sort((a, b) => a.timestamp - b.timestamp);
     },
 
-    // Mark messages as seen in Redux only
     markMessagesAsSeen: (state, action) => {
       const userId = action.payload;
-      if (!userId || !state.messagesByUser[userId]) return;
-
+      if (!state.messagesByUser[userId]) return;
       state.messagesByUser[userId] = state.messagesByUser[userId].map((m) => ({
         ...m,
         seen: true,
@@ -55,5 +50,5 @@ const chatSlice = createSlice({
   },
 });
 
-export const { selectUser, addChatMessage, clearChatState, markMessagesAsSeen } = chatSlice.actions;
+export const { selectUser, addChatMessage, markMessagesAsSeen, clearChatState } = chatSlice.actions;
 export default chatSlice.reducer;
