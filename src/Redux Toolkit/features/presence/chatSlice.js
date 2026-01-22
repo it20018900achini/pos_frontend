@@ -1,26 +1,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const savedMessages = JSON.parse(localStorage.getItem("chatMessages") || "{}");
-
 const initialState = {
   selectedUser: null,
-  messagesByUser: savedMessages, // persist messages
+  messagesByUser: {}, // Only store in Redux
 };
 
 const chatSlice = createSlice({
   name: "chat",
   initialState,
   reducers: {
-
-    /* ---------------- SELECT USER ---------------- */
+    // Select user
     selectUser: (state, action) => {
       state.selectedUser = action.payload;
-      if (action.payload?.id) {
-        localStorage.setItem("lastChatUserId", action.payload.id.toString());
-      }
     },
 
-    /* ---------------- ADD MESSAGE ---------------- */
+    // Add message to Redux
     addChatMessage: (state, action) => {
       const { senderId, receiverId, content, timestamp, myId, id, seen } = action.payload;
       if (!myId) return;
@@ -30,8 +24,8 @@ const chatSlice = createSlice({
 
       if (!state.messagesByUser[chatUserId]) state.messagesByUser[chatUserId] = [];
 
-      // Avoid duplicate messages
-      if (!state.messagesByUser[chatUserId].some(m => m.id === id)) {
+      // Avoid duplicates
+      if (!state.messagesByUser[chatUserId].some((m) => m.id === id)) {
         state.messagesByUser[chatUserId].push({
           id,
           senderId,
@@ -44,15 +38,22 @@ const chatSlice = createSlice({
 
       // Keep messages sorted
       state.messagesByUser[chatUserId].sort((a, b) => a.timestamp - b.timestamp);
-
-      // Persist messages to localStorage
-      localStorage.setItem("chatMessages", JSON.stringify(state.messagesByUser));
     },
 
-    /* ---------------- CLEAR CHAT ---------------- */
+    // Mark messages as seen in Redux only
+    markMessagesAsSeen: (state, action) => {
+      const userId = action.payload;
+      if (!userId || !state.messagesByUser[userId]) return;
+
+      state.messagesByUser[userId] = state.messagesByUser[userId].map((m) => ({
+        ...m,
+        seen: true,
+      }));
+    },
+
     clearChatState: () => initialState,
   },
 });
 
-export const { selectUser, addChatMessage, clearChatState } = chatSlice.actions;
+export const { selectUser, addChatMessage, clearChatState, markMessagesAsSeen } = chatSlice.actions;
 export default chatSlice.reducer;

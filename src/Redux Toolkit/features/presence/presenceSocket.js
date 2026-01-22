@@ -1,12 +1,17 @@
 let presenceSocket = null;
 let chatSocket = null;
-let chatMessageQueue = []; // ✅ declare this at the top
+let chatMessageQueue = [];
+let chatSocketReadyPromise = null;
+
+// Get backend URL from environment variables
+const BACKEND_WS_URL = "ws://localhost:5000";
 
 // ----------------- Presence WS -----------------
 export function connectPresenceSocket(jwt, onMessage) {
   if (presenceSocket && presenceSocket.readyState === WebSocket.OPEN) return presenceSocket;
 
-  presenceSocket = new WebSocket(`ws://localhost:5000/ws/presence?token=${jwt}`);
+  const url = `${BACKEND_WS_URL}/ws/presence?token=${jwt}`;
+  presenceSocket = new WebSocket(url);
 
   presenceSocket.onopen = () => console.log("✅ Presence WS connected");
   presenceSocket.onmessage = (event) => {
@@ -28,14 +33,19 @@ export function connectPresenceSocket(jwt, onMessage) {
 export function connectChatSocket(jwt, onMessage) {
   if (chatSocket && chatSocket.readyState === WebSocket.OPEN) return chatSocket;
 
-  chatSocket = new WebSocket(`ws://localhost:5000/ws/chat?token=${jwt}`);
+  const url = `${BACKEND_WS_URL}/ws/chat?token=${jwt}`;
+  chatSocket = new WebSocket(url);
 
-  chatSocket.onopen = () => {
-    console.log("✅ Chat WS connected");
-    // ✅ send queued messages
-    chatMessageQueue.forEach(msg => chatSocket.send(JSON.stringify(msg)));
-    chatMessageQueue = [];
-  };
+  // Promise resolves when socket is open
+  chatSocketReadyPromise = new Promise((resolve) => {
+    chatSocket.onopen = () => {
+      console.log("✅ Chat WS connected");
+      // Send queued messages
+      chatMessageQueue.forEach((msg) => chatSocket.send(JSON.stringify(msg)));
+      chatMessageQueue = [];
+      resolve(true);
+    };
+  });
 
   chatSocket.onmessage = (event) => {
     if (!event?.data) return;
@@ -54,12 +64,15 @@ export function connectChatSocket(jwt, onMessage) {
 }
 
 // ----------------- Send chat message -----------------
-export function sendChatMessage(payload) {
+export async function sendChatMessage(payload) {
   if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
     chatSocket.send(JSON.stringify(payload));
   } else {
     console.warn("⚠️ Chat socket not open, queueing message");
-    chatMessageQueue.push(payload); // ✅ queue messages until WS is ready
+    chatMessageQueue.push(payload);
+
+    // Wait for socket to be ready if promise exists
+    if (chatSocketReadyPromise) await chatSocketReadyPromise;
   }
 }
 
@@ -75,5 +88,6 @@ export function disconnectChatSocket() {
   if (chatSocket) {
     if (chatSocket.readyState === WebSocket.OPEN) chatSocket.close();
     chatSocket = null;
+    chatSocketReadyPromise = null;
   }
 }
