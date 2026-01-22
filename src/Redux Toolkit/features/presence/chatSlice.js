@@ -1,8 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+const savedMessages = JSON.parse(localStorage.getItem("chatMessages") || "{}");
+
 const initialState = {
-  selectedUser: null,        // user currently chatting with
-  messagesByUser: {},        // { userId: [messages] }
+  selectedUser: null,
+  messagesByUser: savedMessages, // persist messages
 };
 
 const chatSlice = createSlice({
@@ -13,49 +15,38 @@ const chatSlice = createSlice({
     /* ---------------- SELECT USER ---------------- */
     selectUser: (state, action) => {
       state.selectedUser = action.payload;
-
-      // 💾 remember last chat
       if (action.payload?.id) {
-        localStorage.setItem(
-          "lastChatUserId",
-          action.payload.id.toString()
-        );
+        localStorage.setItem("lastChatUserId", action.payload.id.toString());
       }
     },
 
     /* ---------------- ADD MESSAGE ---------------- */
     addChatMessage: (state, action) => {
-      const {
-        senderId,
-        receiverId,
-        content,
-        timestamp,
-        myId, // 👈 REQUIRED (current logged-in user id)
-      } = action.payload;
-
+      const { senderId, receiverId, content, timestamp, myId, id, seen } = action.payload;
       if (!myId) return;
 
-      // 🧠 determine "other user"
-      const chatUserId =
-        senderId === myId ? receiverId : senderId;
-
+      const chatUserId = senderId === myId ? receiverId : senderId;
       if (!chatUserId) return;
 
-      if (!state.messagesByUser[chatUserId]) {
-        state.messagesByUser[chatUserId] = [];
+      if (!state.messagesByUser[chatUserId]) state.messagesByUser[chatUserId] = [];
+
+      // Avoid duplicate messages
+      if (!state.messagesByUser[chatUserId].some(m => m.id === id)) {
+        state.messagesByUser[chatUserId].push({
+          id,
+          senderId,
+          receiverId,
+          content,
+          timestamp: timestamp || Date.now(),
+          seen: seen || false,
+        });
       }
 
-      state.messagesByUser[chatUserId].push({
-        senderId,
-        receiverId,
-        content,
-        timestamp: timestamp || Date.now(),
-      });
+      // Keep messages sorted
+      state.messagesByUser[chatUserId].sort((a, b) => a.timestamp - b.timestamp);
 
-      // 🔁 keep messages ordered
-      state.messagesByUser[chatUserId].sort(
-        (a, b) => a.timestamp - b.timestamp
-      );
+      // Persist messages to localStorage
+      localStorage.setItem("chatMessages", JSON.stringify(state.messagesByUser));
     },
 
     /* ---------------- CLEAR CHAT ---------------- */
@@ -63,10 +54,5 @@ const chatSlice = createSlice({
   },
 });
 
-export const {
-  selectUser,
-  addChatMessage,
-  clearChatState,
-} = chatSlice.actions;
-
+export const { selectUser, addChatMessage, clearChatState } = chatSlice.actions;
 export default chatSlice.reducer;
