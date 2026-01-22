@@ -77,22 +77,25 @@ export default function ChatPage() {
     const token = localStorage.getItem("jwt");
     if (!token) return;
 
-    connectChatSocket(token, (data) => {
+    const handleChatMessage = (data) => {
       if (data?.type === "CHAT_MESSAGE") {
         dispatch(addChatMessage({ ...data, myId: userProfile.id }));
 
-        // Mark as seen if chat open
+        // ✅ Automatically mark as seen if chat with sender is open
         if (selectedUser?.id === data.senderId) {
           dispatch(markMessagesAsSeen(data.senderId));
           markConversationAsSeen(data.senderId, token);
         }
 
+        // Auto-scroll if near bottom
         const ref = messagesRef.current;
         if (ref && ref.scrollHeight - ref.scrollTop - ref.clientHeight < 100) {
           setTimeout(() => ref.scrollTo({ top: ref.scrollHeight, behavior: "smooth" }), 50);
         }
       }
-    });
+    };
+
+    connectChatSocket(token, handleChatMessage);
 
     return () => disconnectChatSocket();
   }, [dispatch, userProfile, selectedUser]);
@@ -141,7 +144,6 @@ export default function ChatPage() {
 
     dispatch(addChatMessage(payload));
 
-    // ✅ wait for WebSocket to connect before sending
     try {
       await sendChatMessage(payload);
     } catch (err) {
@@ -155,12 +157,18 @@ export default function ChatPage() {
   /* ---------------- Select User ---------------- */
   const handleSelectUser = async (user) => {
     dispatch(selectUser(user));
+
+    // ✅ Load chat history only on click
     const res = await dispatch(loadChatHistory({ userId: user.id }));
     setHasMore(res.payload?.length === 20);
 
-    dispatch(markMessagesAsSeen(user.id));
+    // ✅ Mark messages as seen immediately
+    const token = localStorage.getItem("jwt");
+    dispatch(markMessagesAsSeen(user.id));      // Update Redux
+    markConversationAsSeen(user.id, token);     // Update backend
   };
 
+  /* ---------------- Online Users ---------------- */
   const onlineUsers = onlineIds
     .map((id) => usersById[id])
     .filter((u) => u && u.id !== me?.id);

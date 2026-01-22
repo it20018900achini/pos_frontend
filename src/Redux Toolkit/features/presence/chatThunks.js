@@ -46,3 +46,16 @@ export const loadChatHistory = createAsyncThunk(
     }
   }
 );
+export const markMessagesAsSeen = createAsyncThunk(
+  "chat/markMessagesAsSeen",
+  async ({ otherUserId, token }) => {
+    const res = await fetch(`/api/chat/${otherUserId}/seen`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) throw new Error("Failed to mark messages as seen");
+    return otherUserId; // return the user whose messages were marked as seen
+  }
+);
