@@ -11,14 +11,18 @@ import {
 } from "@/Redux Toolkit/features/presence/presenceSocket";
 
 import { getAllUsers } from "@/Redux Toolkit/features/user/userThunks";
-import { loadChatHistory } from "@/Redux Toolkit/features/presence/chatThunks";
 import { markConversationAsSeen } from "@/Redux Toolkit/features/presence/chatApi";
 
 import {
   selectUser,
   addChatMessage,
-  markMessagesAsSeen,
+  markConversationSeen,
 } from "@/Redux Toolkit/features/presence/chatSlice";
+
+import {
+  loadChatHistory,
+  markMessagesAsSeen,
+} from "@/Redux Toolkit/features/presence/chatThunks";
 
 import {
   setOnlineUsers,
@@ -111,7 +115,7 @@ export default function ChatPage() {
 
         // auto mark seen if chat open
         if (selectedUser?.id === data.senderId) {
-          dispatch(markMessagesAsSeen(data.senderId));
+          dispatch(markMessagesAsSeen({ otherUserId: data.senderId }));
           markConversationAsSeen(data.senderId, token);
         }
       }
@@ -172,9 +176,9 @@ export default function ChatPage() {
 
     const res = await dispatch(loadChatHistory({ userId: user.id }));
     setHasMore(res.payload?.length === 20);
-
     const token = localStorage.getItem("jwt");
-    dispatch(markMessagesAsSeen(user.id));
+// alert(JSON.stringify(user?.id));
+    dispatch(markMessagesAsSeen({ otherUserId: user.id }));
     markConversationAsSeen(user.id, token);
   };
 
@@ -219,7 +223,7 @@ export default function ChatPage() {
                 }`}
               >
                 <span>
-                  {u.fullName || u.email}
+                {u?.id} - {u.fullName || u.email}
                   {unseen > 0 && (
                     <span className="ml-2 text-xs bg-red-500 text-white px-2 rounded-full">
                       {unseen}

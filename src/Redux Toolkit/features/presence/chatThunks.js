@@ -1,61 +1,95 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import api from "@/utils/api";
-import { addChatMessage } from "./chatSlice";
+import api from "@/utils/api"; // axios instance with baseURL
+import {
+  addChatMessage,
+  markConversationSeen,
+  setUnseenCount,
+} from "./chatSlice";
 
-/**
- * Load chat history or older messages
- * @param userId - ID of the user we are chatting with
- * @param before - optional timestamp to load messages older than this
- */
+/* ---------------- CHAT HISTORY ---------------- */
+
 export const loadChatHistory = createAsyncThunk(
-  "chat/loadChatHistory",
+  "chat/loadHistory",
   async ({ userId, before }, { dispatch, getState }) => {
-    try {
-      const token = localStorage.getItem("jwt");
-      if (!token) return { messages: [], hasMore: false };
+    const token = localStorage.getItem("jwt");
+    if (!token) return;
 
-      // Call API with optional "before" param for infinite scroll
+    try {
       const res = await api.get(`/api/chat/${userId}`, {
-        params: before ? { before, limit: 20 } : { limit: 20 }, // fetch in chunks
+        params: before ? { before, limit: 20 } : { limit: 20 },
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const myId = getState().user.userProfile?.id;
-      if (!myId) return { messages: [], hasMore: false };
+      if (!myId) return;
 
-      // Map API messages to store-friendly format
-      res.data.forEach(msg => {
-        dispatch(addChatMessage({
-          id: msg.id,
-          senderId: msg.sender.id,
-          receiverId: msg.receiver.id,
-          content: msg.content,
-          timestamp: new Date(msg.createdAt).getTime(),
-          seen: msg.seen,
-          myId,
-        }));
+      res.data.forEach((msg) => {
+        dispatch(
+          addChatMessage({
+            id: msg.id,
+            senderId: msg.sender.id,
+            receiverId: msg.receiver.id,
+            content: msg.content,
+            timestamp: new Date(msg.createdAt).getTime(),
+            seen: msg.seen,
+            myId,
+          })
+        );
       });
 
-      // Determine if there are more messages to load
-      const hasMore = res.data.length === 20; // if less than 20, we reached the start
-
-      return { messages: res.data, hasMore };
+      return res.data; // useful if component wants to check length
     } catch (err) {
       console.error("Failed to load chat history:", err);
       throw err;
     }
   }
 );
+
+/* ---------------- UNSEEN COUNT (RELOAD SAFE) ---------------- */
+
+export const fetchUnseenCount = createAsyncThunk(
+  "chat/fetchUnseenCount",
+  async (_, { dispatch }) => {
+    const token = localStorage.getItem("jwt");
+    if (!token) return;
+
+    try {
+      const res = await api.get("/api/chat/unseen/count", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Assuming backend returns an object like { userId: count, ... }
+      dispatch(setUnseenCount(res.data));
+    } catch (err) {
+      console.error("Failed to fetch unseen counts:", err);
+    }
+  }
+);
+
+/* ---------------- MARK MESSAGES AS SEEN ---------------- */
+
 export const markMessagesAsSeen = createAsyncThunk(
-  "chat/markMessagesAsSeen",
-  async ({ otherUserId, token }) => {
-    const res = await fetch(`/api/chat/${otherUserId}/seen`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) throw new Error("Failed to mark messages as seen");
-    return otherUserId; // return the user whose messages were marked as seen
+  "chat/markSeen",
+  async ({ otherUserId }, { dispatch, rejectWithValue }) => {
+    if (!otherUserId) {
+      console.error("❌ markMessagesAsSeen called with invalid userId");
+      return rejectWithValue("Invalid otherUserId");
+    }
+
+    const token = localStorage.getItem("jwt");
+    if (!token) return rejectWithValue("No JWT token");
+
+    try {
+      await api.post(
+        `/api/chat/${otherUserId}/seen`,
+        {}, // empty body
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      dispatch(markConversationSeen(otherUserId));
+    } catch (err) {
+      console.error("Failed to mark messages as seen:", err);
+      return rejectWithValue(err.message);
+    }
   }
 );

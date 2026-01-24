@@ -13,4 +13,12 @@ export default defineConfig({
   build: {
     outDir: "dist", // 👈 revert to default
   },
+    server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000', // your Spring Boot backend
+        changeOrigin: true,
+      },
+    }
+  },
 });
