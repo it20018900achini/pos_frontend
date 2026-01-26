@@ -35,7 +35,6 @@ import {
 
 import MessageNotification from "./MessageNotification";
 import UsersTabs from "./UsersTabs";
-import OnlineUsers from "./OnlineUsers";
 import { setUnseenCount } from "../../../Redux Toolkit/features/presence/chatSlice";
 
 /* ================= UTILS ================= */
@@ -168,15 +167,22 @@ const handleSelectUser = useCallback(
     // mark messages as seen for this user
     dispatch(markMessagesAsSeen({ otherUserId: user.id }));
 
-    // update total unseen count in Redux
-    dispatch(setUnseenCount()); // we’ll fix this below
+    // reset unseen count for this user locally
+    dispatch(resetUnseenForUser(user.id));
 
+    // recalc total unseen
+    const state = store.getState(); // or use selector in useEffect if needed
+    const total = Object.entries(state.chat.unseenCountByUser)
+      .filter(([userId]) => Number(userId) !== user.id)
+      .reduce((sum, [, count]) => sum + count, 0);
+    dispatch(setUnseenCount(total));
+
+    // update backend
     const token = getToken();
     if (token) markConversationAsSeen(user.id, token);
   },
   [dispatch]
 );
-
 
 
   /* ================= ONLINE USERS ================= */
@@ -188,6 +194,7 @@ const handleSelectUser = useCallback(
   return (
     <div className="flex h-screen bg-gray-50">
     {/* <OnlineUsers/> */}
+    <MessageNotification />
       <UsersTabs  handleSelectUser={handleSelectUser}  />
 
       {/* LEFT PANEL */}
