@@ -168,7 +168,7 @@ const handleSelectUser = useCallback(
     dispatch(markMessagesAsSeen({ otherUserId: user.id }));
 
     // reset unseen count for this user locally
-    dispatch(resetUnseenForUser(user.id));
+    // dispatch(resetUnseenForUser(user.id));
 
     // recalc total unseen
     const state = store.getState(); // or use selector in useEffect if needed
@@ -194,7 +194,6 @@ const handleSelectUser = useCallback(
   return (
     <div className="flex h-screen bg-gray-50">
     {/* <OnlineUsers/> */}
-    <MessageNotification />
       <UsersTabs  handleSelectUser={handleSelectUser}  />
 
       {/* LEFT PANEL */}
@@ -216,6 +215,12 @@ const handleSelectUser = useCallback(
               {selectedUser.fullName || selectedUser.email}
             </h3>
 
+{selectedUser?.id==me?.id ?(<div>
+
+{me?.email}
+
+</div>):(<div>
+  
             <div
               className="flex-1 overflow-auto space-y-2 p-2 bg-gray-100 rounded"
               onScroll={(e) => e.target.scrollTop < 50 && loadOlderMessages()}
@@ -262,6 +267,11 @@ const handleSelectUser = useCallback(
                 Send
               </button>
             </div>
+  </div>)}
+
+          
+
+
           </>
         )}
       </div>

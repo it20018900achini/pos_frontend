@@ -4,6 +4,8 @@ import { Bell, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
+import MessageNotification from "../Chat/MessageNotification";
+import { Link } from "react-router";
 
 export default function BranchManagerTopbar() {
   const { userProfile } = useSelector((state) => state.user);
@@ -39,12 +41,10 @@ export default function BranchManagerTopbar() {
           <ThemeToggle />
 
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative group">
-            <Bell className="h-6 w-6 text-white/80 group-hover:text-white transition" />
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs rounded-full bg-red-500 text-white shadow-md">
-              3
-            </Badge>
-          </Button>
+          <Link to="/branch/chat" className="relative">
+          <MessageNotification/>
+          </Link>
+          
 
           {/* User Info */}
           <div className="flex items-center gap-3 px-3 py-2 bg-white/10 rounded-xl backdrop-blur-md border border-white/20 shadow-sm">

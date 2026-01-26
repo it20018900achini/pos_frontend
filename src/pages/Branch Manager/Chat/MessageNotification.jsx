@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector, shallowEqual } from "react-redux";
 import api from "@/utils/api";
 import { setUnseenCountByUser } from "@/Redux Toolkit/features/presence/chatSlice";
+import { Mail } from "lucide-react";
 
 export default function MessageNotification() {
   const dispatch = useDispatch();
@@ -11,10 +12,9 @@ export default function MessageNotification() {
   const unseenByUser = useSelector((state) => state.chat.unseenCountByUser, shallowEqual);
   const selectedUser = useSelector((state) => state.chat.selectedUser);
 
-  // Step 1: Fetch unseen count from API on mount
+  // Fetch unseen counts from API on mount
   useEffect(() => {
     if (!me) return;
-
     const token = localStorage.getItem("jwt");
     if (!token) return;
 
@@ -26,25 +26,21 @@ export default function MessageNotification() {
       .catch(console.error);
   }, [dispatch, me]);
 
-  // Step 2: Recalculate total unseen count whenever unseenByUser changes
+  // Total unseen messages (excluding selected user)
   const totalUnseen = Object.entries(unseenByUser || {})
-    .filter(([userId]) => Number(userId) !== selectedUser?.id) // ignore selected user
+    .filter(([userId]) => Number(userId) !== selectedUser?.id)
     .reduce((sum, [, count]) => sum + count, 0);
 
   if (!totalUnseen) return null;
 
-  const arrayUnseen = Object.entries(unseenByUser).map(([userId, count]) => ({
-    userId: Number(userId),
-    count,
-  }));
-
   return (
-    <div>
-      <pre className="bg-blue-400">{JSON.stringify(arrayUnseen, null, 2)}</pre>
-      <span className="relative">
-        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 rounded-full">
-          {totalUnseen}
-        </span>
+    <div className="relative bg-white p-2 border border-neutral-800 rounded-sm hover:bg-gray-100 cursor-pointer">
+      {/* Chat icon (replace with any icon or SVG you like) */}
+      <Mail className="w-5 h-5 text-neutral-800" />
+
+      {/* Badge */}
+      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 rounded-full">
+        {totalUnseen}
       </span>
     </div>
   );

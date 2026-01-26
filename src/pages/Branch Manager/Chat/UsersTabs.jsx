@@ -1,30 +1,28 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector, useDispatch, shallowEqual } from "react-redux";
 import api from "@/utils/api";
-import { setUnseenCount } from "@/Redux Toolkit/features/presence/chatSlice";
+import { setUnseenCountByUser } from "@/Redux Toolkit/features/presence/chatSlice";
 import MessageNotification from "./MessageNotification";
-import { setUnseenCountByUser } from "../../../Redux Toolkit/features/presence/chatSlice";
 
 export default function UsersTabs({ handleSelectUser }) {
   const dispatch = useDispatch();
 
-  // Selectors
+  // ------------------ REDUX SELECTORS ------------------
   const usersById = useSelector((state) => state.user.usersById);
   const me = useSelector((state) => state.user.userProfile);
   const selectedUser = useSelector((state) => state.chat.selectedUser);
   const onlineIds = useSelector((state) => state.presence.onlineUsers || []);
-  const messagesByUser = useSelector((state) => state.chat.messagesByUser);
-  const unseenFromStore = useSelector((state) => state.chat.unseenCount);
+  const unseenByUser = useSelector(
+    (state) => state.chat.unseenCountByUser,
+    shallowEqual
+  );
 
-
-
-
-
-  // Fetch unseen counts from backend on mount
+  // ------------------ FETCH UNSEEN COUNTS ------------------
   useEffect(() => {
     if (!me) return;
+
     const token = localStorage.getItem("jwt");
     if (!token) return;
 
@@ -36,35 +34,7 @@ export default function UsersTabs({ handleSelectUser }) {
       .catch(console.error);
   }, [dispatch, me]);
 
-  // Recalculate unseen per user based on messagesByUser and selectedUser
-  const arrayUnseen = useMemo(() => {
-    if (!messagesByUser) return [];
-
-    return Object.entries(messagesByUser)
-      .map(([userId, msgs]) => ({
-        userId: Number(userId),
-        count:
-          selectedUser?.id === Number(userId)
-            ? 0
-            : msgs.filter((m) => !m.seen && m.senderId !== me?.id).length,
-      }))
-      .filter((u) => u.count > 0);
-  }, [messagesByUser, selectedUser, me?.id]);
-
-  // Normalize unseen array for easy lookup
-  const unseenByUser = useMemo(() => {
-    return arrayUnseen.reduce((acc, { userId, count }) => {
-      acc[userId] = count;
-      return acc;
-    }, {});
-  }, [arrayUnseen]);
-
-  // Total unseen messages
-  const totalUnseen = useMemo(() => {
-    return Object.values(unseenByUser).reduce((sum, n) => sum + n, 0);
-  }, [unseenByUser]);
-
-  // Combine user info + online + unseen
+  // ------------------ USERS WITH META ------------------
   const usersWithMeta = useMemo(() => {
     return Object.values(usersById).map((user) => ({
       ...user,
@@ -83,61 +53,53 @@ export default function UsersTabs({ handleSelectUser }) {
     [usersWithMeta]
   );
 
-  // Render a single user row
-  const renderUser = (user) => (
-    <li
-      key={user.id}
-      onClick={() => handleSelectUser(user)}
-      className={`p-2 rounded cursor-pointer flex justify-between items-center
-        ${selectedUser?.id === user.id ? "bg-blue-100 font-semibold" : "hover:bg-gray-100"}`}
-    >
-      <span className="flex items-center gap-2">
-        <span
-          className={`w-2 h-2 rounded-full ${
-            user.online ? "bg-green-500" : "bg-gray-400"
-          }`}
-        />
-    <pre>
-      {JSON.stringify(arrayUnseen.find(u => u.userId === user.id)?.count || "No", null, 2)}
-      </pre> {user?.id}---   {user.fullName || user.email}
-      </span>
+  // ------------------ RENDER SINGLE USER ------------------
+  const renderUser = (user) => {
+    // Hide badge if selected
+    const count = selectedUser?.id === user.id ? 0 : user.unseen;
 
-      <div className="flex items-center gap-2">
-        {user.unseen > 0 && (
-          <span className="text-xs bg-red-500 text-white px-2 rounded-full">
-            {user.unseen}
-          </span>
-        )}
-        <span className={`text-xs ${user.online ? "text-green-600" : "text-gray-400"}`}>
-          {user.online ? "online" : "offline"}
+    return (
+      <li
+        key={user.id}
+        onClick={() => handleSelectUser(user)}
+        className={`p-2 rounded cursor-pointer flex justify-between items-center
+          ${selectedUser?.id === user.id ? "bg-blue-100 font-semibold" : "hover:bg-gray-100"}`}
+      >
+        <span className="flex items-center gap-2">
+          <span
+            className={`w-2 h-2 rounded-full ${
+              user.online ? "bg-green-500" : "bg-gray-400"
+            }`}
+          />
+          {user.fullName || user.email} {me?.id === user.id && `(You)`}
         </span>
-      </div>
-    </li>
-  );
 
-  // Nothing to show if no users
+        <div className="flex items-center gap-2">
+          {count > 0 && (
+            <span className="text-xs bg-red-500 text-white px-2 rounded-full">
+              {count}
+            </span>
+          )}
+          <span className={`text-xs ${user.online ? "text-green-600" : "text-gray-400"}`}>
+            {user.online ? "online" : "offline"}
+          </span>
+        </div>
+      </li>
+    );
+  };
+
+  // ------------------ RENDER ------------------
   if (!usersWithMeta.length) {
     return <p className="text-sm text-gray-400 text-center mt-4">No users found</p>;
   }
 
   return (
     <div className="w-1/3 bg-white border-r p-4 flex flex-col">
-    <pre>
-      {JSON.stringify(arrayUnseen, null, 2)}
-      </pre>  
-
       {/* Header with your info and total unseen */}
       <div className="flex justify-between items-center mb-4">
         <span className="font-semibold">{me?.fullName || me?.email}</span>
         <MessageNotification />
       </div>
-
-      {/* Optional total unseen */}
-      {/* {totalUnseen > 0 && (
-        <div className="mb-2 text-sm font-semibold text-red-600">
-          Total Unseen: {totalUnseen}
-        </div>
-      )} */}
 
       {/* Online Users */}
       {onlineUsers.length > 0 && (
