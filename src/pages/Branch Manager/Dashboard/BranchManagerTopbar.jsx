@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import MessageNotification from "../Chat/MessageNotification";
 import { Link } from "react-router";
+import UsersTabs from "../Chat/UsersTabs";
+import ChatPage from "../Chat/ChatPage";
+import CountIcon from "../Chat/CountIcon";
 
 export default function BranchManagerTopbar() {
   const { userProfile } = useSelector((state) => state.user);
@@ -17,8 +20,8 @@ export default function BranchManagerTopbar() {
   const branchName = branch?.name || "Branch Dashboard";
 
   return (
-    <header className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 shadow-xl border-b border-white/20 backdrop-blur-lg text-white">
-      
+    <header className="max-h-[300px] overflow-auto bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 shadow-xl border-b border-white/20 backdrop-blur-lg text-white">
+     
       <div className="flex items-center justify-between">
 
         {/* LEFT — Branch Info */}
@@ -42,9 +45,10 @@ export default function BranchManagerTopbar() {
 
           {/* Notifications */}
           <Link to="/branch/chat" className="relative">
-          <MessageNotification/>
-          </Link>
-          
+
+           <CountIcon/>
+                    </Link>
+
 
           {/* User Info */}
           <div className="flex items-center gap-3 px-3 py-2 bg-white/10 rounded-xl backdrop-blur-md border border-white/20 shadow-sm">
