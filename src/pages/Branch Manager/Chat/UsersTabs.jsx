@@ -24,8 +24,10 @@ export default function UsersTabs({ handleSelectUser }) {
     return { onlineUsers: online, offlineUsers: offline };
   }, [usersById, onlineIds, me?.id]);
 
-  const getUnseenCount = (userId) =>
-    messagesByUser[userId]?.filter((m) => !m.seen && m.senderId !== me?.id).length || 0;
+ const getUnseenCount = (userId) => {
+  if (selectedUser?.id === userId) return 0; // ✅ reset badge for selected user
+  return messagesByUser[userId]?.filter((m) => !m.seen && m.senderId !== me?.id).length || 0;
+};
 
   const renderUser = (u, isOnline) => {
     const unseen = getUnseenCount(u.id);

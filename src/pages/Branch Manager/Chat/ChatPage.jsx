@@ -36,6 +36,7 @@ import {
 import MessageNotification from "./MessageNotification";
 import UsersTabs from "./UsersTabs";
 import OnlineUsers from "./OnlineUsers";
+import { setUnseenCount } from "../../../Redux Toolkit/features/presence/chatSlice";
 
 /* ================= UTILS ================= */
 const getToken = () => localStorage.getItem("jwt");
@@ -155,21 +156,28 @@ export default function ChatPage() {
   }, [dispatch, text, selectedUser, me]);
 
   /* ================= SELECT USER ================= */
-  const handleSelectUser = useCallback(
-    async (user) => {
-      dispatch(selectUser(user));
+const handleSelectUser = useCallback(
+  async (user) => {
+    dispatch(selectUser(user));
 
-      setLoadingMessages(true);
-      const res = await dispatch(loadChatHistory({ userId: user.id }));
-      setHasMore(res.payload?.length === 20);
-      setLoadingMessages(false);
+    setLoadingMessages(true);
+    const res = await dispatch(loadChatHistory({ userId: user.id }));
+    setHasMore(res.payload?.length === 20);
+    setLoadingMessages(false);
 
-      const token = getToken();
-      dispatch(markMessagesAsSeen({ otherUserId: user.id }));
-      if (token) markConversationAsSeen(user.id, token);
-    },
-    [dispatch]
-  );
+    // mark messages as seen for this user
+    dispatch(markMessagesAsSeen({ otherUserId: user.id }));
+
+    // update total unseen count in Redux
+    dispatch(setUnseenCount()); // we’ll fix this below
+
+    const token = getToken();
+    if (token) markConversationAsSeen(user.id, token);
+  },
+  [dispatch]
+);
+
+
 
   /* ================= ONLINE USERS ================= */
   const onlineUsers = onlineIds

@@ -91,9 +91,20 @@ const chatSlice = createSlice({
 },
 
     // 🔒 Keep legacy actions (do NOT break old code)
-    setUnseenCount(state, action) {
+     setUnseenCount: (state, action) => {
+    if (action.payload !== undefined) {
+      // if payload passed, set it directly (from API)
       state.unseenCount = action.payload;
-    },
+    } else {
+      // recalc from messagesByUser
+      let total = 0;
+      const meId = state.selectedUser?.id; // get current user
+      Object.values(state.messagesByUser).forEach(msgs => {
+        total += msgs.filter(m => !m.seen && m.senderId !== meId).length;
+      });
+      state.unseenCount = total;
+    }
+  },
 
     incrementUnseen(state) {
       state.unseenCount += 1;
