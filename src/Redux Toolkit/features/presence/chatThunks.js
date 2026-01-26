@@ -4,7 +4,10 @@ import {
   addChatMessage,
   markConversationSeen,
   setUnseenCount,
+  setUnseenCountByUser,
+  resetUnseenForUser
 } from "./chatSlice";
+// import { resetUnseenForUser } from "./chatSlice";
 
 /* ---------------- CHAT HISTORY ---------------- */
 
@@ -70,26 +73,37 @@ export const fetchUnseenCount = createAsyncThunk(
 
 export const markMessagesAsSeen = createAsyncThunk(
   "chat/markSeen",
-  async ({ otherUserId }, { dispatch, rejectWithValue }) => {
-    if (!otherUserId) {
-      console.error("❌ markMessagesAsSeen called with invalid userId");
-      return rejectWithValue("Invalid otherUserId");
-    }
-
+  async ({ otherUserId }, { dispatch }) => {
     const token = localStorage.getItem("jwt");
-    if (!token) return rejectWithValue("No JWT token");
+    if (!token) return;
 
     try {
-      await api.post(
-        `/api/chat/${otherUserId}/seen`,
-        {}, // empty body
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post(`/api/chat/${otherUserId}/seen`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      dispatch(markConversationSeen(otherUserId));
+      dispatch(resetUnseenForUser(otherUserId));
     } catch (err) {
       console.error("Failed to mark messages as seen:", err);
-      return rejectWithValue(err.message);
+    }
+  }
+);
+
+
+export const fetchUnseenCountByUser = createAsyncThunk(
+  "chat/fetchUnseenCountByUser",
+  async (_, { dispatch }) => {
+    const token = localStorage.getItem("jwt");
+    if (!token) return;
+
+    try {
+      const res = await api.get("/api/chat/unseen/count-per-user", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      dispatch(setUnseenCountByUser(res.data));
+    } catch (err) {
+      console.error("Failed to fetch unseen counts:", err);
     }
   }
 );

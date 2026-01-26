@@ -1,4 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+"use client";
+
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { format } from "date-fns";
 
@@ -16,7 +18,6 @@ import { markConversationAsSeen } from "@/Redux Toolkit/features/presence/chatAp
 import {
   selectUser,
   addChatMessage,
-  markConversationSeen,
 } from "@/Redux Toolkit/features/presence/chatSlice";
 
 import {
@@ -31,64 +32,54 @@ import {
   wsConnected,
   wsDisconnected,
 } from "@/Redux Toolkit/features/presence/presenceSlice";
-// import { getAllUsers } from "@/Redux Toolkit/features/user/userThunks";
 
 import MessageNotification from "./MessageNotification";
 import UsersTabs from "./UsersTabs";
+import OnlineUsers from "./OnlineUsers";
+
+/* ================= UTILS ================= */
+const getToken = () => localStorage.getItem("jwt");
 
 export default function ChatPage() {
   const dispatch = useDispatch();
-  const users = useSelector((state) => state.user.users);
+  const messagesEndRef = useRef(null);
 
-  /* ---------------- Redux State ---------------- */
+  /* ================= REDUX STATE ================= */
   const usersById = useSelector((s) => s.user.usersById);
-  const userProfile = useSelector((s) => s.user.userProfile);
+  const me = useSelector((s) => s.user.userProfile);
   const selectedUser = useSelector((s) => s.chat.selectedUser);
   const messagesByUser = useSelector((s) => s.chat.messagesByUser);
   const wsIsConnected = useSelector((s) => s.presence.wsConnected);
 
   const messages = messagesByUser[selectedUser?.id] || [];
   const usersLoaded = Object.keys(usersById || {}).length > 0;
-  const me = userProfile;
 
-  /* ---------------- Local State ---------------- */
+  /* ================= LOCAL STATE ================= */
   const [onlineIds, setOnlineIds] = useState([]);
   const [text, setText] = useState("");
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
-  const messagesRef = useRef(null);
-  const messagesEndRef = useRef(null);
-
-  /* =========================================================
-     1️⃣ FETCH ALL USERS FIRST
-     ========================================================= */
+  /* ================= FETCH USERS ================= */
   useEffect(() => {
     dispatch(getAllUsers());
   }, [dispatch]);
 
-  /* =========================================================
-     2️⃣ PRESENCE SOCKET (AFTER USERS LOADED)
-     ========================================================= */
+  /* ================= PRESENCE SOCKET ================= */
   useEffect(() => {
     if (!me || !usersLoaded) return;
-
-    const token = localStorage.getItem("jwt");
+    const token = getToken();
     if (!token) return;
 
     const handlePresenceMessage = (data) => {
       if (data?.type === "ONLINE_USERS") {
-        setOnlineIds(data.users || []);
-        dispatch(setOnlineUsers(data.users || []));
+        const ids = data.users || [];
+        setOnlineIds(ids);
+        dispatch(setOnlineUsers(ids));
       }
-
-      if (data?.event === "userJoined") {
-        dispatch(addOnlineUser(data.user.id));
-      }
-
-      if (data?.event === "userLeft") {
-        dispatch(removeOnlineUser(data.user.id));
-      }
+      if (data?.event === "userJoined") dispatch(addOnlineUser(data.user.id));
+      if (data?.event === "userLeft") dispatch(removeOnlineUser(data.user.id));
     };
 
     connectPresenceSocket(token, handlePresenceMessage);
@@ -100,40 +91,34 @@ export default function ChatPage() {
     };
   }, [dispatch, me, usersLoaded]);
 
-  /* =========================================================
-     3️⃣ CHAT SOCKET (AFTER PRESENCE CONNECTED)
-     ========================================================= */
+  /* ================= CHAT SOCKET ================= */
   useEffect(() => {
     if (!me || !wsIsConnected) return;
-
-    const token = localStorage.getItem("jwt");
+    const token = getToken();
     if (!token) return;
 
     const handleChatMessage = (data) => {
-      if (data?.type === "CHAT_MESSAGE") {
-        dispatch(addChatMessage({ ...data, myId: me.id }));
+      if (data?.type !== "CHAT_MESSAGE") return;
 
-        // auto mark seen if chat open
-        if (selectedUser?.id === data.senderId) {
-          dispatch(markMessagesAsSeen({ otherUserId: data.senderId }));
-          markConversationAsSeen(data.senderId, token);
-        }
+      dispatch(addChatMessage({ ...data, myId: me.id }));
+
+      if (selectedUser?.id === data.senderId) {
+        dispatch(markMessagesAsSeen({ otherUserId: data.senderId }));
+        markConversationAsSeen(data.senderId, token);
       }
     };
 
     connectChatSocket(token, handleChatMessage);
     return () => disconnectChatSocket();
-  }, [dispatch, me, wsIsConnected, selectedUser]);
+  }, [dispatch, me, wsIsConnected, selectedUser?.id]);
 
-  /* =========================================================
-     LOAD OLDER MESSAGES
-     ========================================================= */
-  const loadOlderMessages = async () => {
-    if (!selectedUser || loadingOlder) return;
+  /* ================= LOAD OLDER ================= */
+  const loadOlderMessages = useCallback(async () => {
+    if (!selectedUser || loadingOlder || !hasMore) return;
 
     setLoadingOlder(true);
-    const oldest = messages[0];
 
+    const oldest = messages[0];
     const res = await dispatch(
       loadChatHistory({
         userId: selectedUser.id,
@@ -143,13 +128,11 @@ export default function ChatPage() {
 
     setHasMore(res.payload?.length === 20);
     setLoadingOlder(false);
-  };
+  }, [dispatch, selectedUser, messages, loadingOlder, hasMore]);
 
-  /* =========================================================
-     SEND MESSAGE
-     ========================================================= */
-  const sendMessage = async () => {
-    if (!text.trim() || !selectedUser) return;
+  /* ================= SEND MESSAGE ================= */
+  const sendMessage = useCallback(async () => {
+    if (!text.trim() || !selectedUser || !me) return;
 
     const payload = {
       id: Date.now(),
@@ -165,83 +148,52 @@ export default function ChatPage() {
     await sendChatMessage(payload);
 
     setText("");
-    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
-  };
+    setTimeout(
+      () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }),
+      50
+    );
+  }, [dispatch, text, selectedUser, me]);
 
-  /* =========================================================
-     SELECT USER
-     ========================================================= */
-  const handleSelectUser = async (user) => {
-    dispatch(selectUser(user));
+  /* ================= SELECT USER ================= */
+  const handleSelectUser = useCallback(
+    async (user) => {
+      dispatch(selectUser(user));
 
-    const res = await dispatch(loadChatHistory({ userId: user.id }));
-    setHasMore(res.payload?.length === 20);
-    const token = localStorage.getItem("jwt");
-// alert(JSON.stringify(user?.id));
-    dispatch(markMessagesAsSeen({ otherUserId: user.id }));
-    markConversationAsSeen(user.id, token);
-  };
+      setLoadingMessages(true);
+      const res = await dispatch(loadChatHistory({ userId: user.id }));
+      setHasMore(res.payload?.length === 20);
+      setLoadingMessages(false);
 
-  /* =========================================================
-     ONLINE USERS
-     ========================================================= */
+      const token = getToken();
+      dispatch(markMessagesAsSeen({ otherUserId: user.id }));
+      if (token) markConversationAsSeen(user.id, token);
+    },
+    [dispatch]
+  );
+
+  /* ================= ONLINE USERS ================= */
   const onlineUsers = onlineIds
     .map((id) => usersById[id])
     .filter((u) => u && u.id !== me?.id);
 
-  /* =========================================================
-     UI
-     ========================================================= */
-
-
-
+  /* ================= UI ================= */
   return (
     <div className="flex h-screen bg-gray-50">
+    {/* <OnlineUsers/> */}
+      <UsersTabs  handleSelectUser={handleSelectUser}  />
+
       {/* LEFT PANEL */}
-      <UsersTabs/>
-      <div className="w-1/3 bg-white border-r p-4 flex flex-col">
-        <div className="flex justify-between items-center mb-4">
-          <span className="font-semibold">{me?.fullName || me?.email}</span>
-          <MessageNotification />
-        </div>
-
-        <h2 className="font-bold mb-2">Online Users ({onlineUsers.length})</h2>
-
-        <ul className="space-y-2 overflow-auto flex-1">
-          {onlineUsers.map((u) => {
-            const unseen =
-              messagesByUser[u.id]?.filter(
-                (m) => !m.seen && m.senderId !== me.id
-              ).length || 0;
-
-            return (
-              <li
-                key={u.id}
-                onClick={() => handleSelectUser(u)}
-                className={`cursor-pointer p-2 rounded flex justify-between ${
-                  selectedUser?.id === u.id ? "bg-blue-100" : "hover:bg-gray-100"
-                }`}
-              >
-                <span>
-                {u?.id} - {u.fullName || u.email}
-                  {unseen > 0 && (
-                    <span className="ml-2 text-xs bg-red-500 text-white px-2 rounded-full">
-                      {unseen}
-                    </span>
-                  )}
-                </span>
-                <span className="w-2 h-2 rounded-full bg-green-500" />
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+   
 
       {/* RIGHT PANEL */}
       <div className="flex-1 flex flex-col p-4">
         {!selectedUser ? (
           <div className="flex items-center justify-center h-full text-gray-400">
-            Select a user to start chatting
+            {usersLoaded ? "Select a user to start chatting" : "Loading chat..."}
+          </div>
+        ) : loadingMessages ? (
+          <div className="flex items-center justify-center h-full text-gray-400">
+            Loading messages...
           </div>
         ) : (
           <>
@@ -250,11 +202,8 @@ export default function ChatPage() {
             </h3>
 
             <div
-              ref={messagesRef}
               className="flex-1 overflow-auto space-y-2 p-2 bg-gray-100 rounded"
-              onScroll={(e) => {
-                if (e.target.scrollTop < 50 && hasMore) loadOlderMessages();
-              }}
+              onScroll={(e) => e.target.scrollTop < 50 && loadOlderMessages()}
             >
               {loadingOlder && (
                 <div className="text-xs text-center text-gray-400">
