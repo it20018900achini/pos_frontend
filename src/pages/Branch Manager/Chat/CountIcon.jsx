@@ -156,34 +156,19 @@ export default function CountIcon() {
   }, [dispatch, text, selectedUser, me]);
 
   /* ================= SELECT USER ================= */
-const handleSelectUser = useCallback(
-  async (user) => {
-    dispatch(selectUser(user));
+const handleSelectUser = useCallback(async (user) => {
+  dispatch(selectUser(user));
 
-    setLoadingMessages(true);
-    const res = await dispatch(loadChatHistory({ userId: user.id }));
-    setHasMore(res.payload?.length === 20);
-    setLoadingMessages(false);
+  setLoadingMessages(true);
+  const res = await dispatch(loadChatHistory({ userId: user.id }));
+  setHasMore(res.payload?.length === 20);
+  setLoadingMessages(false);
 
-    // mark messages as seen for this user
-    dispatch(markMessagesAsSeen({ otherUserId: user.id }));
+  dispatch(markMessagesAsSeen({ otherUserId: user.id }));
 
-    // reset unseen count for this user locally
-    // dispatch(resetUnseenForUser(user.id));
-
-    // recalc total unseen
-    const state = store.getState(); // or use selector in useEffect if needed
-    const total = Object.entries(state.chat.unseenCountByUser)
-      .filter(([userId]) => Number(userId) !== user.id)
-      .reduce((sum, [, count]) => sum + count, 0);
-    dispatch(setUnseenCount(total));
-
-    // update backend
-    const token = getToken();
-    if (token) markConversationAsSeen(user.id, token);
-  },
-  [dispatch]
-);
+  const token = getToken();
+  if (token) markConversationAsSeen(user.id, token);
+}, [dispatch]);
 
 
   /* ================= ONLINE USERS ================= */

@@ -22,6 +22,7 @@ import {
   BatteryPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ChatPage from "../Chat/ChatPage";
 
 const navLinks = [
   { name: "Dashboard", path: "/branch/dashboard", icon: LayoutDashboard },
@@ -173,7 +174,7 @@ export default function BranchManagerSidebar() {
           <LogOut className="w-5 h-5" />
           Logout
         </Button>
-      </div>
+      </div><ChatPage/>
     </aside>
   );
 }

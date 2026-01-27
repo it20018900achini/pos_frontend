@@ -117,7 +117,7 @@ const chatSlice = createSlice({
     //
     setUnseenCountByUser(state, action) {
   // action.payload = { senderId: count }
-  state.unseenCountByUser = action.payload;
+  state.unseenCountByUser = action.payload || {};
 },
 
 incrementUnseenByUser(state, action) {
@@ -125,11 +125,9 @@ incrementUnseenByUser(state, action) {
   state.unseenCountByUser[senderId] = (state.unseenCountByUser[senderId] || 0) + 1;
 },
 
-resetUnseenForUser(state, action) {
-  const userId = action.payload;
-  state.unseenCountByUser[userId] = 0;
-}
-,
+    resetUnseenForUser(state, action) {
+      delete state.unseenCountByUser[action.payload];
+    },
 
     clearChatState() {
       return initialState;

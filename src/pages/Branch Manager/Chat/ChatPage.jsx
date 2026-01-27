@@ -1,8 +1,16 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { format } from "date-fns";
+
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+import UsersTabs from "./UsersTabs";
+import MessageNotification from "./MessageNotification";
 
 import {
   connectPresenceSocket,
@@ -13,18 +21,8 @@ import {
 } from "@/Redux Toolkit/features/presence/presenceSocket";
 
 import { getAllUsers } from "@/Redux Toolkit/features/user/userThunks";
-import { markConversationAsSeen } from "@/Redux Toolkit/features/presence/chatApi";
-
-import {
-  selectUser,
-  addChatMessage,
-} from "@/Redux Toolkit/features/presence/chatSlice";
-
-import {
-  loadChatHistory,
-  markMessagesAsSeen,
-} from "@/Redux Toolkit/features/presence/chatThunks";
-
+import { selectUser, addChatMessage } from "@/Redux Toolkit/features/presence/chatSlice";
+import { loadChatHistory, markMessagesAsSeen } from "@/Redux Toolkit/features/presence/chatThunks";
 import {
   setOnlineUsers,
   addOnlineUser,
@@ -32,23 +30,20 @@ import {
   wsConnected,
   wsDisconnected,
 } from "@/Redux Toolkit/features/presence/presenceSlice";
+import { markConversationAsSeen } from "@/Redux Toolkit/features/presence/chatApi";
 
-import MessageNotification from "./MessageNotification";
-import UsersTabs from "./UsersTabs";
-import { setUnseenCount } from "../../../Redux Toolkit/features/presence/chatSlice";
-
-/* ================= UTILS ================= */
 const getToken = () => localStorage.getItem("jwt");
 
 export default function ChatPage() {
   const dispatch = useDispatch();
   const messagesEndRef = useRef(null);
 
-  /* ================= REDUX STATE ================= */
+  /* ================= REDUX ================= */
   const usersById = useSelector((s) => s.user.usersById);
   const me = useSelector((s) => s.user.userProfile);
   const selectedUser = useSelector((s) => s.chat.selectedUser);
   const messagesByUser = useSelector((s) => s.chat.messagesByUser);
+  const unseenByUser = useSelector((s) => s.chat.unseenCountByUser || {});
   const wsIsConnected = useSelector((s) => s.presence.wsConnected);
 
   const messages = messagesByUser[selectedUser?.id] || [];
@@ -59,9 +54,16 @@ export default function ChatPage() {
   const [text, setText] = useState("");
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
-  /* ================= FETCH USERS ================= */
+  /* ================= TOTAL UNSEEN ================= */
+  const totalUnseen = useMemo(() => {
+    return Object.entries(unseenByUser)
+      .filter(([userId]) => Number(userId) !== selectedUser?.id)
+      .reduce((sum, [, count]) => sum + count, 0);
+  }, [unseenByUser, selectedUser]);
+
+  /* ================= USERS ================= */
   useEffect(() => {
     dispatch(getAllUsers());
   }, [dispatch]);
@@ -74,9 +76,8 @@ export default function ChatPage() {
 
     const handlePresenceMessage = (data) => {
       if (data?.type === "ONLINE_USERS") {
-        const ids = data.users || [];
-        setOnlineIds(ids);
-        dispatch(setOnlineUsers(ids));
+        setOnlineIds(data.users || []);
+        dispatch(setOnlineUsers(data.users || []));
       }
       if (data?.event === "userJoined") dispatch(addOnlineUser(data.user.id));
       if (data?.event === "userLeft") dispatch(removeOnlineUser(data.user.id));
@@ -126,7 +127,7 @@ export default function ChatPage() {
       })
     );
 
-    setHasMore(res.payload?.length === 20);
+    setHasMore(res?.payload?.length === 20);
     setLoadingOlder(false);
   }, [dispatch, selectedUser, messages, loadingOlder, hasMore]);
 
@@ -148,82 +149,84 @@ export default function ChatPage() {
     await sendChatMessage(payload);
 
     setText("");
-    setTimeout(
-      () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }),
-      50
-    );
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
   }, [dispatch, text, selectedUser, me]);
 
   /* ================= SELECT USER ================= */
-const handleSelectUser = useCallback(
-  async (user) => {
-    dispatch(selectUser(user));
+  const handleSelectUser = useCallback(
+    async (user) => {
+      setIsChatOpen(true); // auto open chat when user clicked
+      dispatch(selectUser(user));
 
-    setLoadingMessages(true);
-    const res = await dispatch(loadChatHistory({ userId: user.id }));
-    setHasMore(res.payload?.length === 20);
-    setLoadingMessages(false);
+      const res = await dispatch(loadChatHistory({ userId: user.id }));
+      setHasMore(res?.payload?.length === 20);
 
-    // mark messages as seen for this user
-    dispatch(markMessagesAsSeen({ otherUserId: user.id }));
+      dispatch(markMessagesAsSeen({ otherUserId: user.id }));
 
-    // reset unseen count for this user locally
-    // dispatch(resetUnseenForUser(user.id));
+      const token = getToken();
+      if (token) markConversationAsSeen(user.id, token);
+    },
+    [dispatch]
+  );
 
-    // recalc total unseen
-    const state = store.getState(); // or use selector in useEffect if needed
-    const total = Object.entries(state.chat.unseenCountByUser)
-      .filter(([userId]) => Number(userId) !== user.id)
-      .reduce((sum, [, count]) => sum + count, 0);
-    dispatch(setUnseenCount(total));
-
-    // update backend
-    const token = getToken();
-    if (token) markConversationAsSeen(user.id, token);
-  },
-  [dispatch]
-);
-
-
-  /* ================= ONLINE USERS ================= */
-  const onlineUsers = onlineIds
-    .map((id) => usersById[id])
-    .filter((u) => u && u.id !== me?.id);
+  /* ================= SCROLL TO BOTTOM ================= */
+  useEffect(() => {
+    if (!isChatOpen || !selectedUser) return;
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    }, 50);
+  }, [isChatOpen, selectedUser, messages.length]);
 
   /* ================= UI ================= */
   return (
-    <div className="flex h-screen bg-gray-50">
-    {/* <OnlineUsers/> */}
-      <UsersTabs  handleSelectUser={handleSelectUser}  />
+    <>
+      {/* FLOATING TOGGLE BUTTON */}
+      {!isChatOpen && (
+        <button
+          onClick={() => setIsChatOpen(true)}
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center"
+        >
+          💬
+          {totalUnseen > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs min-w-[20px] h-5 rounded-full flex items-center justify-center">
+              {totalUnseen}
+            </span>
+          )}
+        </button>
+      )}
 
-      {/* LEFT PANEL */}
-   
+      {/* USERS PANEL ONLY WHEN TOGGLE OPEN */}
+      {isChatOpen && (
+        <div className="fixed bottom-0 right-0 w-72 h-[70vh] bg-white border shadow-xl z-40">
+          <UsersTabs handleSelectUser={handleSelectUser} />
+        </div>
+      )}
 
-      {/* RIGHT PANEL */}
-      <div className="flex-1 flex flex-col p-4">
-        {!selectedUser ? (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            {usersLoaded ? "Select a user to start chatting" : "Loading chat..."}
-          </div>
-        ) : loadingMessages ? (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            Loading messages...
-          </div>
-        ) : (
-          <>
-            <h3 className="font-bold border-b pb-2 mb-2">
-              {selectedUser.fullName || selectedUser.email}
-            </h3>
+      {/* CHAT BOX ONLY WHEN USER SELECTED */}
+      {isChatOpen && selectedUser && (
+        <div className="fixed bottom-0 right-72 w-96 h-[70vh] z-40">
+          <Card className="h-full flex flex-col shadow-xl">
+            <CardHeader className="flex flex-row items-center justify-between border-b">
+              <CardTitle>{selectedUser.fullName || selectedUser.email}</CardTitle>
 
-{selectedUser?.id==me?.id ?(<div>
+              <div className="flex gap-2 items-center  overflow-auto">
+                <MessageNotification />
+                <button
+                  onClick={() => setIsChatOpen(false)}
+                  className="text-gray-400 hover:text-red-500 font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+            </CardHeader>
 
-{me?.email}
-
-</div>):(<div>
-  
-            <div
-              className="flex-1 overflow-auto space-y-2 p-2 bg-gray-100 rounded"
-              onScroll={(e) => e.target.scrollTop < 50 && loadOlderMessages()}
+            <ScrollArea
+              className="flex-1 p-4 space-y-2"
+              onScroll={(e) => {
+                if (e.currentTarget.scrollTop < 50) loadOlderMessages();
+              }}
             >
               {loadingOlder && (
                 <div className="text-xs text-center text-gray-400">
@@ -239,7 +242,7 @@ const handleSelectUser = useCallback(
                     className={`max-w-xs p-2 rounded text-sm ${
                       mine
                         ? "ml-auto bg-blue-500 text-white"
-                        : "bg-white text-gray-800"
+                        : "bg-gray-100 text-gray-800"
                     }`}
                   >
                     {m.content}
@@ -250,31 +253,20 @@ const handleSelectUser = useCallback(
                 );
               })}
               <div ref={messagesEndRef} />
-            </div>
+            </ScrollArea>
 
-            <div className="mt-2 flex">
-              <input
+            <div className="flex border-t p-3 gap-2">
+              <Input
+                placeholder="Type a message..."
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                className="flex-1 border p-2 rounded-l"
-                placeholder="Type a message..."
               />
-              <button
-                onClick={sendMessage}
-                className="bg-blue-500 text-white px-4 rounded-r"
-              >
-                Send
-              </button>
+              <Button onClick={sendMessage}>Send</Button>
             </div>
-  </div>)}
-
-          
-
-
-          </>
-        )}
-      </div>
-    </div>
+          </Card>
+        </div>
+      )}
+    </>
   );
 }
