@@ -19,6 +19,16 @@ export default function BranchManagerTopbar() {
   const role = userProfile?.role?.replace("", "").replace(/_/g, " ") || "Manager";
   const branchName = branch?.name || "Branch Dashboard";
 
+
+
+
+
+
+
+
+
+
+  
   return (
     <header className="max-h-[300px] overflow-auto bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 shadow-xl border-b border-white/20 backdrop-blur-lg text-white">
      

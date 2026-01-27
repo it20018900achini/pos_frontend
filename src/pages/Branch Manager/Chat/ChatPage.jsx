@@ -206,7 +206,7 @@ export default function ChatPage() {
 
       {/* CHAT BOX ONLY WHEN USER SELECTED */}
       {isChatOpen && selectedUser && (
-        <div className="fixed bottom-0 right-72 w-96 h-[70vh] z-40">
+        <div className="fixed bottom-0 right-72 w-96 h-[70vh] z-40 ">
           <Card className="h-full flex flex-col shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between border-b">
               <CardTitle>{selectedUser.fullName || selectedUser.email}</CardTitle>
@@ -225,7 +225,7 @@ export default function ChatPage() {
             </CardHeader>
 
             <ScrollArea
-              className="flex-1 p-4 space-y-2"
+              className="flex-1 p-4 space-y-2 h-full overflow-y-auto"
               onScroll={(e) => {
                 if (e.currentTarget.scrollTop < 50) loadOlderMessages();
               }}

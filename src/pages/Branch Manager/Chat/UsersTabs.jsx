@@ -94,7 +94,7 @@ export default function UsersTabs({ handleSelectUser }) {
   }
 
   return (
-    <div className="w-full bg-white  p-4 flex flex-col">
+    <div className="w-full bg-white  p-4 flex flex-col overflow-auto h-full">
       {/* Header with your info and total unseen */}
       <div className="flex justify-between items-center mb-4">
         <span className="font-semibold">{me?.fullName || me?.email}</span>

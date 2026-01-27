@@ -174,7 +174,9 @@ export default function BranchManagerSidebar() {
           <LogOut className="w-5 h-5" />
           Logout
         </Button>
-      </div><ChatPage/>
+      </div>
+      
+      {/* <ChatPage/> */}
     </aside>
   );
 }
