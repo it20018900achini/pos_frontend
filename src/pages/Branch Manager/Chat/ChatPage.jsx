@@ -211,11 +211,13 @@ export default function ChatPage() {
             <CardHeader className="flex flex-row items-center justify-between border-b">
               <CardTitle>{selectedUser.fullName || selectedUser.email}</CardTitle>
 
-              <div className="flex gap-2 items-center  overflow-auto">
+              <div className="flex gap-2 items-center ">
                 <MessageNotification />
                 <button
-                  onClick={() => setIsChatOpen(false)}
-                  className="text-gray-400 hover:text-red-500 font-bold"
+  onClick={() => {
+    //setIsChatOpen(false);       // close chat panel
+    dispatch(selectUser(null));  // unselect user
+  }}                  className="text-gray-400 hover:text-red-500 font-bold"
                 >
                   ✕
                 </button>
