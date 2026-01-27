@@ -19,7 +19,7 @@ export const loadChatHistory = createAsyncThunk(
 
     try {
       const res = await api.get(`/api/chat/${userId}`, {
-        params: before ? { before, limit: 20 } : { limit: 20 },
+        params: before ? { before, limit: 15 } : { limit: 15 },
         headers: { Authorization: `Bearer ${token}` },
       });
 

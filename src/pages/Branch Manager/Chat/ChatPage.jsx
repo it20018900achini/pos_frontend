@@ -37,6 +37,7 @@ const getToken = () => localStorage.getItem("jwt");
 export default function ChatPage() {
   const dispatch = useDispatch();
   const messagesEndRef = useRef(null);
+  const scrollRef = useRef(null);
 
   /* ================= REDUX ================= */
   const usersById = useSelector((s) => s.user.usersById);
@@ -101,6 +102,8 @@ export default function ChatPage() {
     const handleChatMessage = (data) => {
       if (data?.type !== "CHAT_MESSAGE") return;
 
+      if (data.senderId === me.id) return; // ignore own messages
+
       dispatch(addChatMessage({ ...data, myId: me.id }));
 
       if (selectedUser?.id === data.senderId) {
@@ -116,19 +119,27 @@ export default function ChatPage() {
   /* ================= LOAD OLDER ================= */
   const loadOlderMessages = useCallback(async () => {
     if (!selectedUser || loadingOlder || !hasMore) return;
+    const container = scrollRef.current;
+    if (!container) return;
+
+    if (container.scrollTop !== 0) return; // Only load when scroll at very top
 
     setLoadingOlder(true);
+    const prevScrollHeight = container.scrollHeight;
 
     const oldest = messages[0];
     const res = await dispatch(
-      loadChatHistory({
-        userId: selectedUser.id,
-        before: oldest?.timestamp,
-      })
+      loadChatHistory({ userId: selectedUser.id, before: oldest?.timestamp })
     );
 
-    setHasMore(res?.payload?.length === 20);
+    setHasMore(res?.payload?.length === 5);
     setLoadingOlder(false);
+
+    // restore scroll position
+    requestAnimationFrame(() => {
+      const newScrollHeight = container.scrollHeight;
+      container.scrollTop = newScrollHeight - prevScrollHeight;
+    });
   }, [dispatch, selectedUser, messages, loadingOlder, hasMore]);
 
   /* ================= SEND MESSAGE ================= */
@@ -157,14 +168,13 @@ export default function ChatPage() {
   /* ================= SELECT USER ================= */
   const handleSelectUser = useCallback(
     async (user) => {
-      setIsChatOpen(true); // auto open chat when user clicked
+      setIsChatOpen(true);
       dispatch(selectUser(user));
 
       const res = await dispatch(loadChatHistory({ userId: user.id }));
-      setHasMore(res?.payload?.length === 20);
+      setHasMore(res?.payload?.length === 5);
 
       dispatch(markMessagesAsSeen({ otherUserId: user.id }));
-
       const token = getToken();
       if (token) markConversationAsSeen(user.id, token);
     },
@@ -197,78 +207,112 @@ export default function ChatPage() {
         </button>
       )}
 
-      {/* USERS PANEL ONLY WHEN TOGGLE OPEN */}
-      {isChatOpen && (
-        <div className="fixed bottom-0 right-0 w-72 h-[70vh] bg-white border shadow-xl z-40">
-          <UsersTabs handleSelectUser={handleSelectUser} />
+      {/* USERS PANEL */}
+     {isChatOpen && (
+  <div className="fixed bottom-0 right-0 w-72 h-[70vh] bg-white border shadow-xl z-40 flex flex-col">
+    <div className="flex justify-between items-center p-2 border-b">
+      <h2 className="font-bold text-sm">Users</h2>
+      <button
+        onClick={() => setIsChatOpen(false)}
+        className="text-gray-400 hover:text-red-500 font-bold"
+      >
+        ✕
+      </button>
+    </div>
+    <div className="flex-1 overflow-y-auto">
+      <UsersTabs handleSelectUser={handleSelectUser} />
+    </div>
+  </div>
+)}{isChatOpen && (
+  <div className="fixed bottom-0 right-0 w-72 h-[70vh] bg-white border shadow-xl z-40 flex flex-col">
+    <div className="flex justify-between items-center p-2 border-b">
+      <h2 className="font-bold text-sm">
+        {me?.fullName }<br/>
+        <span className="text-neutral-400 text-xs font-semibold">{me?.email}</span>
+      </h2>
+      <button
+        onClick={() => setIsChatOpen(false)}
+        className="text-gray-400 hover:text-red-500 font-bold"
+      >
+        ✕
+      </button>
+    </div>
+    <div className="flex-1 overflow-y-auto">
+      <UsersTabs handleSelectUser={handleSelectUser} />
+    </div>
+  </div>
+)}
+
+      {/* CHAT BOX */}
+   {/* CHAT BOX ONLY WHEN USER SELECTED */}
+{isChatOpen && selectedUser && (
+  <div className="fixed bottom-0 right-72 w-96 h-[70vh] z-40 flex flex-col">
+    <Card className="h-full flex flex-col shadow-xl">
+      {/* HEADER */}
+      <CardHeader className="flex flex-row items-center justify-between border-b">
+        <CardTitle>{selectedUser.fullName || selectedUser.email}</CardTitle>
+        <div className="flex gap-2 items-center">
+          {/* <MessageNotification /> */}
+          <button
+            onClick={() => dispatch(selectUser(null))}
+            className="text-gray-400 hover:text-red-500 font-bold"
+          >
+            ✕
+          </button>
         </div>
-      )}
+      </CardHeader>
 
-      {/* CHAT BOX ONLY WHEN USER SELECTED */}
-      {isChatOpen && selectedUser && (
-        <div className="fixed bottom-0 right-72 w-96 h-[70vh] z-40 ">
-          <Card className="h-full flex flex-col shadow-xl">
-            <CardHeader className="flex flex-row items-center justify-between border-b">
-              <CardTitle>{selectedUser.fullName || selectedUser.email}</CardTitle>
+      {/* MESSAGES */}
+      <ScrollArea
+        ref={scrollRef}
+        className="flex-1 p-4 space-y-2 overflow-y-hidden"
+        onScroll={(e) => {
+          if (e.currentTarget.scrollTop <= 5) {
+            loadOlderMessages();
+          }
+        }}
+      >
+        {loadingOlder && (
+          <div className="text-xs text-center text-gray-400">
+            Loading older messages...
+          </div>
+        )}
 
-              <div className="flex gap-2 items-center ">
-                <MessageNotification />
-                <button
-  onClick={() => {
-    //setIsChatOpen(false);       // close chat panel
-    dispatch(selectUser(null));  // unselect user
-  }}                  className="text-gray-400 hover:text-red-500 font-bold"
-                >
-                  ✕
-                </button>
-              </div>
-            </CardHeader>
-
-            <ScrollArea
-              className="flex-1 p-4 space-y-2 h-full overflow-y-auto"
-              onScroll={(e) => {
-                if (e.currentTarget.scrollTop < 50) loadOlderMessages();
-              }}
+        {messages.map((m) => {
+          const mine = m.senderId === me.id;
+          return (
+            <div
+              key={m.id}
+              className={`max-w-xs p-2 rounded text-sm mt-1 ${
+                mine
+                  ? "ml-auto bg-blue-500 text-white"
+                  : "bg-gray-100 text-gray-800"
+              }`}
             >
-              {loadingOlder && (
-                <div className="text-xs text-center text-gray-400">
-                  Loading older messages...
-                </div>
-              )}
-
-              {messages.map((m) => {
-                const mine = m.senderId === me.id;
-                return (
-                  <div
-                    key={m.id}
-                    className={`max-w-xs p-2 rounded text-sm ${
-                      mine
-                        ? "ml-auto bg-blue-500 text-white"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {m.content}
-                    <div className="text-[10px] opacity-70 text-right">
-                      {format(new Date(m.timestamp), "HH:mm")}
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </ScrollArea>
-
-            <div className="flex border-t p-3 gap-2">
-              <Input
-                placeholder="Type a message..."
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              />
-              <Button onClick={sendMessage}>Send</Button>
+              {m.content}
+              <div className="text-[10px] opacity-70 text-right">
+                {format(new Date(m.timestamp), "HH:mm")}
+              </div>
             </div>
-          </Card>
-        </div>
-      )}
+          );
+        })}
+        <div ref={messagesEndRef} />
+      </ScrollArea>
+
+      {/* INPUT */}
+      <div className="flex border-t p-3 gap-2">
+        <Input
+          placeholder="Type a message..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+        />
+        <Button onClick={sendMessage}>Send</Button>
+      </div>
+    </Card>
+  </div>
+)}
+
     </>
   );
 }
