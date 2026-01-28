@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import UsersTabs from "./UsersTabs";
-import MessageNotification from "./MessageNotification";
 
 import {
   connectPresenceSocket,
@@ -102,7 +101,8 @@ export default function ChatPage() {
     const handleChatMessage = (data) => {
       if (data?.type !== "CHAT_MESSAGE") return;
 
-      if (data.senderId === me.id) return; // ignore own messages
+      // Ignore own messages by ID/type
+      if (String(data.senderId) === String(me.id) && data.clientId) return;
 
       dispatch(addChatMessage({ ...data, myId: me.id }));
 
@@ -121,8 +121,6 @@ export default function ChatPage() {
     if (!selectedUser || loadingOlder || !hasMore) return;
     const container = scrollRef.current;
     if (!container) return;
-
-    if (container.scrollTop !== 0) return; // Only load when scroll at very top
 
     setLoadingOlder(true);
     const prevScrollHeight = container.scrollHeight;
@@ -146,8 +144,9 @@ export default function ChatPage() {
   const sendMessage = useCallback(async () => {
     if (!text.trim() || !selectedUser || !me) return;
 
+    const clientId = Date.now(); // unique per message
     const payload = {
-      id: Date.now(),
+      clientId,
       type: "CHAT_MESSAGE",
       senderId: me.id,
       receiverId: selectedUser.id,
@@ -207,28 +206,17 @@ export default function ChatPage() {
         </button>
       )}
 
-      {/* USERS PANEL */}
-     {isChatOpen && (
+{/* USERS PANEL */}
+{isChatOpen && (
   <div className="fixed bottom-0 right-0 w-72 h-[70vh] bg-white border shadow-xl z-40 flex flex-col">
-    <div className="flex justify-between items-center p-2 border-b">
-      <h2 className="font-bold text-sm">Users</h2>
-      <button
-        onClick={() => setIsChatOpen(false)}
-        className="text-gray-400 hover:text-red-500 font-bold"
-      >
-        ✕
-      </button>
-    </div>
-    <div className="flex-1 overflow-y-auto">
-      <UsersTabs handleSelectUser={handleSelectUser} />
-    </div>
-  </div>
-)}{isChatOpen && (
-  <div className="fixed bottom-0 right-0 w-72 h-[70vh] bg-white border shadow-xl z-40 flex flex-col">
+    {/* HEADER */}
     <div className="flex justify-between items-center p-2 border-b">
       <h2 className="font-bold text-sm">
-        {me?.fullName }<br/>
-        <span className="text-neutral-400 text-xs font-semibold">{me?.email}</span>
+        {me?.fullName}
+        <br />
+        <span className="text-neutral-400 text-xs font-semibold">
+          {me?.email}
+        </span>
       </h2>
       <button
         onClick={() => setIsChatOpen(false)}
@@ -237,78 +225,96 @@ export default function ChatPage() {
         ✕
       </button>
     </div>
+
+    {/* USERS LIST */}
     <div className="flex-1 overflow-y-auto">
       <UsersTabs handleSelectUser={handleSelectUser} />
     </div>
   </div>
 )}
 
-      {/* CHAT BOX */}
-   {/* CHAT BOX ONLY WHEN USER SELECTED */}
-{isChatOpen && selectedUser && (
+{/* CHAT PANEL (SHELL) */}
+{isChatOpen && (
   <div className="fixed bottom-0 right-72 w-96 h-[70vh] z-40 flex flex-col">
     <Card className="h-full flex flex-col shadow-xl">
+
       {/* HEADER */}
       <CardHeader className="flex flex-row items-center justify-between border-b">
-        <CardTitle>{selectedUser.fullName || selectedUser.email}</CardTitle>
-        <div className="flex gap-2 items-center">
-          {/* <MessageNotification /> */}
+        <CardTitle>
+          {selectedUser
+            ? selectedUser.fullName || selectedUser.email
+            : "Select a user"}
+        </CardTitle>
+
+        {selectedUser && (
           <button
             onClick={() => dispatch(selectUser(null))}
             className="text-gray-400 hover:text-red-500 font-bold"
           >
             ✕
           </button>
-        </div>
+        )}
       </CardHeader>
 
-      {/* MESSAGES */}
-      <ScrollArea
-        ref={scrollRef}
-        className="flex-1 p-4 space-y-2 overflow-y-hidden"
-        onScroll={(e) => {
-          if (e.currentTarget.scrollTop <= 5) {
-            loadOlderMessages();
-          }
-        }}
-      >
-        {loadingOlder && (
-          <div className="text-xs text-center text-gray-400">
-            Loading older messages...
-          </div>
-        )}
-
-        {messages.map((m) => {
-          const mine = m.senderId === me.id;
-          return (
-            <div
-              key={m.id}
-              className={`max-w-xs p-2 rounded text-sm mt-1 ${
-                mine
-                  ? "ml-auto bg-blue-500 text-white"
-                  : "bg-gray-100 text-gray-800"
-              }`}
-            >
-              {m.content}
-              <div className="text-[10px] opacity-70 text-right">
-                {format(new Date(m.timestamp), "HH:mm")}
+      {/* BODY */}
+      {selectedUser ? (
+        <>
+          {/* MESSAGES */}
+          <ScrollArea
+            ref={scrollRef}
+            className="flex-1 p-4 space-y-2 overflow-y-hidden"
+          >
+            {hasMore && (
+              <div className="flex justify-center mb-2">
+                <button
+                  onClick={loadOlderMessages}
+                  disabled={loadingOlder}
+                  className="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                >
+                  {loadingOlder ? "Loading..." : "Load More"}
+                </button>
               </div>
-            </div>
-          );
-        })}
-        <div ref={messagesEndRef} />
-      </ScrollArea>
+            )}
 
-      {/* INPUT */}
-      <div className="flex border-t p-3 gap-2">
-        <Input
-          placeholder="Type a message..."
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-        />
-        <Button onClick={sendMessage}>Send</Button>
-      </div>
+            {messages.map((m) => {
+              const mine = m.senderId === me.id;
+              return (
+                <div
+                  key={m.clientId || m.id}
+                  className={`max-w-xs p-2 rounded text-sm mt-1 ${
+                    mine
+                      ? "ml-auto bg-blue-500 text-white"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {m.content}
+                  <div className="text-[10px] opacity-70 text-right">
+                    {format(new Date(m.timestamp), "HH:mm")}
+                  </div>
+                </div>
+              );
+            })}
+
+            <div ref={messagesEndRef} />
+          </ScrollArea>
+
+          {/* INPUT */}
+          <div className="flex border-t p-3 gap-2">
+            <Input
+              placeholder="Type a message..."
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            />
+            <Button onClick={sendMessage}>Send</Button>
+          </div>
+        </>
+      ) : (
+        /* EMPTY STATE */
+        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+          👈 Select a user from the list to start chatting
+        </div>
+      )}
     </Card>
   </div>
 )}
