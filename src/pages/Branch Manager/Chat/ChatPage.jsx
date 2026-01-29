@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { format } from "date-fns";
 
@@ -20,8 +26,14 @@ import {
 } from "@/Redux Toolkit/features/presence/presenceSocket";
 
 import { getAllUsers } from "@/Redux Toolkit/features/user/userThunks";
-import { selectUser, addChatMessage } from "@/Redux Toolkit/features/presence/chatSlice";
-import { loadChatHistory, markMessagesAsSeen } from "@/Redux Toolkit/features/presence/chatThunks";
+import {
+  selectUser,
+  addChatMessage,
+} from "@/Redux Toolkit/features/presence/chatSlice";
+import {
+  loadChatHistory,
+  markMessagesAsSeen,
+} from "@/Redux Toolkit/features/presence/chatThunks";
 import {
   setOnlineUsers,
   addOnlineUser,
@@ -31,12 +43,13 @@ import {
 } from "@/Redux Toolkit/features/presence/presenceSlice";
 import { markConversationAsSeen } from "@/Redux Toolkit/features/presence/chatApi";
 
+const PAGE_SIZE = 15;
 const getToken = () => localStorage.getItem("jwt");
 
 export default function ChatPage() {
   const dispatch = useDispatch();
-  const messagesEndRef = useRef(null);
   const scrollRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   /* ================= REDUX ================= */
   const usersById = useSelector((s) => s.user.usersById);
@@ -49,8 +62,7 @@ export default function ChatPage() {
   const messages = messagesByUser[selectedUser?.id] || [];
   const usersLoaded = Object.keys(usersById || {}).length > 0;
 
-  /* ================= LOCAL STATE ================= */
-  const [onlineIds, setOnlineIds] = useState([]);
+  /* ================= LOCAL ================= */
   const [text, setText] = useState("");
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -59,11 +71,11 @@ export default function ChatPage() {
   /* ================= TOTAL UNSEEN ================= */
   const totalUnseen = useMemo(() => {
     return Object.entries(unseenByUser)
-      .filter(([userId]) => Number(userId) !== selectedUser?.id)
+      .filter(([id]) => Number(id) !== selectedUser?.id)
       .reduce((sum, [, count]) => sum + count, 0);
   }, [unseenByUser, selectedUser]);
 
-  /* ================= USERS ================= */
+  /* ================= LOAD USERS ================= */
   useEffect(() => {
     dispatch(getAllUsers());
   }, [dispatch]);
@@ -74,77 +86,111 @@ export default function ChatPage() {
     const token = getToken();
     if (!token) return;
 
-    const handlePresenceMessage = (data) => {
+    connectPresenceSocket(token, (data) => {
       if (data?.type === "ONLINE_USERS") {
-        setOnlineIds(data.users || []);
         dispatch(setOnlineUsers(data.users || []));
       }
       if (data?.event === "userJoined") dispatch(addOnlineUser(data.user.id));
       if (data?.event === "userLeft") dispatch(removeOnlineUser(data.user.id));
-    };
+    });
 
-    connectPresenceSocket(token, handlePresenceMessage);
     dispatch(wsConnected());
-
     return () => {
       disconnectPresenceSocket();
       dispatch(wsDisconnected());
     };
   }, [dispatch, me, usersLoaded]);
 
-  /* ================= CHAT SOCKET ================= */
-  useEffect(() => {
-    if (!me || !wsIsConnected) return;
-    const token = getToken();
-    if (!token) return;
+/* ================= CHAT SOCKET ================= */
+useEffect(() => {
+  if (!me || !wsIsConnected) return;
+  const token = getToken();
+  if (!token) return;
 
-    const handleChatMessage = (data) => {
-      if (data?.type !== "CHAT_MESSAGE") return;
+  const handleMessage = (data) => {
+    if (data?.type !== "CHAT_MESSAGE") return;
 
-      // Ignore own messages by ID/type
-      if (String(data.senderId) === String(me.id) && data.clientId) return;
+    const userMessages = messagesByUser[data.senderId] || [];
 
-      dispatch(addChatMessage({ ...data, myId: me.id }));
+    // ⚡ Ignore messages that were already added locally (clientId match)
+    if (data.clientId && userMessages.some((m) => m.clientId === data.clientId)) return;
 
-      if (selectedUser?.id === data.senderId) {
-        dispatch(markMessagesAsSeen({ otherUserId: data.senderId }));
-        markConversationAsSeen(data.senderId, token);
-      }
-    };
+    dispatch(addChatMessage({ ...data, myId: me.id }));
 
-    connectChatSocket(token, handleChatMessage);
-    return () => disconnectChatSocket();
-  }, [dispatch, me, wsIsConnected, selectedUser?.id]);
+    if (selectedUser?.id === data.senderId) {
+      dispatch(markMessagesAsSeen({ otherUserId: data.senderId }));
+      markConversationAsSeen(data.senderId, token);
+    }
+  };
+
+  connectChatSocket(token, handleMessage);
+
+  return () => {
+    disconnectChatSocket();
+  };
+}, [dispatch, me, wsIsConnected, selectedUser?.id, messagesByUser]);
+
+  /* ================= INITIAL LOAD ================= */
+  const handleSelectUser = useCallback(
+    async (user) => {
+      setIsChatOpen(true);
+      dispatch(selectUser(user));
+
+      const res = await dispatch(
+        loadChatHistory({
+          userId: user.id,
+          limit: PAGE_SIZE,
+        })
+      );
+
+      setHasMore(res?.payload?.length === PAGE_SIZE);
+
+      dispatch(markMessagesAsSeen({ otherUserId: user.id }));
+      const token = getToken();
+      if (token) markConversationAsSeen(user.id, token);
+
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+      });
+    },
+    [dispatch]
+  );
 
   /* ================= LOAD OLDER ================= */
   const loadOlderMessages = useCallback(async () => {
     if (!selectedUser || loadingOlder || !hasMore) return;
+
     const container = scrollRef.current;
     if (!container) return;
 
-    setLoadingOlder(true);
-    const prevScrollHeight = container.scrollHeight;
-
     const oldest = messages[0];
+    if (!oldest) return;
+
+    setLoadingOlder(true);
+    const prevHeight = container.scrollHeight;
+
     const res = await dispatch(
-      loadChatHistory({ userId: selectedUser.id, before: oldest?.timestamp })
+      loadChatHistory({
+        userId: selectedUser.id,
+        before: new Date(oldest.timestamp).toISOString(),
+        limit: PAGE_SIZE,
+      })
     );
 
-    setHasMore(res?.payload?.length === 5);
+    setHasMore(res?.payload?.length === PAGE_SIZE);
     setLoadingOlder(false);
 
-    // restore scroll position
     requestAnimationFrame(() => {
-      const newScrollHeight = container.scrollHeight;
-      container.scrollTop = newScrollHeight - prevScrollHeight;
+      container.scrollTop =
+        container.scrollHeight - prevHeight;
     });
   }, [dispatch, selectedUser, messages, loadingOlder, hasMore]);
 
-  /* ================= SEND MESSAGE ================= */
+  /* ================= SEND ================= */
   const sendMessage = useCallback(async () => {
     if (!text.trim() || !selectedUser || !me) return;
 
-    const clientId = Date.now(); // unique per message
+    const clientId = Date.now();
     const payload = {
       clientId,
       type: "CHAT_MESSAGE",
@@ -157,126 +203,62 @@ export default function ChatPage() {
 
     dispatch(addChatMessage(payload));
     await sendChatMessage(payload);
-
     setText("");
+
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 50);
+    }, 30);
   }, [dispatch, text, selectedUser, me]);
-
-  /* ================= SELECT USER ================= */
-  const handleSelectUser = useCallback(
-    async (user) => {
-      setIsChatOpen(true);
-      dispatch(selectUser(user));
-
-      const res = await dispatch(loadChatHistory({ userId: user.id }));
-      setHasMore(res?.payload?.length === 5);
-
-      dispatch(markMessagesAsSeen({ otherUserId: user.id }));
-      const token = getToken();
-      if (token) markConversationAsSeen(user.id, token);
-    },
-    [dispatch]
-  );
-
-  /* ================= SCROLL TO BOTTOM ================= */
-  useEffect(() => {
-    if (!isChatOpen || !selectedUser) return;
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-    }, 50);
-  }, [isChatOpen, selectedUser, messages.length]);
 
   /* ================= UI ================= */
   return (
     <>
-      {/* FLOATING TOGGLE BUTTON */}
       {!isChatOpen && (
         <button
           onClick={() => setIsChatOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center"
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-blue-600 text-white shadow-lg"
         >
           💬
           {totalUnseen > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs min-w-[20px] h-5 rounded-full flex items-center justify-center">
+            <span className="absolute -top-2 -right-2 bg-red-500 text-xs rounded-full px-2">
               {totalUnseen}
             </span>
           )}
         </button>
       )}
 
-{/* USERS PANEL */}
-{isChatOpen && (
-  <div className="fixed bottom-0 right-0 w-72 h-[70vh] bg-white border shadow-xl z-40 flex flex-col">
-    {/* HEADER */}
-    <div className="flex justify-between items-center p-2 border-b">
-      <h2 className="font-bold text-sm">
-        {me?.fullName}
-        <br />
-        <span className="text-neutral-400 text-xs font-semibold">
-          {me?.email}
-        </span>
-      </h2>
-      <button
-        onClick={() => setIsChatOpen(false)}
-        className="text-gray-400 hover:text-red-500 font-bold"
-      >
-        ✕
-      </button>
-    </div>
-
-    {/* USERS LIST */}
-    <div className="flex-1 overflow-y-auto">
-      <UsersTabs handleSelectUser={handleSelectUser} />
-    </div>
-  </div>
-)}
-
-{/* CHAT PANEL (SHELL) */}
-{isChatOpen && (
-  <div className="fixed bottom-0 right-72 w-96 h-[70vh] z-40 flex flex-col">
-    <Card className="h-full flex flex-col shadow-xl">
-
-      {/* HEADER */}
-      <CardHeader className="flex flex-row items-center justify-between border-b">
-        <CardTitle>
-          {selectedUser
-            ? selectedUser.fullName || selectedUser.email
-            : "Select a user"}
-        </CardTitle>
-
-        {selectedUser && (
-          <button
-            onClick={() => dispatch(selectUser(null))}
-            className="text-gray-400 hover:text-red-500 font-bold"
-          >
-            ✕
-          </button>
-        )}
-      </CardHeader>
-
-      {/* BODY */}
-      {selectedUser ? (
+      {isChatOpen && (
         <>
-          {/* MESSAGES */}
-          <ScrollArea
-            ref={scrollRef}
-            className="flex-1 p-4 space-y-2 overflow-y-hidden"
-          >
-            {hasMore && (
-              <div className="flex justify-center mb-2">
-                <button
-                  onClick={loadOlderMessages}
-                  disabled={loadingOlder}
-                  className="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-                >
-                  {loadingOlder ? "Loading..." : "Load More"}
-                </button>
-              </div>
-            )}
+          <div className="fixed bottom-0 right-0 w-72 h-[70vh] bg-white border z-40">
+            <UsersTabs handleSelectUser={handleSelectUser} />
+          </div>
 
-            {messages.map((m) => {
+          <div className="fixed bottom-0 right-72 w-96 h-[70vh] z-40">
+            <Card className="h-full flex flex-col">
+              <CardHeader className="border-b">
+                <CardTitle>
+                  {selectedUser
+                    ? selectedUser.fullName || selectedUser.email
+                    : "Select a user"}
+                </CardTitle>
+              </CardHeader>
+
+              {selectedUser ? (
+                <>
+                  <ScrollArea ref={scrollRef} className="flex-1 p-4 overflow-y-auto">
+                    {hasMore && (
+                      <div className="text-center mb-2">
+                        <Button
+                          size="sm"
+                          onClick={loadOlderMessages}
+                          disabled={loadingOlder}
+                        >
+                          {loadingOlder ? "Loading..." : "Load more"}
+                        </Button>
+                      </div>
+                    )}
+
+                             {messages.map((m) => {
               const mine = m.senderId === me.id;
               return (
                 <div
@@ -295,30 +277,27 @@ export default function ChatPage() {
               );
             })}
 
-            <div ref={messagesEndRef} />
-          </ScrollArea>
+                    <div ref={messagesEndRef} />
+                  </ScrollArea>
 
-          {/* INPUT */}
-          <div className="flex border-t p-3 gap-2">
-            <Input
-              placeholder="Type a message..."
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            />
-            <Button onClick={sendMessage}>Send</Button>
+                  <div className="border-t p-3 flex gap-2">
+                    <Input
+                      value={text}
+                      onChange={(e) => setText(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                    />
+                    <Button onClick={sendMessage}>Send</Button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-gray-400">
+                  Select a user
+                </div>
+              )}
+            </Card>
           </div>
         </>
-      ) : (
-        /* EMPTY STATE */
-        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-          👈 Select a user from the list to start chatting
-        </div>
       )}
-    </Card>
-  </div>
-)}
-
     </>
   );
 }
