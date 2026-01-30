@@ -19,6 +19,7 @@ import PageNotFound from "./pages/common/PageNotFound";
 import { getUserProfile } from "./Redux Toolkit/features/user/userThunks";
 import { getStoreByAdmin } from "./Redux Toolkit/features/store/storeThunks";
 import BranchInventoryManagerRoutes from "./routes/BranchInventoryManagerRoutes";
+import ChatPage from "./pages/Branch Manager/Chat/ChatPage";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -148,7 +149,7 @@ const App = () => {
     );
   }
 
-  return content;
+  return <>{userProfile && <ChatPage />}{content}</>;
 };
 
 export default App;

@@ -12,7 +12,6 @@ import { getFlattenedRefundSummaryWithTotals } from "./getFlattenedRefundSummary
 import OrderItemTable from "../../common/Order/OrderItemTable";
 const OrderDetails = ({ selectedOrder }) => {
   const totals=getFlattenedRefundSummaryWithTotals(selectedOrder)?.totals
-    const [showPaymentDialog, setShowPaymentDialog] = useState(false);
     // const [showReceiptDialog, setShowReceiptDialog] = useState(false);
 
 
@@ -20,28 +19,6 @@ const OrderDetails = ({ selectedOrder }) => {
 
   // const dispatch = useDispatch();
 
-  const handlePayment = () => {
-    // if (cartItems.length === 0) {
-    //   toast({
-    //     title: "Empty Cart",
-    //     description: "Please add items to cart before proceeding to payment",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-
-    // Check if customer is selected
-    // if (!selectedCustomer) {
-    //   toast({
-    //     title: "Customer Required",
-    //     description: "Please select a customer before proceeding to payment",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-
-    setShowPaymentDialog(true);
-  };
 
   
 
@@ -66,13 +43,6 @@ const OrderDetails = ({ selectedOrder }) => {
 "":<span className="text-red-500">All Refunded</span>}
 
           
-
-            {/* <ReturnMode 
-        showPaymentDialog={showPaymentDialog}
-        setShowPaymentDialog={setShowPaymentDialog}
-        setShowReceiptDialog={false}
-        selectedOrder={selectedOrder}
-        /> */}
 
 
           </div>

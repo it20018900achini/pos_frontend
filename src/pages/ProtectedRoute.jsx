@@ -13,5 +13,9 @@ export default function ProtectedRoute({ children }) {
   }
 
   // Otherwise, render the protected component
-  return <>{children}</>;
+  return <>
+  
+  {children}
+  
+  </>;
 }
