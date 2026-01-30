@@ -36,12 +36,12 @@ const OrderDetails = ({ selectedOrder }) => {
           <div>
 
 
-            <ReturnMode 
+            {/* <ReturnMode 
         showPaymentDialog={showPaymentDialog}
         setShowPaymentDialog={setShowPaymentDialog}
         setShowReceiptDialog={false}
         selectedOrder={selectedOrder}
-        />
+        /> */}
 
 
           </div>

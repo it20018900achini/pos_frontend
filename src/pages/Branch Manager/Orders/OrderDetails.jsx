@@ -63,26 +63,16 @@ const OrderDetails = ({ selectedOrder }) => {
 {totals?.totalAvailableQuantity>0?
 
 
-<Button
-            className={`py-3 text-lg font-semibold `}
-            size={`sm`}
-            onClick={handlePayment}
-            // disabled={cartItems.length === 0}
-          >
-            
-            
-          
-            Refund
-          </Button>:<span className="text-red-500">All Refunded</span>}
+"":<span className="text-red-500">All Refunded</span>}
 
           
 
-            <ReturnMode 
+            {/* <ReturnMode 
         showPaymentDialog={showPaymentDialog}
         setShowPaymentDialog={setShowPaymentDialog}
         setShowReceiptDialog={false}
         selectedOrder={selectedOrder}
-        />
+        /> */}
 
 
           </div>
