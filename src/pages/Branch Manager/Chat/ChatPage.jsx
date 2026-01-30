@@ -230,6 +230,13 @@ useEffect(() => {
       {isChatOpen && (
         <>
           <div className="fixed bottom-0 right-0 w-72 h-[70vh] bg-white border z-40">
+            <div className="flex justify-between items-center p-3 border-b">
+              <h2 className="text-lg font-semibold">Chat Users</h2>
+              <button onClick={() => {
+                setIsChatOpen(false);
+                dispatch(selectUser(null));
+              }}>✖️</button>
+            </div>
             <UsersTabs handleSelectUser={handleSelectUser} />
           </div>
 
