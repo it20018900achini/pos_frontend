@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 /* ROUTES */
@@ -9,6 +9,7 @@ import BranchManagerRoutes from "./routes/BranchManagerRoutes";
 import BranchAccountantRoutes from "./routes/BranchAccountantRoutes";
 import CashierRoutes from "./routes/CashierRoutes";
 import SuperAdminRoutes from "./routes/SuperAdminRoutes";
+import BranchInventoryManagerRoutes from "./routes/BranchInventoryManagerRoutes";
 
 /* PAGES */
 import Landing from "./pages/common/Landing/Landing";
@@ -18,138 +19,78 @@ import PageNotFound from "./pages/common/PageNotFound";
 /* THUNKS */
 import { getUserProfile } from "./Redux Toolkit/features/user/userThunks";
 import { getStoreByAdmin } from "./Redux Toolkit/features/store/storeThunks";
-import BranchInventoryManagerRoutes from "./routes/BranchInventoryManagerRoutes";
 import ChatPage from "./pages/Branch Manager/Chat/ChatPage";
+
+/* ROLE → PATH mapping */
+const ROLE_PATH = {
+  ADMIN: "/super-admin",
+  BRANCH_MANAGER: "/branch",
+  BRANCH_ADMIN: "/branch",
+  BRANCH_CASHIER: "/cashier",
+  BRANCH_ACCOUNTANT: "/acc",
+  BRANCH_INVENTORY_MANAGER: "/inventory",
+  STORE_ADMIN: "/store",
+  STORE_MANAGER: "/store",
+};
 
 const App = () => {
   const dispatch = useDispatch();
-
-  const { userProfile } = useSelector((state) => state.user);
+  const { userProfile, loading } = useSelector((state) => state.user);
   const { store } = useSelector((state) => state.store);
 
-  /* 🔐 Load profile if JWT exists */
+  /* Load profile */
   useEffect(() => {
     const jwt = localStorage.getItem("jwt");
-    if (jwt) {
-      dispatch(getUserProfile(jwt));
-    }
+    if (jwt) dispatch(getUserProfile(jwt));
   }, [dispatch]);
 
-  /* 🏬 Load store for store-level roles */
+  /* Load store if needed */
   useEffect(() => {
-    if (userProfile?.role === "STORE_ADMIN") {
+    const needsStore = userProfile?.roles?.some(
+      (r) => ["STORE_ADMIN", "STORE_MANAGER"].includes(r)
+    );
+    if (needsStore && userProfile?.jwt) {
       dispatch(getStoreByAdmin(userProfile.jwt));
     }
   }, [dispatch, userProfile]);
 
-  let content;
+  if (loading) return null; // wait for profile
 
-  /* ================= AUTHENTICATED ================= */
-  if (userProfile?.role) {
+  const defaultRole =
+    Array.isArray(userProfile?.roles) && userProfile.roles.length > 0
+      ? userProfile.roles[0]
+      : null;
+  const defaultPath = defaultRole ? ROLE_PATH[defaultRole] : "/";
 
-    /* 🔑 SUPER ADMIN */
-    if (userProfile.role === "ADMIN") {
-      content = (
-        <Routes>
-          <Route path="/" element={<Navigate to="/super-admin" replace />} />
-          <Route path="/super-admin/*" element={<SuperAdminRoutes />} />
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
-      );
-    }
-
-    /* 💳 CASHIER */
-    else if (userProfile.role === "BRANCH_CASHIER") {
-      content = (
-        <Routes>
-          <Route path="/" element={<Navigate to="/cashier" replace />} />
-          <Route path="/cashier/*" element={<CashierRoutes />} />
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
-      );
-    }
-
-    /* 🏬 STORE ADMIN / MANAGER */
-    else if (
-      userProfile.role === "STORE_ADMIN" ||
-      userProfile.role === "STORE_MANAGER"
-    ) {
-      if (!store) {
-        content = (
-          <Routes>
-            <Route path="/auth/onboarding" element={<Onboarding />} />
-            <Route path="*" element={<PageNotFound />} />
-          </Routes>
-        );
-      } else {
-        content = (
-          <Routes>
-            <Route path="/" element={<Navigate to="/store" replace />} />
-            <Route path="/store/*" element={<StoreRoutes />} />
-            <Route path="*" element={<PageNotFound />} />
-          </Routes>
-        );
-      }
-    }
-
-    /* 🧾 BRANCH ACCOUNTANT (STRICT) */
-    else if (userProfile.role === "BRANCH_ACCOUNTANT") {
-      content = (
-        <Routes>
-          <Route path="/" element={<Navigate to="/acc" replace />} />
-          <Route path="/acc/*" element={<BranchAccountantRoutes />} />
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
-      );
-    }
-
-    else if (userProfile.role === "BRANCH_INVENTORY_MANAGER") {
-  content = (
+  return (<>
+  {userProfile && <ChatPage />}
     <Routes>
-      <Route path="/" element={<Navigate to="/inventory" replace />} />
+      {/* PUBLIC */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/auth/*" element={<AuthRoutes />} />
+      <Route path="/auth/onboarding" element={<Onboarding />} />
+
+      {/* PROTECTED / ROLE BASED */}
+      <Route path="/super-admin/*" element={<SuperAdminRoutes />} />
+      <Route path="/branch/*" element={<BranchManagerRoutes />} />
+      <Route path="/cashier/*" element={<CashierRoutes />} />
+      <Route path="/acc/*" element={<BranchAccountantRoutes />} />
       <Route path="/inventory/*" element={<BranchInventoryManagerRoutes />} />
+      <Route path="/store/*" element={<StoreRoutes />} />
+
+      {/* DEFAULT REDIRECT AFTER LOGIN */}
+      {defaultPath && (
+        <Route
+          path="/redirect"
+          element={<Navigate to={defaultPath} replace />}
+        />
+      )}
+
+      {/* CATCH ALL */}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </>
   );
-}
-
-    /* 🏪 BRANCH ADMIN / MANAGER */
-    else if (
-      userProfile.role === "BRANCH_MANAGER" ||
-      userProfile.role === "BRANCH_ADMIN"
-    ) {
-      content = (
-        <Routes>
-          <Route path="/" element={<Navigate to="/branch" replace />} />
-          <Route path="/branch/*" element={<BranchManagerRoutes />} />
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
-      );
-    }
-
-    /* ❓ UNKNOWN ROLE */
-    else {
-      content = (
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
-      );
-    }
-  }
-
-  /* ================= NOT AUTHENTICATED ================= */
-  else {
-    content = (
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/auth/*" element={<AuthRoutes />} />
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
-    );
-  }
-
-  return <>{userProfile && <ChatPage />}{content}</>;
 };
 
 export default App;

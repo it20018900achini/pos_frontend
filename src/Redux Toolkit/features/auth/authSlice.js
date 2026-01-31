@@ -1,44 +1,50 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { login, signup, forgotPassword, resetPassword, logoutThunk } from './authThunk';
+// store/auth/authSlice.ts
+import { createSlice } from "@reduxjs/toolkit";
+import { login, signup, forgotPassword, resetPassword, logoutThunk } from "./authThunk";
+
+// Load persisted data from localStorage
+const persistedUser = localStorage.getItem("user");
+const persistedToken = localStorage.getItem("jwt");
+
+const initialState = {
+  user: persistedUser ? JSON.parse(persistedUser) : null,
+  token: persistedToken || null,
+  isAuthenticated: !!persistedToken,
+
+  loading: false,
+  error: null,
+
+  forgotPasswordLoading: false,
+  forgotPasswordError: null,
+  forgotPasswordSuccess: false,
+
+  resetPasswordLoading: false,
+  resetPasswordError: null,
+  resetPasswordSuccess: false,
+};
 
 const authSlice = createSlice({
-  name: 'auth',
-  initialState: {
-    user: null,
-    isAuthenticated: false,
-
-    loading: false,      // login/signup loading
-    error: null,         // general error
-
-    forgotPasswordLoading: false,
-    forgotPasswordError: null,
-    forgotPasswordSuccess: false,
-
-    resetPasswordLoading: false,
-    resetPasswordError: null,
-    resetPasswordSuccess: false,
-  },
-
+  name: "auth",
+  initialState,
   reducers: {
     logout: (state) => {
       state.user = null;
+      state.token = null;
       state.isAuthenticated = false;
-      localStorage.removeItem("jwt");   // ✅ FIXED
+      localStorage.removeItem("jwt");
+      localStorage.removeItem("user");
     },
-
     clearForgotPasswordState: (state) => {
       state.forgotPasswordLoading = false;
       state.forgotPasswordError = null;
       state.forgotPasswordSuccess = false;
     },
-
     clearResetPasswordState: (state) => {
       state.resetPasswordLoading = false;
       state.resetPasswordError = null;
       state.resetPasswordSuccess = false;
     },
   },
-
   extraReducers: (builder) => {
     builder
       // ✅ SIGNUP
@@ -48,8 +54,13 @@ const authSlice = createSlice({
       })
       .addCase(signup.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        state.user = action.payload.user;
+        state.token = action.payload.jwt;
         state.isAuthenticated = true;
+
+        // Persist
+        localStorage.setItem("jwt", action.payload.jwt);
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(signup.rejected, (state, action) => {
         state.loading = false;
@@ -63,8 +74,13 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        state.user = action.payload.user;
+        state.token = action.payload.jwt;
         state.isAuthenticated = true;
+
+        // Persist
+        localStorage.setItem("jwt", action.payload.jwt);
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
@@ -102,20 +118,17 @@ const authSlice = createSlice({
         state.resetPasswordError = action.payload;
         state.resetPasswordSuccess = false;
       })
-          .addCase(logoutThunk.fulfilled, (state) => {
-      state.user = null;
-      state.isAuthenticated = false;
-    })
-    .addCase(logoutThunk.rejected, (state, action) => {
-      console.error("Logout failed:", action.payload);
-    });
+
+      // ✅ LOGOUT
+      .addCase(logoutThunk.fulfilled, (state) => {
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
+        localStorage.removeItem("jwt");
+        localStorage.removeItem("user");
+      });
   },
 });
 
-export const {
-  logout,
-  clearForgotPasswordState,
-  clearResetPasswordState,
-} = authSlice.actions;
-
+export const { logout, clearForgotPasswordState, clearResetPasswordState } = authSlice.actions;
 export default authSlice.reducer;

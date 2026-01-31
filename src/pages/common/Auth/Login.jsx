@@ -1,25 +1,19 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router";
+import { useSelector, useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  Eye,
-  EyeOff,
-  Mail,
-  Lock,
-  CheckCircle,
-  Loader2,
-  ShoppingCart,
-} from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, CheckCircle, Loader2, ShoppingCart } from "lucide-react";
+
 import { login, forgotPassword } from "@/Redux Toolkit/features/auth/authThunk";
 import { getUserProfile } from "@/Redux Toolkit/features/user/userThunks";
+import { useStartShiftMutation } from "@/Redux Toolkit/features/shift/shiftApi";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { settings } from "../../../constant";
-import { useStartShiftMutation } from "../../../Redux Toolkit/features/shift/shiftApi";
+import { selectAuthLoading } from "@/Redux Toolkit/features/auth/authSelectors";
 
 const UserRoles = {
   CASHIER: "BRANCH_CASHIER",
@@ -29,12 +23,12 @@ const UserRoles = {
   BRANCH_ACCOUNTANT: "BRANCH_ACCOUNTANT",
 };
 
-const Login = () => {
+export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { loading } = useSelector((state) => state.auth);
+  const loading = useSelector(selectAuthLoading);
   const [startShift] = useStartShiftMutation();
 
   const emailRef = useRef(null);
@@ -53,12 +47,10 @@ const Login = () => {
 
   const [errors, setErrors] = useState({});
 
-  // Auto-focus email input
   useEffect(() => {
-    emailRef.current?.focus();
-  }, []);
+    if (formState.mode === "login") emailRef.current?.focus();
+  }, [formState.mode]);
 
-  // Form validation
   useEffect(() => {
     const errs = {};
     if (formState.email && !/\S+@\S+\.\S+/.test(formState.email)) errs.email = "Enter a valid email";
@@ -73,7 +65,6 @@ const Login = () => {
     setTimeout(() => setShake(false), 400);
   };
 
-  // -------------------- Login Handler --------------------
   const handleLogin = useCallback(
     async (e) => {
       e.preventDefault();
@@ -83,31 +74,35 @@ const Login = () => {
         const res = await dispatch(login({ email: formState.email, password: formState.password })).unwrap();
 
         toast({ title: "Success", description: "Login successful!" });
-        const jwt = localStorage.getItem("jwt");
-        dispatch(getUserProfile(jwt));
+
+        dispatch(getUserProfile(localStorage.getItem("jwt") || ""));
 
         const user = res.user;
-        const role = user.role;
+        const role = user.roles?.[0];
 
-        // Callback URL navigation
         if (callbackUrl) return navigate(callbackUrl, { replace: true });
 
-        // Role-based navigation
-        if (role === UserRoles.CASHIER) {
-          try {
-            await startShift({ branchId: user.branchId, openingCash: 0 }).unwrap();
-          } catch {
-            console.log("Shift already active");
-          }
-          navigate("/cashier");
-        } else if (role === UserRoles.STORE_ADMIN || role === UserRoles.STORE_MANAGER) {
-          navigate("/store");
-        } else if (role === UserRoles.BRANCH_MANAGER) {
-          navigate("/branch");
-        } else if (role === UserRoles.BRANCH_ACCOUNTANT) {
-          navigate("/acc");
-        } else {
-          navigate("/");
+        switch (role) {
+          case UserRoles.CASHIER:
+            try {
+              await startShift({ branchId: user.branchId, openingCash: 0 }).unwrap();
+            } catch {
+              console.log("Shift already active");
+            }
+            navigate("/cashier");
+            break;
+          case UserRoles.STORE_ADMIN:
+          case UserRoles.STORE_MANAGER:
+            navigate("/store");
+            break;
+          case UserRoles.BRANCH_MANAGER:
+            navigate("/branch");
+            break;
+          case UserRoles.BRANCH_ACCOUNTANT:
+            navigate("/acc");
+            break;
+          default:
+            navigate("/");
         }
       } catch (err) {
         triggerShake();
@@ -121,7 +116,6 @@ const Login = () => {
     [formState.email, formState.password, callbackUrl]
   );
 
-  // -------------------- Forgot Password Handler --------------------
   const handleForgotPassword = useCallback(
     async (e) => {
       e.preventDefault();
@@ -151,16 +145,14 @@ const Login = () => {
     [formState.email]
   );
 
-  // -------------------- Reset Form --------------------
   const resetForm = useCallback(() => {
     if (callbackUrl) {
-      navigate(callbackUrl, { replace: true }); // Redirect to callback URL if exists
+      navigate(callbackUrl, { replace: true });
     } else {
       setFormState({ mode: "login", email: "", password: "" });
     }
   }, [callbackUrl]);
 
-  // -------------------- JSX --------------------
   return (
     <div className="min-h-screen flex bg-background">
       {/* LEFT PANEL */}
@@ -226,28 +218,27 @@ const Login = () => {
                     value={formState.password}
                     onChange={(e) => setFormState({ ...formState, password: e.target.value })}
                   />
-                  <button
-                    type="button"
-                    className="absolute right-3 top-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
+                  <button type="button" className="absolute right-3 top-3" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff /> : <Eye />}
                   </button>
                 </div>
               </div>
 
               <div className="flex justify-end">
-                <button
-                  type="button"
-                  className="text-sm text-primary"
-                  onClick={() => setFormState({ ...formState, mode: "forgot" })}
-                >
+                <button type="button" className="text-sm text-primary" onClick={() => setFormState({ ...formState, mode: "forgot" })}>
                   Forgot password?
                 </button>
               </div>
 
-              <Button disabled={loading} className="w-full py-6 rounded-xl">
-                {loading ? <><Loader2 className="animate-spin w-5 h-5 mr-2" />Please wait...</> : "Sign In"}
+              <Button disabled={loading || !isLoginValid} className="w-full py-6 rounded-xl">
+                {loading ? (
+                  <>
+                    <Loader2 className="animate-spin w-5 h-5 mr-2" />
+                    Please wait...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </form>
           )}
@@ -287,6 +278,4 @@ const Login = () => {
       </div>
     </div>
   );
-};
-
-export default Login;
+}

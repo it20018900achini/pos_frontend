@@ -7,6 +7,7 @@ import { Provider } from "react-redux";
 import globleState from "./Redux Toolkit/globleState.js";
 import { Toaster } from "@/components/ui/use-toast";
 import { ThemeProvider } from "@/components/theme-provider";
+// import ChatPage from "./pages/Branch Manager/Chat/ChatPage.jsx";
 
 createRoot(document.getElementById("root")).render(
   
@@ -19,7 +20,7 @@ createRoot(document.getElementById("root")).render(
           enableSystem
           disableTransitionOnChange
         >
-          
+          {/* <ChatPage/> */}
           <App />
           <Toaster />
         </ThemeProvider>
