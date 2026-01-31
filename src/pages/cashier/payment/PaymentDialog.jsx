@@ -104,102 +104,105 @@ const PaymentDialog = ({
   const remaining = Math.max(netTotal - totalPaid, 0);
 
   // ---------------- PROCESS PAYMENT ----------------
-  const processPayment = useCallback(async () => {
-    if (!cart.length)
-      return toast({
-        title: "Empty Cart",
-        description: "Add items first",
-        variant: "destructive",
-      });
+const processPayment = useCallback(async () => {
+  if (!cart.length)
+    return toast({ title: "Empty Cart", description: "Add items first", variant: "destructive" });
 
-    if (!selectedCustomer)
-      return toast({
-        title: "Customer Required",
-        description: "Select a customer",
-        variant: "destructive",
-      });
+  if (!selectedCustomer)
+    return toast({ title: "Customer Required", description: "Select a customer", variant: "destructive" });
 
-    if (totalPaid < netTotal)
-      return toast({
-        title: "Payment Incomplete",
-        description: `Remaining: LKR ${remaining.toFixed(2)}`,
-        variant: "destructive",
-      });
+  if (!branch?.branch?.id)
+    return toast({ title: "Branch Missing", description: "Branch not loaded", variant: "destructive" });
 
-    try {
-      setLoading(true);
+  if (!userProfile?.id)
+    return toast({ title: "User Missing", description: "User not loaded", variant: "destructive" });
 
-      const orderData = {
-        branchId: branch.id,
-        cashierId: userProfile.id,
-        customer: {
-          id: selectedCustomer.id,
-          name: selectedCustomer.name,
-          phone: selectedCustomer.phone,
-        },
-        subtotal: safeTotal,
-        discountAmount: discountValue,
-        netAmount: netTotal,
-        items: cart.map((i) => ({
-          productId: i.productId,
-          productVariantId: i.id,
-          quantity: i.quantity,
-          unitPrice: Number(i.price),
-          totalPrice: Number(i.price * i.quantity),
-        })),
-        payments: payments.map((p) => ({
-          paymentMethod: p.paymentMethod,
-          amount: Number(p.amount),
-        })),
-        status: "PENDING",
-      };
+  const totalPaid = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+  const netTotal = Number(total || 0) - Number(discount || 0);
 
-      const created = await dispatch(createOrder(orderData)).unwrap();
+  if (totalPaid < netTotal)
+    return toast({
+      title: "Payment Incomplete",
+      description: `Remaining: LKR ${(netTotal - totalPaid).toFixed(2)}`,
+      variant: "destructive",
+    });
 
-      dispatch(setCurrentOrder(created));
-      dispatch(resetOrder());
+  try {
+    setLoading(true);
 
-      setShowPaymentDialog(false);
-      setShowReceiptDialog(true);
+    const orderData = {
+      branchId: branch.id,
+      cashierId: userProfile.id,
+      customer: {
+        id: selectedCustomer.id,
+        name: selectedCustomer.name,
+        phone: selectedCustomer.phone,
+      },
+      subtotal: Number(total || 0),
+      discountAmount: Number(discount || 0),
+      netAmount: netTotal,
+      items: cart.map((i) => ({
+        productId: i.productId,
+        productVariantId: i.id,
+        quantity: i.quantity,
+        unitPrice: Number(i.price),
+        totalPrice: Number(i.price * i.quantity),
+      })),
+      payments: payments.map((p) => ({
+        paymentMethod: p.paymentMethod,
+        amount: Number(p.amount),
+      })),
+      status: "PENDING",
+    };
 
-      toast({
-        title: "Payment Successful",
-        description: `Order #${created.id} created`,
-      });
-    } catch (e) {
-      setErrorMsg(e?.message || e?.toString() || "Something went wrong");
+    const created = await dispatch(createOrder(orderData)).unwrap();
 
-      toast({
-        title: "Payment Failed",
-        description: e?.message || e?.toString() || "Something went wrong",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [
-    cart,
-    selectedCustomer,
-    payments,
-    safeTotal,
-    discountValue,
-    netTotal,
-    totalPaid,
-    remaining,
-    branch.id,
-    userProfile.id,
-    dispatch,
-    toast,
-    setShowPaymentDialog,
-    setShowReceiptDialog,
-  ]);
+    dispatch(setCurrentOrder(created));
+    dispatch(resetOrder());
+
+    setShowPaymentDialog(false);
+    setShowReceiptDialog(true);
+
+    toast({
+      title: "Payment Successful",
+      description: `Order #${created.id} created`,
+    });
+  } catch (e) {
+    setErrorMsg(e?.message || "Something went wrong");
+    toast({
+      title: "Payment Failed",
+      description: e?.message || "Something went wrong",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+}, [
+  cart,
+  selectedCustomer,
+  payments,
+  total,
+  discount,
+  branch,
+  userProfile,
+  dispatch,
+  toast,
+  setShowPaymentDialog,
+  setShowReceiptDialog,
+]);
+
 
   return (
     <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-      <DialogContent className="sm:max-w-[90%] w-[90%] max-h-[95vh] p-0 overflow-hidden rounded-3xl bg-gradient-to-br from-slate-50 to-slate-200 flex flex-col">
+      <DialogContent className="sm:max-w-[90%] w-[90%] max-h-[95vh] p-0 overflow-scroll rounded-3xl bg-gradient-to-br from-slate-50 to-slate-200 flex flex-col">
         <DialogHeader className="px-8 py-3 border-b bg-white/60">
           <DialogTitle className="text-xl font-bold">
             🧾 Payment Summary
+            {/* <pre>
+              {
+                JSON.stringify(branch, null, 2)
+              }
+            </pre> */}
           </DialogTitle>
         </DialogHeader>
 
