@@ -11,7 +11,7 @@ const ProductCard = ({ product }) => {
   const toast = useToast();
 
   const handleAddToCart = (product) => {
-    dispatch(addToCart(product));
+    dispatch(addToCart(product?.productVariant));
     toast({
       title: "Added to cart",
       description: `${product?.productVariant?.name} added to cart`,
