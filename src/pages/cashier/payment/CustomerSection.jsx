@@ -34,8 +34,7 @@ const CustomerSection = ({setShowCustomerDialog}) => {
           </Card>
         ) : (
           <Button
-            variant="outline"
-            className="w-full overflow-hidden " 
+          className={`w-full`}
             onClick={() => setShowCustomerDialog(true)}
           >
             <User className="w-4 h-4 mr-2" />

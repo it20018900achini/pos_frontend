@@ -83,7 +83,7 @@ export default function Login() {
         if (callbackUrl) return navigate(callbackUrl, { replace: true });
 
         switch (role) {
-          case UserRoles.CASHIER:
+          case UserRoles.BRANCH_CASHIER:
             try {
               await startShift({ branchId: user.branchId, openingCash: 0 }).unwrap();
             } catch {
