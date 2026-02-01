@@ -24,7 +24,7 @@ export default function ChatListener() {
       if (data.type === "CHAT_MESSAGE") {
         dispatch(addChatMessage({
           ...data,
-          myId: me.id,
+          myId: me?.user.id,
         }));
       }
     };

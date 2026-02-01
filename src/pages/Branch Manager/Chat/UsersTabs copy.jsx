@@ -18,15 +18,15 @@ export default function UsersTabs({ handleSelectUser }) {
     const online = [];
     const offline = [];
     Object.values(usersById).forEach((u) => {
-      if (!u || u.id === me?.id) return;
+      if (!u || u.id === me?.user.id) return;
       (onlineIds.includes(u.id) ? online : offline).push(u);
     });
     return { onlineUsers: online, offlineUsers: offline };
-  }, [usersById, onlineIds, me?.id]);
+  }, [usersById, onlineIds, me?.user.id]);
 
  const getUnseenCount = (userId) => {
   if (selectedUser?.id === userId) return 0; // ✅ reset badge for selected user
-  return messagesByUser[userId]?.filter((m) => !m.seen && m.senderId !== me?.id).length || 0;
+  return messagesByUser[userId]?.filter((m) => !m.seen && m.senderId !== me?.user.id).length || 0;
 };
 
 

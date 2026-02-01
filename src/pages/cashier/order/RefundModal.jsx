@@ -149,9 +149,7 @@ const RefundModal = ({ open, order, onClose, onSubmit }) => {
             return (
               <div key={option.orderItemId} className="border p-3 rounded">
                 <div className="flex gap-3 items-center">
-                  <pre>
-                    {JSON.stringify(option,null,2)}
-                  </pre>
+                  
                   <Checkbox
                     checked={!!selected}
                     disabled={option.maxQty <= 0}

@@ -101,7 +101,7 @@ export default function CountIcon() {
     const handleChatMessage = (data) => {
       if (data?.type !== "CHAT_MESSAGE") return;
 
-      dispatch(addChatMessage({ ...data, myId: me.id }));
+      dispatch(addChatMessage({ ...data, myId: me?.user.id }));
 
       if (selectedUser?.id === data.senderId) {
         dispatch(markMessagesAsSeen({ otherUserId: data.senderId }));
@@ -138,11 +138,11 @@ export default function CountIcon() {
     const payload = {
       id: Date.now(),
       type: "CHAT_MESSAGE",
-      senderId: me.id,
+      senderId: me.user?.id,
       receiverId: selectedUser.id,
       content: text,
       timestamp: Date.now(),
-      myId: me.id,
+      myId: me?.user.id,
     };
 
     dispatch(addChatMessage(payload));
@@ -174,7 +174,7 @@ const handleSelectUser = useCallback(async (user) => {
   /* ================= ONLINE USERS ================= */
   const onlineUsers = onlineIds
     .map((id) => usersById[id])
-    .filter((u) => u && u.id !== me?.id);
+    .filter((u) => u && u.id !== me?.user.id);
 
   /* ================= UI ================= */
   return <CountIconHeader  handleSelectUser={handleSelectUser}  />;

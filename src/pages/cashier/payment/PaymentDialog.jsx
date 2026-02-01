@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, use } from "react";
 import {
   Dialog,
   DialogContent,
@@ -110,11 +110,10 @@ const processPayment = useCallback(async () => {
 
   if (!selectedCustomer)
     return toast({ title: "Customer Required", description: "Select a customer", variant: "destructive" });
-
-  if (!branch?.branch?.id)
+  if (!userProfile?.user.branch?.id)
     return toast({ title: "Branch Missing", description: "Branch not loaded", variant: "destructive" });
 
-  if (!userProfile?.id)
+  if (!userProfile?.user.id)
     return toast({ title: "User Missing", description: "User not loaded", variant: "destructive" });
 
   const totalPaid = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
@@ -131,8 +130,8 @@ const processPayment = useCallback(async () => {
     setLoading(true);
 
     const orderData = {
-      branchId: branch.id,
-      cashierId: userProfile.id,
+      branchId: userProfile.user.branch.id,
+      cashierId: userProfile?.user.id,
       customer: {
         id: selectedCustomer.id,
         name: selectedCustomer.name,
@@ -168,10 +167,10 @@ const processPayment = useCallback(async () => {
       description: `Order #${created.id} created`,
     });
   } catch (e) {
-    setErrorMsg(e?.message || "Something went wrong");
+    setErrorMsg(e || "Something went wrong");
     toast({
       title: "Payment Failed",
-      description: e?.message || "Something went wrong",
+      description: e || "Something went wrong",
       variant: "destructive",
     });
   } finally {

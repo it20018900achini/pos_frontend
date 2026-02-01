@@ -83,6 +83,7 @@ export default function ChatPage() {
   /* ================= PRESENCE SOCKET ================= */
   useEffect(() => {
     if (!me || !usersLoaded) return;
+
     const token = getToken();
     if (!token) return;
 
@@ -104,6 +105,7 @@ export default function ChatPage() {
 /* ================= CHAT SOCKET ================= */
 useEffect(() => {
   if (!me || !wsIsConnected) return;
+  // alert(JSON.stringify(me));
   const token = getToken();
   if (!token) return;
 
@@ -115,7 +117,7 @@ useEffect(() => {
     // ⚡ Ignore messages that were already added locally (clientId match)
     if (data.clientId && userMessages.some((m) => m.clientId === data.clientId)) return;
 
-    dispatch(addChatMessage({ ...data, myId: me.id }));
+    dispatch(addChatMessage({ ...data, myId: me?.user.id }));
 
     if (selectedUser?.id === data.senderId) {
       dispatch(markMessagesAsSeen({ otherUserId: data.senderId }));
@@ -132,7 +134,10 @@ useEffect(() => {
 
   /* ================= INITIAL LOAD ================= */
   const handleSelectUser = useCallback(
+    
     async (user) => {
+    
+    // alert(JSON.stringify(user));
       setIsChatOpen(true);
       dispatch(selectUser(user));
 
@@ -194,11 +199,11 @@ useEffect(() => {
     const payload = {
       clientId,
       type: "CHAT_MESSAGE",
-      senderId: me.id,
+      senderId: me?.user.id,
       receiverId: selectedUser.id,
       content: text,
       timestamp: Date.now(),
-      myId: me.id,
+      myId: me?.user.id,
     };
 
     dispatch(addChatMessage(payload));
@@ -264,9 +269,11 @@ useEffect(() => {
                         </Button>
                       </div>
                     )}
-
+{
+  JSON.stringify(messages,null,2)
+}
                              {messages.map((m) => {
-              const mine = m.senderId === me.id;
+              const mine = m.senderId === me?.user.id;
               return (
                 <div
                   key={m.clientId || m.id}

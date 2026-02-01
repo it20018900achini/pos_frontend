@@ -85,8 +85,14 @@ export default function Login() {
         switch (role) {
           case UserRoles.BRANCH_CASHIER:
             try {
-              await startShift({ branchId: user.branchId, openingCash: 0 }).unwrap();
+              // await startShift({ branchId: user.branchId, openingCash: 0 }).unwrap();
             } catch {
+                 toast({
+          title: "Shift already active",
+          // description: err?.message || "Invalid email or password",
+          variant: "success",
+        });
+
               console.log("Shift already active");
             }
             navigate("/cashier");

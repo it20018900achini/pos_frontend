@@ -71,7 +71,7 @@ export default function UsersTabs({ handleSelectUser }) {
               user.online ? "bg-green-500" : "bg-gray-400"
             }`}
           />
-          {user.fullName || user.email} {me?.id === user.id && `(You)`}
+          {user.fullName || user.email} {me?.user?.id === user.id && `(You)`}
         </span>
 
         <div className="flex items-center gap-2">

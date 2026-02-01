@@ -30,6 +30,9 @@ import CashierSideBar from "./Sidebar/CashierSideBar";
 import { SidebarProvider } from "../../context/SidebarProvider";
 import { useSidebar } from "../../context/hooks/useSidebar";
 import POSHeader from "./components/POSHeader";
+import { useSelector } from "react-redux";
+import { use } from "react";
+import StartShiftForm from "./StartShiftForm";
 
 // import { getAllCustomersPaginated } from "@/Redux Toolkit/features/customer/customerThunks";
 
@@ -44,6 +47,7 @@ const navItems = [
 ];
 
 const LayoutContent = () => {
+
   const navigate = useNavigate();
   const { toast } = useToast();
   const { sidebarOpen, setSidebarOpen } = useSidebar();
@@ -87,15 +91,19 @@ const LayoutContent = () => {
 };
 
 const CashierDashboardLayout = () => {
-  
+      const { userProfile, loading } = useSelector((state) => state.user);
+
 
   return (
 
     <SidebarProvider>
+     
+      {userProfile?.lastShift?.status !== "OPEN"?<StartShiftForm branch={userProfile?.user?.branch}/>:<LayoutContent/>}
+        
 {/* <POSHeader /> */}
 
       {/* Sidebar + Outlet */}
-      <LayoutContent/>
+      
     </SidebarProvider>
   );
 };

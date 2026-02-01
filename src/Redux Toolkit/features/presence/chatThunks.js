@@ -23,7 +23,8 @@ export const loadChatHistory = createAsyncThunk(
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const myId = getState().user.userProfile?.id;
+      const myId = getState().user.userProfile?.user.id;
+      console.log("Loading chat history with myId:", myId);
       if (!myId) return;
 
       res.data.forEach((msg) => {

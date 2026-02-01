@@ -99,6 +99,7 @@ const chatSlice = createSlice({
       // recalc from messagesByUser
       let total = 0;
       const meId = state.selectedUser?.id; // get current user
+      console.log("Calculating unseen count for meId:", meId);
       Object.values(state.messagesByUser).forEach(msgs => {
         total += msgs.filter(m => !m.seen && m.senderId !== meId).length;
       });

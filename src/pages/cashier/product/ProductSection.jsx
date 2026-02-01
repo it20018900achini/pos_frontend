@@ -129,8 +129,8 @@ const ProductSection = ({ searchInputRef, storeId = 2 }) => {
           </div>
         ) : view === "card" ? (
           <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-3">
-            {displayProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {displayProducts.map((product, index) => (
+              <ProductCard key={index} product={product} />
             ))}
           </div>
         ) : view === "smallCard" ? (

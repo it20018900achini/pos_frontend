@@ -2,14 +2,16 @@ import { apiSlice } from "@/Redux Toolkit/api/apiSlice";
 
 export const shiftApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    startShift: builder.mutation({
-      query: ({ branchId, openingCash }) => ({
-        url: `/shifts/start`,
-        method: "POST",
-        params: { branchId, openingCash },
-      }),
-      invalidatesTags: ["Shift"],
-    }),
+startShift: builder.mutation({
+  query: ({ branchId, openingCash }) => ({
+    url: "/shifts/start",
+    method: "POST",
+        body: { branchId, openingCash },  // <-- MUST be body, not params
+
+  }),
+  invalidatesTags: ["Shift"],
+}),
+
     endShift: builder.mutation({
       query: ({ actualCash }) => ({
         url: `/shifts/end`,
