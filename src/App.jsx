@@ -57,8 +57,8 @@ const App = () => {
   if (loading) return null; // wait for profile
 
   const defaultRole =
-    Array.isArray(userProfile?.roles) && userProfile.roles.length > 0
-      ? userProfile.roles[0]
+    Array.isArray(userProfile?.roles) && userProfile?.user?.roles.length > 0
+      ? userProfile.user.roles[0]
       : null;
   const defaultPath = defaultRole ? ROLE_PATH[defaultRole] : "/";
 

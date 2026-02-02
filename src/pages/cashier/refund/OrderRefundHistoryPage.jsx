@@ -34,13 +34,13 @@ const OrderRefundHistoryPage = () => {
 
   // Load Orders
   const loadOrders = (start = startDate, end = endDate, search = searchText) => {
-    if (!userProfile?.id) return;
+    if (!userProfile?.user?.id) return;
     const startISO = start ;
     const endISO = end ;
 
     dispatch(
       getRefundsByCashier({
-        cashierId: userProfile.id,
+        cashierId: userProfile?.user.id,
         page,
         size,
         sort: "id,desc",
@@ -52,7 +52,7 @@ const OrderRefundHistoryPage = () => {
   };
 
   useEffect(() => {
-    if (userProfile?.id) loadOrders();
+    if (userProfile?.user?.id) loadOrders();
   }, [userProfile, page, size]);
 
   useEffect(() => {

@@ -145,7 +145,7 @@ const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
   /* -------------------- render -------------------- */
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Create Purchase</DialogTitle>
         </DialogHeader>

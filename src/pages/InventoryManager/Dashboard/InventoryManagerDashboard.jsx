@@ -12,7 +12,7 @@ export default function InventoryManagerDashboard({ children }) {
   useEffect(() => {
     // Fetch branch data when component mounts
     if (localStorage.getItem("jwt") && userProfile?.branchId) {
-      dispatch(getBranchById({ id: userProfile.branchId, jwt: localStorage.getItem("jwt") }));
+      dispatch(getBranchById({ id: userProfile.user.branchId, jwt: localStorage.getItem("jwt") }));
     }
   }, [dispatch, userProfile]);
 

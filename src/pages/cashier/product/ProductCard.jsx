@@ -38,6 +38,7 @@ const ProductCard = ({ product }) => {
       <CardContent className="p-3 relative">
      {(product?.inventory?.quantity==null || product?.inventory?.quantity <= 0) && <CircleSlash className="absolute top-2 right-2 w-5 h-5 text-red-500 " />}
         {/* Image Wrapper */}
+        {product?.inventory?.quantity}
         <div
           className="
             aspect-square 

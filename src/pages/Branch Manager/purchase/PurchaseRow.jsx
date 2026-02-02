@@ -4,36 +4,43 @@ import { Button } from "@/components/ui/button";
 
 const PurchaseRow = ({ value, products, onChange, onRemove }) => {
   const handleProductChange = (e) => {
+    
     const variantId = Number(e.target.value);
-    const selected = products.find((p) => p.id === variantId);
-
+    const selected = products.find((p) => p.productVariant?.id === variantId);
+    alert("selected: " + JSON.stringify(selected));
     if (!selected) return;
 
     onChange({
       ...value,
-      productVariantId: selected.id,     // ✅ REQUIRED BY BACKEND
-      costPrice: selected.price ?? 0,     // default price
+      productVariantId: selected.productVariant.id,     // ✅ REQUIRED BY BACKEND
+      costPrice: selected.productVariant.price ?? 0,     // default price
     });
   };
 
   return (
-    <div className="flex gap-2 items-center">
+    <div className="flex gap-2 items-center border rounded p-2">
       {/* Product Select */}
+      <div className="w-full">
+        
+      <label className="block text-sm font-medium mb-1">Product</label>
+{JSON.stringify(value)}
       <select
-        className="border rounded p-2 flex-1"
+        className="border rounded p-2 flex-1 w-full"
         value={value.productVariantId ?? ""}
         onChange={handleProductChange}
       >
         <option value="">Select Product</option>
         {products.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.name} ({p.sku}) — Stock: {p.stockQty}
+          <option key={p.productVariant.id} value={p.productVariant.id}>
+            
+            {p?.productVariant?.name} - SKU: {p?.productVariant?.sku}
           </option>
         ))}
       </select>
-
-      {/* Quantity */}
-      <input
+      </div>
+<div>
+<label className="block text-sm font-medium mb-1">Quantity</label>
+   <input
         type="number"
         min="1"
         className="border rounded p-2 w-20"
@@ -45,8 +52,14 @@ const PurchaseRow = ({ value, products, onChange, onRemove }) => {
           })
         }
       />
+</div>
+      {/* Quantity */}
+     
 
       {/* Cost Price */}
+      <div>
+        <label className="block text-sm font-medium mb-1">Cost Price</label>
+
       <input
         type="number"
         min="0"
@@ -59,6 +72,9 @@ const PurchaseRow = ({ value, products, onChange, onRemove }) => {
           })
         }
       />
+      </div>
+
+
 
       {/* Remove */}
       <Button variant="outline" onClick={onRemove}>

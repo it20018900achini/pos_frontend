@@ -22,7 +22,7 @@ const CashierSideBar = ({ navItems, onClose }) => {
     if (userProfile?.branchId) {
       dispatch(
         getBranchById({
-          id: userProfile.branchId,
+          id: userProfile.user.branchId,
           jwt: localStorage.getItem("jwt"),
         })
       );

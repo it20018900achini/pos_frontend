@@ -37,9 +37,9 @@ export default function Sales() {
   const fetchSalesData = async () => {
     try {
       await Promise.all([
-        dispatch(getStoreOverview(userProfile.id)).unwrap(),
-        dispatch(getDailySales(userProfile.id)).unwrap(),
-        dispatch(getSalesByPaymentMethod(userProfile.id)).unwrap(),
+        dispatch(getStoreOverview(userProfile.user.id)).unwrap(),
+        dispatch(getDailySales(userProfile.user.id)).unwrap(),
+        dispatch(getSalesByPaymentMethod(userProfile.user.id)).unwrap(),
       ]);
     } catch (err) {
       toast({

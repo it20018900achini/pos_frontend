@@ -24,12 +24,12 @@ export const useSettingsState = () => {
   useEffect(() => {
     if (userProfile) {
       setProfileData({
-        fullName: userProfile.fullName || "",
-        email: userProfile.email || "",
-        phone: userProfile.mobile || "",
+        fullName: userProfile.user.fullName || "",
+        email: userProfile.user.email || "",
+        phone: userProfile.user.mobile || "",
       });
     }
-    console.log("User data loaded:", userProfile.email);
+    console.log("User data loaded:", userProfile.user.email);
   }, [userProfile]);
 
   const [passwordData, setPasswordData] = useState({

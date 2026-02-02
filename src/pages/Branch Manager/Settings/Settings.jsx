@@ -30,7 +30,7 @@ const Settings = () => {
     if (userProfile?.branchId && localStorage.getItem("jwt")) {
       dispatch(
         getBranchById({
-          id: userProfile.branchId,
+          id: userProfile.user.branchId,
           jwt: localStorage.getItem("jwt"),
         })
       );
