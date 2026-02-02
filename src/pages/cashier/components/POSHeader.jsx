@@ -11,11 +11,11 @@ const POSHeader = () => {
   const { userProfile } = useSelector((state) => state.user);
   const navigate = useNavigate();
 
-  const fullName = userProfile?.fullName || "User";
+  const fullName = userProfile?.user?.fullName || "User";
   const role =
-    userProfile?.role?.replace(/_/g, " ") || "";
-  const branchName = userProfile?.branch?.name || "Unknown Branch";
-  const storeName = userProfile?.branch?.store?.brand || "Unknown Store";
+    userProfile?.user?.role?.replace(/_/g, " ") || "";
+  const branchName = userProfile?.user?.branch?.name || "Unknown Branch";
+  const storeName = userProfile?.user?.branch?.store?.brand || "Unknown Store";
 
   useEffect(() => {
     const handleKeyDown = (e) => {

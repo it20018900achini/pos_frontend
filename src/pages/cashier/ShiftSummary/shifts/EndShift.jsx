@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+"use client";
+
+import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchCurrentShift,
-  
-} from "../../../../Redux Toolkit/features/shift/shiftSlice";
+import { fetchCurrentShift } from "../../../../Redux Toolkit/features/shift/shiftSlice";
 import { useEndShiftMutation } from "../../../../Redux Toolkit/features/shift/shiftApi";
 
 import {
@@ -22,16 +21,25 @@ import { Loader2 } from "lucide-react";
 import { logout } from "../../../../Redux Toolkit/features/user/userThunks";
 import { useNavigate } from "react-router";
 
-const EndShift = ({ open, onClose }) => {
-    const [endShift, { isLoading, error }] = useEndShiftMutation();
-  
-  const dispatch = useDispatch();
-    const navigate = useNavigate();
+const COINS = ["1", "5", "10", "50", "100", "500"];
 
+const EndShift = ({ open, onClose }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { toast } = useToast();
 
+  const [endShift, { isLoading }] = useEndShiftMutation();
   const { currentShift, loading } = useSelector((state) => state.shift);
-  const [actualCash, setActualCash] = useState("");
+
+  // ✅ Closing coins state
+  const [closingCoins, setClosingCoins] = useState({
+    "1": 0,
+    "5": 0,
+    "10": 0,
+    "50": 0,
+    "100": 0,
+    "500": 0,
+  });
 
   useEffect(() => {
     if (open) {
@@ -39,48 +47,62 @@ const EndShift = ({ open, onClose }) => {
     }
   }, [dispatch, open]);
 
-    const handleLogout = () => {
-      dispatch(logout());
-      navigate("/");
-    };
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/");
+  };
+
+  // ✅ Calculate actual cash from coins
+  const actualCash = useMemo(() => {
+    return Object.entries(closingCoins).reduce(
+      (sum, [coin, count]) => sum + Number(coin) * Number(count),
+      0
+    );
+  }, [closingCoins]);
+
+  const handleCoinChange = (coin, value) => {
+    setClosingCoins((prev) => ({
+      ...prev,
+      [coin]: Number(value) || 0,
+    }));
+  };
+
   const handleEndShift = async () => {
-    if (!actualCash || isNaN(actualCash)) {
-      toast({
-        title: "Invalid Input",
-        description: "Please enter a valid cash amount",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
-
       await endShift({
-        actualCash: Number(actualCash)
+        actualCash,
+        closingCoins,
       }).unwrap();
 
-      await dispatch(
-        endShift({ actualCash: Number(actualCash) })
-        
-      ).unwrap();
-handleLogout()
       toast({
         title: "Shift Ended",
         description: "Shift closed successfully",
       });
 
-      setActualCash("");
+      setClosingCoins({
+        "1": 0,
+        "5": 0,
+        "10": 0,
+        "50": 0,
+        "100": 0,
+        "500": 0,
+      });
+
       onClose();
+
+      handleLogout();
+
+          window.location.reload();
+
     } catch (err) {
       toast({
         title: "Error",
-        description: err || "Failed to end shift",
+        description: err?.data?.message || "Failed to end shift",
         variant: "destructive",
       });
     }
   };
 
-  
   if (!currentShift) {
     return (
       <Dialog open={open} onOpenChange={onClose}>
@@ -101,12 +123,13 @@ handleLogout()
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[420px]">
+      <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>End Shift</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-3 text-sm">
+        {/* Shift summary */}
+        <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="font-medium">Shift Start</span>
             <span>
@@ -116,47 +139,58 @@ handleLogout()
 
           <div className="flex justify-between">
             <span className="font-medium">Opening Cash</span>
-            <span>${currentShift.openingCash}</span>
+            <span>LKR {currentShift.openingCash}</span>
           </div>
 
           <div className="flex justify-between">
             <span className="font-medium">Expected Cash</span>
-            <span>${currentShift.expectedCash}</span>
+            <span>LKR {currentShift.expectedCash}</span>
           </div>
         </div>
 
-        <div className="space-y-1 pt-2">
-          <Label>Actual Cash</Label>
-          <Input
-            type="number"
-            value={actualCash}
-            onChange={(e) => setActualCash(e.target.value)}
-            placeholder="Enter actual cash"
-          />
+        {/* ✅ Closing coins */}
+        <div className="pt-4 space-y-3">
+          <Label className="text-sm font-semibold">
+            Closing Coins
+          </Label>
+
+          <div className="grid grid-cols-2 gap-3">
+            {COINS.map((coin) => (
+              <div key={coin} className="space-y-1">
+                <Label className="text-xs">LKR {coin}</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={closingCoins[coin]}
+                  onChange={(e) =>
+                    handleCoinChange(coin, e.target.value)
+                  }
+                />
+              </div>
+            ))}
+          </div>
         </div>
 
-        {currentShift.cashDifference !== undefined && (
-          <p className="text-sm">
-            <strong>Cash Difference:</strong>{" "}
-            ${currentShift.cashDifference}
-          </p>
-        )}
+        {/* Actual cash */}
+        <div className="pt-3 text-sm font-medium">
+          Actual Cash: LKR {actualCash}
+        </div>
 
-        <DialogFooter className="pt-3">
+        <DialogFooter className="pt-4">
           <Button
             variant="outline"
             onClick={onClose}
-            disabled={loading}
+            disabled={loading || isLoading}
           >
             Cancel
           </Button>
 
           <Button
             onClick={handleEndShift}
-            disabled={loading}
+            disabled={loading || isLoading}
             className="flex items-center gap-2"
           >
-            {loading && (
+            {(loading || isLoading) && (
               <Loader2 className="h-4 w-4 animate-spin" />
             )}
             End Shift

@@ -23,7 +23,7 @@ const OrderHistoryPage = () => {
 
   const { data, isLoading, error, refetch } = useGetOrdersByCashierQuery(
     {
-      cashierId: userProfile?.id,
+      cashierId: userProfile?.user.id,
       page,
       size,
       sort: "id,desc",
@@ -31,7 +31,7 @@ const OrderHistoryPage = () => {
       end: endDate ? new Date(endDate).toISOString() : undefined,
       search: searchText || undefined,
     },
-    { skip: !userProfile?.id }
+    { skip: !userProfile?.user.id }
   );
 
   const orders = data?.orders || [];
