@@ -66,7 +66,7 @@ export default function ChatPage() {
   const [text, setText] = useState("");
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(true);
 
   /* ================= TOTAL UNSEEN ================= */
   const totalUnseen = useMemo(() => {
@@ -236,7 +236,11 @@ useEffect(() => {
         <>
           <div className="fixed bottom-0 right-0 w-72 h-[70vh] bg-white border z-40">
             <div className="flex justify-between items-center p-3 border-b">
-              <h2 className="text-lg font-semibold">Chat Users</h2>
+              <h2 className="text-lg font-semibold">Chat Users  {totalUnseen > 0 && (
+            <span className="text-white bg-neutral-800 text-xs rounded-full px-2">
+              {totalUnseen}
+            </span>
+          )}</h2>
               <button onClick={() => {
                 setIsChatOpen(false);
                 dispatch(selectUser(null));

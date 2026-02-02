@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchCurrentShift,
-  endShift,
+  
 } from "../../../../Redux Toolkit/features/shift/shiftSlice";
+import { useEndShiftMutation } from "../../../../Redux Toolkit/features/shift/shiftApi";
 
 import {
   Dialog,
@@ -22,6 +23,8 @@ import { logout } from "../../../../Redux Toolkit/features/user/userThunks";
 import { useNavigate } from "react-router";
 
 const EndShift = ({ open, onClose }) => {
+    const [endShift, { isLoading, error }] = useEndShiftMutation();
+  
   const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -51,6 +54,11 @@ const EndShift = ({ open, onClose }) => {
     }
 
     try {
+
+      await endShift({
+        actualCash: Number(actualCash)
+      }).unwrap();
+
       await dispatch(
         endShift({ actualCash: Number(actualCash) })
         
