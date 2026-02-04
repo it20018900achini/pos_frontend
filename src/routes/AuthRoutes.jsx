@@ -11,6 +11,7 @@ const ForgotPasswordPage = () => <div className="flex items-center justify-cente
 const AuthRoutes = () => {
   return (
     <Routes>
+      
       <Route path="login" element={<Login />} />
       <Route path="onboarding" element={<Onboarding />} />
       <Route path="forgot-password" element={<ForgotPasswordPage />} />
