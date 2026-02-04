@@ -5,5 +5,7 @@ export const settings={
      ws:"wss://pos-frontend-sepia-chi.vercel.app",
     //  url:"http://localhost:5000",
     //  ws:"ws://localhost:5000",
+    //  ws:"ws://localhost:5000",
      environment:"dev"
 }
+
