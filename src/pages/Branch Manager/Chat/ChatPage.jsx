@@ -66,7 +66,7 @@ export default function ChatPage() {
   const [text, setText] = useState("");
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [isChatOpen, setIsChatOpen] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   /* ================= TOTAL UNSEEN ================= */
   const totalUnseen = useMemo(() => {

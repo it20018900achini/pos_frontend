@@ -10,6 +10,7 @@ import {
   useGetBrandsByStoreQuery,
   useUpdateBrandMutation,
 } from "../../../Redux Toolkit/features/brand/brandApi";
+import { useSelector } from "react-redux";
 
 export default function BrandList({ storeId }) {
   const [editingBrand, setEditingBrand] = useState(null);
@@ -22,6 +23,9 @@ export default function BrandList({ storeId }) {
     { storeId, page, size },
     { refetchOnMountOrArgChange: true }
   );
+
+  const { userProfile, loading } = useSelector((state) => state.user);
+
 
   const brands = data?.content || [];
   const pagination = {
@@ -59,6 +63,7 @@ export default function BrandList({ storeId }) {
 
   return (
     <div className="space-y-4">
+      {JSON.stringify(userProfile?.user?.storeId)}
       {/* Dialog for Create/Edit */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
@@ -66,7 +71,7 @@ export default function BrandList({ storeId }) {
             <DialogTitle>{editingBrand ? "Edit Brand" : "Create Brand"}</DialogTitle>
           </DialogHeader>
           <BrandForm
-            storeId={storeId}
+            storeId={userProfile?.user?.storeId}
             brand={editingBrand}
             onSuccess={() => {
               closeDialog();

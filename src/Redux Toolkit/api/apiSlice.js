@@ -11,7 +11,7 @@ const getAuthToken = () => {
 
 // Base query with auth headers
 const baseQuery = fetchBaseQuery({
-  baseUrl: settings?.url+`api`,
+  baseUrl: settings?.url+`/api`,
   prepareHeaders: (headers) => {
     try {
       const token = getAuthToken();

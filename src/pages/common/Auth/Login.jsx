@@ -3,32 +3,72 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Eye, EyeOff, Mail, Lock, CheckCircle, Loader2, ShoppingCart } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
+
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  CheckCircle,
+  Loader2,
+  ShoppingCart,
+} from "lucide-react";
 
 import { login, forgotPassword } from "@/Redux Toolkit/features/auth/authThunk";
 import { getUserProfile } from "@/Redux Toolkit/features/user/userThunks";
 import { useStartShiftMutation } from "@/Redux Toolkit/features/shift/shiftApi";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { settings } from "../../../constant";
 import { selectAuthLoading } from "@/Redux Toolkit/features/auth/authSelectors";
 
+import { settings } from "../../../constant";
+
+/* ---------------- ROLES ---------------- */
 const UserRoles = {
-  CASHIER: "BRANCH_CASHIER",
+  BRANCH_CASHIER: "BRANCH_CASHIER",
   STORE_ADMIN: "STORE_ADMIN",
   STORE_MANAGER: "STORE_MANAGER",
   BRANCH_MANAGER: "BRANCH_MANAGER",
   BRANCH_ACCOUNTANT: "BRANCH_ACCOUNTANT",
+  BRANCH_INVENTORY_MANAGER: "BRANCH_INVENTORY_MANAGER",
+};
+
+/* ---------------- REDIRECT BY ROLE ---------------- */
+const redirectByRole = (role) => {
+  switch (role) {
+    case UserRoles.BRANCH_CASHIER:
+      return "/cashier";
+    case UserRoles.STORE_ADMIN:
+    case UserRoles.STORE_MANAGER:
+      return "/store";
+    case UserRoles.BRANCH_MANAGER:
+      return "/branch";
+    case UserRoles.BRANCH_ACCOUNTANT:
+      return "/acc";
+    case UserRoles.BRANCH_INVENTORY_MANAGER:
+      return "/inventory";
+    default:
+      return "/";
+  }
 };
 
 export default function Login() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const { toast } = useToast();
-  const loading = useSelector(selectAuthLoading);
+
+  const callbackUrl = new URLSearchParams(location.search).get("callbackUrl");
+
+  const { userProfile, loading, initialized } = useSelector(
+    (state) => state.user
+  );
+
+  const loadingAuth = useSelector(selectAuthLoading);
+
   const [startShift] = useStartShiftMutation();
 
   const emailRef = useRef(null);
@@ -37,210 +77,215 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [shake, setShake] = useState(false);
 
-  const callbackUrl = new URLSearchParams(location.search).get("callbackUrl");
-
   const [formState, setFormState] = useState({
-    mode: "login", // "login" | "forgot" | "emailSent"
+    mode: "login", // login | forgot | emailSent
     email: "",
     password: "",
   });
 
   const [errors, setErrors] = useState({});
 
+  /* ---------------- AUTO REDIRECT IF LOGGED IN ---------------- */
   useEffect(() => {
-    if (formState.mode === "login") emailRef.current?.focus();
-  }, [formState.mode]);
+    if (
+      initialized &&
+      !loading &&
+      userProfile?.user?.roles?.length > 0
+    ) {
+      const role = userProfile.user.roles[0];
+      navigate(redirectByRole(role), { replace: true });
+    }
+  }, [initialized, loading, userProfile, navigate]);
 
+  /* ---------------- VALIDATION ---------------- */
   useEffect(() => {
     const errs = {};
-    if (formState.email && !/\S+@\S+\.\S+/.test(formState.email)) errs.email = "Enter a valid email";
-    if (formState.password && formState.password.length < 4) errs.password = "At least 4 characters required";
+    if (
+      formState.email &&
+      !/\S+@\S+\.\S+/.test(formState.email)
+    ) {
+      errs.email = "Invalid email";
+    }
+    if (formState.password && formState.password.length < 4) {
+      errs.password = "Minimum 4 characters";
+    }
     setErrors(errs);
   }, [formState.email, formState.password]);
 
-  const isLoginValid = formState.email && formState.password && !errors.email && !errors.password;
+  const isLoginValid =
+    formState.email &&
+    formState.password &&
+    !errors.email &&
+    !errors.password;
 
   const triggerShake = () => {
     setShake(true);
     setTimeout(() => setShake(false), 400);
   };
 
+  /* ---------------- LOGIN ---------------- */
   const handleLogin = useCallback(
     async (e) => {
       e.preventDefault();
       if (!isLoginValid) return triggerShake();
 
       try {
-        const res = await dispatch(login({ email: formState.email, password: formState.password })).unwrap();
+        const res = await dispatch(
+          login({
+            email: formState.email,
+            password: formState.password,
+          })
+        ).unwrap();
 
-        toast({ title: "Success", description: "Login successful!" });
-
-        dispatch(getUserProfile(localStorage.getItem("jwt") || ""));
-
-        const user = res.user;
-        const role = user.roles?.[0];
-
-        if (callbackUrl) return navigate(callbackUrl, { replace: true });
-
-        switch (role) {
-          case UserRoles.BRANCH_CASHIER:
-            try {
-              // await startShift({ branchId: user.branchId, openingCash: 0 }).unwrap();
-            } catch {
-                 toast({
-          title: "Shift already active",
-          // description: err?.message || "Invalid email or password",
-          variant: "success",
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
         });
 
-              console.log("Shift already active");
-            }
-            navigate("/cashier");
-            break;
-          case UserRoles.STORE_ADMIN:
-          case UserRoles.STORE_MANAGER:
-            navigate("/store");
-            break;
-          case UserRoles.BRANCH_MANAGER:
-            navigate("/branch");
-            break;
-          case UserRoles.BRANCH_ACCOUNTANT:
-            navigate("/acc");
-            break;
-          default:
-            navigate("/");
+        dispatch(getUserProfile());
+
+        const user = res.user;
+        const role = user?.roles?.[0];
+
+        if (callbackUrl) {
+          return navigate(callbackUrl, { replace: true });
         }
+
+        if (role === UserRoles.BRANCH_CASHIER) {
+          try {
+            // await startShift({ branchId: user.branchId, openingCash: 0 }).unwrap();
+          } catch {
+            toast({
+              title: "Shift already active",
+              variant: "success",
+            });
+          }
+        }
+
+        navigate(redirectByRole(role));
       } catch (err) {
         triggerShake();
         toast({
-          title: "Login Failed",
-          description: err?.message || "Invalid email or password",
+          title: "Login failed",
+          description: err?.message || "Invalid credentials",
           variant: "destructive",
         });
       }
     },
-    [formState.email, formState.password, callbackUrl]
+    [formState, callbackUrl]
   );
 
-  const handleForgotPassword = useCallback(
-    async (e) => {
-      e.preventDefault();
-      if (!formState.email || !/\S+@\S+\.\S+/.test(formState.email)) {
-        return toast({
-          title: "Invalid Email",
-          description: "Enter a valid email address.",
-          variant: "destructive",
-        });
-      }
+  /* ---------------- FORGOT PASSWORD ---------------- */
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
 
-      try {
-        await dispatch(forgotPassword(formState.email)).unwrap();
-        toast({
-          title: "Email Sent",
-          description: "Check your inbox for reset instructions.",
-        });
-        setFormState((prev) => ({ ...prev, mode: "emailSent" }));
-      } catch (err) {
-        toast({
-          title: "Error",
-          description: err?.message || "Failed to send reset email",
-          variant: "destructive",
-        });
-      }
-    },
-    [formState.email]
-  );
-
-  const resetForm = useCallback(() => {
-    if (callbackUrl) {
-      navigate(callbackUrl, { replace: true });
-    } else {
-      setFormState({ mode: "login", email: "", password: "" });
+    if (!/\S+@\S+\.\S+/.test(formState.email)) {
+      return toast({
+        title: "Invalid email",
+        variant: "destructive",
+      });
     }
-  }, [callbackUrl]);
 
+    try {
+      await dispatch(forgotPassword(formState.email)).unwrap();
+      toast({
+        title: "Email sent",
+        description: "Check your inbox",
+      });
+      setFormState((p) => ({ ...p, mode: "emailSent" }));
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err?.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const resetForm = () => {
+    setFormState({ mode: "login", email: "", password: "" });
+  };
+
+  /* ---------------- UI ---------------- */
   return (
     <div className="min-h-screen flex bg-background">
-      {/* LEFT PANEL */}
+      {/* LEFT */}
       <div
         className="hidden lg:flex w-1/2 bg-cover bg-center relative"
         style={{ backgroundImage: "url(/bg-img.jpg)" }}
       >
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-        <div className="relative z-10 p-12 flex flex-col justify-end h-full text-white">
-          <h1 className="text-4xl font-bold mb-3">{settings?.businessName}</h1>
-          <p className="text-lg text-white/80">Smart POS — Manage your store effortlessly.</p>
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative z-10 p-12 text-white">
+          <h1 className="text-4xl font-bold">
+            {settings?.businessName}
+          </h1>
+          <p className="opacity-80">
+            Smart POS — Manage your store effortlessly
+          </p>
         </div>
       </div>
 
-      {/* RIGHT PANEL */}
+      {/* RIGHT */}
       <div className="flex items-center justify-center w-full lg:w-1/2 p-8 relative">
         <div className="absolute top-4 right-4">
           <ThemeToggle />
         </div>
 
-        <div className={`w-full max-w-md rounded-2xl p-8 ${shake ? "animate-shake" : ""}`}>
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-3">
-              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-                <ShoppingCart className="w-7 h-7 text-primary-foreground" />
-              </div>
+        <div
+          className={`w-full max-w-md p-8 rounded-2xl ${
+            shake ? "animate-shake" : ""
+          }`}
+        >
+          <div className="text-center mb-6">
+            <div className="mx-auto w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-3">
+              <ShoppingCart className="text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold">Welcome Back</h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              {formState.mode === "login" && "Sign in to continue"}
-              {formState.mode === "forgot" && "Reset your password"}
-              {formState.mode === "emailSent" && "Check your email"}
-            </p>
+            <h2 className="text-2xl font-bold">Welcome Back</h2>
           </div>
 
-          {/* Login Form */}
           {formState.mode === "login" && (
-            <form className="space-y-5" onSubmit={handleLogin}>
+            <form onSubmit={handleLogin} className="space-y-5">
               <div>
-                <label className="text-sm font-medium">Email</label>
-                <div className="relative mt-1">
-                  <Mail className="absolute left-3 top-3 w-5 h-5" />
-                  <Input
-                    ref={emailRef}
-                    type="email"
-                    disabled={loading}
-                    className="pl-10 py-6 rounded-xl"
-                    value={formState.email}
-                    onChange={(e) => setFormState({ ...formState, email: e.target.value })}
-                  />
-                </div>
+                <Mail className="absolute mt-4 ml-3" />
+                <Input
+                  ref={emailRef}
+                  placeholder="Email"
+                  className="pl-10 py-6"
+                  value={formState.email}
+                  onChange={(e) =>
+                    setFormState({ ...formState, email: e.target.value })
+                  }
+                />
               </div>
 
               <div>
-                <label className="text-sm font-medium">Password</label>
-                <div className="relative mt-1">
-                  <Lock className="absolute left-3 top-3 w-5 h-5" />
-                  <Input
-                    ref={passwordRef}
-                    type={showPassword ? "text" : "password"}
-                    disabled={loading}
-                    className="pl-10 pr-12 py-6 rounded-xl"
-                    value={formState.password}
-                    onChange={(e) => setFormState({ ...formState, password: e.target.value })}
-                  />
-                  <button type="button" className="absolute right-3 top-3" onClick={() => setShowPassword(!showPassword)}>
-                    {showPassword ? <EyeOff /> : <Eye />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex justify-end">
-                <button type="button" className="text-sm text-primary" onClick={() => setFormState({ ...formState, mode: "forgot" })}>
-                  Forgot password?
+                <Lock className="absolute mt-4 ml-3" />
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  className="pl-10 pr-12 py-6"
+                  value={formState.password}
+                  onChange={(e) =>
+                    setFormState({ ...formState, password: e.target.value })
+                  }
+                />
+                <button
+                  type="button"
+                  className="absolute mt-3 right-4"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff /> : <Eye />}
                 </button>
               </div>
 
-              <Button disabled={loading || !isLoginValid} className="w-full py-6 rounded-xl">
-                {loading ? (
+              <Button
+                disabled={!isLoginValid || loadingAuth}
+                className="w-full py-6"
+              >
+                {loadingAuth ? (
                   <>
-                    <Loader2 className="animate-spin w-5 h-5 mr-2" />
-                    Please wait...
+                    <Loader2 className="animate-spin mr-2" />
+                    Signing in...
                   </>
                 ) : (
                   "Sign In"
@@ -249,33 +294,23 @@ export default function Login() {
             </form>
           )}
 
-          {/* Forgot Password Form */}
           {formState.mode === "forgot" && (
-            <form onSubmit={handleForgotPassword} className="space-y-5">
+            <form onSubmit={handleForgotPassword} className="space-y-4">
               <Input
-                type="email"
+                placeholder="Email"
                 value={formState.email}
-                onChange={(e) => setFormState({ ...formState, email: e.target.value })}
-                placeholder="you@example.com"
-                className="py-6 rounded-xl"
+                onChange={(e) =>
+                  setFormState({ ...formState, email: e.target.value })
+                }
               />
-              <div className="flex gap-3">
-                <Button type="button" variant="outline" onClick={resetForm} className="flex-1 py-6">
-                  Back
-                </Button>
-                <Button type="submit" className="flex-1 py-6">
-                  Send Link
-                </Button>
-              </div>
+              <Button className="w-full">Send reset link</Button>
             </form>
           )}
 
-          {/* Email Sent */}
           {formState.mode === "emailSent" && (
             <div className="text-center space-y-4">
-              <CheckCircle className="w-12 h-12 mx-auto text-indigo-600" />
-              <h3 className="text-lg font-semibold">Check Your Email</h3>
-              <Button className="w-full py-6" onClick={resetForm}>
+              <CheckCircle className="mx-auto text-green-500" />
+              <Button onClick={resetForm} className="w-full">
                 Back to Login
               </Button>
             </div>

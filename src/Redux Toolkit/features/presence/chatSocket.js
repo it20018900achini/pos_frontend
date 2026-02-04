@@ -1,8 +1,10 @@
+import { settings } from "../../../constant";
+
 let ws = null;
 let reconnectTimer = null;
 let messageQueue = [];
 
-const WS_URL = "ws://localhost:5000/ws/chat";
+const WS_URL = `${settings.ws}/ws/chat`;
 
 export function connectChatSocket({ token, onMessage, onOpen, onClose }) {
   if (!token) return;

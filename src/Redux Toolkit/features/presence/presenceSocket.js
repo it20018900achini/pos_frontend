@@ -1,10 +1,12 @@
+import { settings } from "../../../constant";
+
 let presenceSocket = null;
 let chatSocket = null;
 let chatMessageQueue = [];
 let chatSocketReadyPromise = null;
 
 // Get backend URL from environment variables
-const BACKEND_WS_URL = "ws://localhost:5000";
+const BACKEND_WS_URL = settings.ws;
 
 // ----------------- Presence WS -----------------
 export function connectPresenceSocket(jwt, onMessage) {

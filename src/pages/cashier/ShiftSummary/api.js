@@ -1,4 +1,5 @@
 import axios from "axios";
+import { settings } from "../../../constant";
 
 // Helper function to get JWT token
 const getAuthToken = () => {
@@ -21,7 +22,7 @@ const getAuthHeaders = () => {
 const token = getAuthToken();
 // Base URL of your Spring Boot backend
 const API = axios.create({
-  baseURL: "http://localhost:5000/api/shifts", // adjust port if needed
+  baseURL: `${settings.url}/api/shifts`, // adjust port if needed
   headers: {
     "Content-Type": "application/json",
 'Authorization': `Bearer ${token}`,

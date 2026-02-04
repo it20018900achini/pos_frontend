@@ -1,12 +1,13 @@
 // src/hooks/usePresence.js
 import { useEffect, useState } from "react";
 import useWebSocket from "react-use-websocket";
+import { settings } from "../constant";
 
 export const usePresence = (jwt) => {
   const [onlineUsers, setOnlineUsers] = useState([]);
 
   // WebSocket URL (replace with your backend)
-  const WS_URL = `ws://localhost:5000/ws/presence?token=${jwt}`;
+  const WS_URL = `${settings.ws}/ws/presence?token=${jwt}`;
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(WS_URL, {
     shouldReconnect: () => true,

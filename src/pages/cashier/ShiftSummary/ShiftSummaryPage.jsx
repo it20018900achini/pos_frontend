@@ -19,11 +19,8 @@ const ShiftSummaryPage = () => {
 
       <div className="m-10 space-y-4">
         {/* 🔘 Actions */}
-        <div className="flex gap-3">
-          <Button onClick={() => setOpenStart(true)}>
-            Start Shift
-          </Button>
-
+        <div className="flex justify-end gap-3">
+        
           <Button variant="destructive" onClick={() => setOpenEnd(true)}>
             End Shift
           </Button>
