@@ -15,11 +15,12 @@ import BranchInventoryManagerRoutes from "./routes/BranchInventoryManagerRoutes"
 import Landing from "./pages/common/Landing/Landing";
 import Onboarding from "./pages/onboarding/Onboarding";
 import PageNotFound from "./pages/common/PageNotFound";
+import DashboardLayout from "./pages/Dashboard/DashboardLayout";
+import ChatPage from "./pages/Branch Manager/Chat/ChatPage";
 
 /* THUNKS */
 import { getUserProfile } from "./Redux Toolkit/features/user/userThunks";
 import { getStoreByAdmin } from "./Redux Toolkit/features/store/storeThunks";
-import ChatPage from "./pages/Branch Manager/Chat/ChatPage";
 
 /* ROLE → PATH mapping */
 const ROLE_PATH = {
@@ -62,33 +63,44 @@ const App = () => {
       : null;
   const defaultPath = defaultRole ? ROLE_PATH[defaultRole] : "/";
 
-  return (<>
-  {userProfile && <ChatPage />}
-    <Routes>
-      {/* PUBLIC */}
-      <Route path="/" element={<Landing />} />
-      <Route path="/auth/*" element={<AuthRoutes />} />
-      <Route path="/auth/onboarding" element={<Onboarding />} />
+  return (
+    <>
+    {userProfile && <ChatPage />}
+      <Routes>
+        {/* PUBLIC ROUTES */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/auth/*" element={<AuthRoutes />} />
+        <Route path="/auth/onboarding" element={<Onboarding />} />
 
-      {/* PROTECTED / ROLE BASED */}
-      <Route path="/super-admin/*" element={<SuperAdminRoutes />} />
-      <Route path="/branch/*" element={<BranchManagerRoutes />} />
-      <Route path="/cashier/*" element={<CashierRoutes />} />
-      <Route path="/acc/*" element={<BranchAccountantRoutes />} />
-      <Route path="/inventory/*" element={<BranchInventoryManagerRoutes />} />
-      <Route path="/store/*" element={<StoreRoutes />} />
-
-      {/* DEFAULT REDIRECT AFTER LOGIN */}
-      {defaultPath && (
+        {/* DASHBOARD WRAPPER */}
         <Route
-          path="/redirect"
-          element={<Navigate to={defaultPath} replace />}
-        />
-      )}
+          path="/dashboard/*"
+          element={
+            <DashboardLayout>
+              {userProfile && <ChatPage />}
+            </DashboardLayout>
+          }
+        >
+                  <Route path="cashier/*" element={<CashierRoutes />} />
+          {/* You can put nested routes for dashboard here if needed */}
+        </Route>
 
-      {/* CATCH ALL */}
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+        {/* ROLE-BASED ROUTES */}
+        <Route path="/super-admin/*" element={<SuperAdminRoutes />} />
+        <Route path="/branch/*" element={<BranchManagerRoutes />} />
+        <Route path="/cashier/*" element={<CashierRoutes />} />
+        <Route path="/acc/*" element={<BranchAccountantRoutes />} />
+        <Route path="/inventory/*" element={<BranchInventoryManagerRoutes />} />
+        <Route path="/store/*" element={<StoreRoutes />} />
+
+        {/* DEFAULT REDIRECT AFTER LOGIN */}
+        {defaultPath && (
+          <Route path="/redirect" element={<Navigate to={defaultPath} replace />} />
+        )}
+
+        {/* CATCH ALL */}
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
     </>
   );
 };
