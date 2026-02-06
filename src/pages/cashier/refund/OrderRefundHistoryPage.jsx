@@ -221,7 +221,7 @@ const handlePrintInvoice = (order, storeName = "STORE NAME", storeLogoUrl) => {
 
   return (
     <div className="h-full flex flex-col">
-      <POSHeader />
+      {/* <POSHeader /> */}
 
       {/* Page Header */}
       <div className="p-4 bg-card border-b flex justify-between items-center gap-5">

@@ -25,7 +25,7 @@ const ProductCard = ({ product }) => {
       className="
         cursor-pointer 
         bg-white dark:bg-gray-800 
-        border border-slate-200 dark:border-gray-700
+        border border-neutral-200 dark:border-gray-700
         rounded-xl
         shadow-sm 
         transition-all duration-300 
@@ -42,7 +42,7 @@ const ProductCard = ({ product }) => {
         <div
           className="
             aspect-square 
-            bg-slate-100 dark:bg-gray-700
+            bg-neutral-100 dark:bg-gray-700
             rounded-lg 
             mb-3
             flex items-center justify-center 
@@ -57,12 +57,12 @@ const ProductCard = ({ product }) => {
         </div>
 
         {/* Name */}
-        <h3 className="font-semibold text-sm text-slate-800 dark:text-gray-200 truncate">
+        <h3 className="font-semibold text-sm text-neutral-800 dark:text-gray-200 truncate">
           {product?.productVariant?.name}
         </h3>
 
         {/* SKU */}
-        <p className="text-xs text-slate-500 dark:text-gray-400 mb-1">{product?.productVariant?.sku}</p>
+        <p className="text-xs text-neutral-500 dark:text-gray-400 mb-1">{product?.productVariant?.sku}</p>
 
         {/* Price + Category */}
         <div className="flex items-center justify-between mt-1">

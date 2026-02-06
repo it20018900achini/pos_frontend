@@ -86,7 +86,7 @@ const OrderHistoryPage = () => {
 
   return (
     <div className="h-full flex flex-col">
-      <POSHeader />
+      {/* <POSHeader /> */}
 
       {/* Header */}
       <div className="p-4 bg-card border-b flex justify-between items-center">

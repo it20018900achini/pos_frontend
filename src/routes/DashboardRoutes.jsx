@@ -6,6 +6,9 @@ import DashboardLayout from "../pages/Dashboard/DashboardLayout";
 import { useSelector } from "react-redux";
 import CreateOrderPage from "../pages/cashier/CreateOrderPage";
 import ShiftSummaryPage from "../pages/cashier/ShiftSummary/ShiftSummaryPage";
+import OrderHistoryPage from "../pages/cashier/order/OrderHistoryPage";
+import ReturnOrderPage from "../pages/cashier/return/ReturnOrderPage";
+import OrderRefundHistoryPage from "../pages/cashier/refund/OrderRefundHistoryPage";
 
 const DashboardRoutes = () => {
     const { userProfile, loading, initialized } = useSelector(
@@ -22,6 +25,8 @@ const DashboardRoutes = () => {
         <Route path="pos" element={<CreateOrderPage/>} />
         <Route path="pos/shift-summary" element={<ShiftSummaryPage/>} />
       
+        <Route path="pos/orders" element={<OrderHistoryPage />} />
+        <Route path="pos/refunds" element={<OrderRefundHistoryPage />} />
       {/* {
         userProfile?.user?.role[0]=="BRANCH_CASHIER"&&null
       } */}

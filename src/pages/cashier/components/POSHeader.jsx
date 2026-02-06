@@ -55,7 +55,7 @@ const POSHeader = () => {
       px-6 py-4 shadow-md
       bg-gradient-to-r
       from-indigo-600 to-purple-600
-      dark:from-slate-900 dark:to-slate-800
+      dark:from-neutral-900 dark:to-neutral-800
       text-white
     ">
       <div className="flex items-center justify-between">
@@ -67,7 +67,7 @@ const POSHeader = () => {
             className="
               p-2 rounded-md
               bg-white/20 hover:bg-white/30
-              dark:bg-slate-700/50 dark:hover:bg-slate-600/60
+              dark:bg-neutral-700/50 dark:hover:bg-neutral-600/60
             "
           >
             <Menu className="h-5 w-5 text-white" />
@@ -89,7 +89,7 @@ const POSHeader = () => {
             flex items-center gap-3 px-3 py-2 rounded-xl
             bg-white/10 backdrop-blur-sm
             border border-white/20
-            dark:bg-slate-800/70 dark:border-slate-700
+            dark:bg-neutral-800/70 dark:border-neutral-700
             shadow-sm
           ">
             <div className="

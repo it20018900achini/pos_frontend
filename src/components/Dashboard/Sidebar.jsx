@@ -5,49 +5,73 @@ import { logout } from "@/Redux Toolkit/features/user/userThunks";
 import {
   LayoutDashboard,
   Store,
+  Users,
   Settings,
   FileText,
   Clock,
+  DollarSign,
+  Archive,
+  FileText as Report,
   LogOut,
   ChevronDown,
   ChevronUp,
-  Users,
   X,
   Menu,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/context/hooks/useSidebar";
 
 const NAV_LINKS = [
-  { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+  {
+    name: "Dashboard",
+    path: "/dashboard",
+    icon: LayoutDashboard,
+  },
   {
     name: "POS",
     icon: Store,
     children: [
-      { name: "POS", path: "/dashboard/pos", icon: FileText },
+      { name: "POS", path: "/dashboard/pos", icon: Store },
       { name: "Shift Summary", path: "/dashboard/pos/shift-summary", icon: Clock },
-      { name: "Refunds", path: "/dashboard/refunds", icon: FileText },
+      { name: "Orders", path: "/dashboard/pos/orders", icon: FileText },
+      { name: "Refunds", path: "/dashboard/pos/refunds", icon: DollarSign },
     ],
   },
   {
     name: "Users",
-    icon: Store,
+    icon: Users,
     children: [
       { name: "Users", path: "/dashboard/users", icon: Users },
-      { name: "Role Permissions", path: "/dashboard/users/role-permissions", icon: Users },
+      { name: "Role Permissions", path: "/dashboard/users/role-permissions", icon: ClipboardList },
+    ],
+  },
+  {
+    name: "Accounts",
+    icon: DollarSign,
+    children: [
+      { name: "Chart of Accounts", path: "/dashboard/accounts/chart-of-accounts", icon: Archive },
+      { name: "Journal Entries", path: "/dashboard/accounts/journals", icon: FileText },
+      { name: "Profit & Loss", path: "/dashboard/accounts/profit-loss", icon: Report },
+      { name: "Balance Sheet", path: "/dashboard/accounts/balance-sheet", icon: Report },
+      { name: "Trial Balance", path: "/dashboard/accounts/trial-balance", icon: Report },
     ],
   },
   {
     name: "Products",
-    icon: Store,
+    icon: ClipboardList,
     children: [
-      { name: "Products", path: "/dashboard/products", icon: FileText },
+      { name: "Products", path: "/dashboard/products", icon: Archive },
       { name: "Product Variants", path: "/dashboard/products/variants", icon: FileText },
       { name: "Product Categories", path: "/dashboard/products/categories", icon: FileText },
       { name: "Product Brands", path: "/dashboard/products/brands", icon: FileText },
     ],
   },
-  { name: "Settings", path: "/dashboard/settings", icon: Settings },
+  {
+    name: "Settings",
+    path: "/dashboard/settings",
+    icon: Settings,
+  },
 ];
 
 export default function Sidebar() {
@@ -103,33 +127,33 @@ export default function Sidebar() {
     <>
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-40 md:hidden"
+          className="fixed inset-0 bg-black/20 dark:bg-black/30 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <aside
-        className={`
-          fixed md:static z-50 h-screen top-0 left-0
-          bg-white border-r shadow-lg
+        className={`fixed md:static z-50 h-screen top-0 left-0
+          bg-neutral-50 dark:bg-neutral-900 border-r dark:border-neutral-700 shadow-lg
           transition-all duration-300
           ${sidebarOpen ? "w-64" : "w-20"}
+          overflow-y-auto
         `}
       >
         <div className="flex flex-col h-full px-4 py-6">
           {/* HEADER */}
           <div className="mb-6 flex items-center justify-between">
-            <Store className="w-7 h-7 text-indigo-600" />
+            <Store className="w-7 h-7 text-neutral-700 dark:text-neutral-200" />
             <button
               onClick={() => setSidebarOpen((p) => !p)}
-              className="p-2 rounded-lg hover:bg-gray-100"
+              className="p-2 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-5 h-5 text-neutral-700 dark:text-neutral-200" />
             </button>
           </div>
 
           {/* NAV */}
-          <nav className="flex-1">
+          <nav className="flex-1 overflow-y-auto">
             <ul className="space-y-1">
               {NAV_LINKS.map((link) => {
                 const Icon = link.icon;
@@ -145,48 +169,46 @@ export default function Sidebar() {
                       className={`
                         w-full flex items-center justify-between px-3 py-2 rounded-lg
                         transition-colors
-                        ${
-                          active
-                            ? "bg-indigo-100 text-indigo-700"
-                            : "text-gray-700 hover:bg-gray-100"
+                        ${active
+                          ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-50"
+                          : "text-neutral-700 hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-800"
                         }
                       `}
                     >
                       <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5 text-indigo-500" />
+                        <Icon className="w-5 h-5 text-neutral-700 dark:text-neutral-200" />
                         {sidebarOpen && (
                           <span className="text-sm font-medium">{link.name}</span>
                         )}
                       </div>
 
                       {hasChildren && sidebarOpen && (
-                        isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+                        isOpen ? <ChevronUp size={16} className="text-neutral-700 dark:text-neutral-200" /> 
+                               : <ChevronDown size={16} className="text-neutral-700 dark:text-neutral-200" />
                       )}
                     </button>
 
                     {/* INLINE SUBMENU */}
                     {hasChildren && isOpen && sidebarOpen && (
-                      <ul className="ml-9 mt-1 space-y-1">
+                      <ul className="ml-9 mt-1 space-y-1 max-h-[calc(100vh-150px)] overflow-y-auto">
                         {link.children.map((child) => {
-                          const ChildIcon = child.icon || Dot;
+                          const ChildIcon = child.icon;
                           return (
                             <li key={child.name}>
                               <Link
                                 to={child.path}
                                 className={`
                                   flex items-center gap-2 px-3 py-1 text-sm rounded
-                                  ${
-                                    isExactActive(child.path)
-                                      ? "bg-indigo-50 text-indigo-700 font-medium"
-                                      : "text-gray-600 hover:bg-gray-100"
+                                  ${isExactActive(child.path)
+                                    ? "bg-neutral-200 text-neutral-900 font-medium dark:bg-neutral-700 dark:text-neutral-50"
+                                    : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
                                   }
                                 `}
                               >
                                 <ChildIcon
-                                  className={`w-4 h-4 ${
-                                    isExactActive(child.path)
-                                      ? "text-indigo-600"
-                                      : "text-gray-400"
+                                  className={`w-4 h-4 ${isExactActive(child.path)
+                                    ? "text-neutral-900 dark:text-neutral-50"
+                                    : "text-neutral-400 dark:text-neutral-400"
                                   }`}
                                 />
                                 {child.name}
@@ -199,10 +221,10 @@ export default function Sidebar() {
 
                     {/* ABSOLUTE SUBMENU */}
                     {hasChildren && !sidebarOpen && floatingMenu === link.name && (
-                      <div className="absolute left-20 top-0 w-64 bg-white border shadow-xl rounded-lg z-50">
+                      <div className="absolute left-20 top-0 w-64 bg-neutral-50 dark:bg-neutral-900 border dark:border-neutral-700 shadow-xl rounded-lg z-50 max-h-screen overflow-y-auto">
                         <ul className="py-2">
                           {link.children.map((child) => {
-                            const ChildIcon = child.icon || Dot;
+                            const ChildIcon = child.icon;
                             return (
                               <li key={child.name}>
                                 <Link
@@ -210,18 +232,16 @@ export default function Sidebar() {
                                   onClick={() => setFloatingMenu(null)}
                                   className={`
                                     flex items-center gap-2 px-4 py-2 text-sm
-                                    ${
-                                      isExactActive(child.path)
-                                        ? "bg-indigo-50 text-indigo-700 font-medium"
-                                        : "text-gray-700 hover:bg-gray-100"
+                                    ${isExactActive(child.path)
+                                      ? "bg-neutral-200 text-neutral-900 font-medium dark:bg-neutral-700 dark:text-neutral-50"
+                                      : "text-neutral-700 hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-800"
                                     }
                                   `}
                                 >
                                   <ChildIcon
-                                    className={`w-4 h-4 ${
-                                      isExactActive(child.path)
-                                        ? "text-indigo-600"
-                                        : "text-gray-400"
+                                    className={`w-4 h-4 ${isExactActive(child.path)
+                                      ? "text-neutral-900 dark:text-neutral-50"
+                                      : "text-neutral-400 dark:text-neutral-400"
                                     }`}
                                   />
                                   {child.name}
@@ -242,7 +262,7 @@ export default function Sidebar() {
           <Button
             variant="ghost"
             onClick={handleLogout}
-            className="mt-auto justify-start gap-3 text-red-600"
+            className="mt-auto justify-start gap-3 text-red-600 dark:text-red-400"
           >
             <LogOut className="w-5 h-5" />
             {sidebarOpen && "Logout"}

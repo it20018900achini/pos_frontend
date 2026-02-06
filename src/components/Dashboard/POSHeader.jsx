@@ -1,10 +1,8 @@
 import React, { useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/context/hooks/useSidebar";
-import { Menu } from "lucide-react";
-import { settings } from "@/constant";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
+import { settings } from "@/constant";
 import { ThemeToggle } from "../theme-toggle";
 
 const POSHeader = () => {
@@ -51,26 +49,16 @@ const POSHeader = () => {
   }, [setSidebarOpen, navigate]);
 
   return (
-    <header className="sticky top-0 z-50 px-4 sm:px-6 py-4 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border-b">
+    <header className="sticky top-0 z-50 px-4 sm:px-6 py-4 bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700 transition-colors">
       <div className="flex items-center justify-between">
 
         {/* LEFT */}
         <div className="flex items-center gap-3">
-          {/* ✅ ALWAYS VISIBLE TOGGLE */}
-          {/* <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="md:ml-0 ml-20 rounded-lg bg-white shadow-sm hover:bg-gray-100"
-          >
-            <Menu className="w-5 h-5 text-gray-800" />
-          </Button> */}
-
           <div className="hidden sm:block">
-            <h1 className="text-xl font-bold text-gray-900">
+            <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
               {settings?.businessName}
             </h1>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
               Point of Sale Dashboard
             </p>
           </div>
@@ -81,15 +69,15 @@ const POSHeader = () => {
           <ThemeToggle />
 
           {user && (
-            <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white shadow border">
-              <div className="h-9 w-9 rounded-full flex items-center justify-center font-bold bg-indigo-100 text-indigo-700">
+            <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 shadow border border-neutral-200 dark:border-neutral-700 transition-colors">
+              <div className="h-9 w-9 rounded-full flex items-center justify-center font-bold bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-100">
                 {fullName.charAt(0).toUpperCase()}
               </div>
 
               <div className="hidden sm:block leading-tight">
-                <p className="font-semibold text-sm">{fullName}</p>
-                <p className="text-xs text-gray-500 capitalize">{role}</p>
-                <p className="text-[10px] text-gray-400">
+                <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-50">{fullName}</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 capitalize">{role}</p>
+                <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
                   {storeName} • {branchName}
                 </p>
               </div>

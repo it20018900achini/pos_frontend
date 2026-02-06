@@ -32,7 +32,7 @@ const STATUS_CONFIG = {
   },
   CANCELLED: {
     label: "CANCELLED",
-    className: "bg-slate-600 text-white",
+    className: "bg-neutral-600 text-white",
   },
 };
 
@@ -46,9 +46,9 @@ const OrderTable = ({ orders = [], handleViewOrder, handleRefundOrder }) => {
   }
 
   return (
-    <Table className="bg-white dark:bg-slate-900 rounded-lg shadow-sm dark:shadow-md">
+    <Table className="bg-white dark:bg-neutral-900 rounded-lg shadow-sm dark:shadow-md">
       <TableHeader>
-        <TableRow className="bg-slate-100 dark:bg-slate-800">
+        <TableRow className="bg-neutral-100 dark:bg-neutral-800">
           <TableHead>Order ID</TableHead>
           <TableHead>Date</TableHead>
           <TableHead>Customer</TableHead>
@@ -71,7 +71,7 @@ const OrderTable = ({ orders = [], handleViewOrder, handleRefundOrder }) => {
                     ? "bg-red-100 dark:bg-red-900/40"
                     : order.status === "PARTIALLY_REFUNDED"
                     ? "bg-orange-100 dark:bg-orange-900/40"
-                    : "hover:bg-slate-100 dark:hover:bg-slate-800"
+                    : "hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 }
               >
                 <TableCell className="font-medium">

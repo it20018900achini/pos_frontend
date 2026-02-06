@@ -193,7 +193,7 @@ const processPayment = useCallback(async () => {
 
   return (
     <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-      <DialogContent className="sm:max-w-[90%] w-[90%] max-h-[95vh] p-0 overflow-scroll rounded-3xl bg-gradient-to-br from-slate-50 to-slate-200 flex flex-col">
+      <DialogContent className="sm:max-w-[90%] w-[90%] max-h-[95vh] p-0 overflow-scroll rounded-3xl bg-gradient-to-br from-neutral-50 to-neutral-200 flex flex-col">
         <DialogHeader className="px-8 py-3 border-b bg-white/60">
           <DialogTitle className="text-xl font-bold">
             🧾 Payment Summary
@@ -210,7 +210,7 @@ const processPayment = useCallback(async () => {
           {/* LEFT – PAYMENTS */}
           <div className="w-[55%] p-8 py-4 border-r bg-white/50 overflow-y-auto">
             <div className="rounded-2xl p-3 bg-white text-center mb-6 shadow-inner">
-              <p className="text-sm text-slate-500 uppercase">Total Amount</p>
+              <p className="text-sm text-neutral-500 uppercase">Total Amount</p>
               <p className="text-2xl font-bold text-indigo-600">
                 LKR {netTotal.toFixed(2)}
               </p>
@@ -300,7 +300,7 @@ const processPayment = useCallback(async () => {
                 <p className="font-medium">
                   {item.product?.name || item.productVariant?.name}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-neutral-500">
                   Qty: {item.quantity} × LKR{" "}
                   {Number(item.sellingPrice).toFixed(2)}
                 </p>
