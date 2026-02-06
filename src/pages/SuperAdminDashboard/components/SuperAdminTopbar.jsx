@@ -36,10 +36,10 @@ export default function SuperAdminTopbar() {
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-foreground">
-                {userProfile?.fullName || "Super Admin"}
+                {userProfile?.user.fullName || "Super Admin"}
               </p>
               <p className="text-xs text-muted-foreground">
-                {userProfile?.email || "superadmin@pos.com"}
+                {userProfile?.user.email || "superadmin@pos.com"}
               </p>
             </div>
             <Button variant="ghost" size="icon" className="rounded-full">

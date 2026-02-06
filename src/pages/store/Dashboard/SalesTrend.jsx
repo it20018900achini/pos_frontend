@@ -33,7 +33,7 @@ const SalesTrend = () => {
   const [period, setPeriod] = useState("daily");
 
   useEffect(() => {
-    if (userProfile?.id) {
+    if (userProfile?.user.id) {
       fetchSalesData();
     }
   }, [userProfile, period]);

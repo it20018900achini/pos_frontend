@@ -31,7 +31,7 @@ export default function CustomerPaymentForm({
 
   const [form, setForm] = useState({
     customerId: customer?.id,
-    cashierId:userProfile?.id,
+    cashierId:userProfile?.user.id,
     amount: "",
     paymentMethod: "CASH",
     reference: "",
@@ -70,7 +70,7 @@ export default function CustomerPaymentForm({
   const resetForm = () => {
     setForm({
       customerId: customer?.id,
-      cashierId: userProfile?.id,
+      cashierId: userProfile?.user.id,
       amount: "",
       paymentMethod: "CASH",
       reference: "",

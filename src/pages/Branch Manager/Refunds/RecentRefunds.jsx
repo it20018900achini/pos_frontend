@@ -40,7 +40,7 @@ const RecentRefunds = () => {
 
   // Load Orders
   const loadOrders = (branchId,start = startDate, end = endDate, search = searchText) => {
-    if (!userProfile?.id) return;
+    if (!userProfile?.user.id) return;
 // alert(branchId)
     const startISO = start ? new Date(start).toISOString() : undefined;
     const endISO = end ? new Date(end).toISOString() : undefined;
@@ -59,8 +59,8 @@ const RecentRefunds = () => {
   };
 
   useEffect(() => {
-    if (userProfile?.id) branchId&&loadOrders(branchId);
-  }, [userProfile, page, size,branchId]);
+    if (userProfile?.user.id && branchId) loadOrders(branchId);
+  }, [userProfile?.user.id, page, size, branchId]);
 
   useEffect(() => {
     if (error) {

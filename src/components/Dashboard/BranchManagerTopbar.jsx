@@ -14,9 +14,9 @@ export default function BranchManagerTopbar() {
   const { userProfile } = useSelector((state) => state.user);
   const { branch } = useSelector((state) => state.branch);
 
-  const fullName = userProfile?.fullName || "Branch Manager";
-  const email = userProfile?.email || "manager@example.com";
-  const role = userProfile?.role?.replace("", "").replace(/_/g, " ") || "Manager";
+  const fullName = userProfile?.user?.fullName || "Branch Manager";
+  const email = userProfile?.user?.email || "manager@example.com";
+  const role = userProfile?.user?.role?.replace("", "").replace(/_/g, " ") || "Manager";
   const branchName = branch?.name || "Branch Dashboard";
 
 

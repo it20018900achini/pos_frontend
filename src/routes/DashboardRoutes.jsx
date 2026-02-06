@@ -9,8 +9,10 @@ import ShiftSummaryPage from "../pages/cashier/ShiftSummary/ShiftSummaryPage";
 import OrderHistoryPage from "../pages/cashier/order/OrderHistoryPage";
 import ReturnOrderPage from "../pages/cashier/return/ReturnOrderPage";
 import OrderRefundHistoryPage from "../pages/cashier/refund/OrderRefundHistoryPage";
+import { BranchEmployees } from "../pages/Branch Manager/Employees";
 
 const DashboardRoutes = () => {
+  
     const { userProfile, loading, initialized } = useSelector(
     (state) => state.user
   );
@@ -27,6 +29,10 @@ const DashboardRoutes = () => {
       
         <Route path="pos/orders" element={<OrderHistoryPage />} />
         <Route path="pos/refunds" element={<OrderRefundHistoryPage />} />
+                 
+                 
+                  <Route path="branch/users" element={<BranchEmployees />} />
+
       {/* {
         userProfile?.user?.role[0]=="BRANCH_CASHIER"&&null
       } */}

@@ -20,7 +20,7 @@ import {
 
 export default function BrandsPage() {
   const { userProfile, initialized, loading } = useSelector((state) => state.user);
-  const storeId = userProfile?.storeId;
+  const storeId = userProfile?.user.storeId;
 
   const [open, setOpen] = useState(false);
 

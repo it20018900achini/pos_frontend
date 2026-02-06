@@ -127,14 +127,14 @@ export default function Sidebar() {
     <>
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/20 dark:bg-black/30 z-40 md:hidden"
+          className="fixed inset-0 bg-black/30 dark:bg-black/40 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       <aside
         className={`fixed md:static z-50 h-screen top-0 left-0
-          bg-neutral-50 dark:bg-neutral-900 border-r dark:border-neutral-700 shadow-lg
+          bg-white dark:bg-gray-900 border-r dark:border-gray-700 shadow-lg
           transition-all duration-300
           ${sidebarOpen ? "w-64" : "w-20"}
           overflow-y-auto
@@ -143,12 +143,12 @@ export default function Sidebar() {
         <div className="flex flex-col h-full px-4 py-6">
           {/* HEADER */}
           <div className="mb-6 flex items-center justify-between">
-            <Store className="w-7 h-7 text-neutral-700 dark:text-neutral-200" />
+            <Store className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
             <button
               onClick={() => setSidebarOpen((p) => !p)}
-              className="p-2 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
             >
-              <Menu className="w-5 h-5 text-neutral-700 dark:text-neutral-200" />
+              <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </button>
           </div>
 
@@ -162,7 +162,7 @@ export default function Sidebar() {
                 const isOpen = openMenus[link.name];
 
                 return (
-                  <li key={link.name} className="relative">
+                  <li key={link.name} className="relative z-100">
                     {/* PARENT */}
                     <button
                       onClick={() => handleParentClick(link)}
@@ -170,21 +170,21 @@ export default function Sidebar() {
                         w-full flex items-center justify-between px-3 py-2 rounded-lg
                         transition-colors
                         ${active
-                          ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-50"
-                          : "text-neutral-700 hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                          ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-800 dark:text-indigo-300"
+                          : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                         }
                       `}
                     >
                       <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5 text-neutral-700 dark:text-neutral-200" />
+                        <Icon className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                         {sidebarOpen && (
                           <span className="text-sm font-medium">{link.name}</span>
                         )}
                       </div>
 
                       {hasChildren && sidebarOpen && (
-                        isOpen ? <ChevronUp size={16} className="text-neutral-700 dark:text-neutral-200" /> 
-                               : <ChevronDown size={16} className="text-neutral-700 dark:text-neutral-200" />
+                        isOpen ? <ChevronUp size={16} className="text-gray-700 dark:text-gray-300" /> 
+                               : <ChevronDown size={16} className="text-gray-700 dark:text-gray-300" />
                       )}
                     </button>
 
@@ -200,15 +200,15 @@ export default function Sidebar() {
                                 className={`
                                   flex items-center gap-2 px-3 py-1 text-sm rounded
                                   ${isExactActive(child.path)
-                                    ? "bg-neutral-200 text-neutral-900 font-medium dark:bg-neutral-700 dark:text-neutral-50"
-                                    : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                                    ? "bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-800 dark:text-indigo-300"
+                                    : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                                   }
                                 `}
                               >
                                 <ChildIcon
                                   className={`w-4 h-4 ${isExactActive(child.path)
-                                    ? "text-neutral-900 dark:text-neutral-50"
-                                    : "text-neutral-400 dark:text-neutral-400"
+                                    ? "text-indigo-600 dark:text-indigo-300"
+                                    : "text-gray-400 dark:text-gray-400"
                                   }`}
                                 />
                                 {child.name}
@@ -221,7 +221,7 @@ export default function Sidebar() {
 
                     {/* ABSOLUTE SUBMENU */}
                     {hasChildren && !sidebarOpen && floatingMenu === link.name && (
-                      <div className="absolute left-20 top-0 w-64 bg-neutral-50 dark:bg-neutral-900 border dark:border-neutral-700 shadow-xl rounded-lg z-50 max-h-screen overflow-y-auto">
+                      <div className="absolute left-20 top-0 w-64 bg-white dark:bg-gray-900 border dark:border-gray-700 shadow-xl rounded-lg z-50 max-h-screen overflow-y-auto">
                         <ul className="py-2">
                           {link.children.map((child) => {
                             const ChildIcon = child.icon;
@@ -233,15 +233,15 @@ export default function Sidebar() {
                                   className={`
                                     flex items-center gap-2 px-4 py-2 text-sm
                                     ${isExactActive(child.path)
-                                      ? "bg-neutral-200 text-neutral-900 font-medium dark:bg-neutral-700 dark:text-neutral-50"
-                                      : "text-neutral-700 hover:bg-neutral-200 dark:text-neutral-300 dark:hover:bg-neutral-800"
+                                      ? "bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-800 dark:text-indigo-300"
+                                      : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                                     }
                                   `}
                                 >
                                   <ChildIcon
                                     className={`w-4 h-4 ${isExactActive(child.path)
-                                      ? "text-neutral-900 dark:text-neutral-50"
-                                      : "text-neutral-400 dark:text-neutral-400"
+                                      ? "text-indigo-600 dark:text-indigo-300"
+                                      : "text-gray-400 dark:text-gray-400"
                                     }`}
                                   />
                                   {child.name}

@@ -29,7 +29,7 @@ export default function Sales() {
 
 
   useEffect(() => {
-    if (userProfile?.id) {
+    if (userProfile?.user.id) {
       fetchSalesData();
     }
   }, [userProfile]);

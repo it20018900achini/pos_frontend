@@ -13,7 +13,7 @@ const DashboardStats = () => {
   const { userProfile } = useSelector((state) => state.user);
 
   useEffect(() => {
-    if (userProfile?.id) fetchStoreOverview();
+    if (userProfile?.user.id) fetchStoreOverview();
   }, [userProfile]);
 
   const fetchStoreOverview = async () => {

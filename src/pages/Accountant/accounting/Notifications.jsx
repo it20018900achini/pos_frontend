@@ -8,7 +8,7 @@ const MAX_MESSAGES = 25;
 
 export default function Notifications() {
   const { branchName } = useSelector((state) => ({
-    branchName: state.user.userProfile?.branch?.name || "",
+    branchName: state.user.userProfile?.user.branch?.name || "",
   }));
 
   const [notifications, setNotifications] = useState(() => {

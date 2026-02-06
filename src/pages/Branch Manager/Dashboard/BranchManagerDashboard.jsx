@@ -11,7 +11,7 @@ export default function BranchManagerDashboard({ children }) {
   
   useEffect(() => {
     // Fetch branch data when component mounts
-    if (localStorage.getItem("jwt") && userProfile?.branchId) {
+    if (localStorage.getItem("jwt") && userProfile?.user.branchId) {
       dispatch(getBranchById({ id: userProfile.user.branchId, jwt: localStorage.getItem("jwt") }));
     }
   }, [dispatch, userProfile]);

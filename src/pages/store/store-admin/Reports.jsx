@@ -70,7 +70,7 @@ export default function Reports() {
   const [dateRange, setDateRange] = useState("last30");
   
   useEffect(() => {
-    if (userProfile?.id) {
+    if (userProfile?.user.id) {
       fetchReportsData();
     }
   }, [userProfile]);

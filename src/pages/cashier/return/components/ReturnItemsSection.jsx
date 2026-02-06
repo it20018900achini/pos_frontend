@@ -51,7 +51,7 @@ const [loading, setLoading] = useState(false);
     const refundDTO = {
       orderId: selectedOrder.id,
       branchId: branch?.id,
-      cashierId: userProfile?.id,
+      cashierId: userProfile?.user.id,
 
       reason: returnReason === "Other" ? otherReason : returnReason,
       refundMethod:

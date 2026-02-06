@@ -98,7 +98,7 @@ const DashboardLayout = () => {
 
     <SidebarProvider>
      text repeat double here
-      {userProfile?.lastShift?.status !== "OPEN"?<StartShiftForm branch={userProfile?.user?.branch}/>:<LayoutContent/>}
+      {userProfile && userProfile.user && userProfile.user.lastShift?.status !== "OPEN"?<StartShiftForm branch={userProfile?.user?.branch}/>:<LayoutContent/>}
         
 <POSHeader />
 

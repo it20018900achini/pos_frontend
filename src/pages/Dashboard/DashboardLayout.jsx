@@ -2,12 +2,23 @@ import { Link, Outlet } from "react-router-dom";
 import { SidebarProvider } from "@/context/SidebarContext";
 import Sidebar from "@/components/Dashboard/Sidebar";
 import POSHeader from "@/components/Dashboard/POSHeader";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { getBranchById } from "../../Redux Toolkit/features/branch/branchThunks";
 
 export default function DashboardLayout() {
-    const { userProfile, loading, initialized } = useSelector(
-    (state) => state.user
-  );
+    const dispatch = useDispatch();
+     const { userProfile, loading, initialized } = useSelector(
+     (state) => state.user
+   );
+
+  useEffect(() => {
+    // Fetch branch data when component mounts
+    if (localStorage.getItem("jwt") && userProfile?.user?.branchId) {
+      dispatch(getBranchById({ id: userProfile.user.branchId, jwt: localStorage.getItem("jwt") }));
+    }
+  }, [dispatch, userProfile]);
+
   return (
     <SidebarProvider>{userProfile && !loading ? (
       <div className="flex h-screen overflow-hidden">

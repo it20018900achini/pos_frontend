@@ -37,7 +37,7 @@ const RecentOrders = (branchId) => {
   const [searchText, setSearchText] = useState("");
 // alert(JSON.stringify(branchId))
   const loadOrders = (branchId,start = startDate, end = endDate, search = searchText) => {
-    if (!userProfile?.id) return;
+    if (!userProfile?.user.id) return;
 // alert(branchId)
     const startISO = start ? new Date(start).toISOString() : undefined;
     const endISO = end ? new Date(end).toISOString() : undefined;

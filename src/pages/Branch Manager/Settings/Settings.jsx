@@ -27,7 +27,7 @@ const Settings = () => {
   const { userProfile } = useSelector((state) => state.user);
 
   useEffect(() => {
-    if (userProfile?.branchId && localStorage.getItem("jwt")) {
+    if (userProfile?.user.branchId && localStorage.getItem("jwt")) {
       dispatch(
         getBranchById({
           id: userProfile.user.branchId,

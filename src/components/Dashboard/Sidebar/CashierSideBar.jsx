@@ -19,7 +19,7 @@ const CashierSideBar = ({ navItems, onClose }) => {
   const location = useLocation();
 
   useEffect(() => {
-    if (userProfile?.branchId) {
+    if (userProfile?.user.branchId) {
       dispatch(
         getBranchById({
           id: userProfile.user.branchId,

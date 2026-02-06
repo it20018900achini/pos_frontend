@@ -25,12 +25,12 @@ export default function ChatBox() {
         type: "CHAT_MESSAGE",
         receiverId: selectedUser.id,
         content: text,
-        senderId: userProfile?.id,
+        senderId: userProfile?.user.id,
       });
     } else {
       // Fallback: store locally in Redux
       addChatMessage({
-        senderId: userProfile?.id,
+        senderId: userProfile?.user.id,
         receiverId: selectedUser.id,
         content: text,
       });
@@ -54,7 +54,7 @@ export default function ChatBox() {
           <p className="text-sm text-gray-500">No messages yet</p>
         ) : (
           messages.map((m, i) => {
-            const isMine = m.senderId === userProfile?.id;
+            const isMine = m.senderId === userProfile?.user.id;
             return (
               <div
                 key={i}

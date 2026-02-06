@@ -48,10 +48,10 @@ const App = () => {
 
   /* Load store if needed */
   useEffect(() => {
-    const needsStore = userProfile?.roles?.some(
+    const needsStore = userProfile?.user.roles?.some(
       (r) => ["STORE_ADMIN", "STORE_MANAGER"].includes(r)
     );
-    if (needsStore && userProfile?.jwt) {
+    if (needsStore && userProfile?.user.jwt) {
       dispatch(getStoreByAdmin(userProfile.jwt));
     }
   }, [dispatch, userProfile]);
@@ -59,7 +59,7 @@ const App = () => {
   if (loading) return null; // wait for profile
 
   const defaultRole =
-    Array.isArray(userProfile?.roles) && userProfile?.user?.roles.length > 0
+    Array.isArray(userProfile?.user.roles) && userProfile?.user.user?.roles.length > 0
       ? userProfile.user.roles[0]
       : null;
   const defaultPath = defaultRole ? ROLE_PATH[defaultRole] : "/";

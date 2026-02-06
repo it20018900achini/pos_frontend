@@ -9,9 +9,9 @@ export default function InventoryManagerTopbar() {
   const { userProfile } = useSelector((state) => state.user);
   const { branch } = useSelector((state) => state.branch);
 
-  const fullName = userProfile?.fullName || "Branch Accountant";
-  const email = userProfile?.email || "accountant@example.com";
-  const role = userProfile?.role?.replace("", "").replace(/_/g, " ") || "Accountant";
+  const fullName = userProfile?.user.fullName || "Branch Accountant";
+  const email = userProfile?.user.email || "accountant@example.com";
+  const role = userProfile?.user.role?.replace("", "").replace(/_/g, " ") || "Accountant";
   const branchName = branch?.name || "Branch Dashboard";
 
   return (
