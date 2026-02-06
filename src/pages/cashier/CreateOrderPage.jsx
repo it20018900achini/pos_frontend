@@ -86,7 +86,7 @@ const CreateOrderPage = () => {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <POSHeader />
+      {/* <POSHeader /> */}
 
       <div className="flex-1 flex overflow-hidden">
         <ProductSection searchInputRef={searchInputRef} />

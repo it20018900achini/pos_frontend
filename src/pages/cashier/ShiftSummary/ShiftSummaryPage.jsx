@@ -15,12 +15,12 @@ const ShiftSummaryPage = () => {
 
   return (
     <div>
-      <POSHeader />
+      {/* <POSHeader /> */}
 
       <div className="m-10 space-y-4">
         {/* 🔘 Actions */}
-        <div className="flex justify-end gap-3">
-        
+        <div className="flex justify-between gap-3">
+        Shift Summary
           <Button variant="destructive" onClick={() => setOpenEnd(true)}>
             End Shift
           </Button>

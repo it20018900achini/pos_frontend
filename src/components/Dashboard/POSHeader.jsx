@@ -57,14 +57,14 @@ const POSHeader = () => {
         {/* LEFT */}
         <div className="flex items-center gap-3">
           {/* ✅ ALWAYS VISIBLE TOGGLE */}
-          <Button
+          {/* <Button
             size="icon"
             variant="ghost"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="md:ml-0 ml-20 rounded-lg bg-white shadow-sm hover:bg-gray-100"
           >
             <Menu className="w-5 h-5 text-gray-800" />
-          </Button>
+          </Button> */}
 
           <div className="hidden sm:block">
             <h1 className="text-xl font-bold text-gray-900">

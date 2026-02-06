@@ -11,9 +11,9 @@ import {
   LogOut,
   ChevronDown,
   ChevronUp,
+  Users,
   X,
   Menu,
-  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/context/hooks/useSidebar";
@@ -22,66 +22,32 @@ const NAV_LINKS = [
   { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   {
     name: "POS",
-    path: "/pos",
     icon: Store,
     children: [
-      { name: "POS", path: "/dashboard/pos" },
-      { name: "Shift Summary", path: "/dashboard/pos/shift-summary" },
-      { name: "Refunds", path: "/dashboard/refunds" },
+      { name: "POS", path: "/dashboard/pos", icon: FileText },
+      { name: "Shift Summary", path: "/dashboard/pos/shift-summary", icon: Clock },
+      { name: "Refunds", path: "/dashboard/refunds", icon: FileText },
     ],
   },
-    {
+  {
     name: "Users",
-    path: "/users",
-    icon: Users,
+    icon: Store,
     children: [
-      { name: "Users", path: "/dashboard/users" },
-      { name: "Role Permissions", path: "/dashboard/users/role-permissions" }
-      
+      { name: "Users", path: "/dashboard/users", icon: Users },
+      { name: "Role Permissions", path: "/dashboard/users/role-permissions", icon: Users },
     ],
   },
-    {
+  {
     name: "Products",
-    path: "/products",
-    icon: Users,
+    icon: Store,
     children: [
-      { name: "Products", path: "/dashboard/products" },
-      { name: "Product Variants", path: "/dashboard/products/variants" },
-
-      { name: "Product Categories", path: "/dashboard/products/categories" },
-        { name: "Product Brands", path: "/dashboard/products/brands" },
-
-      
+      { name: "Products", path: "/dashboard/products", icon: FileText },
+      { name: "Product Variants", path: "/dashboard/products/variants", icon: FileText },
+      { name: "Product Categories", path: "/dashboard/products/categories", icon: FileText },
+      { name: "Product Brands", path: "/dashboard/products/brands", icon: FileText },
     ],
   },
-    {
-    name: "Inventory",
-    path: "/inventory",
-    icon: Users,
-    children: [
-      { name: "Inventory", path: "/dashboard/inventory" },
-        { name: "Stock Adjustments", path: "/dashboard/inventory/stock-adjustments" },
-    ],
-  },
-  
-    {
-    name: "Accounts",
-    path: "/accounts",
-    icon: Users,
-    children: [
-      { name: "Chart of Accounts", path: "/dashboard/accounts" },
-      { name: "Journal Entries", path: "/dashboard/accounts/journal-entries" },
-
-      { name: "Trial Balance", path: "/dashboard/accounts/trial-balance" },
-      { name: "Balance Sheet", path: "/dashboard/accounts/balance-sheet" },
-        { name: "Profit & Loss", path: "/dashboard/accounts/profit-loss" },
-
-    ],
-  },
-
-  { name: "Subscription Plans", path: "/subscriptions", icon: FileText },
-  { name: "Pending Requests", path: "/requests", icon: Clock },
-  { name: "Settings", path: "/settings", icon: Settings },
+  { name: "Settings", path: "/dashboard/settings", icon: Settings },
 ];
 
 export default function Sidebar() {
@@ -89,106 +55,81 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { sidebarOpen, setSidebarOpen } = useSidebar();
-  const [openMenus, setOpenMenus] = useState({}); // Track submenu state
 
-  // Auto-open submenu if current path matches a child
+  const [openMenus, setOpenMenus] = useState({});
+  const [floatingMenu, setFloatingMenu] = useState(null);
+
   useEffect(() => {
-    const newOpenMenus = {};
+    const open = {};
     NAV_LINKS.forEach((link) => {
       if (link.children) {
-        newOpenMenus[link.name] = link.children.some(
+        open[link.name] = link.children.some(
           (child) => child.path === location.pathname
         );
       }
     });
-    setOpenMenus(newOpenMenus);
+    setOpenMenus(open);
+    setFloatingMenu(null);
   }, [location.pathname]);
 
   const handleLogout = () => {
     dispatch(logout());
-    setSidebarOpen(false);
     navigate("/auth/login");
   };
 
   const isExactActive = (path) => location.pathname === path;
-
-  const isParentActive = (link) => {
-    if (!link.children) return isExactActive(link.path);
-    return link.children.some((child) => isExactActive(child.path));
-  };
+  const isParentActive = (link) =>
+    link.children
+      ? link.children.some((c) => isExactActive(c.path))
+      : isExactActive(link.path);
 
   const toggleSubMenu = (name) => {
     setOpenMenus((prev) => ({ ...prev, [name]: !prev[name] }));
   };
 
   const handleParentClick = (link) => {
-    if (link.children) {
-      toggleSubMenu(link.name);
-    } else {
-      navigate(link.path);
-      setSidebarOpen(true); // keep sidebar open
+    if (!sidebarOpen && link.children) {
+      setFloatingMenu((prev) => (prev === link.name ? null : link.name));
+      return;
     }
+    if (sidebarOpen && link.children) {
+      toggleSubMenu(link.name);
+      return;
+    }
+    navigate(link.path);
   };
 
   return (
     <>
-      {/* MOBILE OVERLAY */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-black/30 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* SIDEBAR */}
-   <aside
-  className={`
-    fixed md:static z-50 h-screen left-0 top-0
-    bg-white border-r shadow-lg
-    overflow-y-auto
-    transition-all duration-300 ease-in-out
-
-    ${sidebarOpen
-      ? "w-64 translate-x-0"
-      : "w-20 -translate-x-full md:translate-x-0 md:w-20"}
-  `}
->
-
+      <aside
+        className={`
+          fixed md:static z-50 h-screen top-0 left-0
+          bg-white border-r shadow-lg
+          transition-all duration-300
+          ${sidebarOpen ? "w-64" : "w-20"}
+        `}
+      >
         <div className="flex flex-col h-full px-4 py-6">
           {/* HEADER */}
           <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Store className="w-7 h-7 text-indigo-600" />
-              {sidebarOpen && (
-                <span className="text-lg font-bold text-gray-800">
-                  Super Admin
-                </span>
-              )}
-            </div>
-
-            {/* TOGGLE / CLOSE BUTTON */}
-            <div className="flex items-center gap-2">
-              {sidebarOpen && (
-                <button
-                  onClick={() => setSidebarOpen(false)}
-                  className="md:hidden p-2 rounded-lg hover:bg-gray-100"
-                  aria-label="Close sidebar"
-                >
-                  <X className="w-5 h-5 text-gray-600" />
-                </button>
-              )}
-              <button
-                onClick={() => setSidebarOpen((prev) => !prev)}
-                className="p-2 rounded-lg hover:bg-gray-100"
-                aria-label="Toggle sidebar"
-              >
-                <Menu className="w-5 h-5 text-gray-600" />
-              </button>
-            </div>
+            <Store className="w-7 h-7 text-indigo-600" />
+            <button
+              onClick={() => setSidebarOpen((p) => !p)}
+              className="p-2 rounded-lg hover:bg-gray-100"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
           </div>
 
           {/* NAV */}
-          <nav className="flex-1 overflow-y-auto">
+          <nav className="flex-1">
             <ul className="space-y-1">
               {NAV_LINKS.map((link) => {
                 const Icon = link.icon;
@@ -197,55 +138,99 @@ export default function Sidebar() {
                 const isOpen = openMenus[link.name];
 
                 return (
-                  <li key={link.name}>
-                    {/* PARENT LINK */}
+                  <li key={link.name} className="relative">
+                    {/* PARENT */}
                     <button
                       onClick={() => handleParentClick(link)}
                       className={`
                         w-full flex items-center justify-between px-3 py-2 rounded-lg
-                        transition-colors duration-300
-                        ${active
-                          ? "bg-indigo-100 text-indigo-700"
-                          : "text-gray-700 hover:bg-gray-100"}
+                        transition-colors
+                        ${
+                          active
+                            ? "bg-indigo-100 text-indigo-700"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }
                       `}
                     >
                       <div className="flex items-center gap-3">
-                        {Icon && <Icon className="w-5 h-5 text-indigo-500" />}
+                        <Icon className="w-5 h-5 text-indigo-500" />
                         {sidebarOpen && (
                           <span className="text-sm font-medium">{link.name}</span>
                         )}
                       </div>
 
                       {hasChildren && sidebarOpen && (
-                        <span>
-                          {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        </span>
+                        isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />
                       )}
                     </button>
 
-                    {/* SUBMENU */}
+                    {/* INLINE SUBMENU */}
                     {hasChildren && isOpen && sidebarOpen && (
                       <ul className="ml-9 mt-1 space-y-1">
                         {link.children.map((child) => {
-                          const childActive = isExactActive(child.path);
+                          const ChildIcon = child.icon || Dot;
                           return (
                             <li key={child.name}>
                               <Link
                                 to={child.path}
-                                onClick={() => setSidebarOpen(true)}
                                 className={`
-                                  block px-3 py-1 rounded-md text-sm
-                                  ${childActive
-                                    ? "bg-indigo-50 text-indigo-700"
-                                    : "text-gray-600 hover:bg-gray-100"}
+                                  flex items-center gap-2 px-3 py-1 text-sm rounded
+                                  ${
+                                    isExactActive(child.path)
+                                      ? "bg-indigo-50 text-indigo-700 font-medium"
+                                      : "text-gray-600 hover:bg-gray-100"
+                                  }
                                 `}
                               >
+                                <ChildIcon
+                                  className={`w-4 h-4 ${
+                                    isExactActive(child.path)
+                                      ? "text-indigo-600"
+                                      : "text-gray-400"
+                                  }`}
+                                />
                                 {child.name}
                               </Link>
                             </li>
                           );
                         })}
                       </ul>
+                    )}
+
+                    {/* ABSOLUTE SUBMENU */}
+                    {hasChildren && !sidebarOpen && floatingMenu === link.name && (
+                      <div className="absolute left-20 top-0 w-64 bg-white border shadow-xl rounded-lg z-50">
+                        <ul className="py-2">
+                          {link.children.map((child) => {
+                            const ChildIcon = child.icon || Dot;
+                            return (
+                              <li key={child.name}>
+                                <Link
+                                  to={child.path}
+                                  onClick={() => setFloatingMenu(null)}
+                                  className={`
+                                    flex items-center gap-2 px-4 py-2 text-sm
+                                    ${
+                                      isExactActive(child.path)
+                                        ? "bg-indigo-50 text-indigo-700 font-medium"
+                                        : "text-gray-700 hover:bg-gray-100"
+                                    }
+                                  `}
+                                >
+                                  <ChildIcon
+                                    className={`w-4 h-4 ${
+                                      isExactActive(child.path)
+                                        ? "text-indigo-600"
+                                        : "text-gray-400"
+                                    }`}
+                                  />
+                                  {child.name}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
                     )}
                   </li>
                 );
@@ -254,16 +239,14 @@ export default function Sidebar() {
           </nav>
 
           {/* LOGOUT */}
-          <div className="pt-4 border-t">
-            <Button
-              variant="ghost"
-              onClick={handleLogout}
-              className="w-full justify-start gap-3 text-red-600 hover:bg-red-50"
-            >
-              <LogOut className="w-5 h-5" />
-              {sidebarOpen && <span>Logout</span>}
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+            className="mt-auto justify-start gap-3 text-red-600"
+          >
+            <LogOut className="w-5 h-5" />
+            {sidebarOpen && "Logout"}
+          </Button>
         </div>
       </aside>
     </>
