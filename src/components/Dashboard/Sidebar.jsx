@@ -13,6 +13,7 @@ import {
   ChevronUp,
   X,
   Menu,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/context/hooks/useSidebar";
@@ -29,6 +30,55 @@ const NAV_LINKS = [
       { name: "Refunds", path: "/dashboard/refunds" },
     ],
   },
+    {
+    name: "Users",
+    path: "/users",
+    icon: Users,
+    children: [
+      { name: "Users", path: "/dashboard/users" },
+      { name: "Role Permissions", path: "/dashboard/users/role-permissions" }
+      
+    ],
+  },
+    {
+    name: "Products",
+    path: "/products",
+    icon: Users,
+    children: [
+      { name: "Products", path: "/dashboard/products" },
+      { name: "Product Variants", path: "/dashboard/products/variants" },
+
+      { name: "Product Categories", path: "/dashboard/products/categories" },
+        { name: "Product Brands", path: "/dashboard/products/brands" },
+
+      
+    ],
+  },
+    {
+    name: "Inventory",
+    path: "/inventory",
+    icon: Users,
+    children: [
+      { name: "Inventory", path: "/dashboard/inventory" },
+        { name: "Stock Adjustments", path: "/dashboard/inventory/stock-adjustments" },
+    ],
+  },
+  
+    {
+    name: "Accounts",
+    path: "/accounts",
+    icon: Users,
+    children: [
+      { name: "Chart of Accounts", path: "/dashboard/accounts" },
+      { name: "Journal Entries", path: "/dashboard/accounts/journal-entries" },
+
+      { name: "Trial Balance", path: "/dashboard/accounts/trial-balance" },
+      { name: "Balance Sheet", path: "/dashboard/accounts/balance-sheet" },
+        { name: "Profit & Loss", path: "/dashboard/accounts/profit-loss" },
+
+    ],
+  },
+
   { name: "Subscription Plans", path: "/subscriptions", icon: FileText },
   { name: "Pending Requests", path: "/requests", icon: Clock },
   { name: "Settings", path: "/settings", icon: Settings },
@@ -91,15 +141,19 @@ export default function Sidebar() {
       )}
 
       {/* SIDEBAR */}
-      <aside
-        className={`
-          fixed md:static z-50 h-screen left-0 top-0
-          bg-white border-r shadow-lg
-          overflow-y-auto
-          transition-all duration-300
-          ${sidebarOpen ? "w-64" : "w-20 md:w-56"}
-        `}
-      >
+   <aside
+  className={`
+    fixed md:static z-50 h-screen left-0 top-0
+    bg-white border-r shadow-lg
+    overflow-y-auto
+    transition-all duration-300 ease-in-out
+
+    ${sidebarOpen
+      ? "w-64 translate-x-0"
+      : "w-20 -translate-x-full md:translate-x-0 md:w-20"}
+  `}
+>
+
         <div className="flex flex-col h-full px-4 py-6">
           {/* HEADER */}
           <div className="mb-6 flex items-center justify-between">

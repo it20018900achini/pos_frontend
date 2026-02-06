@@ -1,16 +1,11 @@
 import React from "react";
 import { Navigate, Route, Routes } from "react-router";
-import CashierDashboardLayout from "../pages/cashier/CashierDashboardLayout";
-import CreateOrderPage from "../pages/cashier/CreateOrderPage";
-import ReturnOrderPage from "../pages/cashier/return/ReturnOrderPage";
-import OrderHistoryPage from "../pages/cashier/order/OrderHistoryPage";
-import CustomerLookupPage from "../pages/cashier/customer/CustomerLookupPage";
-import ShiftSummaryPage from "../pages/cashier/ShiftSummary/ShiftSummaryPage";
 import PageNotFound from "../pages/common/PageNotFound";
-import OrderRefundHistoryPage from "../pages/cashier/refund/OrderRefundHistoryPage";
 import Dashboard from "../pages/Dashboard/Dashboard";
 import DashboardLayout from "../pages/Dashboard/DashboardLayout";
 import { useSelector } from "react-redux";
+import CreateOrderPage from "../pages/cashier/CreateOrderPage";
+import ShiftSummaryPage from "../pages/cashier/ShiftSummary/ShiftSummaryPage";
 
 const DashboardRoutes = () => {
     const { userProfile, loading, initialized } = useSelector(
@@ -24,7 +19,8 @@ const DashboardRoutes = () => {
 
 
         <Route index element={<Dashboard />} />
-        
+        <Route path="pos" element={<CreateOrderPage/>} />
+        <Route path="pos/shift-summary" element={<ShiftSummaryPage/>} />
       
       {/* {
         userProfile?.user?.role[0]=="BRANCH_CASHIER"&&null

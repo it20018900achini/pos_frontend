@@ -21,6 +21,7 @@ import ChatPage from "./pages/Branch Manager/Chat/ChatPage";
 /* THUNKS */
 import { getUserProfile } from "./Redux Toolkit/features/user/userThunks";
 import { getStoreByAdmin } from "./Redux Toolkit/features/store/storeThunks";
+import DashboardRoutes from "./routes/DashboardRoutes";
 
 /* ROLE → PATH mapping */
 const ROLE_PATH = {
@@ -65,7 +66,6 @@ const App = () => {
 
   return (
     <>
-    {userProfile && <ChatPage />}
       <Routes>
         {/* PUBLIC ROUTES */}
         <Route path="/" element={<Landing />} />
@@ -73,17 +73,18 @@ const App = () => {
         <Route path="/auth/onboarding" element={<Onboarding />} />
 
         {/* DASHBOARD WRAPPER */}
-        <Route
+        {/* <Route
           path="/dashboard/*"
           element={
-            <DashboardLayout>
-              {userProfile && <ChatPage />}
-            </DashboardLayout>
+            <DashboardLayout/>
           }
-        >
-                  <Route path="cashier/*" element={<CashierRoutes />} />
+        > */}
+
+                  <Route path="/dashboard/*" element={<DashboardRoutes />} />
+                  
+
           {/* You can put nested routes for dashboard here if needed */}
-        </Route>
+        {/* </Route> */}
 
         {/* ROLE-BASED ROUTES */}
         <Route path="/super-admin/*" element={<SuperAdminRoutes />} />
