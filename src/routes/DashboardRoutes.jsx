@@ -10,6 +10,7 @@ import OrderHistoryPage from "../pages/cashier/order/OrderHistoryPage";
 import ReturnOrderPage from "../pages/cashier/return/ReturnOrderPage";
 import OrderRefundHistoryPage from "../pages/cashier/refund/OrderRefundHistoryPage";
 import { BranchEmployees } from "../pages/Branch Manager/Employees";
+import RolesPage from "../pages/Roles/RolesPage";
 
 const DashboardRoutes = () => {
   
@@ -31,7 +32,8 @@ const DashboardRoutes = () => {
         <Route path="pos/refunds" element={<OrderRefundHistoryPage />} />
                  
                  
-                  <Route path="branch/users" element={<BranchEmployees />} />
+                  <Route path="branch/users/" element={<BranchEmployees />} />
+                  <Route path="branch/users/permissions" element={<RolesPage />} />
 
       {/* {
         userProfile?.user?.role[0]=="BRANCH_CASHIER"&&null

@@ -7,6 +7,7 @@ import CurrentShift from "./shifts/CurrentShift";
 import EndShift from "./shifts/EndShift";
 import POSHeader from "../components/POSHeader";
 import { Button } from "../../../components/ui/button";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
 const ShiftSummaryPage = () => {
   const [selectedShiftId, setSelectedShiftId] = useState(null);
@@ -14,20 +15,16 @@ const ShiftSummaryPage = () => {
   const [openEnd, setOpenEnd] = useState(false);
 
   return (
-    <div>
+    <ContentLayout title="Shift Summary" subTitle="View and manage your current and past shifts." right={ <Button variant="destructive" onClick={() => setOpenEnd(true)}>
+            End Shift
+          </Button>}>
       {/* <POSHeader /> */}
 
-      <div className="m-10 space-y-4">
-        {/* 🔘 Actions */}
-        <div className="flex justify-between gap-3">
-        Shift Summary
-          <Button variant="destructive" onClick={() => setOpenEnd(true)}>
-            End Shift
-          </Button>
-        </div>
+      <div className=" space-y-4">
+       
 
         {/* 📌 Current Shift */}
-        <div className="p-4 flex justify-between gap-3 border rounded-lg w-full  shadow-sm">
+        <div className=" flex justify-between gap-3 border rounded-lg w-full  shadow-sm">
           <div className="w-full">
             <CurrentShift />
           </div>
@@ -51,7 +48,7 @@ const ShiftSummaryPage = () => {
         open={openEnd}
         onClose={() => setOpenEnd(false)}
       />
-    </div>
+    </ContentLayout>
   );
 };
 

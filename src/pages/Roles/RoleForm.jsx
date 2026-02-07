@@ -1,7 +1,7 @@
 // src/components/roles/RoleForm.jsx
 import React, { useState, useEffect } from "react";
-import { useCreateRoleMutation, useUpdateRoleMutation, useGetRoleByIdQuery } from "@/Redux Toolkit/api/roleApi";
-import { useGetPermissionsQuery } from "@/Redux Toolkit/api/permissionApi";
+import { useCreateRoleMutation, useGetRoleByIdQuery, useUpdateRoleMutation } from "../../Redux Toolkit/features/role/roleApi";
+import { useGetPermissionsQuery } from "../../Redux Toolkit/features/role/permissionApi";
 
 const RoleForm = ({ roleId, onSuccess }) => {
   const [name, setName] = useState("");
@@ -61,6 +61,7 @@ const RoleForm = ({ roleId, onSuccess }) => {
       <div>
         <label className="font-semibold">Permissions:</label>
         <div className="flex flex-wrap gap-2 mt-1">
+         - {JSON.stringify(permissions)}-
           {permissions?.map((perm) => (
             <label key={perm.id} className="border rounded px-2 py-1">
               <input

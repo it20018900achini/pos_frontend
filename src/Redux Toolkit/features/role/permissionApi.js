@@ -1,5 +1,5 @@
 // src/Redux Toolkit/api/permissionApi.js
-import { apiSlice } from "./apiSlice";
+import { apiSlice } from "@/Redux Toolkit/api/apiSlice";
 
 export const permissionApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

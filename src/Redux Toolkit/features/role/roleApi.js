@@ -1,5 +1,5 @@
 // src/Redux Toolkit/api/roleApi.js
-import { apiSlice } from "./apiSlice";
+import { apiSlice } from "@/Redux Toolkit/api/apiSlice";
 
 export const roleApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

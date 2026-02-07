@@ -1,6 +1,6 @@
 // src/components/roles/RoleList.jsx
 import React from "react";
-import { useGetRolesQuery, useDeleteRoleMutation } from "@/Redux Toolkit/api/roleApi";
+import { useGetRolesQuery, useDeleteRoleMutation } from "@/Redux Toolkit/features/role/roleApi";
 
 const RoleList = ({ onEdit }) => {
   const { data: roles, isLoading } = useGetRolesQuery();

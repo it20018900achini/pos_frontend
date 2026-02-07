@@ -42,8 +42,8 @@ const NAV_LINKS = [
     name: "Users",
     icon: Users,
     children: [
-      { name: "Users", path: "/dashboard/users", icon: Users },
-      { name: "Role Permissions", path: "/dashboard/users/role-permissions", icon: ClipboardList },
+      { name: "Users", path: "/dashboard/branch/users", icon: Users },
+      { name: "Role Permissions", path: "/dashboard/branch/users/permissions", icon: ClipboardList },
     ],
   },
   {
