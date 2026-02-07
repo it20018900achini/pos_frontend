@@ -79,13 +79,28 @@ const NAV_LINKS = [
 },
 
   {
+    name: "Orders / Transactions",
+    icon: DollarSign,
+    children: [
+      { name: "Orders", path: "/dashboard/branch/orders", icon: Archive },
+      { name: "Refunds", path: "/dashboard/branch/orders/refunds", icon: FileText },
+      { name: "Quotations", path: "/dashboard/branch/orders/quotations", icon: FileText },
+    ],
+  },
+
+  {
+    name: "Transactions",
+    path: "/dashboard/branch/transactions",
+    icon: Settings,
+  },
+  {
     name: "Products",
     icon: ClipboardList,
     children: [
-      { name: "Products", path: "/dashboard/products", icon: Archive },
-      { name: "Product Variants", path: "/dashboard/products/variants", icon: FileText },
-      { name: "Product Categories", path: "/dashboard/products/categories", icon: FileText },
-      { name: "Product Brands", path: "/dashboard/products/brands", icon: FileText },
+      { name: "Products", path: "/dashboard/store/products", icon: Archive },
+      { name: "Product Variants", path: "/dashboard/store/products/variants", icon: FileText },
+      { name: "Product Categories", path: "/dashboard/store/products/categories", icon: FileText },
+      { name: "Product Brands", path: "/dashboard/store/products/brands", icon: FileText },
     ],
   },
   {

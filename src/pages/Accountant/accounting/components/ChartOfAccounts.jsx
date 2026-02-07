@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/dialog";
 
 import LedgerWithDialog from "./LedgerWithDialog";
+import ContentLayout from "../../../Dashboard/ContentLayout";
 
 /* ================= TYPE META ================= */
 const TYPE_META = {
@@ -171,8 +172,9 @@ export default function ChartOfAccounts() {
   };
 
   return (
+  <ContentLayout title="Chart of Accounts" subTitle="View and manage your chart of accounts." >
+    
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Chart of Accounts</h2>
 
       {/* ================= CREATE ================= */}
       <Card className=" p-3">
@@ -383,5 +385,6 @@ export default function ChartOfAccounts() {
         </Dialog>
       )}
     </div>
+    </ContentLayout>
   );
 }

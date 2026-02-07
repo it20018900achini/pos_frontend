@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useGetTrialBalanceQuery } from "@/Redux Toolkit/features/accounting/accountingApi";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import ContentLayout from "../../../Dashboard/ContentLayout";
 
 export default function TrialBalance() {
   const { data = [], isLoading, isError, refetch } = useGetTrialBalanceQuery();
@@ -15,11 +15,10 @@ export default function TrialBalance() {
   const isBalanced = totalDebit === totalCredit;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Trial Balance</CardTitle>
-      </CardHeader>
-      <CardContent>
+
+    <ContentLayout title="Trial Balance" subTitle="View the summary of debits and credits for all accounts." >
+     
+      <div>
         <div className="overflow-x-auto">
           <table className="min-w-full border border-gray-200">
             <thead className="bg-gray-100">
@@ -54,7 +53,7 @@ export default function TrialBalance() {
         >
           Refresh
         </button>
-      </CardContent>
-    </Card>
+      </div>
+    </ContentLayout>
   );
 }

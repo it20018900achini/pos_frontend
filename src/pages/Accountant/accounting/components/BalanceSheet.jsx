@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useGetBalanceSheetQuery } from "@/Redux Toolkit/features/accounting/accountingApi";
+import ContentLayout from "../../../Dashboard/ContentLayout";
 
 /* ===================== HELPERS ===================== */
 const computeTotal = (acc) =>
@@ -160,9 +161,10 @@ export default function BalanceSheet() {
   const isBalanced = Math.abs(assetsTotal - (liabilitiesTotal + equityTotal)) < 0.01;
 
   return (
+    <ContentLayout title="Balance Sheet" subTitle="View your financial position at a specific point in time." >
     <div className="space-y-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-3xl font-bold">Balance Sheet</h2>
+      <div className="flex justify-end items-center mb-4">
+
         <div className="flex gap-2">
           <input
             type="date"
@@ -206,5 +208,6 @@ export default function BalanceSheet() {
       />
       <SectionTable title="Equity" accounts={equity} expandedMap={expandedMap} toggle={toggle} />
     </div>
+    </ContentLayout>
   );
 }

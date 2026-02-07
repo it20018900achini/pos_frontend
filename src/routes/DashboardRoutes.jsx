@@ -11,11 +11,18 @@ import ReturnOrderPage from "../pages/cashier/return/ReturnOrderPage";
 import OrderRefundHistoryPage from "../pages/cashier/refund/OrderRefundHistoryPage";
 import { BranchEmployees } from "../pages/Branch Manager/Employees";
 import RolesPage from "../pages/Roles/RolesPage";
-import ChartOfAccounts from "../pages/Branch Manager/accounting/components/ChartOfAccounts";
+import ChartOfAccounts from "../pages/Accountant/accounting/components/ChartOfAccounts";
 import BalanceSheet from "../pages/Accountant/accounting/components/BalanceSheet";
 import ProfitLossReport from "../pages/Accountant/accounting/components/ProfitLoss";
 import TrialBalance from "../pages/Accountant/accounting/components/TrialBalance";
 import Journals from "../pages/Accountant/accounting/Journals";
+import Products from "../pages/store/Product/Products";
+import ProductVariantsPage from "../pages/store/ProductVariants/ProductVariantsPage";
+import Categories from "../pages/store/Category/Categories";
+import BrandsPage from "../pages/store/Brand/BrandsPage";
+import { Orders, Transactions } from "../pages/Branch Manager";
+import Refunds from "../pages/Branch Manager/Refunds/Refunds";
+import QuotationsPage from "../pages/Branch Manager/quotations/QuotationsPage";
 
 const DashboardRoutes = () => {
   
@@ -47,6 +54,17 @@ const DashboardRoutes = () => {
          
       
 
+        <Route path="store/products" element={<Products />} />
+        <Route path="store/products/variants" element={<ProductVariantsPage />} />
+        <Route path="store/products/categories" element={<Categories />} />
+        <Route path="store/products/brands" element={<BrandsPage />} />
+                
+
+          <Route path="branch/orders" element={<Orders />} />
+          <Route path="branch/orders/refunds" element={<Refunds />} />
+          <Route path="branch/orders/quotations" element={<QuotationsPage />} />
+
+          <Route path="branch/transactions" element={<Transactions />} />
       {/* {
         userProfile?.user?.role[0]=="BRANCH_CASHIER"&&null
       } */}

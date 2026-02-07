@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import ContentLayout from "../../../Dashboard/ContentLayout";
 
 /* ===================== HELPERS ===================== */
 
@@ -139,8 +140,8 @@ export default function ProfitLossReport() {
   const netProfit = totalIncome - totalExpense;
 
   return (
+    <ContentLayout title="Profit & Loss Statement" subTitle="View your profit and loss for a specific period." >
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold">Profit & Loss Statement</h2>
 
       {/* Date Inputs */}
       <div className="flex flex-wrap gap-2 items-center mb-6">
@@ -201,5 +202,6 @@ export default function ProfitLossReport() {
       <SectionTable title="INCOME" accounts={incomes} expanded={expanded} toggle={toggle} />
       <SectionTable title="EXPENSES" accounts={expenses} expanded={expanded} toggle={toggle} />
     </div>
+    </ContentLayout>
   );
 }
