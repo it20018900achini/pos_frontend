@@ -46,17 +46,38 @@ const NAV_LINKS = [
       { name: "Role Permissions", path: "/dashboard/branch/users/permissions", icon: ClipboardList },
     ],
   },
-  {
-    name: "Accounts",
-    icon: DollarSign,
-    children: [
-      { name: "Chart of Accounts", path: "/dashboard/accounts/chart-of-accounts", icon: Archive },
-      { name: "Journal Entries", path: "/dashboard/accounts/journals", icon: FileText },
-      { name: "Profit & Loss", path: "/dashboard/accounts/profit-loss", icon: Report },
-      { name: "Balance Sheet", path: "/dashboard/accounts/balance-sheet", icon: Report },
-      { name: "Trial Balance", path: "/dashboard/accounts/trial-balance", icon: Report },
-    ],
-  },
+{
+  name: "Accounts",
+  icon: DollarSign,
+  children: [
+    {
+      name: "Chart of Accounts",
+      path: "/dashboard/branch/accounts/chart-of-accounts",
+      icon: Archive,
+    },
+    {
+      name: "Journal Entries",
+      path: "/dashboard/branch/accounts/journals",
+      icon: FileText,
+    },
+    {
+      name: "Profit & Loss",
+      path: "/dashboard/branch/accounts/profit-loss",
+      icon: Report,
+    },
+    {
+      name: "Balance Sheet",
+      path: "/dashboard/branch/accounts/balance-sheet",
+      icon: Report,
+    },
+    {
+      name: "Trial Balance",
+      path: "/dashboard/branch/accounts/trial-balance",
+      icon: Report,
+    },
+  ],
+},
+
   {
     name: "Products",
     icon: ClipboardList,

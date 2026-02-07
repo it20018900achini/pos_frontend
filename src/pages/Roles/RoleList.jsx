@@ -1,47 +1,110 @@
 // src/components/roles/RoleList.jsx
 import React from "react";
-import { useGetRolesQuery, useDeleteRoleMutation } from "@/Redux Toolkit/features/role/roleApi";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import {
+  useGetRolesQuery,
+  useDeleteRoleMutation,
+} from "@/Redux Toolkit/features/role/roleApi";
 
 const RoleList = ({ onEdit }) => {
   const { data: roles, isLoading } = useGetRolesQuery();
   const [deleteRole] = useDeleteRoleMutation();
 
-  if (isLoading) return <p>Loading roles...</p>;
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="py-10 text-center text-muted-foreground">
+          Loading roles...
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <table className="min-w-full border">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Permissions</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {roles?.map((role) => (
-          <tr key={role.id} className="border-t">
-            <td>{role.id}</td>
-            <td>{role.name}</td>
-            <td>{role.permissions?.map(p => p.name).join(", ")}</td>
-            <td className="flex gap-2">
-              <button
-                className="text-blue-500"
-                onClick={() => onEdit(role.id)}
-              >
-                Edit
-              </button>
-              <button
-                className="text-red-500"
-                onClick={() => deleteRole(role.id)}
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <Card>
+      <CardHeader>
+        <CardTitle>Roles & Permissions</CardTitle>
+      </CardHeader>
+
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[80px]">ID</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Permissions</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {roles?.length ? (
+              roles.map((role) => (
+                <TableRow key={role.id}>
+                  <TableCell className="font-medium">
+                    {role.id}
+                  </TableCell>
+
+                  <TableCell>{role.name}</TableCell>
+
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {role.permissions?.map((p) => (
+                        <Badge
+                          key={p.id}
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          {p.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+
+                  <TableCell className="text-right space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onEdit(role.id)}
+                    >
+                      Edit
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => deleteRole(role.id)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  className="text-center text-muted-foreground py-6"
+                >
+                  No roles found
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 };
 
