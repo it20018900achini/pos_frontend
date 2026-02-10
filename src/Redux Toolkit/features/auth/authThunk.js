@@ -30,6 +30,10 @@ export const login = createAsyncThunk(
   "auth/login",
   async (credentials, { rejectWithValue }) => {
     try {
+      // 🔥 clear expired token first
+      localStorage.removeItem("jwt");
+      delete api.defaults.headers.common["Authorization"];
+
       const res = await api.post("/auth/login", credentials);
       const data = res.data?.data;
 
@@ -40,10 +44,13 @@ export const login = createAsyncThunk(
 
       return data;
     } catch (err) {
-      return rejectWithValue(getErrorMessage(err, "Login failed"));
+      return rejectWithValue(
+        err?.response?.data?.message || "Login failed"
+      );
     }
   }
 );
+
 
 // ---------------- LOGOUT ----------------
 export const logoutThunk = createAsyncThunk(

@@ -17,6 +17,7 @@ import ProductTable from "./ProductTable";
 import ProductForm from "./ProductForm";
 import ProductSearch from "./ProductSearch";
 import ProductDetails from "./ProductDetails";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
 export default function Products() {
   const dispatch = useDispatch();
@@ -126,19 +127,14 @@ export default function Products() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Product Management</h1>
+    <ContentLayout title="Product Management" subTitle="Create, edit, and manage your products here." right={
+      <Button onClick={() => handleOpenDialog()} >
+        <Plus className="mr-2 h-4 w-4" /
+        >Add Product
+      </Button>
+    }>
+       <div className="space-y-6">
 
-        <Button
-          className=""
-          onClick={() => handleOpenDialog()}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Product
-        </Button>
-      </div>
 
       {/* Search & Refresh */}
       <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
@@ -197,5 +193,6 @@ export default function Products() {
       {renderFormDialog()}
       {renderViewDialog()}
     </div>
+    </ContentLayout>
   );
 }

@@ -24,9 +24,27 @@ export const createStoreEmployee = createAsyncThunk(
   "employee/createStoreEmployee",
   async ({ employee, storeId, token }, { rejectWithValue }) => {
     try {
-      const res = await api.post(`/api/employees/store/${storeId}`, employee, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // 🔥 Normalize role → roles (backend expects Set<String>)
+      const payload = {
+        ...employee,
+        roles: employee.roles
+          ? employee.roles
+          : employee.role
+          ? [employee.role]
+          : [],
+
+        // optional cleanup
+        role: undefined,
+      };
+
+      const res = await api.post(
+        `/api/employees/store/${storeId}`,
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
       console.log("createStoreEmployee fulfilled:", res.data);
       return res.data;
     } catch (err) {
@@ -40,6 +58,7 @@ export const createStoreEmployee = createAsyncThunk(
     }
   }
 );
+
 
 // 🔹 Create Branch Employee
 export const createBranchEmployee = createAsyncThunk(

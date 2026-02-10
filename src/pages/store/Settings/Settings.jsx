@@ -7,6 +7,7 @@ import {
   SettingsNavigation,
   SettingsContent
 } from "./components";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
 export default function Settings() {
   const dispatch = useDispatch();
@@ -21,7 +22,7 @@ export default function Settings() {
     storeDescription: "A modern point of sale system for retail businesses.",
     currency: "USD",
     taxRate: "7.5",
-    timezone: "America/New_York",
+    timezone: "Colombo/Asia",
     dateFormat: "MM/DD/YYYY",
     receiptFooter: "Thank you for shopping with us!",
   });
@@ -121,6 +122,7 @@ export default function Settings() {
   
 
   return (
+    <ContentLayout title="Store Settings" subTitle="Configure your store's settings, including general information, notifications, security options, and payment methods.">
     <div className="space-y-6">
       <SettingsHeader />
 
@@ -143,5 +145,6 @@ export default function Settings() {
         </div>
       </div>
     </div>
+    </ContentLayout>
   );
 }

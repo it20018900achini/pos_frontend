@@ -83,19 +83,19 @@ export default function StoreEmployees() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Employee Management
-        </h1>
+        {/* <h1 className="text-3xl font-bold tracking-tight">
+          Employee Management1
+        </h1> */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="">
-              <Plus className="mr-2 h-4 w-4" /> Add Employee
+              <Plus className="mr-2 h-4 w-4" /> Add Store Employee
             </Button>
           </DialogTrigger>
           <DialogContent className="max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Add New Employee</DialogTitle>
-            </DialogHeader>
+              <DialogTitle>Add New Employee1</DialogTitle>
+            </DialogHeader>-
             <EmployeeForm
               onSubmit={handleAddEmployee}
               initialData={{
@@ -134,7 +134,7 @@ export default function StoreEmployees() {
 {/* {loading && <div>Loading employees...</div>} */}
 
 
-      {error && (
+      {/* {error && (
         <div className="mb-4 text-red-600">{error}</div>
       )}
       <EmployeeTable
@@ -142,7 +142,7 @@ export default function StoreEmployees() {
         loading={loading}
         onEdit={openEditDialog}
         onDelete={handleDeleteEmployee}
-      />
+      /> */}
     </div>
   );
 }

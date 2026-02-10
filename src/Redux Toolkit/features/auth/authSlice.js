@@ -9,8 +9,7 @@ const persistedToken = localStorage.getItem("jwt");
 const initialState = {
   user: persistedUser ? JSON.parse(persistedUser) : null,
   token: persistedToken || null,
-  isAuthenticated: !!persistedToken,
-
+isAuthenticated: false,
   loading: false,
   error: null,
 

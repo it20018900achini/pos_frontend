@@ -23,6 +23,10 @@ import BrandsPage from "../pages/store/Brand/BrandsPage";
 import { Orders, Transactions } from "../pages/Branch Manager";
 import Refunds from "../pages/Branch Manager/Refunds/Refunds";
 import QuotationsPage from "../pages/Branch Manager/quotations/QuotationsPage";
+import Branches from "../pages/store/Branch/Branches";
+import { Settings } from "../pages/store/store-admin";
+import BranchSettings from "../pages/Branch Manager/Settings/Settings";
+
 
 const DashboardRoutes = () => {
   
@@ -42,6 +46,8 @@ const DashboardRoutes = () => {
         <Route path="pos/orders" element={<OrderHistoryPage />} />
         <Route path="pos/refunds" element={<OrderRefundHistoryPage />} />
                  
+      <Route path="store/branches" element={<Branches />} />
+
       <Route path="branch/users/" element={<BranchEmployees />} />
       <Route path="branch/users/permissions" element={<RolesPage />} />
 
@@ -65,6 +71,11 @@ const DashboardRoutes = () => {
           <Route path="branch/orders/quotations" element={<QuotationsPage />} />
 
           <Route path="branch/transactions" element={<Transactions />} />
+
+          
+          <Route path="settings" element={<Settings />} />
+          <Route path="branch/settings" element={<BranchSettings />} />
+          
       {/* {
         userProfile?.user?.role[0]=="BRANCH_CASHIER"&&null
       } */}

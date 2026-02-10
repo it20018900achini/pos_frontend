@@ -23,7 +23,7 @@ export const AddEmployeeDialog = ({
   <Dialog open={isOpen} onOpenChange={setIsOpen}>
     <DialogTrigger asChild>
       <Button className="">
-        <Plus className="mr-2 h-4 w-4" /> Add Employee
+        <Plus className="mr-2 h-4 w-4" /> Add Branch Employee
       </Button>
     </DialogTrigger>
     <DialogContent className="overflow-auto max-h-screen">

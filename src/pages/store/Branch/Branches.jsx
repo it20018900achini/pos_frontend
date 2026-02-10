@@ -19,6 +19,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import BranchTable from "./BranchTable";
 import BranchForm from "./BranchForm";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
 export default function Branches() {
   const dispatch = useDispatch();
@@ -61,15 +62,7 @@ export default function Branches() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Branch Management</h1>
-
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+    <ContentLayout title="Branch Management" subTitle="Manage your store branches, including adding new branches and editing existing ones." right={
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="">
@@ -85,7 +78,16 @@ export default function Branches() {
               onCancel={() => setIsAddDialogOpen(false)}
             />
           </DialogContent>
-        </Dialog>
+        </Dialog>}>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        {/* <h1 className="text-3xl font-bold tracking-tight">Branch Management</h1> */}
+
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
@@ -112,5 +114,6 @@ export default function Branches() {
         </CardContent>
       </Card>
     </div>
+    </ContentLayout>
   );
 }

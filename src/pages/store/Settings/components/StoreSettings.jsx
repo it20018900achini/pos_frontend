@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Store } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { updateStore } from "@/Redux Toolkit/features/store/storeThunks";
@@ -53,25 +52,17 @@ const StoreSettings = ({ settings, onChange }) => {
   };
 
   return (
-    <Card id="store-settings">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Store className="mr-2 h-5 w-5 text-emerald-500" />
-          Store Settings
-        </CardTitle>
-        <CardDescription>
-          Configure your store's basic information
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div id="store-settings">
+      
+      <div>
         <StoreSettingsForm
           initialValues={settings}
           onSubmit={handleFormSubmit}
           isSubmitting={isSubmitting || loading}
           storeId={store?.id}
         />
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

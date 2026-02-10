@@ -348,23 +348,9 @@ const exportRefundsExcelTwoSheets = () => {
   return (
     <div className="h-full flex flex-col">
       {/* <POSHeader /> */}
-     
-      <div className="p-4 bg-card border-b flex justify-between items-center">        <h1 className="text-2xl font-bold flex items-center gap-3"><span className="w-4 h-4 bg-red-500"></span>Refund  History</h1>
+    
 
-        
-      </div>
-
-      {/* Page Header */}
-      {/* <div className="p-4 bg-card border-b flex justify-between items-center gap-5">
-        <h1 className="text-2xl font-bold flex items-center gap-3"><span className="w-4 h-4 bg-red-500"></span>Order Refund History</h1>
-        <Button variant="outline" onClick={handleRefreshOrders} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-          Refresh
-        </Button>
-      </div> */}
-      {/* <pre>
-        
-      </pre> */}
+    
       {/* Filters */}
       <div className="p-4 md:flex gap-2 items-center flex-wrap">
         <input

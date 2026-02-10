@@ -5,6 +5,7 @@ import POSHeader from "@/components/Dashboard/POSHeader";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getBranchById } from "../../Redux Toolkit/features/branch/branchThunks";
+import { getStoreByAdmin } from "@/Redux Toolkit/features/store/storeThunks";
 
 export default function DashboardLayout() {
     const dispatch = useDispatch();
@@ -18,7 +19,11 @@ export default function DashboardLayout() {
       dispatch(getBranchById({ id: userProfile.user.branchId, jwt: localStorage.getItem("jwt") }));
     }
   }, [dispatch, userProfile]);
-
+  useEffect(() => {
+    if (localStorage.getItem("jwt")) {
+      dispatch(getStoreByAdmin(localStorage.getItem("jwt")));
+    }
+  }, []);
   return (
     <SidebarProvider>{userProfile && !loading ? (
       <div className="flex h-screen overflow-hidden">

@@ -17,6 +17,7 @@ import {
   updateEmployee,
 } from "../../../Redux Toolkit/features/employee/employeeThunks";
 import ContentLayout from "../../Dashboard/ContentLayout";
+import StoreEmployees from "../../store/Employee/StoreEmployees";
 
 /* -----------------------------
    Component
@@ -69,7 +70,8 @@ const BranchEmployees = () => {
      Handlers
   ------------------------------ */
   const handleAddEmployee = (employeeData) => {
-    if (!branch?.id || !userProfile?.users.branchId) return;
+    // alert(JSON.stringify(userProfile.user.storeId))
+    // if (!branch?.id || !userProfile?.users.branchId) return;
 
     dispatch(
       createBranchEmployee({
@@ -86,6 +88,7 @@ const BranchEmployees = () => {
   };
 
   const handleEditEmployee = (employeeDetails) => {
+    alert(JSON.stringify(employeeDetails))
     if (!selectedEmployee?.id) return;
 
     dispatch(
@@ -114,15 +117,23 @@ const BranchEmployees = () => {
   ------------------------------ */
   return (
     <ContentLayout title="Employee Management" subTitle="Manage your branch employees, their access, and performance." right={
+   
+   
+  
+   
       <AddEmployeeDialog
           isAddDialogOpen={dialogs.add}
           setIsAddDialogOpen={() => openDialog("add")}
           handleAddEmployee={handleAddEmployee}
           roles={branchAdminRole}
         />
+
+
+
     }>
     <div className="space-y-6">
-      
+      {/* W */}
+    <hr/>   
 
       <EmployeeStats employees={employees} loading={loading} />
 

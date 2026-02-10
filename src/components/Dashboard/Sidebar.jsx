@@ -29,6 +29,11 @@ const NAV_LINKS = [
     icon: LayoutDashboard,
   },
   {
+    name: "Branch ",
+    path: "/dashboard/store/branches",
+    icon: Store,
+  },
+  {
     name: "POS",
     icon: Store,
     children: [
@@ -104,8 +109,13 @@ const NAV_LINKS = [
     ],
   },
   {
-    name: "Settings",
+    name: "Settings(Store)",
     path: "/dashboard/settings",
+    icon: Settings,
+  },
+  {
+    name: "Settings(Branch)",
+    path: "/dashboard/branch/settings",
     icon: Settings,
   },
 ];

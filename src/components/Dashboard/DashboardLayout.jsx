@@ -36,7 +36,6 @@ import POSHeader from "../../pages/cashier/components/POSHeader";
 
 // import { getAllCustomersPaginated } from "@/Redux Toolkit/features/customer/customerThunks";
 
-// const branchId = 52;
 
 const navItems = [
   { path: "/cashier", icon: <ShoppingCartIcon size={20} />, label: "POS Terminal" },

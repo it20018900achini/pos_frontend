@@ -19,7 +19,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (branchId) {
-      // alert(JSON.stringify(branchId))
       dispatch(getTodayOverview(branchId));
       const today = new Date().toISOString().slice(0, 10);
       dispatch(getPaymentBreakdown({ branchId, date: today }));

@@ -107,8 +107,7 @@ export default function EmployeeForm({ initialData, onSubmit, roles }) {
 test1
       {(formik.values.role === "BRANCH_MANAGER" ||
         formik.values.role === "CASHIER") && (
-        <div>--
-          {JSON.stringify(branches)}--
+        <div>
           <Label>Branch</Label>
           <Select
             value={formik.values.branchId}

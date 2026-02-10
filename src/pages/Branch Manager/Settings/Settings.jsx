@@ -21,8 +21,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { getBranchById } from "@/Redux Toolkit/features/branch/branchThunks";
 import BranchInfo from "./BranchInfo";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
-const Settings = () => {
+const BranchSettings = () => {
   const dispatch = useDispatch();
   const { userProfile } = useSelector((state) => state.user);
 
@@ -80,10 +81,9 @@ const Settings = () => {
   const handleDiscountSettingsChange = handleChange(setDiscountSettings);
 
   return (
+    <ContentLayout title="Branch Settings" subTitle="Configure settings specific to this branch, including printer setup, tax rules, payment methods, and discount policies.">
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Branch Settings</h1>
-      </div>
+      
 
       <Tabs defaultValue="branch-info">
         <TabsList className="grid w-full grid-cols-5">
@@ -227,7 +227,8 @@ const Settings = () => {
         </TabsContent>
       </Tabs>
     </div>
+    </ContentLayout>
   );
 };
 
-export default Settings;
+export default BranchSettings;
