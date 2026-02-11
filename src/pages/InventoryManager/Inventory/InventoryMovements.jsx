@@ -30,7 +30,7 @@ const InventoryMovements = () => {
 
   return (
     <ContentLayout title="Inventory Movements" subTitle="Track all inventory changes in your branch.">
-    <div className="space-y-4 overflow-x-auto">
+    <div className="space-y-4 overflow-x-auto p-4">
 
       <Table className="min-w-[600px] md:min-w-full">
         <TableHeader>

@@ -15,24 +15,16 @@ import {
   LogOut,
   ChevronDown,
   ChevronUp,
-  X,
   Menu,
   ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/context/hooks/useSidebar";
 
+// ---------------- NAV_LINKS ----------------
 const NAV_LINKS = [
-  {
-    name: "Dashboard",
-    path: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    name: "Branch ",
-    path: "/dashboard/store/branches",
-    icon: Store,
-  },
+  { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+  { name: "Branch ", path: "/dashboard/store/branches", icon: Store },
   {
     name: "POS",
     icon: Store,
@@ -51,38 +43,17 @@ const NAV_LINKS = [
       { name: "Role Permissions", path: "/dashboard/branch/users/permissions", icon: ClipboardList },
     ],
   },
-{
-  name: "Accounts",
-  icon: DollarSign,
-  children: [
-    {
-      name: "Chart of Accounts",
-      path: "/dashboard/branch/accounts/chart-of-accounts",
-      icon: Archive,
-    },
-    {
-      name: "Journal Entries",
-      path: "/dashboard/branch/accounts/journals",
-      icon: FileText,
-    },
-    {
-      name: "Profit & Loss",
-      path: "/dashboard/branch/accounts/profit-loss",
-      icon: Report,
-    },
-    {
-      name: "Balance Sheet",
-      path: "/dashboard/branch/accounts/balance-sheet",
-      icon: Report,
-    },
-    {
-      name: "Trial Balance",
-      path: "/dashboard/branch/accounts/trial-balance",
-      icon: Report,
-    },
-  ],
-},
-
+  {
+    name: "Accounts",
+    icon: DollarSign,
+    children: [
+      { name: "Chart of Accounts", path: "/dashboard/branch/accounts/chart-of-accounts", icon: Archive },
+      { name: "Journal Entries", path: "/dashboard/branch/accounts/journals", icon: FileText },
+      { name: "Profit & Loss", path: "/dashboard/branch/accounts/profit-loss", icon: Report },
+      { name: "Balance Sheet", path: "/dashboard/branch/accounts/balance-sheet", icon: Report },
+      { name: "Trial Balance", path: "/dashboard/branch/accounts/trial-balance", icon: Report },
+    ],
+  },
   {
     name: "Orders / Transactions",
     icon: DollarSign,
@@ -92,12 +63,7 @@ const NAV_LINKS = [
       { name: "Quotations", path: "/dashboard/branch/orders/quotations", icon: FileText },
     ],
   },
-
-  {
-    name: "Transactions",
-    path: "/dashboard/branch/transactions",
-    icon: Settings,
-  },
+  { name: "Transactions", path: "/dashboard/branch/transactions", icon: Settings },
   {
     name: "Products",
     icon: ClipboardList,
@@ -118,18 +84,29 @@ const NAV_LINKS = [
       { name: "Suppliers", path: "/dashboard/branch/inventory/suppliers", icon: FileText },
     ],
   },
-  {
-    name: "Settings(Store)",
-    path: "/dashboard/settings",
-    icon: Settings,
-  },
-  {
-    name: "Settings(Branch)",
-    path: "/dashboard/branch/settings",
-    icon: Settings,
-  },
+  { name: "Settings(Store)", path: "/dashboard/settings", icon: Settings },
+  { name: "Settings(Branch)", path: "/dashboard/branch/settings", icon: Settings },
 ];
 
+// ---------------- MODAL COMPONENT ----------------
+const Modal = ({ open, onClose, children }) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-60 flex items-center justify-center pt-20">
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 bg-black/30 dark:bg-black/40"
+        onClick={onClose}
+      />
+      {/* Modal content */}
+      <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-lg w-80 max-h-[80vh] overflow-y-auto z-50">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// ---------------- SIDEBAR COMPONENT ----------------
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -137,19 +114,18 @@ export default function Sidebar() {
   const { sidebarOpen, setSidebarOpen } = useSidebar();
 
   const [openMenus, setOpenMenus] = useState({});
-  const [floatingMenu, setFloatingMenu] = useState(null);
+  const [dialogMenu, setDialogMenu] = useState(null);
 
+  // Open submenu for current page
   useEffect(() => {
     const open = {};
     NAV_LINKS.forEach((link) => {
       if (link.children) {
-        open[link.name] = link.children.some(
-          (child) => child.path === location.pathname
-        );
+        open[link.name] = link.children.some((child) => child.path === location.pathname);
       }
     });
     setOpenMenus(open);
-    setFloatingMenu(null);
+    setDialogMenu(null);
   }, [location.pathname]);
 
   const handleLogout = () => {
@@ -163,17 +139,15 @@ export default function Sidebar() {
       ? link.children.some((c) => isExactActive(c.path))
       : isExactActive(link.path);
 
-  const toggleSubMenu = (name) => {
-    setOpenMenus((prev) => ({ ...prev, [name]: !prev[name] }));
-  };
-
   const handleParentClick = (link) => {
-    if (!sidebarOpen && link.children) {
-      setFloatingMenu((prev) => (prev === link.name ? null : link.name));
-      return;
-    }
-    if (sidebarOpen && link.children) {
-      toggleSubMenu(link.name);
+    if (link.children) {
+      if (sidebarOpen) {
+        // Expanded sidebar → toggle inline submenu
+        setOpenMenus((prev) => ({ ...prev, [link.name]: !prev[link.name] }));
+      } else {
+        // Collapsed sidebar → open dialog
+        setDialogMenu((prev) => (prev === link.name ? null : link.name));
+      }
       return;
     }
     navigate(link.path);
@@ -181,6 +155,7 @@ export default function Sidebar() {
 
   return (
     <>
+      {/* MOBILE OVERLAY */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/30 dark:bg-black/40 z-40 md:hidden"
@@ -218,7 +193,7 @@ export default function Sidebar() {
                 const isOpen = openMenus[link.name];
 
                 return (
-                  <li key={link.name} className="relative z-100">
+                  <li key={link.name} className="relative z-[100]">
                     {/* PARENT */}
                     <button
                       onClick={() => handleParentClick(link)}
@@ -233,18 +208,17 @@ export default function Sidebar() {
                     >
                       <div className="flex items-center gap-3">
                         <Icon className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                        {sidebarOpen && (
-                          <span className="text-sm font-medium">{link.name}</span>
-                        )}
+                        {sidebarOpen && <span className="text-sm font-medium">{link.name}</span>}
                       </div>
 
                       {hasChildren && sidebarOpen && (
-                        isOpen ? <ChevronUp size={16} className="text-gray-700 dark:text-gray-300" /> 
-                               : <ChevronDown size={16} className="text-gray-700 dark:text-gray-300" />
+                        isOpen
+                          ? <ChevronUp size={16} className="text-gray-700 dark:text-gray-300" />
+                          : <ChevronDown size={16} className="text-gray-700 dark:text-gray-300" />
                       )}
                     </button>
 
-                    {/* INLINE SUBMENU */}
+                    {/* INLINE SUBMENU for expanded sidebar */}
                     {hasChildren && isOpen && sidebarOpen && (
                       <ul className="ml-9 mt-1 space-y-1 max-h-[calc(100vh-150px)] overflow-y-auto">
                         {link.children.map((child) => {
@@ -274,40 +248,6 @@ export default function Sidebar() {
                         })}
                       </ul>
                     )}
-
-                    {/* ABSOLUTE SUBMENU */}
-                    {hasChildren && !sidebarOpen && floatingMenu === link.name && (
-                      <div className="absolute left-20 top-0 w-64 bg-white dark:bg-gray-900 border dark:border-gray-700 shadow-xl rounded-lg z-50 max-h-screen overflow-y-auto">
-                        <ul className="py-2">
-                          {link.children.map((child) => {
-                            const ChildIcon = child.icon;
-                            return (
-                              <li key={child.name}>
-                                <Link
-                                  to={child.path}
-                                  onClick={() => setFloatingMenu(null)}
-                                  className={`
-                                    flex items-center gap-2 px-4 py-2 text-sm
-                                    ${isExactActive(child.path)
-                                      ? "bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-800 dark:text-indigo-300"
-                                      : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                                    }
-                                  `}
-                                >
-                                  <ChildIcon
-                                    className={`w-4 h-4 ${isExactActive(child.path)
-                                      ? "text-indigo-600 dark:text-indigo-300"
-                                      : "text-gray-400 dark:text-gray-400"
-                                    }`}
-                                  />
-                                  {child.name}
-                                </Link>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      </div>
-                    )}
                   </li>
                 );
               })}
@@ -325,6 +265,38 @@ export default function Sidebar() {
           </Button>
         </div>
       </aside>
+
+      {/* DIALOG for collapsed sidebar */}
+     {/* DIALOG for collapsed sidebar */}
+{dialogMenu && (
+  <Modal open={!!dialogMenu} onClose={() => setDialogMenu(null)}>
+    <ul className="py-2">
+      {NAV_LINKS.find((link) => link.name === dialogMenu)?.children?.map((child) => {
+        const ChildIcon = child.icon;
+        const active = location.pathname === child.path; // check if active
+        return (
+          <li key={child.name}>
+            <Link
+              to={child.path}
+              onClick={() => setDialogMenu(null)}
+              className={`
+                flex items-center gap-2 px-4 py-2 text-sm rounded
+                ${active
+                  ? "bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-800 dark:text-indigo-300"
+                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                }
+              `}
+            >
+              <ChildIcon className={`w-4 h-4 ${active ? "text-indigo-600 dark:text-indigo-300" : "text-gray-400 dark:text-gray-400"}`} />
+              {child.name}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  </Modal>
+)}
+
     </>
   );
 }
