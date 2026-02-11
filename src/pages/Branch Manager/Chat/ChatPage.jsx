@@ -75,11 +75,20 @@ export default function ChatPage() {
       .reduce((sum, [, count]) => sum + count, 0);
   }, [unseenByUser, selectedUser]);
 
-  /* ================= LOAD USERS ================= */
-  useEffect(() => {
-    dispatch(getAllUsers());
-  }, [dispatch]);
 
+  /* ================= LOAD USERS ================= */
+  
+useEffect(() => {
+  const fetchUsers = async () => {
+    const res = await dispatch(getAllUsers());
+    
+    // Load unseen messages for each user after users are loaded
+    Object.values(res.payload || {}).forEach(async (user) => {
+      await dispatch(loadChatHistory({ userId: user.id, limit: 1 })); // fetch latest messages
+    });
+  };
+  fetchUsers();
+}, [dispatch]);
   /* ================= PRESENCE SOCKET ================= */
   useEffect(() => {
     if (!me || !usersLoaded) return;
