@@ -3,7 +3,7 @@ import { apiSlice } from "../../api/apiSlice";
 
 export const inventoryApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
- getStockStatement: builder.query({
+    getStockStatement: builder.query({
       query: ({ branchId, startDate, endDate }) =>
         `/inventories/stock-statement?branchId=${branchId}&startDate=${startDate}&endDate=${endDate}`,
       providesTags: ["Inventory"],
@@ -13,10 +13,12 @@ export const inventoryApi = apiSlice.injectEndpoints({
       query: (branchId) => `/inventories/branch/${branchId}`,
       providesTags: ["Inventory"],
     }),
+
     getInventoryById: builder.query({
       query: (id) => `/inventories/${id}`,
       providesTags: ["Inventory"],
     }),
+
     createInventory: builder.mutation({
       query: (body) => ({
         url: `/inventories`,
@@ -25,6 +27,7 @@ export const inventoryApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Inventory"],
     }),
+
     updateInventory: builder.mutation({
       query: ({ id, ...body }) => ({
         url: `/inventories/${id}`,
@@ -33,6 +36,7 @@ export const inventoryApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Inventory"],
     }),
+
     deleteInventory: builder.mutation({
       query: (id) => ({
         url: `/inventories/${id}`,
@@ -40,14 +44,22 @@ export const inventoryApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Inventory"],
     }),
+
+    // ✅ New endpoint: fetch inventory movements
+    getInventoryMovements: builder.query({
+      query: ({ branchId, page = 0, size = 20 }) =>
+        `/inventory-movements?branchId=${branchId}&page=${page}&size=${size}`,
+      providesTags: ["Inventory"],
+    }),
   }),
 });
 
 export const {
-    useGetStockStatementQuery,
+  useGetStockStatementQuery,
   useGetInventoriesByBranchQuery,
   useGetInventoryByIdQuery,
   useCreateInventoryMutation,
   useUpdateInventoryMutation,
   useDeleteInventoryMutation,
+  useGetInventoryMovementsQuery, // ✅ export hook
 } = inventoryApi;

@@ -26,6 +26,11 @@ import QuotationsPage from "../pages/Branch Manager/quotations/QuotationsPage";
 import Branches from "../pages/store/Branch/Branches";
 import { Settings } from "../pages/store/store-admin";
 import BranchSettings from "../pages/Branch Manager/Settings/Settings";
+import { Inventory } from "../pages/InventoryManager";
+import InventoryPage from "../pages/Branch Manager/Inventory/InventoryPage";
+import Purchase from "../pages/InventoryManager/purchase/Purchase";
+import Suppliers from "../pages/InventoryManager/supplier/Suppliers";
+import InventoryMovements from "../pages/InventoryManager/Inventory/InventoryMovements";
 
 
 const DashboardRoutes = () => {
@@ -71,6 +76,12 @@ const DashboardRoutes = () => {
           <Route path="branch/orders/quotations" element={<QuotationsPage />} />
 
           <Route path="branch/transactions" element={<Transactions />} />
+
+
+          <Route path="branch/inventory" element={<Inventory />} />
+          <Route path="branch/inventory/inventory-movements" element={<InventoryMovements />} />
+          <Route path="branch/inventory/purchases" element={<Purchase />} />
+          <Route path="branch/inventory/suppliers" element={<Suppliers />} />
 
           
           <Route path="settings" element={<Settings />} />

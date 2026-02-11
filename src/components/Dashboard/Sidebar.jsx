@@ -109,6 +109,16 @@ const NAV_LINKS = [
     ],
   },
   {
+    name: "Inventory",
+    icon: ClipboardList,
+    children: [
+      { name: "Inventory", path: "/dashboard/branch/inventory", icon: Archive },
+      { name: "Inventory Movements", path: "/dashboard/branch/inventory/inventory-movements", icon: FileText },
+      { name: "Purchase", path: "/dashboard/branch/inventory/purchases", icon: FileText },
+      { name: "Suppliers", path: "/dashboard/branch/inventory/suppliers", icon: FileText },
+    ],
+  },
+  {
     name: "Settings(Store)",
     path: "/dashboard/settings",
     icon: Settings,

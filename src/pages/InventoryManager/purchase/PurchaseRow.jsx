@@ -3,22 +3,28 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 
 const PurchaseRow = ({ value, products, onChange, onRemove }) => {
-  const handleProductChange = (e) => {
-    const variantId = Number(e.target.value);
-    const selected = products.find((p) => p.id === variantId);
+const handleProductChange = (e) => {
+  const variantId = Number(e.target.value);
 
-    if (!selected) return;
+  const selected = products?.find(
+    (p) => p.productVariant.id === variantId
+  );
 
-    onChange({
-      ...value,
-      productVariantId: selected.id,     // ✅ REQUIRED BY BACKEND
-      costPrice: selected.price ?? 0,     // default price
-    });
-  };
+  if (!selected) return;
+
+  onChange({
+    ...value,
+    productVariantId: selected.productVariant.id,  // ✅ correct
+    costPrice: selected.productVariant.costPrice ?? 0, // ✅ correct field
+  });
+};
+
 
   return (
     <div className="flex gap-2 items-center">
       {/* Product Select */}
+      {/* {JSON.stringify(products)}  */}
+      {/* Debug */}
       <select
         className="border rounded p-2 flex-1"
         value={value.productVariantId ?? ""}
@@ -26,8 +32,8 @@ const PurchaseRow = ({ value, products, onChange, onRemove }) => {
       >
         <option value="">Select Product</option>
         {products.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.name} ({p.sku}) — Stock: {p.stockQty}
+          <option key={p.productVariant.id} value={p.productVariant.id}>
+            {p?.productVariant.name} ({p?.productVariant.sku})
           </option>
         ))}
       </select>

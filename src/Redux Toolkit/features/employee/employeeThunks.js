@@ -65,9 +65,14 @@ export const createBranchEmployee = createAsyncThunk(
   "employee/createBranchEmployee",
   async ({ employee, branchId, token }, { rejectWithValue }) => {
     try {
+      const payload = {
+        ...employee,
+        roles: employee.roles ? [employee.role] : [employee.role],
+      };
+        
       const res = await api.post(
         `/api/employees/branch/${Number(branchId)}`,
-        employee,
+        payload,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

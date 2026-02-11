@@ -58,11 +58,11 @@ const App = () => {
 
   if (loading) return null; // wait for profile
 
-  const defaultRole =
-    Array.isArray(userProfile?.user.roles) && userProfile?.user.user?.roles.length > 0
-      ? userProfile.user.roles[0]
-      : null;
-  const defaultPath = defaultRole ? ROLE_PATH[defaultRole] : "/";
+  // const defaultRole =
+  //   Array.isArray(userProfile?.user.roles) && userProfile?.user.user?.roles.length > 0
+  //     ? userProfile.user.roles[0]
+  //     : null;
+  // const defaultPath = defaultRole ? ROLE_PATH[defaultRole] : "/";
 
   return (
     <>
@@ -95,9 +95,9 @@ const App = () => {
         <Route path="/store/*" element={<StoreRoutes />} />
 
         {/* DEFAULT REDIRECT AFTER LOGIN */}
-        {defaultPath && (
+        {/* {defaultPath && (
           <Route path="/redirect" element={<Navigate to={defaultPath} replace />} />
-        )}
+        )} */}
 
         {/* CATCH ALL */}
         <Route path="*" element={<PageNotFound />} />

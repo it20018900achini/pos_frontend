@@ -97,8 +97,7 @@ const CashierDashboardLayout = () => {
   return (
 
     <SidebarProvider>
-     
-      {userProfile?.user?.lastShift?.status !== "OPEN"?<StartShiftForm branch={userProfile?.user?.branch}/>:<LayoutContent/>}
+      {userProfile?.lastShift?.status !== "OPEN"?<StartShiftForm branch={userProfile?.user?.branch}/>:<LayoutContent/>}
         
 {/* <POSHeader /> */}
 

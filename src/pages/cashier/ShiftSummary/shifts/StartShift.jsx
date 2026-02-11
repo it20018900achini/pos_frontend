@@ -18,7 +18,7 @@ export default function StartShift({ branchId }) {
 
   return (
     <div>
-      <h2>Start Shift</h2>
+      <h2>Start Shift1</h2>
       <input
         type="number"
         placeholder="Opening Cash"
