@@ -273,9 +273,7 @@ useEffect(() => {
                         </Button>
                       </div>
                     )}
-{
-  JSON.stringify(messages,null,2)
-}
+
                              {messages.map((m) => {
               const mine = m.senderId === me?.user.id;
               return (

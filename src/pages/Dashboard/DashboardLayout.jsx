@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getBranchById } from "../../Redux Toolkit/features/branch/branchThunks";
 import { getStoreByAdmin } from "@/Redux Toolkit/features/store/storeThunks";
+import ChatPage from "../Branch Manager/Chat/ChatPage";
 
 export default function DashboardLayout() {
     const dispatch = useDispatch();
@@ -32,6 +33,7 @@ export default function DashboardLayout() {
           <POSHeader />
           <main className="flex-1 overflow-y-auto ">
             <Outlet />
+            <ChatPage/>
           </main>
         </div>
       </div>): (
