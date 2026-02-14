@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "@/components/ui/use-toast";
+import { getAllBranchesByStore } from "@/Redux Toolkit/features/branch/branchThunks";
 
 import {
   selectCartItems,
@@ -43,20 +44,40 @@ const PaymentDialog = ({
   const dispatch = useDispatch();
   const { toast } = useToast();
 
+  
+
   const cart = useSelector(selectCartItems);
   const total = useSelector(selectTotal);
   const discount = useSelector(selectDiscount);
   const note = useSelector(selectNote);
   const selectedCustomer = useSelector(selectSelectedCustomer);
-  const branch = useSelector((state) => state.branch);
+//  const { branch, branches, loading } = useSelector((state) => state.branch);
+
+  const { store } = useSelector((state) => state.store);
+
   const { userProfile } = useSelector((state) => state.user);
 
+  
   const [errorMsg, setErrorMsg] = useState("");
   const [payments, setPayments] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingMain, setLoadingMain] = useState(false);
 
   const givenRef = useRef(null);
 
+
+  useEffect(() => {
+    if (store?.id) {
+      dispatch(
+        getAllBranchesByStore({
+          storeId: store.id,
+          jwt: localStorage.getItem("jwt"),
+        })
+      );
+    }
+  }, [dispatch, store]);
+
+
+  
   // ---------------- SAFE NUMBERS ----------------
   const safeTotal = Number(total || 0);
 
@@ -66,6 +87,7 @@ const PaymentDialog = ({
       : Number(discount || 0);
 
   const netTotal = safeTotal - discountValue;
+  const { branches, loading, error } = useSelector((state) => state.branch);
 
   // ---------------- INIT DEFAULT CASH ----------------
   useEffect(() => {
@@ -102,7 +124,6 @@ const PaymentDialog = ({
   );
   const changeDue = Math.max(totalPaid - netTotal, 0);
   const remaining = Math.max(netTotal - totalPaid, 0);
-
   // ---------------- PROCESS PAYMENT ----------------
 const processPayment = useCallback(async () => {
   if (!cart.length)
@@ -110,6 +131,7 @@ const processPayment = useCallback(async () => {
 
   if (!selectedCustomer)
     return toast({ title: "Customer Required", description: "Select a customer", variant: "destructive" });
+  alert(JSON.stringify(userProfile, null, 2))
   if (!userProfile?.user.branch?.id)
     return toast({ title: "Branch Missing", description: "Branch not loaded", variant: "destructive" });
 
@@ -127,7 +149,8 @@ const processPayment = useCallback(async () => {
     });
 
   try {
-    setLoading(true);
+
+    setLoadingMain(true);
 
     const orderData = {
       branchId: userProfile.user.branch.id,
@@ -174,7 +197,7 @@ const processPayment = useCallback(async () => {
       variant: "destructive",
     });
   } finally {
-    setLoading(false);
+    setLoadingMain(false);
   }
 }, [
   cart,
@@ -182,7 +205,7 @@ const processPayment = useCallback(async () => {
   payments,
   total,
   discount,
-  branch,
+  // branch,
   userProfile,
   dispatch,
   toast,
@@ -193,15 +216,10 @@ const processPayment = useCallback(async () => {
 
   return (
     <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-      <DialogContent className="sm:max-w-[90%] w-[90%] max-h-[95vh] p-0 overflow-scroll rounded-3xl bg-gradient-to-br from-neutral-50 to-neutral-200 flex flex-col">
+      <DialogContent className="z-60 sm:max-w-[90%] w-[90%] max-h-[95vh] p-0 overflow-scroll rounded-3xl bg-gradient-to-br from-neutral-50 to-neutral-200 flex flex-col">
         <DialogHeader className="px-8 py-3 border-b bg-white/60">
           <DialogTitle className="text-xl font-bold">
             🧾 Payment Summary
-            {/* <pre>
-              {
-                JSON.stringify(branch, null, 2)
-              }
-            </pre> */}
           </DialogTitle>
         </DialogHeader>
 
@@ -209,6 +227,29 @@ const processPayment = useCallback(async () => {
         <div className="flex flex-1 overflow-hidden">
           {/* LEFT – PAYMENTS */}
           <div className="w-[55%] p-8 py-4 border-r bg-white/50 overflow-y-auto">
+           <div className="flex items-center gap-2 mb-4">
+            {
+              userProfile?.user?.branchId ? (
+                <span className="w-4 h-4 bg-green-500 rounded-full"></span>
+              ) : (
+                <span className="w-4 h-4 bg-red-500 rounded-full"></span>
+              )
+            }
+            {/* <span className="w-4 h-4 bg-red-500"></span> */}
+            <select>
+              <option value="">Select Branch</option>
+              {loading ? (
+                <option>Loading branches...</option>
+              ) : error ? (
+                <option>Error loading branches</option>
+              ) : (branches.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              )))}
+            </select>
+           </div>
+           
             <div className="rounded-2xl p-3 bg-white text-center mb-6 shadow-inner">
               <p className="text-sm text-neutral-500 uppercase">Total Amount</p>
               <p className="text-2xl font-bold text-indigo-600">
@@ -336,10 +377,10 @@ const processPayment = useCallback(async () => {
 
           <Button
             onClick={processPayment}
-            disabled={loading || totalPaid < netTotal}
+            disabled={loadingMain || totalPaid < netTotal}
             className="bg-indigo-600 text-white"
           >
-            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {loadingMain && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Confirm Payment
           </Button>
         </DialogFooter>

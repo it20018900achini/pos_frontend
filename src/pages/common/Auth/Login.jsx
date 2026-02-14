@@ -38,21 +38,7 @@ const UserRoles = {
 
 /* ---------------- REDIRECT BY ROLE ---------------- */
 const redirectByRole = (role) => {
-  switch (role) {
-    case UserRoles.BRANCH_CASHIER:
-      return "/cashier";
-    case UserRoles.STORE_ADMIN:
-    case UserRoles.STORE_MANAGER:
-      return "/store";
-    case UserRoles.BRANCH_MANAGER:
-      return "/branch";
-    case UserRoles.BRANCH_ACCOUNTANT:
-      return "/acc";
-    case UserRoles.BRANCH_INVENTORY_MANAGER:
-      return "/inventory";
-    default:
-      return "/";
-  }
+  return "/dashboard?loading=true";
 };
 
 export default function Login() {

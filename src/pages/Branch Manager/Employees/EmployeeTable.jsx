@@ -58,7 +58,7 @@ const EmployeeTable = ({
                 {employee.fullName}
               </TableCell>
 
-              <TableCell>{employee.role}</TableCell>
+              <TableCell>{employee.roles.map((r) => r?.name)}</TableCell>
 
               <TableCell>{employee.email}</TableCell>
 

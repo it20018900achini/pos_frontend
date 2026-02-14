@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/Redux Toolkit/features/user/userThunks";
 import {
   LayoutDashboard,
@@ -22,9 +22,123 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/context/hooks/useSidebar";
 
 // ---------------- NAV_LINKS ----------------
-const NAV_LINKS = [
+
+
+
+
+// ---------------- MODAL COMPONENT ----------------
+const Modal = ({ open, onClose, children }) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-60 flex items-center justify-center pt-20">
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 bg-black/30 dark:bg-black/40"
+        onClick={onClose}
+      />
+      {/* Modal content */}
+      <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-lg w-80 max-h-[80vh] overflow-y-auto z-50">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// ---------------- SIDEBAR COMPONENT ----------------
+export default function Sidebar() {
+
+  const { userProfile, loading } = useSelector((state) => state.user);
+
+const NAV_LINKS =[];
+if (userProfile?.user?.permissions?.includes("DASHBOARD")) {
+  NAV_LINKS.push({ name: "Dashboard", path: "/dashboard", icon: LayoutDashboard });
+}
+if (userProfile?.user?.permissions?.includes("BRANCHES")) {
+  NAV_LINKS.push({ name: "Branches ", path: "/dashboard/store/branches", icon: Store });
+}
+if (userProfile?.user?.permissions?.includes("POS")) {
+  NAV_LINKS.push({
+    name: "POS",
+    icon: Store,
+    children: [
+      { name: "POS", path: "/dashboard/pos", icon: Store },
+      { name: "Shift Summary", path: "/dashboard/pos/shift-summary", icon: Clock },
+      { name: "Orders", path: "/dashboard/pos/orders", icon: FileText },
+      { name: "Refunds", path: "/dashboard/pos/refunds", icon: DollarSign },
+    ],
+  });
+}
+if (userProfile?.user?.permissions?.includes("USERS")) {
+  NAV_LINKS.push({
+    name: "Users",
+    icon: Users,
+    children: [
+      { name: "Users", path: "/dashboard/branch/users", icon: Users },
+      { name: "Role Permissions", path: "/dashboard/branch/users/permissions", icon: ClipboardList },
+    ],
+  });
+}
+if (userProfile?.user?.permissions?.includes("ACCOUNTS")) {
+  NAV_LINKS.push({
+    name: "Accounts",
+    icon: DollarSign,
+    children: [
+      { name: "Chart of Accounts", path: "/dashboard/branch/accounts/chart-of-accounts", icon: Archive },
+      { name: "Journal Entries", path: "/dashboard/branch/accounts/journals", icon: FileText },
+      { name: "Profit & Loss", path: "/dashboard/branch/accounts/profit-loss", icon: Report },
+      { name: "Balance Sheet", path: "/dashboard/branch/accounts/balance-sheet", icon: Report },
+      { name: "Trial Balance", path: "/dashboard/branch/accounts/trial-balance", icon: Report },
+    ],
+  });
+}
+if (userProfile?.user?.permissions?.includes("ORDERS")) {
+  NAV_LINKS.push({
+    name: "Orders / Transactions",
+    icon: DollarSign,
+    children: [
+      { name: "Orders", path: "/dashboard/branch/orders", icon: Archive },
+      { name: "Refunds", path: "/dashboard/branch/orders/refunds", icon: FileText },
+      { name: "Quotations", path: "/dashboard/branch/orders/quotations", icon: FileText },
+    ],
+  });
+}
+
+if (userProfile?.user?.permissions?.includes("TRANSACTIONS")) {
+  NAV_LINKS.push({ name: "Transactions", path: "/dashboard/branch/transactions", icon: Settings });
+}
+if (userProfile?.user?.permissions?.includes("PRODUCTS")) {
+  NAV_LINKS.push({
+    name: "Products",
+    icon: ClipboardList,
+    children: [
+      { name: "Products", path: "/dashboard/store/products", icon: Archive },
+      { name: "Product Variants", path: "/dashboard/store/products/variants", icon: FileText },
+      { name: "Product Categories", path: "/dashboard/store/products/categories", icon: FileText },
+      { name: "Product Brands", path: "/dashboard/store/products/brands", icon: FileText },
+    ],
+  });
+}
+
+if (userProfile?.user?.permissions?.includes("INVENTORY")) {
+  NAV_LINKS.push({
+    name: "Inventory",
+    icon: ClipboardList,
+    children: [
+      { name: "Inventory", path: "/dashboard/branch/inventory", icon: Archive },
+      { name: "Inventory Movements", path: "/dashboard/branch/inventory/inventory-movements", icon: FileText },
+      { name: "Purchase", path: "/dashboard/branch/inventory/purchases", icon: FileText },
+      { name: "Suppliers", path: "/dashboard/branch/inventory/suppliers", icon: FileText },
+    ],
+  });
+}
+
+if (userProfile?.user?.permissions?.includes("SETTINGS")) {
+  NAV_LINKS.push({ name: "Settings(Store)", path: "/dashboard/settings", icon: Settings });
+  NAV_LINKS.push({ name: "Settings(Branch)", path: "/dashboard/branch/settings", icon: Settings });
+}
+const NAV_LINKS1 = [
   { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-  { name: "Branch ", path: "/dashboard/store/branches", icon: Store },
+  { name: "Branches ", path: "/dashboard/store/branches", icon: Store },
   {
     name: "POS",
     icon: Store,
@@ -88,26 +202,6 @@ const NAV_LINKS = [
   { name: "Settings(Branch)", path: "/dashboard/branch/settings", icon: Settings },
 ];
 
-// ---------------- MODAL COMPONENT ----------------
-const Modal = ({ open, onClose, children }) => {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center pt-20">
-      {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/30 dark:bg-black/40"
-        onClick={onClose}
-      />
-      {/* Modal content */}
-      <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-lg w-80 max-h-[80vh] overflow-y-auto z-50">
-        {children}
-      </div>
-    </div>
-  );
-};
-
-// ---------------- SIDEBAR COMPONENT ----------------
-export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -164,7 +258,7 @@ export default function Sidebar() {
       )}
 
       <aside
-        className={`fixed md:static z-50 h-screen top-0 left-0
+        className={`fixed md:static z-51 h-screen top-0 left-0
           bg-white dark:bg-gray-900 border-r dark:border-gray-700 shadow-lg
           transition-all duration-300
           ${sidebarOpen ? "w-64" : "w-20"}
@@ -173,6 +267,10 @@ export default function Sidebar() {
       >
         <div className="flex flex-col h-full px-4 py-6">
           {/* HEADER */}
+          {/* <pre>
+            {JSON.stringify(userProfile?.user?.roles, null, 2)}
+          </pre> */}
+          
           <div className="mb-6 flex items-center justify-between">
             <Store className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
             <button

@@ -44,7 +44,7 @@ const CustomerDialog = ({ showCustomerDialog, setShowCustomerDialog }) => {
 
   return (
     <Dialog open={showCustomerDialog} onOpenChange={setShowCustomerDialog}>
-      <DialogContent className="sm:max-w-[80%] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="z-51 sm:max-w-[80%] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Select Customer</DialogTitle>
         </DialogHeader>

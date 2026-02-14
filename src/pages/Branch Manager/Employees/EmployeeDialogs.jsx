@@ -28,7 +28,7 @@ export const AddEmployeeDialog = ({
     </DialogTrigger>
     <DialogContent className="overflow-auto max-h-screen">
       <DialogHeader>
-        <DialogTitle>Add New Employee</DialogTitle>
+        <DialogTitle>Add New Employee-1</DialogTitle>
       </DialogHeader>
 
       <EmployeeForm initialData={null} onSubmit={handleAddEmployee} roles={roles} />

@@ -49,11 +49,11 @@ const branchSlice = createSlice({
         state.loading = false;
         state.branches = action.payload;
       })
+      
       .addCase(getAllBranchesByStore.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-
       /* -------- UPDATE -------- */
       .addCase(updateBranch.fulfilled, (state, action) => {
         const index = state.branches.findIndex(
