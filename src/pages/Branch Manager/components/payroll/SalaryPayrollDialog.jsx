@@ -90,7 +90,7 @@ export default function SalaryPayrollDialog({ open, setOpen, employeeId }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto z-60">
         <DialogHeader>
           <DialogTitle>Employee Salary & Payroll</DialogTitle>
           <DialogDescription>

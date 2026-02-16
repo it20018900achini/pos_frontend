@@ -73,7 +73,8 @@ if (userProfile?.user?.permissions?.includes("USERS")) {
     name: "Users",
     icon: Users,
     children: [
-      { name: "Users", path: "/dashboard/branch/users", icon: Users },
+      { name: "Branch Users", path: "/dashboard/branch/users", icon: Users },
+      { name: "Store Users", path: "/dashboard/store/users", icon: Users },
       { name: "Role Permissions", path: "/dashboard/branch/users/permissions", icon: ClipboardList },
     ],
   });
@@ -130,6 +131,10 @@ if (userProfile?.user?.permissions?.includes("INVENTORY")) {
       { name: "Suppliers", path: "/dashboard/branch/inventory/suppliers", icon: FileText },
     ],
   });
+}
+
+if (userProfile?.user?.permissions?.includes("PAYROLL")) {
+  NAV_LINKS.push({ name: "Payroll", path: "/dashboard/branch/payroll", icon: FileText });
 }
 
 if (userProfile?.user?.permissions?.includes("SETTINGS")) {
@@ -198,6 +203,8 @@ const NAV_LINKS1 = [
       { name: "Suppliers", path: "/dashboard/branch/inventory/suppliers", icon: FileText },
     ],
   },
+  { name: "Payroll", path: "/dashboard/branch/payroll", icon: FileText },
+  { name: "Salary", path: "/dashboard/branch/salary/:branchId", icon: FileText },
   { name: "Settings(Store)", path: "/dashboard/settings", icon: Settings },
   { name: "Settings(Branch)", path: "/dashboard/branch/settings", icon: Settings },
 ];

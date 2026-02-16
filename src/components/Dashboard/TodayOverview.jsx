@@ -15,13 +15,13 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 
-const TodayOverview = () => {
+const TodayOverview = ({ branchId }) => {
   const dispatch = useDispatch();
   const { todayOverview, loading } = useSelector(
     (state) => state.branchAnalytics
   );
 
-  const branchId = 52;
+  const branchId = branchId;
 
   // ------------------------
   // Helper: format YYYY-MM-DD

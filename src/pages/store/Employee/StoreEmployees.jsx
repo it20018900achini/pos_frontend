@@ -134,7 +134,7 @@ export default function StoreEmployees() {
 {/* {loading && <div>Loading employees...</div>} */}
 
 
-      {/* {error && (
+      {error && (
         <div className="mb-4 text-red-600">{error}</div>
       )}
       <EmployeeTable
@@ -142,7 +142,7 @@ export default function StoreEmployees() {
         loading={loading}
         onEdit={openEditDialog}
         onDelete={handleDeleteEmployee}
-      /> */}
+      />
     </div>
   );
 }

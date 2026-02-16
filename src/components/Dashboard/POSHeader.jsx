@@ -12,7 +12,7 @@ const POSHeader = () => {
 
   const user = userProfile?.user;
   const fullName = user?.fullName || "User";
-  const role = user?.role?.replace(/_/g, " ") || "";
+  const role = user?.roles?.map((r) => r.replace(/_/g, " "))?.join(", ") || "";
   const branchName = user?.branch?.name || "Unknown Branch";
   const storeName = user?.branch?.store?.brand || "Unknown Store";
 
@@ -77,9 +77,14 @@ const POSHeader = () => {
               <div className="hidden sm:block leading-tight">
                 <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-50">{fullName}</p>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 capitalize">{role}</p>
-                <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                  {storeName} • {branchName}
-                </p>
+                {
+                  (user?.branch?.name)&&(
+                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                      {storeName} • {branchName}
+                    </p>
+                  )
+                }
+
               </div>
             </div>
           )}

@@ -32,6 +32,9 @@ import Purchase from "../pages/InventoryManager/purchase/Purchase";
 import Suppliers from "../pages/InventoryManager/supplier/Suppliers";
 import InventoryMovements from "../pages/InventoryManager/Inventory/InventoryMovements";
 
+import PayrollPage from "../pages/Branch Manager/payroll/PayrollPage";
+import SalaryPage from "../pages/Branch Manager/salary/SalaryPage";
+import StoreEmployees from "../pages/store/Employee/StoreEmployees";
 
 const DashboardRoutes = () => {
   
@@ -65,6 +68,7 @@ const DashboardRoutes = () => {
          
       
 
+        <Route path="store/users" element={<StoreEmployees />} />
         <Route path="store/products" element={<Products />} />
         <Route path="store/products/variants" element={<ProductVariantsPage />} />
         <Route path="store/products/categories" element={<Categories />} />
@@ -84,6 +88,9 @@ const DashboardRoutes = () => {
           <Route path="branch/inventory/suppliers" element={<Suppliers />} />
 
           
+          <Route path="branch/payroll" element={<PayrollPage />} />
+          {/* <Route path="branch/salary/:branchId" element={<SalaryPage />} /> */}
+
           <Route path="settings" element={<Settings />} />
           <Route path="branch/settings" element={<BranchSettings />} />
           

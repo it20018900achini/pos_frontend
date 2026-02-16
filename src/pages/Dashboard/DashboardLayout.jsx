@@ -4,7 +4,7 @@ import Sidebar from "@/components/Dashboard/Sidebar";
 import POSHeader from "@/components/Dashboard/POSHeader";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getBranchById } from "../../Redux Toolkit/features/branch/branchThunks";
+import { getAllBranchesByStore, getBranchById } from "../../Redux Toolkit/features/branch/branchThunks";
 import { getStoreByAdmin } from "@/Redux Toolkit/features/store/storeThunks";
 import ChatPage from "../Branch Manager/Chat/ChatPage";
 
@@ -25,6 +25,15 @@ export default function DashboardLayout() {
       dispatch(getStoreByAdmin(localStorage.getItem("jwt")));
     }
   }, []);
+    useEffect(() => {
+        dispatch(
+          getAllBranchesByStore({
+            storeId: userProfile?.user?.storeId,
+            jwt: localStorage.getItem("jwt"),
+          })
+        );
+      
+    }, [dispatch, userProfile?.user?.storeId, userProfile]);
   return (
     <SidebarProvider>{userProfile && !loading ? (
       <div className="flex h-screen overflow-hidden">
