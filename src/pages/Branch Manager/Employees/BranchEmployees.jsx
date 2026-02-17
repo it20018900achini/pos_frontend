@@ -16,8 +16,8 @@ import {
   findBranchEmployees,
   updateEmployee,
 } from "../../../Redux Toolkit/features/employee/employeeThunks";
+
 import ContentLayout from "../../Dashboard/ContentLayout";
-import StoreEmployees from "../../store/Employee/StoreEmployees";
 
 /* -----------------------------
    Component
@@ -28,13 +28,15 @@ const BranchEmployees = () => {
   /* -----------------------------
      Redux State
   ------------------------------ */
-  const { branch } = useSelector((state) => state.branch);
+  const { branches } = useSelector((state) => state.branch);
   const { employees, loading } = useSelector((state) => state.employee);
   const { userProfile } = useSelector((state) => state.user);
 
   /* -----------------------------
-     UI State
+     Local State
   ------------------------------ */
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
+
   const [dialogs, setDialogs] = useState({
     add: false,
     edit: false,
@@ -45,13 +47,22 @@ const BranchEmployees = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
   /* -----------------------------
-     Fetch Employees
+     Auto Select First Branch
   ------------------------------ */
   useEffect(() => {
-    if (branch?.id) {
-      dispatch(findBranchEmployees({ branchId: branch.id }));
+    if (branches?.length > 0 && !selectedBranchId) {
+      setSelectedBranchId(branches[0].id);
     }
-  }, [dispatch, branch?.id]);
+  }, [branches, selectedBranchId]);
+
+  /* -----------------------------
+     Fetch Employees When Branch Changes
+  ------------------------------ */
+  useEffect(() => {
+    if (selectedBranchId) {
+      dispatch(findBranchEmployees({ branchId: selectedBranchId }));
+    }
+  }, [dispatch, selectedBranchId]);
 
   /* -----------------------------
      Dialog Helpers
@@ -70,8 +81,7 @@ const BranchEmployees = () => {
      Handlers
   ------------------------------ */
   const handleAddEmployee = (employeeData) => {
-    // alert(JSON.stringify(userProfile.user.storeId))
-    // if (!branch?.id || !userProfile?.users.branchId) return;
+    if (!selectedBranchId || !userProfile?.user?.storeId) return;
 
     dispatch(
       createBranchEmployee({
@@ -79,7 +89,7 @@ const BranchEmployees = () => {
           ...employeeData,
           username: employeeData.email.split("@")[0],
         },
-        branchId: branch.id,
+        branchId: selectedBranchId,
         storeId: userProfile.user.storeId,
       })
     );
@@ -88,7 +98,6 @@ const BranchEmployees = () => {
   };
 
   const handleEditEmployee = (employeeDetails) => {
-    alert(JSON.stringify(employeeDetails))
     if (!selectedEmployee?.id) return;
 
     dispatch(
@@ -116,65 +125,78 @@ const BranchEmployees = () => {
      Render
   ------------------------------ */
   return (
-    <ContentLayout title="Employee Management" subTitle="Manage your branch employees, their access, and performance." right={
-   
-   
-  
-   
-      <AddEmployeeDialog
+    <ContentLayout
+      title="Branch Employees"
+      subTitle="Manage your branch employees, their access, and performance."
+      right={
+        <AddEmployeeDialog
           isAddDialogOpen={dialogs.add}
           setIsAddDialogOpen={() => openDialog("add")}
           handleAddEmployee={handleAddEmployee}
           roles={branchAdminRole}
         />
+      }
+    >
+      <div className="space-y-6">
 
+        {/* -------- Branch Selector -------- */}
+        <div className="flex items-center gap-4">
+          <label className="font-medium">Select Branch:</label>
+          <select
+            className="border rounded px-3 py-2"
+            value={selectedBranchId || ""}
+            onChange={(e) => setSelectedBranchId(e.target.value)}
+          >
+            {branches?.map((branch) => (
+              <option key={branch.id} value={branch.id}>
+                {branch.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
+        {/* -------- Stats -------- */}
+        <EmployeeStats employees={employees} loading={loading} />
 
-    }>
-    <div className="space-y-6">
-      {/* W */}
-    <hr/>   
+        {/* -------- Table -------- */}
+        <EmployeeTable
+          employees={employees}
+          loading={loading}
+          handleToggleAccess={handleToggleAccess}
+          openEditDialog={(emp) => openDialog("edit", emp)}
+          openResetPasswordDialog={(emp) =>
+            openDialog("resetPassword", emp)
+          }
+          openPerformanceDialog={(emp) =>
+            openDialog("performance", emp)
+          }
+        />
 
-      <EmployeeStats employees={employees} loading={loading} />
+        {/* ---------------- Dialogs ---------------- */}
+        <EditEmployeeDialog
+          isEditDialogOpen={dialogs.edit}
+          setIsEditDialogOpen={() => closeDialog("edit")}
+          selectedEmployee={selectedEmployee}
+          handleEditEmployee={handleEditEmployee}
+          roles={branchAdminRole}
+        />
 
-      <EmployeeTable
-        employees={employees}
-        loading={loading}
-        handleToggleAccess={handleToggleAccess}
-        openEditDialog={(emp) => openDialog("edit", emp)}
-        openResetPasswordDialog={(emp) =>
-          openDialog("resetPassword", emp)
-        }
-        openPerformanceDialog={(emp) =>
-          openDialog("performance", emp)
-        }
-      />
+        <ResetPasswordDialog
+          isResetPasswordDialogOpen={dialogs.resetPassword}
+          setIsResetPasswordDialogOpen={() =>
+            closeDialog("resetPassword")
+          }
+          selectedEmployee={selectedEmployee}
+        />
 
-      {/* ---------------- Dialogs ---------------- */}
-      <EditEmployeeDialog
-        isEditDialogOpen={dialogs.edit}
-        setIsEditDialogOpen={() => closeDialog("edit")}
-        selectedEmployee={selectedEmployee}
-        handleEditEmployee={handleEditEmployee}
-        roles={branchAdminRole}
-      />
-
-      <ResetPasswordDialog
-        isResetPasswordDialogOpen={dialogs.resetPassword}
-        setIsResetPasswordDialogOpen={() =>
-          closeDialog("resetPassword")
-        }
-        selectedEmployee={selectedEmployee}
-      />
-
-      <PerformanceDialog
-        isPerformanceDialogOpen={dialogs.performance}
-        setIsPerformanceDialogOpen={() =>
-          closeDialog("performance")
-        }
-        selectedEmployee={selectedEmployee}
-      />
-    </div>
+        <PerformanceDialog
+          isPerformanceDialogOpen={dialogs.performance}
+          setIsPerformanceDialogOpen={() =>
+            closeDialog("performance")
+          }
+          selectedEmployee={selectedEmployee}
+        />
+      </div>
     </ContentLayout>
   );
 };

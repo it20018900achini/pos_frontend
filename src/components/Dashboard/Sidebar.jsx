@@ -265,7 +265,7 @@ const NAV_LINKS1 = [
       )}
 
       <aside
-        className={`fixed md:static z-51 h-screen top-0 left-0
+        className={`fixed md:static z-50 h-screen top-0 left-0
           bg-white dark:bg-gray-900 border-r dark:border-gray-700 shadow-lg
           transition-all duration-300
           ${sidebarOpen ? "w-64" : "w-20"}

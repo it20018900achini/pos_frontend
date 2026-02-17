@@ -48,51 +48,94 @@ const POSHeader = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [setSidebarOpen, navigate]);
 
-  return (
-    <header className="sticky top-0 z-50 px-4 sm:px-6 py-4 bg-neutral-50 dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700 transition-colors">
-      <div className="flex items-center justify-between">
+return (
+  <header className="sticky top-0 z-40 px-3 sm:px-6 py-3 sm:py-4 
+    bg-neutral-50 dark:bg-neutral-900 
+    border-b border-neutral-200 dark:border-neutral-700">
 
-        {/* LEFT */}
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:block">
-            <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-50">
-              {settings?.businessName}
-            </h1>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Point of Sale Dashboard
-            </p>
-          </div>
+    <div className="flex items-center justify-between flex-wrap gap-3">
+
+      {/* LEFT */}
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="truncate">
+          <h1 className="text-base sm:text-xl font-bold 
+            text-neutral-900 dark:text-neutral-50 truncate">
+            {settings?.businessName}
+          </h1>
+
+          <p className="hidden sm:block text-xs 
+            text-neutral-500 dark:text-neutral-400">
+            Point of Sale Dashboard
+          </p>
         </div>
-
-        {/* RIGHT */}
-        <div className="flex items-center gap-3">
-          <ThemeToggle />
-
-          {user && (
-            <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 shadow border border-neutral-200 dark:border-neutral-700 transition-colors">
-              <div className="h-9 w-9 rounded-full flex items-center justify-center font-bold bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-100">
-                {fullName.charAt(0).toUpperCase()}
-              </div>
-
-              <div className="hidden sm:block leading-tight">
-                <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-50">{fullName}</p>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 capitalize">{role}</p>
-                {
-                  (user?.branch?.name)&&(
-                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                      {storeName} • {branchName}
-                    </p>
-                  )
-                }
-
-              </div>
-            </div>
-          )}
-        </div>
-
       </div>
-    </header>
-  );
+
+      {/* RIGHT */}
+      <div className="flex items-center gap-2 sm:gap-3">
+
+        <ThemeToggle />
+
+        {user && (
+          <div className="
+            flex items-center gap-2 sm:gap-3
+            px-2 sm:px-3 py-2
+            rounded-xl
+            bg-neutral-100 dark:bg-neutral-800
+            border border-neutral-200 dark:border-neutral-700
+            max-w-full
+          ">
+
+            {/* Avatar */}
+            <div className="
+              h-8 w-8 sm:h-9 sm:w-9
+              rounded-full
+              flex items-center justify-center
+              font-bold text-sm
+              bg-neutral-200 dark:bg-neutral-700
+              text-neutral-800 dark:text-neutral-100
+              shrink-0
+            ">
+              {fullName.charAt(0).toUpperCase()}
+            </div>
+
+            {/* User Info */}
+            <div className="leading-tight min-w-0">
+
+              <p className="
+                font-semibold text-xs sm:text-sm
+                text-neutral-900 dark:text-neutral-50
+                truncate
+              ">
+                {fullName}
+              </p>
+
+              <p className="
+                text-[10px] sm:text-xs
+                text-neutral-500 dark:text-neutral-400
+                capitalize truncate
+              ">
+                {role}
+              </p>
+
+              {user?.branch?.name && (
+                <p className="
+                  hidden md:block
+                  text-[9px] sm:text-[10px]
+                  text-neutral-400 dark:text-neutral-500
+                  truncate
+                ">
+                  {storeName} • {branchName}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+    </div>
+  </header>
+);
+
 };
 
 export default POSHeader;

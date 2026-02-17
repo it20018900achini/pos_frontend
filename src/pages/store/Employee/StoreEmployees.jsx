@@ -18,6 +18,7 @@ import {
   deleteEmployee,
 } from "@/Redux Toolkit/features/employee/employeeThunks";
 import { storeAdminRole } from "../../../utils/userRole";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
 export default function StoreEmployees() {
   const dispatch = useDispatch();
@@ -81,11 +82,9 @@ export default function StoreEmployees() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        {/* <h1 className="text-3xl font-bold tracking-tight">
-          Employee Management1
-        </h1> */}
+    <ContentLayout title="Store Employees" subTitle="Manage your store employees, their access, and performance."
+    right={
+      <>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="">
@@ -110,6 +109,15 @@ export default function StoreEmployees() {
             />
           </DialogContent>
         </Dialog>
+      </>
+    }
+    >
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        {/* <h1 className="text-3xl font-bold tracking-tight">
+          Employee Management1
+        </h1> */}
+      
 
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="max-h-[80vh] overflow-y-auto">
@@ -143,6 +151,6 @@ export default function StoreEmployees() {
         onEdit={openEditDialog}
         onDelete={handleDeleteEmployee}
       />
-    </div>
+    </div></ContentLayout>
   );
 }
