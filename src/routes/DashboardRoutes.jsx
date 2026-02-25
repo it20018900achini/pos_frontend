@@ -81,6 +81,10 @@ const DashboardRoutes = () => {
           <Route path="branch/orders/refunds" element={<Refunds />} />
           <Route path="branch/orders/quotations" element={<QuotationsPage />} />
 
+          <Route path="store/orders" element={<Orders />} />
+          <Route path="store/orders/refunds" element={<Refunds />} />
+          <Route path="store/orders/quotations" element={<QuotationsPage />} />
+
           <Route path="branch/transactions" element={<Transactions />} />
 
 

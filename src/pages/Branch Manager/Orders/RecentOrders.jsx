@@ -1,452 +1,170 @@
-import React, { useState, useEffect, Fragment } from "react";
-import { useDispatch, useSelector } from "react-redux";
-
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
-
-import { SearchIcon, Loader2, RefreshCw, Download, PrinterIcon } from "lucide-react";
-
+import { Loader2, RefreshCw } from "lucide-react";
+import { useBranchOrders } from "@/context/hooks/useBranchOrders";
 import OrderTable from "./OrderTable";
-import OrderDetails from "./OrderDetails";
 
-import { handleDownloadOrderPDF } from "./pdf/pdfUtils";
-import CompareItems from "./CompareItems";
-import { getFlattenedRefundSummaryWithTotals,  } from "./getFlattenedRefundSummaryWithTotals";
-import { getRecentOrdersByBranchPagin } from "@/Redux Toolkit/features/order/orderThunks";
-import * as XLSX from "xlsx";
-const RecentOrders = (branchId) => {
+const RecentOrders = ({ branches = [] }) => {
+  const {
+    orders,
+    pageInfo,
+    loading,
+    userProfile,
 
-  const dispatch = useDispatch();
-  const { toast } = useToast();
-  const { userProfile } = useSelector((state) => state.user);
-  const { orders, pageInfo, loading, error } = useSelector((state) => state.order);
+    selectedBranchId,
+    setSelectedBranchId,
 
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showOrderDetailsDialog, setShowOrderDetailsDialog] = useState(false);
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    searchText,
+    setSearchText,
 
-  
-  const [selectedOrderRetuen, setSelectedOrderReturn] = useState(null);
-  const [showOrderReturnDetailsDialog, setShowOrderDetailsReturnDialog] = useState(false);
+    page,
+    setPage,
+    size,
+    setSize,
 
-  const [page, setPage] = useState(0);
-  const [size, setSize] = useState(10);
-
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [searchText, setSearchText] = useState("");
-// alert(JSON.stringify(branchId))
-  const loadOrders = (branchId,start = startDate, end = endDate, search = searchText) => {
-    if (!userProfile?.user.id) return;
-// alert(branchId)
-    const startISO = start ? new Date(start).toISOString() : undefined;
-    const endISO = end ? new Date(end).toISOString() : undefined;
-
-    dispatch(
-      getRecentOrdersByBranchPagin({
-        branchId: branchId,
-        page,
-        size,
-        sort: "id,desc",
-        start: startISO,
-        end: endISO,
-        search: search || undefined,
-      })
-    );
-  };
-
-  useEffect(() => {
-    if (branchId) {
-    loadOrders(branchId?.branchId);
-    }
-  }, [userProfile, page, size,branchId]);
-
-  useEffect(() => {
-    if (error) {
-      toast({
-        title: "Error Loading Orders",
-        description: error,
-        variant: "destructive",
-      });
-    }
-  }, [error]);
-
-  const handleViewOrder = (order) => {
-    setSelectedOrder(order);
-    setShowOrderDetailsDialog(true);
-  };
-
-  const handleReturnOrder = (order) => {
-    setSelectedOrderReturn(order);
-    setShowOrderDetailsReturnDialog(true);
-  };
-
-  // Ultra-compact thermal receipt printing
-  const handlePrintInvoice = (order, storeName = "STORE NAME", storeLogoUrl) => {
-    if (!order) return;
-
-    const printWindow = window.open("", "_blank", "width=300,height=600");
-    if (!printWindow) return;
-
-    const formatCurrency = (amount) => Number(amount).toFixed(2);
-    const totalAmount = order.items.reduce(
-      (sum, item) => sum + (item.product?.sellingPrice || 0) * item.quantity,
-      0
-    );
-    const cashPaid = Number(order.cash || 0);
-    const creditPaid = Number(order.credit || 0);
-    const changeDue = Math.max(cashPaid + creditPaid - totalAmount, 0);
-    const notes = order.note || "";
-    const barcodeUrl = `https://chart.googleapis.com/chart?cht=code128&chs=200x50&chl=${order.id}`;
-
-    const truncate = (str, max = 20) => (str.length > max ? str.slice(0, max - 3) + "..." : str);
-
-    const fontSize = order.items.length > 15 ? 8 : 10;
-
-    const htmlContent = `
-      <html>
-        <head>
-          <title>Receipt #${order.id}</title>
-          <style>
-            body { font-family: monospace; font-size: ${fontSize}px; padding:2px; width:200px; line-height:1.1; white-space:pre-wrap; }
-            @media print { @page { margin:0.15in; size:58mm auto; } body{ margin:0; } }
-            p, th, td, .line, .center, .right { margin:0; padding:0; }
-            .center { text-align:center; }
-            .right { text-align:right; }
-            .line { border-top:1px dashed #000; margin:2px 0; }
-            table { width:100%; border-collapse:collapse; }
-            th, td { padding:1px 0; vertical-align:top; }
-            td.item { max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-            img.barcode, img.logo { display:block; margin:3px auto; }
-          </style>
-        </head>
-        <body>
-          <div  className="center">
-            ${storeLogoUrl ? `<img  className="logo" src="${storeLogoUrl}" width="80" />` : ""}
-            <p style="font-weight:bold;">${storeName}</p>
-            <p style="margin-top:2px;">Invoice #${order.id}</p>
-            <p style="margin-top:2px;">${new Date(order.createdAt).toLocaleString()}</p>
-          </div>
-
-          <p>Customer: ${order.customer?.name || "Walk-in"}</p>
-          <div  className="line"></div>
-
-          <table>
-            <thead>
-              <tr><th>Item</th><th>Qty</th><th  className="right">Total</th></tr>
-            </thead>
-            <tbody>
-              ${order.items.map(item => `
-                <tr>
-                  <td  className="item">${truncate(item.product?.name || item.name)}</td>
-                  <td>${item.quantity}</td>
-                  <td  className="right">${formatCurrency((item.product?.sellingPrice || 0) * item.quantity)}</td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>
-
-          <div  className="line"></div>
-          <p  className="right">TOTAL: ${formatCurrency(totalAmount)}</p>
-          <p  className="right">CASH: ${formatCurrency(cashPaid)}</p>
-          <p  className="right">CREDIT: ${formatCurrency(creditPaid)}</p>
-          <p  className="right">CHANGE: ${formatCurrency(changeDue)}</p>
-
-          ${notes ? `<div  className="line"></div><p>Notes: ${notes}</p>` : ""}
-          <div  className="line"></div>
-
-          <div  className="center">
-            <img  className="barcode" src="${barcodeUrl}" />
-            <p>Invoice #${order.id}</p>
-          </div>
-
-          <p  className="center">Thank you for your purchase!</p>
-        </body>
-      </html>
-    `;
-
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
-  };
-
-  const handleDownloadPDF = async () => {
-    if (selectedOrder) await handleDownloadOrderPDF(selectedOrder, toast);
-  };
-
-  const handleInitiateReturn = (order) => {
-    toast({
-      title: "Initiate Return",
-      description: `Return process started for order ${order.id}.`,
-    });
-  };
-
-  const handleRefreshOrders = () => {
-    loadOrders(branchId.branchId);
-    toast({ title: "Refreshing Orders", description: "Please wait..." });
-  };
+    loadOrders,
+  } = useBranchOrders();
 
   const resetFilters = () => {
-    setStartDate(""); setEndDate(""); setSearchText(""); setPage(0); loadOrders(branchId?.branchId,"", "", "");
+    setStartDate("");
+    setEndDate("");
+    setSearchText("");
+    setPage(0);
+    loadOrders("", "", "");
   };
 
-  const nextPage = () => { if (pageInfo && page < pageInfo.totalPages - 1) setPage(page + 1); };
-  const prevPage = () => { if (page > 0) setPage(page - 1); };
+  const nextPage = () => {
+    if (pageInfo && page < pageInfo.totalPages - 1) {
+      setPage(page + 1);
+    }
+  };
 
+  const prevPage = () => {
+    if (page > 0) {
+      setPage(page - 1);
+    }
+  };
 
-// -------------------------
-// Export CSV
-// -------------------------
-const exportCSV = () => {
-  if (!orders || !orders.length) return;
-
-  const headers = [
-    "Order ID",
-    "Customer",
-    "Created At",
-    "Total",
-    "Cash",
-    "Credit",
-    "Items Count"
-  ];
-
-  const rows = orders.map((o) => [
-    o.id,
-    o.customer?.name || "Walk-in",
-    new Date(o.createdAt).toLocaleString(),
-    o.items.reduce(
-      (sum, item) => sum + (item.product?.sellingPrice || 0) * item.quantity,
-      0
-    ),
-    o.cash,
-    o.credit,
-    o.items.length,
-  ]);
-
-  const csvContent =
-    "data:text/csv;charset=utf-8," +
-    [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-
-  const link = document.createElement("a");
-  link.href = encodeURI(csvContent);
-  link.download = `orders_${Date.now()}.csv`;
-  link.click();
-};
-
-
-// -------------------------
-// Export Excel XLSX
-// -------------------------
-const exportExcel = () => {
-  if (!orders || !orders.length) return;
-
-  const data = orders.map((o) => ({
-    "Order ID": o.id,
-    Customer: o.customer?.name || "Walk-in",
-    "Created At": new Date(o.createdAt).toLocaleString(),
-    Total: o.items.reduce(
-      (sum, item) => sum + (item.product?.sellingPrice || 0) * item.quantity,
-      0
-    ),
-    Cash: o.cash,
-    Credit: o.credit,
-    "Items Count": o.items.length,
-  }));
-
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
-
-  XLSX.writeFile(workbook, `orders_${Date.now()}.xlsx`);
-};
-const exportExcelMultiSheet = () => {
-  if (!orders || !orders.length) return;
-
-  // -----------------------------
-  // Sheet 1: ORDERS
-  // -----------------------------
-  const orderSheetData = orders.map((o) => ({
-    "Order ID": o.id,
-    Customer: o.customer?.name || "Walk-in",
-    "Created At": new Date(o.createdAt).toLocaleString(),
-    Total: o.items.reduce(
-      (sum, item) => sum + (item.product?.sellingPrice || 0) * item.quantity,
-      0
-    ),
-    Cash: o.cash,
-    Credit: o.credit,
-    "Items Count": o.items.length,
-  }));
-
-  const ordersSheet = XLSX.utils.json_to_sheet(orderSheetData);
-
-  // -----------------------------
-  // Sheet 2: ITEMS
-  // -----------------------------
-  const itemsSheetData = [];
-
-  orders.forEach((order) => {
-    order.items.forEach((item) => {
-      itemsSheetData.push({
-        "Order ID": order.id,
-        "Item ID": item.id,
-        "Product Name": item.product?.name || item.name,
-        Qty: item.quantity,
-        Price: item.product?.sellingPrice || 0,
-        Total: item.quantity * (item.product?.sellingPrice || 0),
-        "Created At": new Date(order.createdAt).toLocaleString(),
-      });
-    });
-  });
-
-  const itemsSheet = XLSX.utils.json_to_sheet(itemsSheetData);
-
-  // -----------------------------
-  // Build Final Workbook
-  // -----------------------------
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, ordersSheet, "Orders");
-  XLSX.utils.book_append_sheet(workbook, itemsSheet, "Order Items");
-
-  // -----------------------------
-  // Download
-  // -----------------------------
-  XLSX.writeFile(workbook, `orders_with_items_${Date.now()}.xlsx`);
-};
-
-  
-  // const summaryWithTotals = getFlattenedRefundSummaryWithTotals(selectedOrder);
   return (
     <div className="h-full flex flex-col">
-      {/* <POSHeader /> */}
+    
 
-      <div className="p-4 bg-card border-b flex justify-between items-center">        <h1 className="text-2xl font-bold flex items-center gap-3"><span className="w-4 h-4 bg-green-500"></span>Order  History</h1>
+      {/* Branch Select (Admin Only) */}
+      {!userProfile?.user?.branch?.id && (
+        <div className="p-4">
+          <select
+            value={selectedBranchId}
+            onChange={(e) => {
+              setSelectedBranchId(e.target.value);
+              setPage(0);
+            }}
+            className="border p-2"
+          >
+            <option value="">Select Branch</option>
+            {branches.map((branch) => (
+              <option key={branch.id} value={branch.id}>
+                {branch.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
-        
-      </div>
-
-
-      <div className="p-4 md:flex gap-2 items-center flex-wrap">
-        <input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border p-1 m-1" placeholder="Start Date" />
-        <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="border p-1 m-1" placeholder="End Date" />
-        <input type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)} className="border p-1 m-1" placeholder="Search by ID or Customer" />
-        <select value={size} onChange={(e) => setSize(Number(e.target.value))} className="border p-1 m-1">
+      {/* Filters */}
+      <div className="p-4 flex flex-wrap gap-2">
+        <input
+          type="datetime-local"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="border p-2"
+        />
+        <input
+          type="datetime-local"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="border p-2"
+        />
+        <input
+          type="text"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder="Search..."
+          className="border p-2"
+        />
+        <select
+          value={size}
+          onChange={(e) => setSize(Number(e.target.value))}
+          className="border p-2"
+        >
           <option value={5}>5 per page</option>
           <option value={10}>10 per page</option>
           <option value={20}>20 per page</option>
           <option value={50}>50 per page</option>
         </select>
-        <Button onClick={() => loadOrders(branchId?.branchId)} disabled={loading} size="sm" className="m-1">Filter</Button>
-        <Button variant="outline" onClick={resetFilters} disabled={loading} size="sm" className="m-1">Reset</Button>
+
+        <Button onClick={() => loadOrders()} disabled={loading}>
+          Filter
+        </Button>
+
+        <Button variant="outline" onClick={resetFilters}>
+          Reset
+        </Button>
+
+        <Button
+          variant="outline"
+          onClick={() => loadOrders()}
+          disabled={loading}
+        >
+          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
       </div>
-<div className="flex gap-2 w-full justify-end">
-  <Button variant="outline" onClick={exportCSV} disabled={!orders?.length}>
-    Export CSV
-  </Button>
 
-  <Button variant="outline" onClick={exportExcel} disabled={!orders?.length}>
-    Export Excel
-  </Button>
-
-  <Button variant="outline" onClick={exportExcelMultiSheet} disabled={!orders?.length}>
-    Export Excel (2 Sheets)
-  </Button>
-
-  <Button variant="outline" onClick={handleRefreshOrders} disabled={loading}>
-    <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-    Refresh
-  </Button>
-</div>
-
+      {/* Orders Table */}
       <div className="flex-1 p-4 overflow-auto">
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-            <Loader2 className="animate-spin h-16 w-16 text-primary" />
-            <p className="mt-4">Loading orders...</p>
+          <div className="flex justify-center items-center h-full">
+            <Loader2 className="animate-spin h-10 w-10" />
           </div>
-        ) : orders && orders.length > 0 ? (
+        ) : orders?.length ? (
           <>
-           
+            <OrderTable orders={orders} />
 
-            <OrderTable
-              orders={orders}
-              handleViewOrder={handleViewOrder}
-              handleReturnOrder={handleReturnOrder}
-              handlePrintInvoice={handlePrintInvoice}
-              handleInitiateReturn={handleInitiateReturn}
-            />
-             <div className="border-t mt-5 pt-3 flex justify-between items-center mb-4 flex-wrap gap-2">
-              <div className="text-sm">
-                Showing {pageInfo ? page * size + 1 : 0} - {pageInfo ? Math.min((page + 1) * size, pageInfo.totalElements) : 0} of {pageInfo?.totalElements || 0} orders
-              </div>
-              <div className="flex gap-2 items-center">
-                <Button variant="outline" disabled={page === 0 || loading} onClick={prevPage}>Prev</Button>
-                {pageInfo && Array.from({ length: pageInfo.totalPages }, (_, i) => i)
-                  .slice(Math.max(0, page - 2), Math.min(pageInfo.totalPages, page + 3))
-                  .map((i) => (
-                    <Button key={i} variant={i === page ? "default" : "outline"} onClick={() => setPage(i)} disabled={loading}>{i + 1}</Button>
-                  ))}
-                <Button variant="outline" disabled={pageInfo?.page === pageInfo?.totalPages - 1 || loading} onClick={nextPage}>Next</Button>
-              </div>
+            {/* Pagination */}
+            <div className="flex justify-between mt-4">
+              <Button
+                variant="outline"
+                disabled={page === 0}
+                onClick={prevPage}
+              >
+                Prev
+              </Button>
+
+              <span>
+                Page {page + 1} of {pageInfo?.totalPages || 1}
+              </span>
+
+              <Button
+                variant="outline"
+                disabled={
+                  pageInfo && page >= pageInfo.totalPages - 1
+                }
+                onClick={nextPage}
+              >
+                Next
+              </Button>
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-            <SearchIcon size={48} strokeWidth={1} />
-            <p className="mt-4">No orders found</p>
-            <p className="text-sm">Try refreshing or adjusting filters</p>
+          <div className="text-center text-muted-foreground">
+            No orders found
           </div>
         )}
       </div>
-
-      <Dialog open={showOrderDetailsDialog} onOpenChange={setShowOrderDetailsDialog}>
-        {selectedOrder && (
-          <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>Order Details - Invoice</DialogTitle></DialogHeader>
-            <OrderDetails selectedOrder={selectedOrder} />
-
-{/* <pre>
-
-{JSON.stringify(getFlattenedRefundSummaryWithTotals(selectedOrder) ,null,2)}
-</pre> */}
-            {/* <TotalRefundSummary  dataSelected={selectedOrder} /> */}
-            <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={handleDownloadPDF}><Download className="h-4 w-4 mr-2" />Download PDF</Button>
-              <Button onClick={() => handlePrintInvoice(selectedOrder)}><PrinterIcon className="h-4 w-4 mr-2" />Print Invoice</Button>
-            </DialogFooter>
-          </DialogContent>
-        )}
-      </Dialog>
-      <Dialog open={showOrderReturnDetailsDialog} onOpenChange={setShowOrderDetailsReturnDialog}>
-        {selectedOrderRetuen && (
-          <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>Refund Details - Invoice</DialogTitle></DialogHeader>
-<CompareItems dataSelected={selectedOrderRetuen} />
- {/* <pre> */}
-
-{/* {JSON.stringify(selectedOrderRetuen,null,2)}</pre>  */}
-{/*{JSON.stringify(selectedOrderRetuen?.orderReturns[0]?.order?.items,null,2)}
-*/}
-{/* {
-  selectedOrderRetuen?.orderReturns?.length > 1
-    ? selectedOrderRetuen.orderReturns.map((item, index) => (
-        <Button key={index}>
-          {index}
-        </Button>
-      ))
-    : <Fragment>
-
-    </Fragment>
-} */}
-
-            <DialogFooter className="gap-2">
-              {/* <Button onClick={() => handlePrintInvoice(selectedOrder)}><PrinterIcon className="h-4 w-4 mr-2" />Print Invoice</Button> */}
-            </DialogFooter>
-          </DialogContent>
-        )}
-      </Dialog>
     </div>
   );
 };
