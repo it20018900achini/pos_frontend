@@ -35,6 +35,7 @@ import InventoryMovements from "../pages/InventoryManager/Inventory/InventoryMov
 import PayrollPage from "../pages/Branch Manager/payroll/PayrollPage";
 import SalaryPage from "../pages/Branch Manager/salary/SalaryPage";
 import StoreEmployees from "../pages/store/Employee/StoreEmployees";
+import Onboarding from "../pages/onboarding/Onboarding";
 
 const DashboardRoutes = () => {
   
@@ -54,6 +55,7 @@ const DashboardRoutes = () => {
         <Route path="pos/orders" element={<OrderHistoryPage />} />
         <Route path="pos/refunds" element={<OrderRefundHistoryPage />} />
                  
+      <Route path="store/onboarding" element={<Onboarding />} />
       <Route path="store/branches" element={<Branches />} />
 
       <Route path="branch/users/" element={<BranchEmployees />} />

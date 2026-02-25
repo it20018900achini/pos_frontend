@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback, use } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -44,27 +44,24 @@ const PaymentDialog = ({
   const dispatch = useDispatch();
   const { toast } = useToast();
 
-  
-
   const cart = useSelector(selectCartItems);
   const total = useSelector(selectTotal);
   const discount = useSelector(selectDiscount);
   const note = useSelector(selectNote);
   const selectedCustomer = useSelector(selectSelectedCustomer);
-//  const { branch, branches, loading } = useSelector((state) => state.branch);
 
   const { store } = useSelector((state) => state.store);
-
   const { userProfile } = useSelector((state) => state.user);
+  const { branches, loading, error } = useSelector((state) => state.branch);
 
-  
   const [errorMsg, setErrorMsg] = useState("");
   const [payments, setPayments] = useState([]);
   const [loadingMain, setLoadingMain] = useState(false);
+  const [selectedBranchId, setSelectedBranchId] = useState("");
 
   const givenRef = useRef(null);
 
-
+  // ================= FETCH BRANCHES =================
   useEffect(() => {
     if (store?.id) {
       dispatch(
@@ -76,9 +73,14 @@ const PaymentDialog = ({
     }
   }, [dispatch, store]);
 
+  // ================= AUTO ASSIGN BRANCH =================
+  useEffect(() => {
+    if (userProfile?.user?.branch?.id) {
+      setSelectedBranchId(userProfile.user.branch.id);
+    }
+  }, [userProfile]);
 
-  
-  // ---------------- SAFE NUMBERS ----------------
+  // ================= SAFE NUMBERS =================
   const safeTotal = Number(total || 0);
 
   const discountValue =
@@ -87,9 +89,16 @@ const PaymentDialog = ({
       : Number(discount || 0);
 
   const netTotal = safeTotal - discountValue;
-  const { branches, loading, error } = useSelector((state) => state.branch);
 
-  // ---------------- INIT DEFAULT CASH ----------------
+  const totalPaid = payments.reduce(
+    (sum, p) => sum + (Number(p.amount) || 0),
+    0
+  );
+
+  const changeDue = Math.max(totalPaid - netTotal, 0);
+  const remaining = Math.max(netTotal - totalPaid, 0);
+
+  // ================= INIT DEFAULT CASH =================
   useEffect(() => {
     if (!showPaymentDialog) return;
 
@@ -97,122 +106,139 @@ const PaymentDialog = ({
       {
         id: Date.now(),
         paymentMethod: "CASH",
-        amount: safeTotal,
+        amount: netTotal,
       },
     ]);
 
     setTimeout(() => {
-      givenRef.current?.focus();
-      givenRef.current?.select();
+      if (givenRef.current) {
+        givenRef.current.focus();
+        givenRef.current.select();
+      }
     }, 100);
-  }, [showPaymentDialog, safeTotal]);
+  }, [showPaymentDialog, netTotal]);
 
-  // ---------------- AUTO HIDE ERROR MSG ----------------
+  // ================= AUTO HIDE ERROR =================
   useEffect(() => {
     if (!errorMsg) return;
 
     const timer = setTimeout(() => {
       setErrorMsg("");
-    }, 5000); // 10 seconds
+    }, 5000);
 
     return () => clearTimeout(timer);
   }, [errorMsg]);
 
-  const totalPaid = payments.reduce(
-    (sum, p) => sum + (Number(p.amount) || 0),
-    0
-  );
-  const changeDue = Math.max(totalPaid - netTotal, 0);
-  const remaining = Math.max(netTotal - totalPaid, 0);
-  // ---------------- PROCESS PAYMENT ----------------
-const processPayment = useCallback(async () => {
-  if (!cart.length)
-    return toast({ title: "Empty Cart", description: "Add items first", variant: "destructive" });
+  // ================= PROCESS PAYMENT =================
+  const processPayment = useCallback(async () => {
+    if (!cart.length)
+      return toast({
+        title: "Empty Cart",
+        description: "Add items first",
+        variant: "destructive",
+      });
 
-  if (!selectedCustomer)
-    return toast({ title: "Customer Required", description: "Select a customer", variant: "destructive" });
-  alert(JSON.stringify(userProfile, null, 2))
-  if (!userProfile?.user.branch?.id)
-    return toast({ title: "Branch Missing", description: "Branch not loaded", variant: "destructive" });
+    if (!selectedCustomer)
+      return toast({
+        title: "Customer Required",
+        description: "Select a customer",
+        variant: "destructive",
+      });
 
-  if (!userProfile?.user.id)
-    return toast({ title: "User Missing", description: "User not loaded", variant: "destructive" });
+    const branchId =
+      userProfile?.user?.branch?.id || selectedBranchId;
 
-  const totalPaid = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-  const netTotal = Number(total || 0) - Number(discount || 0);
+    if (!branchId)
+      return toast({
+        title: "Branch Required",
+        description: "Select a branch",
+        variant: "destructive",
+      });
 
-  if (totalPaid < netTotal)
-    return toast({
-      title: "Payment Incomplete",
-      description: `Remaining: LKR ${(netTotal - totalPaid).toFixed(2)}`,
-      variant: "destructive",
-    });
+    if (!userProfile?.user?.id)
+      return toast({
+        title: "User Missing",
+        description: "User not loaded",
+        variant: "destructive",
+      });
 
-  try {
+    if (totalPaid < netTotal)
+      return toast({
+        title: "Payment Incomplete",
+        description: `Remaining: LKR ${(netTotal - totalPaid).toFixed(2)}`,
+        variant: "destructive",
+      });
 
-    setLoadingMain(true);
+    try {
+      setLoadingMain(true);
 
-    const orderData = {
-      branchId: userProfile.user.branch.id,
-      cashierId: userProfile?.user.id,
-      customer: {
-        id: selectedCustomer.id,
-        name: selectedCustomer.name,
-        phone: selectedCustomer.phone,
-      },
-      subtotal: Number(total || 0),
-      discountAmount: Number(discount || 0),
-      netAmount: netTotal,
-      items: cart.map((i) => ({
-        productId: i.productId,
-        productVariantId: i.id,
-        quantity: i.quantity,
-        unitPrice: Number(i.price),
-        totalPrice: Number(i.price * i.quantity),
-      })),
-      payments: payments.map((p) => ({
-        paymentMethod: p.paymentMethod,
-        amount: Number(p.amount),
-      })),
-      status: "PENDING",
-    };
+      const orderData = {
+        branchId: Number(branchId),
+        cashierId: userProfile.user.id,
+        customer: {
+          id: selectedCustomer.id,
+          name: selectedCustomer.name,
+          phone: selectedCustomer.phone,
+        },
+        subtotal: safeTotal,
+        discountAmount: discountValue,
+        netAmount: netTotal,
+        note: note,
+        items: cart.map((i) => ({
+          productId: i.productId,
+          productVariantId: i.id,
+          quantity: i.quantity,
+          unitPrice: Number(i.price),
+          totalPrice: Number(i.price * i.quantity),
+        })),
+        payments: payments.map((p) => ({
+          paymentMethod: p.paymentMethod,
+          amount: Number(p.amount),
+        })),
+        status: "PENDING",
+      };
 
-    const created = await dispatch(createOrder(orderData)).unwrap();
+      const created = await dispatch(createOrder(orderData)).unwrap();
 
-    dispatch(setCurrentOrder(created));
-    dispatch(resetOrder());
+      dispatch(setCurrentOrder(created));
+      dispatch(resetOrder());
 
-    setShowPaymentDialog(false);
-    setShowReceiptDialog(true);
+      setShowPaymentDialog(false);
+      setShowReceiptDialog(true);
 
-    toast({
-      title: "Payment Successful",
-      description: `Order #${created.id} created`,
-    });
-  } catch (e) {
-    setErrorMsg(e || "Something went wrong");
-    toast({
-      title: "Payment Failed",
-      description: e || "Something went wrong",
-      variant: "destructive",
-    });
-  } finally {
-    setLoadingMain(false);
-  }
-}, [
-  cart,
-  selectedCustomer,
-  payments,
-  total,
-  discount,
-  // branch,
-  userProfile,
-  dispatch,
-  toast,
-  setShowPaymentDialog,
-  setShowReceiptDialog,
-]);
+      toast({
+        title: "Payment Successful",
+        description: `Order #${created.id} created`,
+      });
+    } catch (e) {
+      const message =
+        typeof e === "string"
+          ? e
+          : e?.message || "Something went wrong";
 
+      setErrorMsg(message);
+
+      toast({
+        title: "Payment Failed",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingMain(false);
+    }
+  }, [
+    cart,
+    selectedCustomer,
+    payments,
+    total,
+    discount,
+    userProfile,
+    selectedBranchId,
+    dispatch,
+    toast,
+    setShowPaymentDialog,
+    setShowReceiptDialog,
+  ]);
 
   return (
     <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
@@ -223,35 +249,42 @@ const processPayment = useCallback(async () => {
           </DialogTitle>
         </DialogHeader>
 
-        {/* BODY */}
         <div className="flex flex-1 overflow-hidden">
           {/* LEFT – PAYMENTS */}
           <div className="w-[55%] p-8 py-4 border-r bg-white/50 overflow-y-auto">
-           <div className="flex items-center gap-2 mb-4">
-            {
-              userProfile?.user?.branchId ? (
+            {/* Branch Selector */}
+            <div className="flex items-center gap-2 mb-4">
+              {selectedBranchId ? (
                 <span className="w-4 h-4 bg-green-500 rounded-full"></span>
               ) : (
                 <span className="w-4 h-4 bg-red-500 rounded-full"></span>
-              )
-            }
-            {/* <span className="w-4 h-4 bg-red-500"></span> */}
-            <select>
-              <option value="">Select Branch</option>
-              {loading ? (
-                <option>Loading branches...</option>
-              ) : error ? (
-                <option>Error loading branches</option>
-              ) : (branches.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              )))}
-            </select>
-           </div>
-           
+              )}
+
+              <select
+                value={selectedBranchId}
+                onChange={(e) => setSelectedBranchId(e.target.value)}
+                disabled={!!userProfile?.user?.branch?.id}
+              >
+                <option value="">Select Branch</option>
+
+                {loading ? (
+                  <option disabled>Loading branches...</option>
+                ) : error ? (
+                  <option disabled>Error loading branches</option>
+                ) : (
+                  branches.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
             <div className="rounded-2xl p-3 bg-white text-center mb-6 shadow-inner">
-              <p className="text-sm text-neutral-500 uppercase">Total Amount</p>
+              <p className="text-sm text-neutral-500 uppercase">
+                Total Amount
+              </p>
               <p className="text-2xl font-bold text-indigo-600">
                 LKR {netTotal.toFixed(2)}
               </p>
@@ -368,9 +401,9 @@ const processPayment = useCallback(async () => {
           </div>
         </div>
 
-        {/* FOOTER */}
-        <DialogFooter className="px-8 py-4 bg-white/80 flex items-center ">
+        <DialogFooter className="px-8 py-4 bg-white/80 flex items-center">
           <div className="text-red-500 flex-1">{errorMsg}</div>
+
           <Button variant="outline" onClick={() => setShowPaymentDialog(false)}>
             Cancel
           </Button>
@@ -380,7 +413,9 @@ const processPayment = useCallback(async () => {
             disabled={loadingMain || totalPaid < netTotal}
             className="bg-indigo-600 text-white"
           >
-            {loadingMain && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {loadingMain && (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            )}
             Confirm Payment
           </Button>
         </DialogFooter>
