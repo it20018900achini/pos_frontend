@@ -1,13 +1,22 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 import {
   getUserProfile,
   getCustomers,
   getCashiers,
   getAllUsers,
   getUserById,
-  logout
-} from './userThunks';
+  logout,
+} from "./userThunks";
 
+/* ------------------ Helpers ------------------ */
+const getInitialBranch = () => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("selectedBranchId");
+  }
+  return null;
+};
+
+/* ------------------ Initial State ------------------ */
 const initialState = {
   userProfile: null,
   users: [],
@@ -15,13 +24,17 @@ const initialState = {
   cashiers: [],
   usersById: {},
   selectedUser: null,
+
+  selectedBranchId: getInitialBranch(), // ✅ safe localStorage access
+
   loading: false,
   error: null,
   initialized: false,
 };
 
+/* ------------------ Slice ------------------ */
 const userSlice = createSlice({
-  name: 'user',
+  name: "user",
   initialState,
   reducers: {
     clearUserState: (state) => {
@@ -30,12 +43,28 @@ const userSlice = createSlice({
       state.users = [];
       state.customers = [];
       state.cashiers = [];
+      state.usersById = {};
       state.error = null;
+      state.selectedBranchId = null;
+
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("selectedBranchId");
+      }
     },
+
     selectUser: (state, action) => {
-      state.selectedUser = action.payload; // manually set selected user
+      state.selectedUser = action.payload;
+    },
+
+    setSelectedBranch: (state, action) => {
+      state.selectedBranchId = action.payload;
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("selectedBranchId", action.payload);
+      }
     },
   },
+
   extraReducers: (builder) => {
     builder
       .addCase(getUserProfile.pending, (state) => {
@@ -71,10 +100,16 @@ const userSlice = createSlice({
         state.userProfile = null;
         state.selectedUser = null;
         state.error = null;
+        state.selectedBranchId = null;
+
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("selectedBranchId");
+        }
       })
       .addMatcher(
         (action) =>
-          action.type.startsWith('user/') && action.type.endsWith('/rejected'),
+          action.type.startsWith("user/") &&
+          action.type.endsWith("/rejected"),
         (state, action) => {
           state.error = action.payload;
         }
@@ -82,5 +117,11 @@ const userSlice = createSlice({
   },
 });
 
-export const { clearUserState, selectUser } = userSlice.actions;
+/* ------------------ Exports ------------------ */
+export const {
+  clearUserState,
+  selectUser,
+  setSelectedBranch,
+} = userSlice.actions;
+
 export default userSlice.reducer;

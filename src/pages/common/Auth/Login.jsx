@@ -137,16 +137,16 @@ export default function Login() {
           return navigate(callbackUrl, { replace: true });
         }
 
-        if (role === UserRoles.BRANCH_CASHIER) {
-          try {
-            // await startShift({ branchId: user.branchId, openingCash: 0 }).unwrap();
-          } catch {
-            toast({
-              title: "Shift already active",
-              variant: "success",
-            });
-          }
-        }
+        // if (role === UserRoles.BRANCH_CASHIER) {
+        //   try {
+        //     // await startShift({ branchId: user.branchId, openingCash: 0 }).unwrap();
+        //   } catch {
+        //     toast({
+        //       title: "Shift already active",
+        //       variant: "success",
+        //     });
+        //   }
+        // }
 
         navigate(redirectByRole(role));
       } catch (err) {

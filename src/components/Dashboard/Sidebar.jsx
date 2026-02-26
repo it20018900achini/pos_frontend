@@ -99,11 +99,11 @@ if (userProfile?.user?.permissions?.includes("ORDERS")) {
     children: [
       { name: "Orders", path: "/dashboard/branch/orders", icon: Archive },
       { name: "Refunds", path: "/dashboard/branch/orders/refunds", icon: FileText },
-      { name: "Quotations", path: "/dashboard/branch/orders/quotations", icon: FileText },
+      // { name: "Quotations", path: "/dashboard/branch/orders/quotations", icon: FileText },
 
       { name: "Store Orders", path: "/dashboard/store/orders", icon: Archive },
       { name: "Store Refunds", path: "/dashboard/store/orders/refunds", icon: FileText },
-      { name: "Store Quotations", path: "/dashboard/store/orders/quotations", icon: FileText },
+      // { name: "Store Quotations", path: "/dashboard/store/orders/quotations", icon: FileText },
     ],
   });
 }

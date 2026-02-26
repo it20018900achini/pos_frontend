@@ -23,7 +23,7 @@ const getAuthHeaders = () => {
 
 /**
  * API contract expected:
- * GET /api/transactions/merged?branchIds=1,2&startDate=2025-11-01T00:00:00&endDate=2025-11-30T23:59:59&page=0&size=20
+ * GET /api/transactions?branchIds=1,2&startDate=2025-11-01T00:00:00&endDate=2025-11-30T23:59:59&page=0&size=20
  * Response:
  * {
  *   content: [...],
@@ -48,7 +48,7 @@ export const fetchTransactions = createAsyncThunk(
       params.append("size", size);
       const headers = getAuthHeaders();
 
-      const resp = await api.get(`/api/transactions/merged?${params.toString()}`,{headers});
+      const resp = await api.get(`/api/transactions?${params.toString()}`,{headers});
       return resp.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data || { message: err.message });
@@ -68,7 +68,7 @@ export const fetchAllTransactions = createAsyncThunk(
       if (paymentType) params.append("paymentType", paymentType);
       const headers = getAuthHeaders();
 
-      const resp = await api.get(`/api/transactions/merged/all?${params.toString()}`,{headers});
+      const resp = await api.get(`/api/transactions?${params.toString()}`,{headers});
       // resp should be an array of DTOs
       return resp.data;
     } catch (err) {
