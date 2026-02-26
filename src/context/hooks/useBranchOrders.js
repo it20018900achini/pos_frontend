@@ -32,7 +32,7 @@ export const useBranchOrders = () => {
       if (!userProfile?.user?.id) return;
 
       const branchToUse =
-        userProfile?.user?.branch?.id || selectedBranchId;
+        userProfile?.user?.defaultBranch?.id || selectedBranchId;
 
       if (!branchToUse) {
         toast({

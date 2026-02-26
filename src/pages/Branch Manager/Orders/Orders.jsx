@@ -16,7 +16,7 @@ function Orders() {
       subTitle="orders"
     >
       
-      <RecentOrders branches={userProfile?.user?.branch?.id ? branches.filter(b => b.id === userProfile.user.branch.id):branches} />
+      <RecentOrders branches={userProfile?.user?.defaultBranch?.id ? branches.filter(b => b.id === userProfile.user.defaultBranch.id):branches} />
     </ContentLayout>
   );
 }
