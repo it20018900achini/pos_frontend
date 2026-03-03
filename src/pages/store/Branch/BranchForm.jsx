@@ -19,10 +19,13 @@ const BranchForm = ({ initialValues, onSubmit, onCancel, isEditing }) => {
     phone: Yup.string().required("Phone Number is required"),
   });
 
+    const { userProfile, initialized } = useSelector(
+    (state) => state.user
+  );
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       const jwt = localStorage.getItem("jwt");
-      if (!store?.id) {
+      if (!userProfile?.user?.store?.id) {
         toast({
           title: "Error",
           description: "Store information or authentication JWT missing!",
@@ -34,7 +37,7 @@ const BranchForm = ({ initialValues, onSubmit, onCancel, isEditing }) => {
 
       const branchData = {
         ...values,
-        storeId: store.id,
+        storeId: userProfile.user.store.id,
       };
 
       if (isEditing) {

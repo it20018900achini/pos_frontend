@@ -32,11 +32,34 @@ const LoginAccessBadge = ({ enabled }) => (
 ------------------------------ */
 const EmployeeTable = ({
   employees = [],
+  loading = false,
   handleToggleAccess,
   openResetPasswordDialog,
   openPerformanceDialog,
   openEditDialog,
 }) => {
+  /* -----------------------------
+     Loading State
+  ------------------------------ */
+  if (loading) {
+    return (
+      <div className="text-center py-10 text-muted-foreground">
+        Loading employees...
+      </div>
+    );
+  }
+
+  /* -----------------------------
+     Empty State
+  ------------------------------ */
+  if (!employees.length) {
+    return (
+      <div className="text-center py-10 text-muted-foreground">
+        No employees found
+      </div>
+    );
+  }
+
   return (
     <Table>
       <TableHeader>
@@ -51,83 +74,101 @@ const EmployeeTable = ({
       </TableHeader>
 
       <TableBody>
-        {employees.length > 0 ? (
-          employees.map((employee) => (
-            <TableRow key={employee.id}>
-              <TableCell className="font-medium">
-                {employee.fullName}
-              </TableCell>
+        {employees.map((employee) => (
+          <TableRow key={employee.id}>
+            {/* Name */}
+            <TableCell className="font-medium">
+              {employee.fullName || "—"}
+            </TableCell>
 
-              <TableCell>{employee.roles.map((r) => r?.name)}</TableCell>
+            {/* Roles */}
+            <TableCell>
+              {employee.roles?.length
+                ? employee.roles.map((r) => r?.name).join(", ")
+                : "No Role"}
+            </TableCell>
 
-              <TableCell>{employee.email}</TableCell>
+            {/* Email */}
+            <TableCell>{employee.email || "—"}</TableCell>
 
-              <TableCell>
-                <LoginAccessBadge enabled={employee.loginAccess} />
-              </TableCell>
+            {/* Login Access */}
+            <TableCell>
+              <LoginAccessBadge enabled={employee.loginAccess} />
+            </TableCell>
 
-              <TableCell>
-                {new Date(employee.createdAt).toLocaleDateString()}
-              </TableCell>
-
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title={
-                      employee.loginAccess
-                        ? "Disable Access"
-                        : "Enable Access"
+            {/* Created Date */}
+            <TableCell>
+              {employee.createdAt
+                ? new Date(employee.createdAt).toLocaleDateString(
+                    "en-GB",
+                    {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
                     }
-                    onClick={() => handleToggleAccess(employee)}
-                  >
-                    <UserX className="h-4 w-4" />
-                  </Button>
+                  )
+                : "—"}
+            </TableCell>
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Reset Password"
-                    onClick={() => openResetPasswordDialog(employee)}
-                  >
-                    <Key className="h-4 w-4" />
-                  </Button>
+            {/* Actions */}
+            <TableCell className="text-right">
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title={
+                    employee.loginAccess
+                      ? "Disable Access"
+                      : "Enable Access"
+                  }
+                  onClick={() => handleToggleAccess(employee)}
+                >
+                  <UserX
+                    className={`h-4 w-4 ${
+                      employee.loginAccess
+                        ? "text-red-500"
+                        : "text-green-600"
+                    }`}
+                  />
+                </Button>
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="View Performance"
-                    onClick={() => openPerformanceDialog(employee)}
-                  >
-                    <BarChart className="h-4 w-4" />
-                  </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Reset Password"
+                  onClick={() =>
+                    openResetPasswordDialog(employee)
+                  }
+                >
+                  <Key className="h-4 w-4" />
+                </Button>
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    title="Edit Employee"
-                    onClick={() => openEditDialog(employee)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))
-        ) : (
-          <TableRow>
-            <TableCell
-              colSpan={6}
-              className="text-center py-6 text-muted-foreground"
-            >
-              No employees found
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="View Performance"
+                  onClick={() =>
+                    openPerformanceDialog(employee)
+                  }
+                >
+                  <BarChart className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Edit Employee"
+                  onClick={() => openEditDialog(employee)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </div>
             </TableCell>
           </TableRow>
-        )}
+        ))}
       </TableBody>
     </Table>
   );
 };
 
-export default EmployeeTable;
+export default React.memo(EmployeeTable);

@@ -28,15 +28,14 @@ const BranchEmployees = () => {
   /* -----------------------------
      Redux State
   ------------------------------ */
-  const { branches } = useSelector((state) => state.branch);
   const { employees, loading } = useSelector((state) => state.employee);
-  const { userProfile } = useSelector((state) => state.user);
+  const { userProfile, selectedBranchId } = useSelector(
+    (state) => state.user
+  );
 
   /* -----------------------------
      Local State
   ------------------------------ */
-  const [selectedBranchId, setSelectedBranchId] = useState(null);
-
   const [dialogs, setDialogs] = useState({
     add: false,
     edit: false,
@@ -47,22 +46,24 @@ const BranchEmployees = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
   /* -----------------------------
-     Auto Select First Branch
+     Refresh Employees
   ------------------------------ */
-  useEffect(() => {
-    if (branches?.length > 0 && !selectedBranchId) {
-      setSelectedBranchId(branches[0].id);
-    }
-  }, [branches, selectedBranchId]);
+  const refreshEmployees = useCallback(() => {
+    if (!selectedBranchId) return;
+
+    dispatch(
+      findBranchEmployees({
+        branchId: selectedBranchId,
+      })
+    );
+  }, [dispatch, selectedBranchId]);
 
   /* -----------------------------
-     Fetch Employees When Branch Changes
+     Fetch When Branch Changes
   ------------------------------ */
   useEffect(() => {
-    if (selectedBranchId) {
-      dispatch(findBranchEmployees({ branchId: selectedBranchId }));
-    }
-  }, [dispatch, selectedBranchId]);
+    refreshEmployees();
+  }, [refreshEmployees]);
 
   /* -----------------------------
      Dialog Helpers
@@ -80,38 +81,41 @@ const BranchEmployees = () => {
   /* -----------------------------
      Handlers
   ------------------------------ */
-  const handleAddEmployee = (employeeData) => {
+  const handleAddEmployee = async (employeeData) => {
     if (!selectedBranchId || !userProfile?.user?.storeId) return;
 
-    dispatch(
+    await dispatch(
       createBranchEmployee({
         employee: {
           ...employeeData,
-          username: employeeData.email.split("@")[0],
+          // safer username generation
+          username: `${employeeData.email.split("@")[0]}_${Date.now()}`,
         },
         branchId: selectedBranchId,
         storeId: userProfile.user.storeId,
       })
     );
 
+    refreshEmployees();
     closeDialog("add");
   };
 
-  const handleEditEmployee = (employeeDetails) => {
+  const handleEditEmployee = async (employeeDetails) => {
     if (!selectedEmployee?.id) return;
 
-    dispatch(
+    await dispatch(
       updateEmployee({
         employeeId: selectedEmployee.id,
         employeeDetails,
       })
     );
 
+    refreshEmployees();
     closeDialog("edit");
   };
 
-  const handleToggleAccess = (employee) => {
-    dispatch(
+  const handleToggleAccess = async (employee) => {
+    await dispatch(
       updateEmployee({
         employeeId: employee.id,
         employeeDetails: {
@@ -119,6 +123,8 @@ const BranchEmployees = () => {
         },
       })
     );
+
+    refreshEmployees();
   };
 
   /* -----------------------------
@@ -138,23 +144,6 @@ const BranchEmployees = () => {
       }
     >
       <div className="space-y-6">
-
-        {/* -------- Branch Selector -------- */}
-        <div className="flex items-center gap-4">
-          <label className="font-medium">Select Branch:</label>
-          <select
-            className="border rounded px-3 py-2"
-            value={selectedBranchId || ""}
-            onChange={(e) => setSelectedBranchId(e.target.value)}
-          >
-            {branches?.map((branch) => (
-              <option key={branch.id} value={branch.id}>
-                {branch.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
         {/* -------- Stats -------- */}
         <EmployeeStats employees={employees} loading={loading} />
 
@@ -173,6 +162,7 @@ const BranchEmployees = () => {
         />
 
         {/* ---------------- Dialogs ---------------- */}
+
         <EditEmployeeDialog
           isEditDialogOpen={dialogs.edit}
           setIsEditDialogOpen={() => closeDialog("edit")}
