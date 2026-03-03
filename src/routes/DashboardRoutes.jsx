@@ -78,6 +78,15 @@ const DashboardRoutes = () => {
                 
 
           <Route path="branch/orders" element={<Orders />} />
+
+
+<Route path="branch/orders" element={
+  // <PermissionRoute permission="ORDERS">
+    <Orders />
+  // </PermissionRoute> */
+}
+ />
+
           <Route path="branch/orders/refunds" element={<Refunds />} />
           <Route path="branch/orders/quotations" element={<QuotationsPage />} />
 
