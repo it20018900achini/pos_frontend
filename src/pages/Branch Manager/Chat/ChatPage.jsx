@@ -204,16 +204,18 @@ useEffect(() => {
   const sendMessage = useCallback(async () => {
     if (!text.trim() || !selectedUser || !me) return;
 
-    const clientId = Date.now();
-    const payload = {
-      clientId,
-      type: "CHAT_MESSAGE",
-      senderId: me?.user.id,
-      receiverId: selectedUser.id,
-      content: text,
-      timestamp: Date.now(),
-      myId: me?.user.id,
-    };
+   const id = Date.now().toString();
+
+const payload = {
+  id,                 // ✅ use id
+  type: "CHAT_MESSAGE",
+  senderId: me?.user.id,
+  receiverId: selectedUser.id,
+  content: text,
+  timestamp: Date.now(),
+  myId: me?.user.id,
+  seen: false,
+};
 
     dispatch(addChatMessage(payload));
     await sendChatMessage(payload);
@@ -282,25 +284,27 @@ useEffect(() => {
                         </Button>
                       </div>
                     )}
+{messages.map((m, index) => {
+  const mine = m.senderId === me?.user.id;
+  const key = m.clientId ?? m.id ?? `${m.senderId}-${m.timestamp}-${index}`;
 
-                             {messages.map((m) => {
-              const mine = m.senderId === me?.user.id;
-              return (
-                <div
-                  key={m.clientId || m.id}
-                  className={`max-w-xs p-2 rounded text-sm mt-1 ${
-                    mine
-                      ? "ml-auto bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {m.content}
-                  <div className="text-[10px] opacity-70 text-right">
-                    {format(new Date(m.timestamp), "HH:mm")}
-                  </div>
-                </div>
-              );
-            })}
+  return (
+    <div
+      key={key}
+      className={`max-w-xs p-2 rounded text-sm mt-1 ${
+        mine
+          ? "ml-auto bg-blue-500 text-white"
+          : "bg-gray-100 text-gray-800"
+      }`}
+    >
+      
+      {m.content}
+      <div className="text-[10px] opacity-70 text-right">
+        {format(new Date(m.timestamp), "HH:mm")}
+      </div>
+    </div>
+  );
+})}
 
                     <div ref={messagesEndRef} />
                   </ScrollArea>

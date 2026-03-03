@@ -26,20 +26,20 @@ export const loadChatHistory = createAsyncThunk(
       const myId = getState().user.userProfile?.user.id;
       console.log("Loading chat history with myId:", myId);
       if (!myId) return;
-
-      res.data.forEach((msg) => {
-        dispatch(
-          addChatMessage({
-            id: msg.id,
-            senderId: msg.sender.id,
-            receiverId: msg.receiver.id,
-            content: msg.content,
-            timestamp: new Date(msg.createdAt).getTime(),
-            seen: msg.seen,
-            myId,
-          })
-        );
-      });
+console.log("Received chat messages:", res.data);
+     res.data.forEach((msg, index) => {
+  dispatch(
+    addChatMessage({
+      id: `${msg.senderId}-${msg.timestamp}-${index}`, // generate unique id
+      senderId: msg.senderId,
+      receiverId: msg.receiverId,
+      content: msg.content,
+      timestamp: new Date(msg.timestamp).getTime(), // convert ISO string
+      seen: true, // backend does not send it
+      myId,
+    })
+  );
+});
 
       return res.data; // useful if component wants to check length
     } catch (err) {
