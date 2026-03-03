@@ -4,30 +4,31 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
 import { settings } from "@/constant";
 import { ThemeToggle } from "../theme-toggle";
-import { setSelectedBranch } from "@/Redux Toolkit/features/user/userSlice"; // adjust path
+import { setSelectedBranch } from "@/Redux Toolkit/features/user/userSlice";
 
 const POSHeader = () => {
   const { sidebarOpen, setSidebarOpen } = useSidebar();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { userProfile, selectedBranchId } = useSelector(
-    (state) => state.user
-  );
-
-  const { branches } = useSelector((state) => state.branch);
+  const { userProfile, selectedBranchId } = useSelector((state) => state.user);
 
   const user = userProfile?.user;
   const fullName = user?.fullName || "User";
-  const role =
-    user?.roles?.map((r) => r.replace(/_/g, " "))?.join(", ") || "";
 
-  const selectedBranch = branches?.find(
-    (b) => b.id === selectedBranchId
+  // Build role string from roleBranchMap for selected branch
+  const selectedBranchMap = user?.roleBranchMap?.find(
+    (b) => b.branchId === selectedBranchId
   );
+  const role =
+    selectedBranchMap?.roles?.map((r) => r.replace(/_/g, " "))?.join(", ") ||
+    "";
 
-  const branchName = selectedBranch?.name || "Select Branch";
-  const storeName = selectedBranch?.store?.brand || "";
+  // List of branches available to the user
+  const branches = user?.roleBranchMap || [];
+
+  const branchName = selectedBranchMap?.branchName || "Select Branch";
+  const storeName = user?.store?.name || "";
 
   /* ---------------- Keyboard Shortcuts ---------------- */
   useEffect(() => {
@@ -63,7 +64,7 @@ const POSHeader = () => {
 
   /* ---------------- Branch Change ---------------- */
   const handleBranchChange = (e) => {
-    dispatch(setSelectedBranch(e.target.value));
+    dispatch(setSelectedBranch(Number(e.target.value)));
   };
 
   return (
@@ -77,17 +78,11 @@ const POSHeader = () => {
         {/* LEFT */}
         <div className="flex items-center gap-3 min-w-0">
           <div className="truncate">
-            <h1
-              className="text-base sm:text-xl font-bold 
-              text-neutral-900 dark:text-neutral-50 truncate"
-            >
+            <h1 className="text-base sm:text-xl font-bold text-neutral-900 dark:text-neutral-50 truncate">
               {settings?.businessName}
             </h1>
 
-            <p
-              className="hidden sm:block text-xs 
-              text-neutral-500 dark:text-neutral-400"
-            >
+            <p className="hidden sm:block text-xs text-neutral-500 dark:text-neutral-400">
               Point of Sale Dashboard
             </p>
           </div>
@@ -95,11 +90,10 @@ const POSHeader = () => {
 
         {/* RIGHT */}
         <div className="flex items-center gap-2 sm:gap-3">
-
           <ThemeToggle />
 
           {/* Branch Selector */}
-          {branches?.length > 0 && (
+          {branches.length > 0 && (
             <select
               value={selectedBranchId || ""}
               onChange={handleBranchChange}
@@ -110,8 +104,8 @@ const POSHeader = () => {
             >
               <option value="">Select Branch</option>
               {branches.map((branch) => (
-                <option key={branch.id} value={branch.id}>
-                  {branch.name}
+                <option key={branch.branchId} value={branch.branchId}>
+                  {branch.branchName}
                 </option>
               ))}
             </select>
@@ -119,37 +113,25 @@ const POSHeader = () => {
 
           {/* User Info */}
           {user && (
-            <div
-              className="flex items-center gap-2 sm:gap-3
-              px-2 sm:px-3 py-2 rounded-xl
+            <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-xl
               bg-neutral-100 dark:bg-neutral-800
               border border-neutral-200 dark:border-neutral-700"
             >
               {/* Avatar */}
-              <div
-                className="h-8 w-8 sm:h-9 sm:w-9 rounded-full
-                flex items-center justify-center
-                font-bold text-sm
-                bg-neutral-200 dark:bg-neutral-700
-                text-neutral-800 dark:text-neutral-100"
+              <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full flex items-center justify-center font-bold text-sm
+                bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-100"
               >
                 {fullName.charAt(0).toUpperCase()}
               </div>
 
               {/* Info */}
               <div className="leading-tight min-w-0">
-                <p className="font-semibold text-xs sm:text-sm truncate">
-                  {fullName}
-                </p>
-
+                <p className="font-semibold text-xs sm:text-sm truncate">{fullName}</p>
                 <p className="text-[10px] sm:text-xs capitalize truncate
-                  text-neutral-500 dark:text-neutral-400">
-                  {role}
-                </p>
+                  text-neutral-500 dark:text-neutral-400">{role}</p>
 
-                {selectedBranch && (
-                  <p className="hidden md:block text-[10px]
-                    text-neutral-400 dark:text-neutral-500 truncate">
+                {selectedBranchMap && (
+                  <p className="hidden md:block text-[10px] text-neutral-400 dark:text-neutral-500 truncate">
                     {storeName} • {branchName}
                   </p>
                 )}

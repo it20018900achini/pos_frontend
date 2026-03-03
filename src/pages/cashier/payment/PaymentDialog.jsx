@@ -51,13 +51,12 @@ const PaymentDialog = ({
   const selectedCustomer = useSelector(selectSelectedCustomer);
 
   const { store } = useSelector((state) => state.store);
-  const { userProfile } = useSelector((state) => state.user);
+  const { userProfile , selectedBranchId} = useSelector((state) => state.user);
   const { branches, loading, error } = useSelector((state) => state.branch);
 
   const [errorMsg, setErrorMsg] = useState("");
   const [payments, setPayments] = useState([]);
   const [loadingMain, setLoadingMain] = useState(false);
-  const [selectedBranchId, setSelectedBranchId] = useState("");
 
   const givenRef = useRef(null);
 
@@ -73,12 +72,7 @@ const PaymentDialog = ({
     }
   }, [dispatch, store]);
 
-  // ================= AUTO ASSIGN BRANCH =================
-  useEffect(() => {
-    if (userProfile?.user?.branch?.id) {
-      setSelectedBranchId(userProfile.user.branch.id);
-    }
-  }, [userProfile]);
+
 
   // ================= SAFE NUMBERS =================
   const safeTotal = Number(total || 0);
@@ -145,8 +139,7 @@ const PaymentDialog = ({
         variant: "destructive",
       });
 
-    const branchId =
-      userProfile?.user?.branch?.id || selectedBranchId;
+    const branchId =       selectedBranchId;
 
     if (!branchId)
       return toast({
@@ -260,25 +253,7 @@ const PaymentDialog = ({
                 <span className="w-4 h-4 bg-red-500 rounded-full"></span>
               )}
 
-              <select
-                value={selectedBranchId}
-                onChange={(e) => setSelectedBranchId(e.target.value)}
-                disabled={!!userProfile?.user?.branch?.id}
-              >
-                <option value="">Select Branch</option>
-
-                {loading ? (
-                  <option disabled>Loading branches...</option>
-                ) : error ? (
-                  <option disabled>Error loading branches</option>
-                ) : (
-                  branches.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))
-                )}
-              </select>
+              
             </div>
 
             <div className="rounded-2xl p-3 bg-white text-center mb-6 shadow-inner">

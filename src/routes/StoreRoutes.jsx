@@ -12,7 +12,6 @@ import {
   Reports,
   Sales,
   Settings
-
 } from "../pages/store/store-admin";
 import StoreEmployees from "../pages/store/Employee/StoreEmployees";
 import Stores from "../pages/store/storeInformation/Stores";

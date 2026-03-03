@@ -8,8 +8,11 @@ import EndShift from "./shifts/EndShift";
 import POSHeader from "../components/POSHeader";
 import { Button } from "../../../components/ui/button";
 import ContentLayout from "../../Dashboard/ContentLayout";
+import { useSelector } from "react-redux";
 
 const ShiftSummaryPage = () => {
+    const { userProfile , selectedBranchId} = useSelector((state) => state.user);
+
   const [selectedShiftId, setSelectedShiftId] = useState(null);
   const [openStart, setOpenStart] = useState(false);
   const [openEnd, setOpenEnd] = useState(false);

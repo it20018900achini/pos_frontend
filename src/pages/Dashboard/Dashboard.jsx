@@ -3,13 +3,19 @@ import DashboardLayout from '../../components/Dashboard/DashboardLayout'
 import TodayOverview from '../Branch Manager/Dashboard/TodayOverview'
 import { useSelector } from 'react-redux';
 import { DashboardStats } from '../store/Dashboard';
+import GetSelectedBranch from '../../utils/getSelectedBranch';
 
 function Dashboard() {
     const { userProfile } = useSelector((state) => state.user);
+    const selectedBranch=GetSelectedBranch();
 
   return (
     <div>
-      {userProfile?.user?.branch?.id ? <TodayOverview/>:<DashboardStats/>}
+      {
+        JSON.stringify(selectedBranch)
+      }
+      
+      {userProfile?.user?.defaultBranch?.id ? <TodayOverview/>:<DashboardStats/>}
       
     </div>
   )

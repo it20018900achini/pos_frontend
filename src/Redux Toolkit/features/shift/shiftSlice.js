@@ -4,7 +4,6 @@ import api from "@/utils/api";
 /* =========================
    Helpers
 ========================= */
-
 const authConfig = () => ({
   headers: {
     Authorization: `Bearer ${localStorage.getItem("jwt")}`,
@@ -15,21 +14,21 @@ const authConfig = () => ({
 /* =========================
    Thunks
 ========================= */
-
-// Fetch all shifts
 export const fetchShifts = createAsyncThunk(
   "shift/fetchAll",
-  async (_, { rejectWithValue }) => {
+  async ({ branchId, page = 0, size = 10 }, { rejectWithValue }) => {
     try {
-      const { data } = await api.get("/api/shifts", authConfig());
-      return data;
+      const { data } = await api.get("/api/shifts", {
+        ...authConfig(),
+        params: { branchId, page, size },
+      });
+      return data; // full Page object
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message);
     }
   }
 );
 
-// Fetch current shift
 export const fetchCurrentShift = createAsyncThunk(
   "shift/fetchCurrent",
   async (_, { rejectWithValue }) => {
@@ -42,7 +41,6 @@ export const fetchCurrentShift = createAsyncThunk(
   }
 );
 
-// Fetch shift by ID
 export const fetchShiftById = createAsyncThunk(
   "shift/fetchById",
   async (id, { rejectWithValue }) => {
@@ -55,7 +53,6 @@ export const fetchShiftById = createAsyncThunk(
   }
 );
 
-// Start shift
 export const startShift = createAsyncThunk(
   "shift/start",
   async ({ branchId, openingCash }, { rejectWithValue }) => {
@@ -72,7 +69,6 @@ export const startShift = createAsyncThunk(
   }
 );
 
-// End shift
 export const endShift = createAsyncThunk(
   "shift/end",
   async ({ actualCash }, { rejectWithValue }) => {
@@ -92,13 +88,16 @@ export const endShift = createAsyncThunk(
 /* =========================
    Slice
 ========================= */
-
 const initialState = {
   shifts: [],
   currentShift: null,
   selectedShift: null,
   loading: false,
   error: null,
+  currentPage: 0,
+  totalPages: 0,
+  pageSize: 10,
+  totalElements: 0,
 };
 
 const shiftSlice = createSlice({
@@ -108,23 +107,29 @@ const shiftSlice = createSlice({
     clearSelectedShift: (state) => {
       state.selectedShift = null;
     },
+    setPage: (state, action) => {
+      state.currentPage = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
-
-      // Fetch all
+      // Fetch all shifts (paginated)
       .addCase(fetchShifts.fulfilled, (state, action) => {
         state.loading = false;
-        state.shifts = Array.isArray(action.payload) ? action.payload : [];
+        state.shifts = action.payload.content || [];
+        state.currentPage = action.payload.number || 0;
+        state.totalPages = action.payload.totalPages || 0;
+        state.pageSize = action.payload.size || 10;
+        state.totalElements = action.payload.totalElements || 0;
       })
 
-      // Fetch current
+      // Fetch current shift
       .addCase(fetchCurrentShift.fulfilled, (state, action) => {
         state.loading = false;
         state.currentShift = action.payload;
       })
 
-      // Fetch by ID
+      // Fetch shift by ID
       .addCase(fetchShiftById.fulfilled, (state, action) => {
         state.loading = false;
         state.selectedShift = action.payload;
@@ -141,18 +146,17 @@ const shiftSlice = createSlice({
       .addCase(endShift.fulfilled, (state, action) => {
         state.loading = false;
         state.currentShift = null;
-
         const idx = state.shifts.findIndex(s => s.id === action.payload.id);
         if (idx !== -1) state.shifts[idx] = action.payload;
       })
 
-      // 🔥 Global loading handler
+      // Global loading handler
       .addMatcher(isPending, (state) => {
         state.loading = true;
         state.error = null;
       })
 
-      // 🔥 Global error handler
+      // Global error handler
       .addMatcher(isRejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
@@ -160,5 +164,5 @@ const shiftSlice = createSlice({
   },
 });
 
-export const { clearSelectedShift } = shiftSlice.actions;
+export const { clearSelectedShift, setPage } = shiftSlice.actions;
 export default shiftSlice.reducer;

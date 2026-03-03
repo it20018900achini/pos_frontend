@@ -23,6 +23,7 @@ import ContentLayout from "../../Dashboard/ContentLayout";
 
 export default function Branches() {
   const dispatch = useDispatch();
+  const { userProfile , selectedBranchId} = useSelector((state) => state.user);
   const { branches, loading, error } = useSelector((state) => state.branch);
   const { store } = useSelector((state) => state.store);
   const { user } = useSelector((state) => state.user);
@@ -35,14 +36,15 @@ export default function Branches() {
 
   // Fetch branches when component mounts
   useEffect(() => {
-      dispatch(
+    dispatch(
+        
         getAllBranchesByStore({
-          storeId: store.id,
+          storeId: userProfile?.user?.store?.id,
           jwt: localStorage.getItem("jwt"),
         })
       );
     
-  }, [dispatch, store, user]);
+  }, [dispatch, userProfile, user]);
 
   console.log("store ", store);
 
