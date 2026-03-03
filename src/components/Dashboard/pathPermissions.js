@@ -1,5 +1,3 @@
-// sidebarConfig.js
-
 import {
   LayoutDashboard,
   Store,
@@ -21,6 +19,24 @@ import {
 export const pathPermissions = (permissions = []) => {
   const NAV_LINKS = [];
 
+  const addParentWithChildren = (parentName, parentIcon, children) => {
+    const allowedChildren = children.filter((child) =>
+      permissions.includes(child.permission)
+    );
+
+    if (allowedChildren.length > 0) {
+      NAV_LINKS.push({
+        name: parentName,
+        icon: parentIcon,
+        children: allowedChildren.map(({ name, path, icon }) => ({
+          name,
+          path,
+          icon,
+        })),
+      });
+    }
+  };
+
   /* ---------------- Dashboard ---------------- */
   if (permissions.includes("DASHBOARD")) {
     NAV_LINKS.push({
@@ -40,84 +56,36 @@ export const pathPermissions = (permissions = []) => {
   }
 
   /* ---------------- POS ---------------- */
-  if (permissions.includes("POS")) {
-    NAV_LINKS.push({
-      name: "POS",
-      icon: Store,
-      children: [
-        { name: "POS", path: "/dashboard/pos", icon: Store },
-        { name: "Shift Summary", path: "/dashboard/pos/shift-summary", icon: Clock },
-        { name: "Orders", path: "/dashboard/pos/orders", icon: FileText },
-        { name: "Refunds", path: "/dashboard/pos/refunds", icon: DollarSign },
-      ],
-    });
-  }
+  addParentWithChildren("POS", Store, [
+    { name: "POS", path: "/dashboard/pos", icon: Store, permission: "POS" },
+    { name: "Shift Summary", path: "/dashboard/pos/shift-summary", icon: Clock, permission: "POS" },
+    { name: "Orders", path: "/dashboard/pos/orders", icon: FileText, permission: "ORDERS" },
+    { name: "Refunds", path: "/dashboard/pos/refunds", icon: DollarSign, permission: "ORDERS" },
+  ]);
 
   /* ---------------- Users ---------------- */
-  if (permissions.includes("USERS")) {
-    NAV_LINKS.push({
-      name: "Users",
-      icon: Users,
-      children: [
-        { name: "Branch Users", path: "/dashboard/branch/users", icon: Users },
-        { name: "Store Users", path: "/dashboard/store/users", icon: Users },
-        {
-          name: "Role Permissions",
-          path: "/dashboard/branch/users/permissions",
-          icon: ClipboardList,
-        },
-      ],
-    });
-  }
+  addParentWithChildren("Users", Users, [
+    { name: "Branch Users", path: "/dashboard/branch/users", icon: Users, permission: "USERS" },
+    { name: "Store Users", path: "/dashboard/store/users", icon: Users, permission: "USERS" },
+    { name: "Role Permissions", path: "/dashboard/branch/users/permissions", icon: ClipboardList, permission: "USERS" },
+  ]);
 
   /* ---------------- Accounts ---------------- */
-  if (permissions.includes("ACCOUNTS")) {
-    NAV_LINKS.push({
-      name: "Accounts",
-      icon: DollarSign,
-      children: [
-        {
-          name: "Chart of Accounts",
-          path: "/dashboard/branch/accounts/chart-of-accounts",
-          icon: Archive,
-        },
-        {
-          name: "Journal Entries",
-          path: "/dashboard/branch/accounts/journals",
-          icon: FileText,
-        },
-        {
-          name: "Profit & Loss",
-          path: "/dashboard/branch/accounts/profit-loss",
-          icon: Report,
-        },
-        {
-          name: "Balance Sheet",
-          path: "/dashboard/branch/accounts/balance-sheet",
-          icon: Report,
-        },
-        {
-          name: "Trial Balance",
-          path: "/dashboard/branch/accounts/trial-balance",
-          icon: Report,
-        },
-      ],
-    });
-  }
+  addParentWithChildren("Accounts", DollarSign, [
+    { name: "Chart of Accounts", path: "/dashboard/branch/accounts/chart-of-accounts", icon: Archive, permission: "ACCOUNTS" },
+    { name: "Journal Entries", path: "/dashboard/branch/accounts/journals", icon: FileText, permission: "ACCOUNTS" },
+    { name: "Profit & Loss", path: "/dashboard/branch/accounts/profit-loss", icon: Report, permission: "ACCOUNTS" },
+    { name: "Balance Sheet", path: "/dashboard/branch/accounts/balance-sheet", icon: Report, permission: "ACCOUNTS" },
+    { name: "Trial Balance", path: "/dashboard/branch/accounts/trial-balance", icon: Report, permission: "ACCOUNTS" },
+  ]);
 
-  /* ---------------- Orders ---------------- */
-  if (permissions.includes("ORDERS")) {
-    NAV_LINKS.push({
-      name: "Orders / Transactions",
-      icon: DollarSign,
-      children: [
-        { name: "Orders", path: "/dashboard/branch/orders", icon: Archive },
-        { name: "Refunds", path: "/dashboard/branch/orders/refunds", icon: FileText },
-        { name: "Store Orders", path: "/dashboard/store/orders", icon: Archive },
-        { name: "Store Refunds", path: "/dashboard/store/orders/refunds", icon: FileText },
-      ],
-    });
-  }
+  /* ---------------- Orders / Transactions ---------------- */
+  addParentWithChildren("Orders / Transactions", DollarSign, [
+    { name: "Orders", path: "/dashboard/branch/orders", icon: Archive, permission: "ORDERS" },
+    { name: "Refunds", path: "/dashboard/branch/orders/refunds", icon: FileText, permission: "ORDERS" },
+    { name: "Store Orders", path: "/dashboard/store/orders", icon: Archive, permission: "ORDERS" },
+    { name: "Store Refunds", path: "/dashboard/store/orders/refunds", icon: FileText, permission: "ORDERS" },
+  ]);
 
   /* ---------------- Transactions ---------------- */
   if (permissions.includes("TRANSACTIONS")) {
@@ -129,56 +97,20 @@ export const pathPermissions = (permissions = []) => {
   }
 
   /* ---------------- Products ---------------- */
-  if (permissions.includes("PRODUCTS")) {
-    NAV_LINKS.push({
-      name: "Products",
-      icon: ClipboardList,
-      children: [
-        { name: "Products", path: "/dashboard/store/products", icon: Archive },
-        {
-          name: "Product Variants",
-          path: "/dashboard/store/products/variants",
-          icon: FileText,
-        },
-        {
-          name: "Product Categories",
-          path: "/dashboard/store/products/categories",
-          icon: FileText,
-        },
-        {
-          name: "Product Brands",
-          path: "/dashboard/store/products/brands",
-          icon: FileText,
-        },
-      ],
-    });
-  }
+  addParentWithChildren("Products", ClipboardList, [
+    { name: "Products", path: "/dashboard/store/products", icon: Archive, permission: "PRODUCTS" },
+    { name: "Product Variants", path: "/dashboard/store/products/variants", icon: FileText, permission: "PRODUCTS" },
+    { name: "Product Categories", path: "/dashboard/store/products/categories", icon: FileText, permission: "PRODUCTS" },
+    { name: "Product Brands", path: "/dashboard/store/products/brands", icon: FileText, permission: "PRODUCTS" },
+  ]);
 
   /* ---------------- Inventory ---------------- */
-  if (permissions.includes("INVENTORY")) {
-    NAV_LINKS.push({
-      name: "Inventory",
-      icon: ClipboardList,
-      children: [
-        { name: "Inventory", path: "/dashboard/branch/inventory", icon: Archive },
-        {
-          name: "Inventory Movements",
-          path: "/dashboard/branch/inventory/inventory-movements",
-          icon: FileText,
-        },
-        {
-          name: "Purchase",
-          path: "/dashboard/branch/inventory/purchases",
-          icon: FileText,
-        },
-        {
-          name: "Suppliers",
-          path: "/dashboard/branch/inventory/suppliers",
-          icon: FileText,
-        },
-      ],
-    });
-  }
+  addParentWithChildren("Inventory", ClipboardList, [
+    { name: "Inventory", path: "/dashboard/branch/inventory", icon: Archive, permission: "INVENTORY" },
+    { name: "Inventory Movements", path: "/dashboard/branch/inventory/inventory-movements", icon: FileText, permission: "INVENTORY" },
+    { name: "Purchase", path: "/dashboard/branch/inventory/purchases", icon: FileText, permission: "INVENTORY" },
+    { name: "Suppliers", path: "/dashboard/branch/inventory/suppliers", icon: FileText, permission: "INVENTORY" },
+  ]);
 
   /* ---------------- Payroll ---------------- */
   if (permissions.includes("PAYROLL")) {
@@ -190,19 +122,10 @@ export const pathPermissions = (permissions = []) => {
   }
 
   /* ---------------- Settings ---------------- */
-  if (permissions.includes("SETTINGS")) {
-    NAV_LINKS.push({
-      name: "Settings (Store)",
-      path: "/dashboard/settings",
-      icon: Settings,
-    });
-
-    NAV_LINKS.push({
-      name: "Settings (Branch)",
-      path: "/dashboard/branch/settings",
-      icon: Settings,
-    });
-  }
+  addParentWithChildren("Settings (Store)", Settings, [
+    { name: "Store Settings", path: "/dashboard/settings", icon: Settings, permission: "SETTINGS" },
+    { name: "Branch Settings", path: "/dashboard/branch/settings", icon: Settings, permission: "SETTINGS" },
+  ]);
 
   return NAV_LINKS;
 };

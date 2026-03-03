@@ -11,6 +11,8 @@ import CategoryForm from "./CategoryForm";
 
 export default function Categories() {
   const dispatch = useDispatch();
+    const { userProfile , selectedBranchId} = useSelector((state) => state.user);
+  
   const { categories, loading, error } = useSelector((state) => state.category);
   const { store } = useSelector((state) => state.store);
 
@@ -22,10 +24,10 @@ export default function Categories() {
   // Fetch categories on mount or when store changes
   useEffect(() => {
     const token = localStorage.getItem("jwt");
-    if (store?.id && token) {
-      dispatch(getCategoriesByStore({ storeId: store.id, token }));
+    if (userProfile?.user?.store?.id && token) {
+      dispatch(getCategoriesByStore({ storeId: userProfile.user.store.id, token }));
     }
-  }, [dispatch, store]);
+  }, [dispatch, userProfile]);
 
   const handleAddCategorySuccess = () => {
     setIsAddDialogOpen(false);

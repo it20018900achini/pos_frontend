@@ -25,6 +25,8 @@ export default function Products() {
     (state) => state.product
   );
   const { store } = useSelector((state) => state.store);
+    const { userProfile, selectedBranchId } = useSelector((state) => state.user);
+  
 
   const [dialogOpen, setDialogOpen] = useState(false); // unified add/edit dialog
   const [currentProduct, setCurrentProduct] = useState(null); // null = add, object = edit
@@ -35,9 +37,9 @@ export default function Products() {
 
   // Fetch products
   const fetchProducts = useCallback(async () => {
-    if (!store?.id) return;
+    if (!userProfile?.user?.store?.id) return;
     try {
-      await dispatch(getProductVariantsByStore(store.id)).unwrap();
+      await dispatch(getProductVariantsByStore(userProfile.user.store.id)).unwrap();
     } catch (err) {
       toast({
         title: "Error",
@@ -45,7 +47,7 @@ export default function Products() {
         variant: "destructive",
       });
     }
-  }, [dispatch, store]);
+  }, [dispatch, userProfile]);
 
   useEffect(() => {
     fetchProducts();
