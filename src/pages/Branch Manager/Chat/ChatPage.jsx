@@ -204,18 +204,16 @@ useEffect(() => {
   const sendMessage = useCallback(async () => {
     if (!text.trim() || !selectedUser || !me) return;
 
-   const id = Date.now().toString();
-
-const payload = {
-  id,                 // ✅ use id
-  type: "CHAT_MESSAGE",
-  senderId: me?.user.id,
-  receiverId: selectedUser.id,
-  content: text,
-  timestamp: Date.now(),
-  myId: me?.user.id,
-  seen: false,
-};
+    const clientId = Date.now();
+    const payload = {
+      clientId,
+      type: "CHAT_MESSAGE",
+      senderId: me?.user.id,
+      receiverId: selectedUser.id,
+      message: text,
+      timestamp: Date.now(),
+      myId: me?.user.id,
+    };
 
     dispatch(addChatMessage(payload));
     await sendChatMessage(payload);

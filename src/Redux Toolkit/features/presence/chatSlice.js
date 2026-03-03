@@ -38,42 +38,36 @@ const chatSlice = createSlice({
       state.selectedUser = action.payload;
     },
 
-   addChatMessage(state, action) {
-  const { id, senderId, receiverId, content, timestamp, myId, seen } =
-    action.payload;
+    addChatMessage: (state, action) => {
+      const msg = {
+        ...action.payload,
+        // ⚡ normalize content field
+        content: action.payload.content ?? action.payload.message ?? "",
+      };
 
-  if (!myId) return;
+      const userId =
+        msg.senderId === state.selectedUser?.id
+          ? msg.senderId
+          : msg.receiverId;
 
-  const chatUserId = senderId === myId ? receiverId : senderId;
-  if (!chatUserId) return;
+      if (!state.messagesByUser[userId]) state.messagesByUser[userId] = [];
 
-  if (!state.messagesByUser[chatUserId]) {
-    state.messagesByUser[chatUserId] = [];
-  }
+      // Avoid duplicates by clientId
+      if (msg.clientId) {
+        const exists = state.messagesByUser[userId].some(
+          (m) => m.clientId === msg.clientId
+        );
+        if (exists) return;
+      }
 
-  const exists = state.messagesByUser[chatUserId].some(m => m.id === id);
-  if (exists) return;
+      state.messagesByUser[userId].push(msg);
 
-  state.messagesByUser[chatUserId].push({
-    id,
-    senderId,
-    receiverId,
-    content,
-    timestamp,
-    seen,
-  });
-
-  state.messagesByUser[chatUserId].sort((a, b) => a.timestamp - b.timestamp);
-
-  // ✅ global unseen
-  state.unseenCount = calculateUnseenCount(state.messagesByUser, myId);
-
-  // ✅ per-user unseen (ONLY if message is incoming + unseen)
-  if (!seen && receiverId === myId) {
-    state.unseenCountByUser[senderId] =
-      (state.unseenCountByUser[senderId] || 0) + 1;
-  }
-},
+      // ⚡ increment unseen count if not sent by me
+      if (msg.senderId !== msg.myId) {
+        state.unseenCountByUser[userId] =
+          (state.unseenCountByUser[userId] || 0) + 1;
+      }
+    },
 
 
     markConversationSeen(state, action) {
