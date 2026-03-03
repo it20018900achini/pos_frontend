@@ -27,7 +27,7 @@ const Modal = ({ open, onClose, children }) => {
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center pt-20">
       <div className="absolute inset-0 bg-black/30 dark:bg-black/40" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-lg w-80 max-h-[80vh] overflow-y-auto z-50">
+      <div className="relative bg-white dark:bg-neutral-900 rounded-lg shadow-lg w-80 max-h-[80vh] overflow-y-auto z-50">
         {children}
       </div>
     </div>
@@ -169,12 +169,12 @@ export default function Sidebar() {
   return (
     <>
       {sidebarOpen && <div className="fixed inset-0 bg-black/30 dark:bg-black/40 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />}
-      <aside className={`fixed md:static z-50 h-screen top-0 left-0 bg-white dark:bg-gray-900 border-r dark:border-gray-700 shadow-lg transition-all duration-300 ${sidebarOpen ? "w-64" : "w-20"} overflow-y-auto`}>
+      <aside className={`fixed md:static z-50 h-screen top-0 left-0 bg-white dark:bg-neutral-900 border-r dark:border-neutral-700 shadow-lg transition-all duration-300 ${sidebarOpen ? "w-64" : "w-20"} overflow-y-auto`}>
         <div className="flex flex-col h-full px-4 py-6">
           <div className="mb-6 flex items-center justify-between">
-            <Store className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
-            <button onClick={() => setSidebarOpen((p) => !p)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-              <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+            <Store className="w-7 h-7 text-neutral-600 dark:text-neutral-400" />
+            <button onClick={() => setSidebarOpen((p) => !p)} className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800">
+              <Menu className="w-5 h-5 text-neutral-700 dark:text-neutral-300" />
             </button>
           </div>
 
@@ -188,12 +188,12 @@ export default function Sidebar() {
 
                 return (
                   <li key={link.name} className="relative z-[100]">
-                    <button onClick={() => handleParentClick(link)} className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${active ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-800 dark:text-indigo-300" : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"}`}>
+                    <button onClick={() => handleParentClick(link)} className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${active ? "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300" : "text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"}`}>
                       <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                        <Icon className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
                         {sidebarOpen && <span className="text-sm font-medium">{link.name}</span>}
                       </div>
-                      {hasChildren && sidebarOpen && (isOpen ? <ChevronUp size={16} className="text-gray-700 dark:text-gray-300" /> : <ChevronDown size={16} className="text-gray-700 dark:text-gray-300" />)}
+                      {hasChildren && sidebarOpen && (isOpen ? <ChevronUp size={16} className="text-neutral-700 dark:text-neutral-300" /> : <ChevronDown size={16} className="text-neutral-700 dark:text-neutral-300" />)}
                     </button>
 
                     {hasChildren && isOpen && sidebarOpen && (
@@ -202,8 +202,8 @@ export default function Sidebar() {
                           const ChildIcon = child.icon;
                           return (
                             <li key={child.name}>
-                              <Link to={child.path} className={`flex items-center gap-2 px-3 py-1 text-sm rounded ${isExactActive(child.path) ? "bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-800 dark:text-indigo-300" : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"}`}>
-                                <ChildIcon className={`w-4 h-4 ${isExactActive(child.path) ? "text-indigo-600 dark:text-indigo-300" : "text-gray-400 dark:text-gray-400"}`} />
+                              <Link to={child.path} className={`flex items-center gap-2 px-3 py-1 text-sm rounded ${isExactActive(child.path) ? "bg-neutral-50 text-neutral-700 font-medium dark:bg-neutral-800 dark:text-neutral-300" : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"}`}>
+                                <ChildIcon className={`w-4 h-4 ${isExactActive(child.path) ? "text-neutral-600 dark:text-neutral-300" : "text-neutral-400 dark:text-neutral-400"}`} />
                                 {child.name}
                               </Link>
                             </li>
@@ -232,8 +232,8 @@ export default function Sidebar() {
               const active = location.pathname === child.path;
               return (
                 <li key={child.name}>
-                  <Link to={child.path} onClick={() => setDialogMenu(null)} className={`flex items-center gap-2 px-4 py-2 text-sm rounded ${active ? "bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-800 dark:text-indigo-300" : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"}`}>
-                    <ChildIcon className={`w-4 h-4 ${active ? "text-indigo-600 dark:text-indigo-300" : "text-gray-400 dark:text-gray-400"}`} />
+                  <Link to={child.path} onClick={() => setDialogMenu(null)} className={`flex items-center gap-2 px-4 py-2 text-sm rounded ${active ? "bg-neutral-50 text-neutral-700 font-medium dark:bg-neutral-800 dark:text-neutral-300" : "text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"}`}>
+                    <ChildIcon className={`w-4 h-4 ${active ? "text-neutral-600 dark:text-neutral-300" : "text-neutral-400 dark:text-neutral-400"}`} />
                     {child.name}
                   </Link>
                 </li>
