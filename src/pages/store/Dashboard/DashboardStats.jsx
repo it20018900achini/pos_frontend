@@ -94,9 +94,8 @@ const DashboardStats = () => {
               relative
               p-6
               rounded-xl
-              bg-gray-100 dark:bg-[#0F172A]
+              bg-white dark:bg-[#0F172A]
               border border-gray-200 dark:border-gray-800
-              hover:bg-gray-200/70 dark:hover:bg-[#111827]
               transition-colors
             "
           >
