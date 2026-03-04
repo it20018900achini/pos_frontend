@@ -8,21 +8,27 @@ const ContentLayout = ({
   requiredPermission, // the permission required to access this page
   children,
 }) => {
-  const userProfile = useSelector((state) => state.user?.userProfile?.user);
-  const selectedBranchId = useSelector((state) => state.user?.selectedBranchId);
+  const userProfile = useSelector(
+    (state) => state.user?.userProfile?.user
+  );
+  const selectedBranchId = useSelector(
+    (state) => state.user?.selectedBranchId
+  );
 
   // Find branch permissions
-  const branchPermissions = userProfile?.roleBranchMap?.find(
-    (b) => b.branchId === Number(selectedBranchId)
-  )?.permissions || [];
+  const branchPermissions =
+    userProfile?.roleBranchMap?.find(
+      (b) => b.branchId === Number(selectedBranchId)
+    )?.permissions || [];
 
-  const hasAccess = !requiredPermission || branchPermissions.includes(requiredPermission);
+  const hasAccess =
+    !requiredPermission || branchPermissions.includes(requiredPermission);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background ml-20 md:ml-0">
       {/* Header */}
       {(title || right) && (
-        <div className="bg-muted border-b flex items-center justify-between w-full">
+        <div className="bg-muted border-b flex flex-col md:flex-row items-start md:items-center justify-between w-full">
           {title && (
             <div className="px-6 py-4">
               {typeof title === "string" ? (
@@ -31,13 +37,17 @@ const ContentLayout = ({
                 title
               )}
               {subTitle && (
-                <p className="text-sm text-muted-foreground mt-1">{subTitle}</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {subTitle}
+                </p>
               )}
             </div>
           )}
 
           {hasAccess && right && (
-            <div className="px-6 py-4 flex items-center gap-3">{right}</div>
+            <div className="px-6 py-4 flex flex-wrap items-center gap-3">
+              {right}
+            </div>
           )}
         </div>
       )}
