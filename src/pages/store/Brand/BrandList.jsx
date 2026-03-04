@@ -3,6 +3,7 @@ import BrandForm from "./BrandForm";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import {
@@ -11,6 +12,7 @@ import {
   useUpdateBrandMutation,
 } from "../../../Redux Toolkit/features/brand/brandApi";
 import { useSelector } from "react-redux";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
 export default function BrandList({ storeId }) {
   const [editingBrand, setEditingBrand] = useState(null);
@@ -24,10 +26,8 @@ export default function BrandList({ storeId }) {
     { refetchOnMountOrArgChange: true }
   );
 
-  const { userProfile, loading } = useSelector((state) => state.user);
+  const { userProfile } = useSelector((state) => state.user);
 
-
-  const brands = data?.content || [];
   const pagination = {
     first: data?.first ?? true,
     last: data?.last ?? true,
@@ -62,8 +62,12 @@ export default function BrandList({ storeId }) {
   if (isLoading) return <p>Loading brands...</p>;
 
   return (
+    <ContentLayout title="Brands" subTitle="Manage your store's brands here." right={
+              <Button onClick={() => openDialog()}>Create New Brand</Button>
+
+    }>
     <div className="space-y-4">
-      {JSON.stringify(userProfile?.user?.storeId)}
+
       {/* Dialog for Create/Edit */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
@@ -81,41 +85,50 @@ export default function BrandList({ storeId }) {
         </DialogContent>
       </Dialog>
 
-      {/* Button to open create form */}
-      <Button onClick={() => openDialog()}>Create New Brand</Button>
-{/* <pre>
-    {JSON.stringify(data,null,2)}
-</pre> */}
-      {/* Brand List */}
-      {data?.brands.length === 0 && !isLoading && <p>No brands found.</p>}
+      {/* Header Section */}
+      
 
-      {data?.brands.map((b) => (
-        <Card key={b.id} className="flex justify-between items-center p-4">
-          <CardContent>
-            <p className="font-bold">{b.name}</p>
-            <p>{b.description}</p>
-            <p>Status: {b.isActive ? "Active" : "Inactive"}</p>
-          </CardContent>
-          <div className="flex space-x-2">
-            <Button size="sm" onClick={() => openDialog(b)}>Edit</Button>
-            <Button size="sm" variant="destructive" onClick={() => handleDelete(b.id)}>Delete</Button>
-            <Button size="sm" variant="outline" onClick={() => toggleActive(b)}>
-              {b.isActive ? "Deactivate" : "Activate"}
-            </Button>
-          </div>
-        </Card>
-      ))}
+      {/* Brand Cards */}
+      {data?.brands?.length === 0 && !isLoading && (
+        <p className="text-center text-muted-foreground">No brands found.</p>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {data?.brands.map((b) => (
+          <Card key={b.id} className="flex flex-col justify-between p-4 shadow-sm hover:shadow-md transition">
+            <div className="space-y-2">
+              <p className="text-lg font-bold">{b.name}</p>
+              <p className="text-sm text-muted-foreground">{b.description}</p>
+              <Badge variant={b.isActive ? "default" : "secondary"}>
+                {b.isActive ? "Active" : "Inactive"}
+              </Badge>
+            </div>
+            <div className="flex justify-end space-x-2 mt-4">
+              <Button size="sm" variant="outline" onClick={() => openDialog(b)}>Edit</Button>
+              <Button size="sm" variant="destructive" onClick={() => handleDelete(b.id)}>Delete</Button>
+              <Button size="sm" variant="ghost" onClick={() => toggleActive(b)}>
+                {b.isActive ? "Deactivate" : "Activate"}
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
 
       {/* Pagination */}
-      <div className="flex justify-center space-x-2 mt-4">
-        <Button onClick={() => setPage((p) => Math.max(p - 1, 0))} disabled={pagination.first}>
-          Previous
-        </Button>
-        <span className="px-2 py-1">{pagination.pageNumber + 1}</span>
-        <Button onClick={() => setPage((p) => p + 1)} disabled={pagination.last}>
-          Next
-        </Button>
-      </div>
+      {data?.brands?.length > 0 && (
+        <div className="flex justify-center items-center gap-4 mt-4">
+          <Button onClick={() => setPage((p) => Math.max(p - 1, 0))} disabled={pagination.first}>
+            Previous
+          </Button>
+          <span className="px-2 py-1 text-sm">
+            Page {pagination.pageNumber + 1} of {pagination.totalPages}
+          </span>
+          <Button onClick={() => setPage((p) => p + 1)} disabled={pagination.last}>
+            Next
+          </Button>
+        </div>
+      )}
     </div>
+    </ContentLayout>
   );
 }

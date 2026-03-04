@@ -20,18 +20,11 @@ import {
 
 export default function BrandsPage() {
   const { userProfile, initialized, loading } = useSelector((state) => state.user);
-  const storeId = userProfile?.user.storeId;
+  const storeId = userProfile?.user.store?.id;
 
   const [open, setOpen] = useState(false);
 
   if (loading || !initialized) return <p>Loading...</p>;
 
-  return (
-    <div className="max-w-4xl mx-auto mt-6 space-y-6">
-    
-
-      {/* Brand List */}
-      <BrandList storeId={storeId} />
-    </div>
-  );
+  return <BrandList storeId={storeId} />
 }

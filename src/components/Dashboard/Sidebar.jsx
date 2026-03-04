@@ -111,7 +111,7 @@ export default function Sidebar() {
           sidebarOpen ? "w-64" : "w-20"
         } overflow-y-auto`}
       >
-        <div className="flex flex-col h-full px-4 py-6">
+        <div className="flex flex-col h-full px-1 py-6">
           {/* Header */}
           <div className="mb-6 flex items-center justify-between">
             <Store className="w-7 h-7 text-neutral-600 dark:text-neutral-400" />
