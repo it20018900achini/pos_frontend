@@ -5,13 +5,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { getCategoriesByStore } from "@/Redux Toolkit/features/category/categoryThunks";
-import { toast } from "@/components/ui/use-toast";
 import CategoryTable from "./CategoryTable";
 import CategoryForm from "./CategoryForm";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
 export default function Categories() {
   const dispatch = useDispatch();
-    const { userProfile , selectedBranchId} = useSelector((state) => state.user);
+    const { userProfile } = useSelector((state) => state.user);
   
   const { categories, loading, error } = useSelector((state) => state.category);
   const { store } = useSelector((state) => state.store);
@@ -44,9 +44,8 @@ export default function Categories() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Category Management</h1>
+    <ContentLayout title="Category Management" subTitle="Manage product categories for your store"
+    right={
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="">
@@ -63,6 +62,11 @@ export default function Categories() {
             />
           </DialogContent>
         </Dialog>
+    }
+    >
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        
 
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
@@ -93,5 +97,6 @@ export default function Categories() {
         </CardContent>
       </Card>
     </div>
+    </ContentLayout>
   );
 }
