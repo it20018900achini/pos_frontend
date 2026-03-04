@@ -12,8 +12,7 @@ function Refunds() {
 
   // If cashier → use their branch
   // Otherwise → use selected branch from slice
-  const effectiveBranch =
-    userProfile?.user?.branch || branch;
+ 
 
   return (
     <ContentLayout

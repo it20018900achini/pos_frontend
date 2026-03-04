@@ -3,11 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateQuotationMutation } from "@/Redux Toolkit/features/quotation/quotationApi";
 import QuotationItemsTable from "./QuotationItemsTable";
+import { useSelector } from "react-redux";
 
 const QuotationForm = () => {
   const [createQuotation, { isLoading }] = useCreateQuotationMutation();
+    const { selectedBranchId } = useSelector((state) => state.user);
 
-  const branchId = 52; // Single branch
+  const branchId = selectedBranchId; // Single branch
 
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");

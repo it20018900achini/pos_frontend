@@ -1,9 +1,12 @@
 // src/features/inventory/StockStatementTable.jsx
 import React, { useState } from "react";
 import { useGetStockStatementQuery } from "../../../Redux Toolkit/features/inventory/inventoryApi";
+import { useSelector } from "react-redux";
 
 const StockStatementTable = () => {
-  const [branchId, setBranchId] = useState(52);
+      const { selectedBranchId } = useSelector((state) => state.user);
+  
+  const [branchId, setBranchId] = useState(selectedBranchId);
   const [startDate, setStartDate] = useState("2026-01-01T00:00:00");
   const [endDate, setEndDate] = useState("2026-01-09T23:59:59");
   const [filterParams, setFilterParams] = useState({

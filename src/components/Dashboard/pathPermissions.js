@@ -47,13 +47,19 @@ export const pathPermissions = (permissions = []) => {
   }
 
   /* ---------------- Branches ---------------- */
-  if (permissions.includes("BRANCHES")) {
-    NAV_LINKS.push({
-      name: "Branches",
-      path: "/dashboard/store/branches",
-      icon: Store,
-    });
-  }
+  // if (permissions.includes("BRANCHES")) {
+  //   NAV_LINKS.push({
+  //     name: "Branches",
+  //     path: "/dashboard/store/branches",
+  //     icon: Store,
+  //   });
+  // }
+
+  
+  addParentWithChildren("BRANCHES", Store, [
+    { name: "All Branches", path: "/dashboard/store/branches", icon: Store, permission: "BRANCHES" },
+    { name: "Allowed Branches", path: "/dashboard/store/allowed-branches", icon: Store, permission: "BRANCHES" },
+     ]);
 
   /* ---------------- POS ---------------- */
   addParentWithChildren("POS", Store, [

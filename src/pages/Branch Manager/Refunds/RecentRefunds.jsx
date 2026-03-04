@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Loader2, SearchIcon } from "lucide-react";
 import OrderTable from "./OrderTable";
 import { useBranchRefunds } from "@/context/hooks/useBranchRefunds";
+import { useSelector } from "react-redux";
 
 const RecentRefunds = ({ branches = [] }) => {
   // Selected branch state (default to first branch)
-  const [selectedBranchId, setSelectedBranchId] = useState(
-    branches.length > 0 ? branches[0].id : null
-  );
+    const { userProfile,selectedBranchId } = useSelector((state) => state.user);
+
 
   const {
     refunds,
@@ -42,19 +42,7 @@ const RecentRefunds = ({ branches = [] }) => {
       <div className="p-4 flex flex-wrap gap-2 items-center">
 
         {/* Branch Selector */}
-        {branches.length > 1 && (
-          <select
-            value={selectedBranchId}
-            onChange={(e) => setSelectedBranchId(e.target.value)}
-            className="border rounded px-2 py-1"
-          >
-            {branches.map((branch) => (
-              <option key={branch.id} value={branch.id}>
-                {branch.name}
-              </option>
-            ))}
-          </select>
-        )}
+        
 
         <input
           type="datetime-local"

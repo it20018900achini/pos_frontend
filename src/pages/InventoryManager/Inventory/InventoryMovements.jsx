@@ -14,11 +14,11 @@ import { Button } from "@/components/ui/button";
 import ContentLayout from "../../Dashboard/ContentLayout";
 
 const InventoryMovements = () => {
-  const { userProfile } = useSelector((state) => state.user);
+  const { userProfile, selectedBranchId } = useSelector((state) => state.user);
   const [page, setPage] = useState(0);
 
   const { data, isLoading, isError } = useGetInventoryMovementsQuery({
-    branchId: userProfile?.user?.branch?.id || 52,
+    branchId: selectedBranchId,
     page,
     size: 20,
   });

@@ -31,14 +31,16 @@ const INITIAL_PAYMENT = {
   reference: "",
 };
 
-const BRANCH_ID = 52;
 
 /* -------------------- component -------------------- */
-const PurchaseModal = ({ open, onClose, storeId = 2 }) => {
+const PurchaseModal = ({ open, onClose, storeId = null }) => {
+      const { userProfile, selectedBranchId } = useSelector((state) => state.user);
+  
+const BRANCH_ID = selectedBranchId;
   const dispatch = useDispatch();
   const { suppliers } = useSelector((state) => state.supplier);
 
-  const { data: products = [] } = useGetProductVariantsByStoreQuery(storeId);
+  const { data: products = [] } = useGetProductVariantsByStoreQuery(userProfile?.user?.store?.id);
 
   const [supplierId, setSupplierId] = useState(null);
   const [items, setItems] = useState([INITIAL_ITEM]);

@@ -21,7 +21,8 @@ const TodayOverview = () => {
     (state) => state.branchAnalytics
   );
 
-  const branchId = 52;
+    const { selectedBranchId } = useSelector((state) => state.user);
+  const branchId = selectedBranchId;
 
   // ------------------------
   // Helper: format YYYY-MM-DD

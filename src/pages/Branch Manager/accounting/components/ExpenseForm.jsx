@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useCreateExpenseMutation, useUpdateExpenseMutation } from '../../../../Redux Toolkit/features/accounting/accountingApi';
+import { useSelector } from 'react-redux';
 
-export default function ExpenseForm({ expense, onClose, categories, branchId = 52 }) {
+export default function ExpenseForm({ expense, onClose, categories, branchId=null}) {
+      const { selectedBranchId } = useSelector((state) => state.user);
+  branchId = selectedBranchId;
   const [title, setTitle] = useState('');
   const [totalAmount, setTotalAmount] = useState('');
   const [expenseType, setExpenseType] = useState('REGULAR');

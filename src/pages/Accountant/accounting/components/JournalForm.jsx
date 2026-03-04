@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { useSelector } from "react-redux";
 
 // Flatten nested accounts helper
 const flattenAccounts = (accounts) => {
@@ -32,6 +33,8 @@ const flattenAccounts = (accounts) => {
 };
 
 export default function JournalForm() {
+  
+    const { selectedBranchId } = useSelector((state) => state.user);
   const { toast } = useToast();
   const { data: accountsNested = [] } = useGetChartOfAccountsQuery();
   const accounts = useMemo(() => flattenAccounts(accountsNested), [accountsNested]);
@@ -118,7 +121,7 @@ export default function JournalForm() {
         })),
       };
 
-      await createJournal({branchId:52,...payload}).unwrap();
+      await createJournal({branchId:selectedBranchId,...payload}).unwrap();
 
       toast({ title: "Journal entry saved!" });
 

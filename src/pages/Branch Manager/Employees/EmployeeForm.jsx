@@ -34,6 +34,7 @@ const validationSchema = Yup.object({
 
 export default function EmployeeForm({ initialData, onSubmit, roles }) {
   const dispatch = useDispatch();
+    const { selectedBranchId } = useSelector((state) => state.user);
 
   const store = useSelector(selectStore);
   const branches = useSelector(selectBranches);
@@ -57,7 +58,7 @@ export default function EmployeeForm({ initialData, onSubmit, roles }) {
       password: "",
       phone: "",
       role: "",
-      branchId: 52,
+      branchId: selectedBranchId,
       ...initialData,
     },
     validationSchema,
@@ -66,6 +67,7 @@ export default function EmployeeForm({ initialData, onSubmit, roles }) {
 
   return (
     <form onSubmit={formik.handleSubmit} className="space-y-4">
+      
       <div>
         <Label>Full Name</Label>
         <Input {...formik.getFieldProps("fullName")} />

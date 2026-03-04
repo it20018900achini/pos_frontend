@@ -36,6 +36,7 @@ import PayrollPage from "../pages/Branch Manager/payroll/PayrollPage";
 import SalaryPage from "../pages/Branch Manager/salary/SalaryPage";
 import StoreEmployees from "../pages/store/Employee/StoreEmployees";
 import Onboarding from "../pages/onboarding/Onboarding";
+import AllowedBranches from "../pages/store/AllowedBranches/AllowedBranches";
 
 const DashboardRoutes = () => {
   
@@ -57,6 +58,7 @@ const DashboardRoutes = () => {
                  
       <Route path="store/onboarding" element={<Onboarding />} />
       <Route path="store/branches" element={<Branches />} />
+      <Route path="store/allowed-branches" element={<AllowedBranches />} />
 
       <Route path="branch/users/" element={<BranchEmployees />} />
       <Route path="branch/users/permissions" element={<RolesPage />} />

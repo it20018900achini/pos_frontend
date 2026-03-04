@@ -1,18 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw } from "lucide-react";
 import { useBranchOrders } from "@/context/hooks/useBranchOrders";
 import OrderTable from "./OrderTable";
+import { useSelector } from "react-redux";
 
-const RecentOrders = ({ branches = [] }) => {
+const RecentOrders = () => {
+  const { userProfile } = useSelector((state) => state.user);
+
   const {
     orders,
     pageInfo,
     loading,
-    userProfile,
-
-    selectedBranchId,
-    setSelectedBranchId,
 
     startDate,
     setStartDate,
@@ -34,7 +33,7 @@ const RecentOrders = ({ branches = [] }) => {
     setEndDate("");
     setSearchText("");
     setPage(0);
-    loadOrders("", "", "");
+    loadOrders();
   };
 
   const nextPage = () => {
@@ -51,28 +50,6 @@ const RecentOrders = ({ branches = [] }) => {
 
   return (
     <div className="h-full flex flex-col">
-    
-
-      {/* Branch Select (Admin Only) */}
-      {!userProfile?.user?.branch?.id && (
-        <div className="p-4">
-          <select
-            value={selectedBranchId}
-            onChange={(e) => {
-              setSelectedBranchId(e.target.value);
-              setPage(0);
-            }}
-            className="border p-2"
-          >
-            <option value="">Select Branch</option>
-            {branches.map((branch) => (
-              <option key={branch.id} value={branch.id}>
-                {branch.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
 
       {/* Filters */}
       <div className="p-4 flex flex-wrap gap-2">
@@ -119,7 +96,9 @@ const RecentOrders = ({ branches = [] }) => {
           onClick={() => loadOrders()}
           disabled={loading}
         >
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+          />
           Refresh
         </Button>
       </div>
@@ -134,7 +113,6 @@ const RecentOrders = ({ branches = [] }) => {
           <>
             <OrderTable orders={orders} />
 
-            {/* Pagination */}
             <div className="flex justify-between mt-4">
               <Button
                 variant="outline"

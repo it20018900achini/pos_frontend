@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { toast } from "@/components/ui/use-toast";
+// import { toast } from "@/components/ui/use-toast";
 import {
   getAllBranchesByStore,
 } from "@/Redux Toolkit/features/branch/branchThunks";
@@ -23,7 +23,7 @@ import ContentLayout from "../../Dashboard/ContentLayout";
 
 export default function Branches() {
   const dispatch = useDispatch();
-  const { userProfile , selectedBranchId} = useSelector((state) => state.user);
+  const { userProfile } = useSelector((state) => state.user);
   const { branches, loading, error } = useSelector((state) => state.branch);
   const { store } = useSelector((state) => state.store);
   const { user } = useSelector((state) => state.user);

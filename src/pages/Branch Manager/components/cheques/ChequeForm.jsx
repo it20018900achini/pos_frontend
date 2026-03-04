@@ -2,9 +2,12 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCreateChequeMutation } from "@/Redux Toolkit/features/cheque/chequeApi";
+import { useSelector } from "react-redux";
 
 const ChequeForm = ({ onCreated }) => {
   const [createCheque] = useCreateChequeMutation();
+      const { selectedBranchId } = useSelector((state) => state.user);
+
   const [form, setForm] = useState({
     chequeNumber: "",
     bankName: "",
@@ -12,7 +15,7 @@ const ChequeForm = ({ onCreated }) => {
     amount: "",
     issueDate: "",
     type: "RECEIVED",
-    branchId: 52, // ✅ Hardcoded
+    branchId: selectedBranchId, // ✅ Use selectedBranchId from Redux state
   });
 
   const handleChange = (e) =>
@@ -29,7 +32,7 @@ const ChequeForm = ({ onCreated }) => {
       amount: "",
       issueDate: "",
       type: "RECEIVED",
-      branchId: 52, // reset
+      branchId: selectedBranchId, // reset
     });
   };
 

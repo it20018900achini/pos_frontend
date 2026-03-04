@@ -8,7 +8,7 @@ import ContentLayout from "../../Dashboard/ContentLayout";
 function Orders() {
   const { branch } = useSelector((state) => state.branch);
   const { branches, loading, error } = useSelector((state) => state.branch);
-  const { userProfile } = useSelector((state) => state.user);
+  const { userProfile,selectedBranchId } = useSelector((state) => state.user);
 
   return (
     <ContentLayout
@@ -16,7 +16,7 @@ function Orders() {
       subTitle="orders"
     >
       
-      <RecentOrders branches={userProfile?.user?.defaultBranch?.id ? branches.filter(b => b.id === userProfile.user.defaultBranch.id):branches} />
+      <RecentOrders branches={selectedBranchId ? branches.filter(b => b.id === selectedBranchId):branches} />
     </ContentLayout>
   );
 }

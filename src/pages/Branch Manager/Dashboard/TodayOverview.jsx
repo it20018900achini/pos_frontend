@@ -16,12 +16,14 @@ import {
 } from "lucide-react";
 
 const TodayOverview = () => {
+      const { userProfile,selectedBranchId } = useSelector((state) => state.user);
+  
   const dispatch = useDispatch();
   const { todayOverview, loading } = useSelector(
     (state) => state.branchAnalytics
   );
 
-  const branchId = 52;
+  const branchId = selectedBranchId;
 
   // ------------------------
   // Helper: format YYYY-MM-DD

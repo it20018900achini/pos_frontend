@@ -81,14 +81,24 @@ export default function ChatPage() {
 useEffect(() => {
   const fetchUsers = async () => {
     const res = await dispatch(getAllUsers());
-    
-    // Load unseen messages for each user after users are loaded
-    Object.values(res.payload || {}).forEach(async (user) => {
-      await dispatch(loadChatHistory({ userId: user.id, limit: 1 })); // fetch latest messages
+
+    const allUsers = Object.values(res.payload || {});
+
+    // 🚫 Remove myself
+    const filteredUsers = allUsers.filter(
+      (user) => user.id !== me?.user?.id
+    );
+
+    // Load unseen messages only for other users
+    filteredUsers.forEach(async (user) => {
+      await dispatch(loadChatHistory({ userId: user.id, limit: 1 }));
     });
   };
-  fetchUsers();
-}, [dispatch]);
+
+  if (me?.user?.id) {
+    fetchUsers();
+  }
+}, [dispatch, me?.user?.id]);
   /* ================= PRESENCE SOCKET ================= */
   useEffect(() => {
     if (!me || !usersLoaded) return;
@@ -146,6 +156,7 @@ useEffect(() => {
     
     async (user) => {
     
+    if (me?.user?.id === user.id) return;
     // alert(JSON.stringify(user));
       setIsChatOpen(true);
       dispatch(selectUser(user));

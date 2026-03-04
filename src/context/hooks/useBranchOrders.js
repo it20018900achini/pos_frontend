@@ -7,78 +7,68 @@ export const useBranchOrders = () => {
   const dispatch = useDispatch();
   const { toast } = useToast();
 
-  const { userProfile } = useSelector((state) => state.user);
+  const { userProfile, selectedBranchId } = useSelector((state) => state.user);
   const { orders, pageInfo, loading, error } = useSelector(
     (state) => state.order
   );
 
-  const [selectedBranchId, setSelectedBranchId] = useState("");
+  // ✅ Pagination
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
+
+  // ✅ Filters
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [searchText, setSearchText] = useState("");
 
-  // ✅ Auto-set branch for cashier or assigned users
+  // ✅ Compute branch safely
+  const branchId =selectedBranchId
+
+  // ✅ Core Loader (stable)
+  const loadOrders = useCallback(() => {
+    if (!userProfile?.user?.id || !branchId) return;
+
+    const startISO = startDate
+      ? new Date(startDate).toISOString()
+      : undefined;
+
+    const endISO = endDate
+      ? new Date(endDate).toISOString()
+      : undefined;
+
+    dispatch(
+      getRecentOrdersByBranchPagin({
+        branchId,
+        page,
+        size,
+        sort: "id,desc",
+        start: startISO,
+        end: endISO,
+        search: searchText || undefined,
+      })
+    );
+  }, [
+    dispatch,
+    branchId,
+    page,
+    size,
+    startDate,
+    endDate,
+    searchText,
+    userProfile?.user?.id,
+  ]);
+
+  // ✅ Auto Load on:
+  // - Page reload
+  // - Pagination change
+  // - User ready
   useEffect(() => {
-    if (userProfile?.user?.branch?.id) {
-      setSelectedBranchId(userProfile.user.branch.id);
-    }
-  }, [userProfile]);
-
-  // ✅ Core loader
-  const loadOrders = useCallback(
-    (start = startDate, end = endDate, search = searchText) => {
-      if (!userProfile?.user?.id) return;
-
-      const branchToUse =
-        userProfile?.user?.defaultBranch?.id || selectedBranchId;
-
-      if (!branchToUse) {
-        toast({
-          title: "Branch Required",
-          description: "Please select a branch first",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const startISO = start ? new Date(start).toISOString() : undefined;
-      const endISO = end ? new Date(end).toISOString() : undefined;
-
-      dispatch(
-        getRecentOrdersByBranchPagin({
-          branchId: branchToUse,
-          page,
-          size,
-          sort: "id,desc",
-          start: startISO,
-          end: endISO,
-          search: search || undefined,
-        })
-      );
-    },
-    [
-      dispatch,
-      page,
-      size,
-      startDate,
-      endDate,
-      searchText,
-      selectedBranchId,
-      userProfile,
-      toast,
-    ]
-  );
-
-  // ✅ Auto load when ready
-  useEffect(() => {
-    if (selectedBranchId || userProfile?.user?.branch?.id) {
+    if (branchId) {
       loadOrders();
     }
-  }, [userProfile, page, size, selectedBranchId]);
+  }, [branchId, page, size]);
 
-  // ✅ Error toast
+  // ✅ Error Toast
   useEffect(() => {
     if (error) {
       toast({
@@ -95,10 +85,6 @@ export const useBranchOrders = () => {
     pageInfo,
     loading,
 
-    // branch
-    selectedBranchId,
-    setSelectedBranchId,
-
     // filters
     startDate,
     setStartDate,
@@ -113,7 +99,7 @@ export const useBranchOrders = () => {
     size,
     setSize,
 
-    // actions
+    // manual trigger
     loadOrders,
   };
 };

@@ -6,16 +6,14 @@ import { DashboardStats } from '../store/Dashboard';
 import GetSelectedBranch from '../../utils/getSelectedBranch';
 
 function Dashboard() {
-    const { userProfile } = useSelector((state) => state.user);
+    const { userProfile,selectedBranchId } = useSelector((state) => state.user);
     const selectedBranch=GetSelectedBranch();
 
   return (
     <div>
-      {
-        JSON.stringify(selectedBranch)
-      }
       
-      {userProfile?.user?.defaultBranch?.id ? <TodayOverview/>:<DashboardStats/>}
+      
+      {selectedBranchId ? <TodayOverview/>:<DashboardStats/>}
       
     </div>
   )

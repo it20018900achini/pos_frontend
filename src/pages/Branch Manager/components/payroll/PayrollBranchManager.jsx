@@ -11,8 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import SalarySetup from "../salary/SalarySetup";
+import { useSelector } from "react-redux";
 
-export default function PayrollBranchManager({ branchId=52 }) {
+export default function PayrollBranchManager({ branchId=null }) {
+      const { selectedBranchId } = useSelector((state) => state.user);
+  
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -21,7 +24,7 @@ export default function PayrollBranchManager({ branchId=52 }) {
   const [pendingPayroll, setPendingPayroll] = useState(null);
   const [error, setError] = useState(null);
 
-  const { data: payrolls = [], isLoading } = useGetBranchPayrollQuery({ branchId, year, month });
+  const { data: payrolls = [], isLoading } = useGetBranchPayrollQuery({ selectedBranchId, year, month });
   const [generatePayroll] = useGeneratePayrollMutation();
   const [approvePayroll] = useApprovePayrollMutation();
   const [payPayroll] = usePayPayrollMutation();

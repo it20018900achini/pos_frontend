@@ -8,17 +8,19 @@ import { useDeleteInventoryMutation,useGetInventoriesByBranchQuery,
    } from "../../../Redux Toolkit/features/inventory/inventoryApi";
 import StockStatement from "./StockStatement";
 import StockStatementTable from "./StockStatementTable";
+import { useSelector } from "react-redux";
 
 const InventoryPage = ({ branchId = 1 }) => {
   const { data: inventories, isLoading } = useGetInventoriesByBranchQuery(branchId);
   const [createInventory] = useCreateInventoryMutation();
   const [updateInventory] = useUpdateInventoryMutation();
   const [deleteInventory] = useDeleteInventoryMutation();
+    const { selectedBranchId } = useSelector((state) => state.user);
 
   const [editingInventory, setEditingInventory] = useState(null);
 
   const handleCreate = async (dto) => {
-    await createInventory({ ...dto, branchId });
+    await createInventory({ ...dto, branchId: selectedBranchId });
   };
 
   const handleUpdate = async (dto) => {
@@ -36,7 +38,7 @@ const InventoryPage = ({ branchId = 1 }) => {
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Inventory List</h1>
       {/* <StockStatementTable/> */}
-<StockStatement branchId={52}/>
+<StockStatement branchId={selectedBranchId}/>
       <InventoryForm
         key={editingInventory?.id || "new"}
         initialData={editingInventory}

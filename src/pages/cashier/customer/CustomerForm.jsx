@@ -15,9 +15,11 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { Loader2 } from "lucide-react";
 import { useCreateCustomerMutation } from "@/Redux Toolkit/features/customer/customerApi";
+import { useSelector } from "react-redux";
 
 const CustomerForm = ({ showCustomerForm, setShowCustomerForm, onCustomerCreated }) => {
   const [createCustomer, { isLoading }] = useCreateCustomerMutation();
+    const { selectedBranchId } = useSelector((state) => state.user);
 
   const validationSchema = Yup.object({
     fullName: Yup.string()
@@ -38,7 +40,7 @@ const CustomerForm = ({ showCustomerForm, setShowCustomerForm, onCustomerCreated
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      const payload = { ...values, branchId: 52 }; // ✅ Fixed branchId
+      const payload = { ...values, branchId: selectedBranchId }; // ✅ Fixed branchId
       await createCustomer(payload).unwrap();
 
       toast.success("Customer created successfully!");

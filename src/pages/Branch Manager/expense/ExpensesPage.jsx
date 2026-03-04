@@ -3,6 +3,7 @@ import ExpenseForm from '../components/expenses/ExpenseForm';
 import ExpenseTable from '../components/expenses/ExpenseTable';
 import ExpenseFilters from '../components/expenses/ExpenseFilters';
 import { useGetExpensesQuery } from '../../../Redux Toolkit/features/expenses/expenseApi';
+import { useSelector } from 'react-redux';
 
 const ExpensesPage = () => {
   const [filters, setFilters] = useState({});
@@ -15,8 +16,9 @@ const ExpensesPage = () => {
   useEffect(() => {
     refetch();
   }, [filters, refetch]);
+    const { selectedBranchId } = useSelector((state) => state.user);
 
-  const branches = [{ id: '52', name: 'Branch 52' }, { id: '2', name: 'Branch 2' }];
+  const branches = [{ id: selectedBranchId, name: 'Selected Branch' }, { id: '2', name: 'Branch 2' }];
   const categories = [{ id: '1', name: 'Food' }, { id: '2', name: 'Utilities' }];
 
   return (
