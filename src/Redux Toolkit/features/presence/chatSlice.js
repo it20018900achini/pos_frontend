@@ -38,37 +38,41 @@ const chatSlice = createSlice({
       state.selectedUser = action.payload;
     },
 
-    addChatMessage: (state, action) => {
-      const msg = {
-        ...action.payload,
-        // ⚡ normalize content field
-        content: action.payload.content ?? action.payload.message ?? "",
-      };
+  addChatMessage(state, action) {
+  const { id, senderId, receiverId, timestamp, myId, seen } = action.payload;
+  const content = action.payload.content ?? action.payload.message ?? "";
 
-      const userId =
-        msg.senderId === state.selectedUser?.id
-          ? msg.senderId
-          : msg.receiverId;
+  if (!myId) return;
 
-      if (!state.messagesByUser[userId]) state.messagesByUser[userId] = [];
+  // Correct chat key: always the "other user"
+  const chatUserId = senderId === myId ? receiverId : senderId;
+  if (!chatUserId) return;
 
-      // Avoid duplicates by clientId
-      if (msg.clientId) {
-        const exists = state.messagesByUser[userId].some(
-          (m) => m.clientId === msg.clientId
-        );
-        if (exists) return;
-      }
+  if (!state.messagesByUser[chatUserId]) state.messagesByUser[chatUserId] = [];
 
-      state.messagesByUser[userId].push(msg);
+  // avoid duplicates
+  const exists = state.messagesByUser[chatUserId].some((m) => m.id === id);
+  if (exists) return;
 
-      // ⚡ increment unseen count if not sent by me
-      if (msg.senderId !== msg.myId) {
-        state.unseenCountByUser[userId] =
-          (state.unseenCountByUser[userId] || 0) + 1;
-      }
-    },
+  state.messagesByUser[chatUserId].push({
+    id,
+    senderId,
+    receiverId,
+    content,
+    timestamp,
+    seen,
+  });
 
+  // sort by timestamp
+  state.messagesByUser[chatUserId].sort((a, b) => a.timestamp - b.timestamp);
+
+  // unseen
+  state.unseenCount = calculateUnseenCount(state.messagesByUser, myId);
+  if (!seen && receiverId === myId) {
+    state.unseenCountByUser[senderId] =
+      (state.unseenCountByUser[senderId] || 0) + 1;
+  }
+},
 
     markConversationSeen(state, action) {
   const { userId, myId } = action.payload;

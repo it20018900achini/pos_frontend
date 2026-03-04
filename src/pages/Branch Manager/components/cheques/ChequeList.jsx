@@ -1,9 +1,12 @@
 import React from "react";
 import { useGetChequesQuery, useDeleteChequeMutation } from "@/Redux Toolkit/features/cheque/chequeApi";
 import { Button } from "@/components/ui/button";
+import { useSelector } from "react-redux";
 
 const ChequeList = ({ type, status }) => {
-  const { data, isLoading } = useGetChequesQuery({ branchId: 52, type, status }); // ✅ Hardcoded
+      const { selectedBranchId } = useSelector((state) => state.user);
+  
+  const { data, isLoading } = useGetChequesQuery({ branchId: selectedBranchId, type, status });
   const [deleteCheque] = useDeleteChequeMutation();
 
   if (isLoading) return <p>Loading...</p>;
