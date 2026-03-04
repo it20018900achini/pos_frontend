@@ -65,8 +65,8 @@ export const pathPermissions = (permissions = []) => {
   addParentWithChildren("POS", Store, [
     { name: "POS", path: "/dashboard/pos", icon: Store, permission: "POS" },
     { name: "Shift Summary", path: "/dashboard/pos/shift-summary", icon: Clock, permission: "POS" },
-    { name: "Orders", path: "/dashboard/pos/orders", icon: FileText, permission: "ORDERS" },
-    { name: "Refunds", path: "/dashboard/pos/refunds", icon: DollarSign, permission: "ORDERS" },
+    { name: "Orders (me)", path: "/dashboard/pos/orders", icon: FileText, permission: "ORDERS" },
+    { name: "Refunds (me)", path: "/dashboard/pos/refunds", icon: DollarSign, permission: "ORDERS" },
   ]);
 
   /* ---------------- Users ---------------- */
