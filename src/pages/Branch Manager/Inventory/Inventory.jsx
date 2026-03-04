@@ -17,6 +17,7 @@ import InventoryFilters from "./InventoryFilters";
 import InventoryFormDialog from "./InventoryFormDialog";
 
 import InventoryTableSkeleton from "./InventoryTableSkeleton";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
 const Inventory = () => {
   const dispatch = useDispatch();
@@ -112,6 +113,7 @@ const Inventory = () => {
   };
 
   return (
+    <ContentLayout title="Inventory Management" subTitle="Manage your branch's inventory here.">
     <div className="space-y-6">
 
       {/* PAGE HEADER */}
@@ -169,6 +171,7 @@ const Inventory = () => {
         mode="edit"
       />
     </div>
+    </ContentLayout>
   );
 };
 

@@ -9,6 +9,7 @@ import { useDeleteInventoryMutation,useGetInventoriesByBranchQuery,
 import StockStatement from "./StockStatement";
 import StockStatementTable from "./StockStatementTable";
 import { useSelector } from "react-redux";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
 const InventoryPage = ({ branchId = null }) => {
     const { userProfile, selectedBranchId } = useSelector((state) => state.user);
@@ -36,6 +37,7 @@ const InventoryPage = ({ branchId = null }) => {
   if (isLoading) return <p>Loading...</p>;
 
   return (
+    <ContentLayout title="Inventory Management" subTitle="Manage your branch's inventory here.">
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Inventory List</h1>
       {/* <StockStatementTable/> */}
@@ -70,6 +72,7 @@ const InventoryPage = ({ branchId = null }) => {
         ))}
       </ul>
     </div>
+    </ContentLayout>
   );
 };
 

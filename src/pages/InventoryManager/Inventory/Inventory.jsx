@@ -12,6 +12,7 @@ import {
 import InventoryTable from "./InventoryTable";
 import InventoryTableSkeleton from "./InventoryTableSkeleton";
 import InventoryFormDialog from "./InventoryFormDialog";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
 const Inventory = () => {
   const dispatch = useDispatch();
@@ -73,6 +74,7 @@ const Inventory = () => {
   };
 
   return (
+    <ContentLayout title="Inventory Management" subTitle="Manage your branch's inventory here.">
     <div className="space-y-6">
       {/* HEADER */}
       <div className="flex justify-between items-center">
@@ -109,6 +111,7 @@ const Inventory = () => {
         mode="edit"
       />
     </div>
+    </ContentLayout>
   );
 };
 
