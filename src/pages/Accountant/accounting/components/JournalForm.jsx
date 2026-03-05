@@ -34,9 +34,9 @@ const flattenAccounts = (accounts) => {
 
 export default function JournalForm() {
   
-    const { selectedBranchId } = useSelector((state) => state.user);
+    const {userProfile, selectedBranchId } = useSelector((state) => state.user);
   const { toast } = useToast();
-  const { data: accountsNested = [] } = useGetChartOfAccountsQuery();
+  const { data: accountsNested = [] } = useGetChartOfAccountsQuery(userProfile?.user?.store?.id);
   const accounts = useMemo(() => flattenAccounts(accountsNested), [accountsNested]);
 
   const [createJournal, { isLoading }] = useCreateJournalMutation();

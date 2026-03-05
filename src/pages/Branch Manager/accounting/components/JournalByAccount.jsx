@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate, formatDistanceToNow } from "date-fns";
 import { Trash2, Edit } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { useSelector } from "react-redux";
 
 // Flatten nested accounts
 const flattenAccounts = (accounts) => {
@@ -42,9 +43,12 @@ export default function JournalByAccount() {
 
   const [deleteJournal, { isLoading: deleting }] = useDeleteJournalMutation();
   const [updateJournal, { isLoading: updating }] = useUpdateJournalEntryMutation();
+  const storeId = useSelector((state) => state.user.userProfile?.user?.store?.id);
 
   const [selectedAccount, setSelectedAccount] = useState(null);
-  const { data: journals = [], isLoading: loadingJournals, refetch } = useGetJournalsQuery();
+  const { data: journals = [], isLoading: loadingJournals, refetch } = useGetJournalsQuery({
+      branchId: storeId,
+  });
 
   if (loadingJournals) return <p>Loading...</p>;
 

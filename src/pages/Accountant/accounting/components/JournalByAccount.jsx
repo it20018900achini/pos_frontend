@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate, formatDistanceToNow } from "date-fns";
 import { Trash2, Edit, ChevronLeft, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useSelector } from "react-redux";
 
 // Flatten nested accounts
 const flattenAccounts = (accounts) => {
@@ -33,7 +34,10 @@ const flattenAccounts = (accounts) => {
 };
 
 export default function JournalByAccount() {
-  const { data: accountsNested = [] } = useGetChartOfAccountsQuery();
+    const { userProfile,selectedBranchId } = useSelector((state) => state.user);
+
+  const storeId = userProfile?.user?.store?.id;
+  const { data: accountsNested = [] } = useGetChartOfAccountsQuery(storeId);
   const accounts = useMemo(() => flattenAccounts(accountsNested), [accountsNested]);
 
   const [deleteId, setDeleteId] = useState(null);
@@ -45,6 +49,7 @@ export default function JournalByAccount() {
 
   // server-side fetch
   const { data: journalsPage, isLoading, refetch } = useGetJournalsQuery({
+    branchId: selectedBranchId,
     entryId: searchTerm ? Number(searchTerm) : null, // filter by entryId if numeric
     page,
     size,
