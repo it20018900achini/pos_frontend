@@ -41,6 +41,7 @@ import {
 
 import LedgerWithDialog from "./LedgerWithDialog";
 import ContentLayout from "../../../Dashboard/ContentLayout";
+import { useSelector } from "react-redux";
 
 /* ================= TYPE META ================= */
 const TYPE_META = {
@@ -69,8 +70,9 @@ const buildParentOptions = (accounts, level = 0) => {
 };
 
 export default function ChartOfAccounts() {
+  const storeId = useSelector((state) => state.user.userProfile?.user?.store?.id);
   const { data: accounts = [], isLoading, isError, refetch } =
-    useGetChartOfAccountsQuery();
+    useGetChartOfAccountsQuery(storeId);
 
   const [createAccount, { isLoading: creating }] =
     useCreateChartOfAccountMutation();
@@ -95,7 +97,7 @@ export default function ChartOfAccounts() {
   );
 
   if (isLoading) return <p>Loading Chart of Accounts...</p>;
-  if (isError) return <p>Error loading accounts</p>;
+  if (isError) return <p>Error loading accounts..</p>;
 
   /* ================= CREATE ================= */
   const handleCreate = async () => {

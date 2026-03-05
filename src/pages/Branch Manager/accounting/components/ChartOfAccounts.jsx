@@ -95,7 +95,7 @@ export default function ChartOfAccounts() {
   );
 
   if (isLoading) return <p>Loading Chart of Accounts...</p>;
-  if (isError) return <p>Error loading accounts</p>;
+  if (isError) return <p>Error loading accounts....</p>;
 
   /* ================= CREATE ================= */
   const handleCreate = async () => {
