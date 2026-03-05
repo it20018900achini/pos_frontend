@@ -5,9 +5,13 @@ import {
   useGetUserRolesByUserQuery,
   useDeleteUserRoleMutation,
 } from "@/Redux Toolkit/features/role/roleApi";
+import { useSelector } from "react-redux";
 
 const UserRolesByUser = () => {
-  const  userId  = 12;
+    const { userProfile } = useSelector(
+      (state) => state.user
+    );
+  const  userId  = userProfile?.user?.id;
   const { data, isLoading } = useGetUserRolesByUserQuery(userId);
   const [deleteUserRole] = useDeleteUserRoleMutation();
 
@@ -15,9 +19,8 @@ const UserRolesByUser = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-xl font-bold mb-4">
-        Roles for User ID: {userId}
-      </h2>
+      <h2 className="text-xl font-bold mb-4">User Roles</h2>
+      
 
       <table className="w-full border">
         <thead>

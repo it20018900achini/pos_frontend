@@ -63,7 +63,10 @@ export default function Branches() {
   };
 
   return (
-    <ContentLayout requiredPermission={"BRANCHES"} title="Branch Management" subTitle="Manage your store branches, including adding new branches and editing existing ones." right={
+    <ContentLayout 
+    // requiredPermission={"BRANCHES"} 
+    
+    title="Branch Management" subTitle="Manage your store branches, including adding new branches and editing existing ones." right={
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="">

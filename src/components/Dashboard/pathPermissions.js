@@ -20,31 +20,32 @@ export const pathPermissions = (permissions = []) => {
   const NAV_LINKS = [];
 
   const addParentWithChildren = (parentName, parentIcon, children) => {
-    const allowedChildren = children.filter((child) =>
-      permissions.includes(child.permission)
-    );
+  const allowedChildren = children.filter((child) => {
+    if (!child.permission) return true;
+    return permissions.includes(child.permission);
+  });
 
-    if (allowedChildren.length > 0) {
-      NAV_LINKS.push({
-        name: parentName,
-        icon: parentIcon,
-        children: allowedChildren.map(({ name, path, icon }) => ({
-          name,
-          path,
-          icon,
-        })),
-      });
-    }
-  };
+  if (allowedChildren.length > 0) {
+    NAV_LINKS.push({
+      name: parentName,
+      icon: parentIcon,
+      children: allowedChildren.map(({ name, path, icon }) => ({
+        name,
+        path,
+        icon,
+      })),
+    });
+  }
+};
 
   /* ---------------- Dashboard ---------------- */
-  if (permissions.includes("DASHBOARD")) {
+  // if (permissions.includes("DASHBOARD")) {
     NAV_LINKS.push({
       name: "Dashboard",
       path: "/dashboard",
       icon: LayoutDashboard,
     });
-  }
+  // }
 
   /* ---------------- Branches ---------------- */
   // if (permissions.includes("BRANCHES")) {
@@ -55,11 +56,21 @@ export const pathPermissions = (permissions = []) => {
   //   });
   // }
 
-  
+      NAV_LINKS.push({
+      name: "Branches",
+      path: "/dashboard/store/branches",
+      icon: Store,
+      children: [
+        { name: "All Branches", path: "/dashboard/store/branches", icon: Store, permission: "BRANCHES" },
+        { name: "Allowed Branches", path: "/dashboard/store/allowed-branches", icon: Store, permission: "BRANCHES" },
+      ],
+    });
   addParentWithChildren("BRANCHES", Store, [
     { name: "All Branches", path: "/dashboard/store/branches", icon: Store, permission: "BRANCHES" },
     { name: "Allowed Branches", path: "/dashboard/store/allowed-branches", icon: Store, permission: "BRANCHES" },
      ]);
+
+
 
   /* ---------------- POS ---------------- */
   addParentWithChildren("POS", Store, [
@@ -128,9 +139,11 @@ export const pathPermissions = (permissions = []) => {
   }
 
   /* ---------------- Settings ---------------- */
-  addParentWithChildren("Settings (Store)", Settings, [
-    { name: "Store Settings", path: "/dashboard/settings", icon: Settings, permission: "SETTINGS" },
+  addParentWithChildren("Settings", Settings, [
+
+    { name: "Store Settings", path: "/dashboard/settings", icon: Settings,  },
     { name: "Branch Settings", path: "/dashboard/branch/settings", icon: Settings, permission: "SETTINGS" },
+    { name: "Profile Settings", path: "/dashboard/profile/settings", icon: Settings },
   ]);
 
   return NAV_LINKS;

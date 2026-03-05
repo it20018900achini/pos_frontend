@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo,  } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -114,8 +114,22 @@ export default function Sidebar() {
         <div className="flex flex-col h-full px-1 py-6">
           {/* Header */}
           <div className="mb-6 flex items-center justify-between">
-            <Store className="w-7 h-7 text-neutral-600 dark:text-neutral-400" />
+         <div className="flex items-center gap-3">
+  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-neutral-200 dark:bg-neutral-800">
+    <Store className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+  </div>
 
+  {sidebarOpen && (
+    <div className="flex flex-col leading-tight">
+      <span className="text-base font-semibold text-neutral-800 dark:text-neutral-200 truncate max-w-[160px]">
+        {userProfile?.user?.store?.name || "POS System"}
+      </span>
+      <span className="text-xs text-neutral-500 dark:text-neutral-400">
+        {userProfile?.user?.store?.storeType}
+      </span>
+    </div>
+  )}
+</div>
             <button
               onClick={() => setSidebarOpen((p) => !p)}
               className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"

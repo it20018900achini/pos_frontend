@@ -5,7 +5,7 @@ import SalesTrend from "./SalesTrend";
 
 export default function Dashboard() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6  ml-20 md:ml-0">
       <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
       
       {/* Stats Overview */}
