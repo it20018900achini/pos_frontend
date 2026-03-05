@@ -3,21 +3,14 @@ import { apiSlice } from "@/Redux Toolkit/api/apiSlice";
 
 export const roleApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-
-    /* =====================================================
-       ROLE ENDPOINTS
-    ====================================================== */
-
     getRoles: builder.query({
       query: () => "/roles",
       providesTags: ["Role"],
     }),
-
     getRoleById: builder.query({
       query: (id) => `/roles/${id}`,
       providesTags: (result, error, id) => [{ type: "Role", id }],
     }),
-
     createRole: builder.mutation({
       query: (role) => ({
         url: "/roles",
@@ -26,7 +19,6 @@ export const roleApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Role"],
     }),
-
     updateRole: builder.mutation({
       query: ({ id, ...role }) => ({
         url: `/roles/${id}`,
@@ -35,7 +27,6 @@ export const roleApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Role"],
     }),
-
     deleteRole: builder.mutation({
       query: (id) => ({
         url: `/roles/${id}`,
@@ -44,6 +35,10 @@ export const roleApi = apiSlice.injectEndpoints({
       invalidatesTags: ["Role"],
     }),
 
+
+
+    // UserRole endpoints
+    
     /* =====================================================
        USER ROLE ENDPOINTS
     ====================================================== */
@@ -91,28 +86,25 @@ export const roleApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["UserRole"],
     }),
-
   }),
 });
 
-/* =====================================================
-   EXPORT HOOKS
-===================================================== */
-
 export const {
-  // Role hooks
   useGetRolesQuery,
   useGetRoleByIdQuery,
   useCreateRoleMutation,
   useUpdateRoleMutation,
   useDeleteRoleMutation,
 
-  // UserRole hooks
+
+
+    // UserRole hooks
   useAssignUserRoleMutation,
   useGetAllUserRolesQuery,
   useGetUserRoleByIdQuery,
   useGetUserRolesByUserQuery,
   useGetUserRolesByUserAndBranchQuery,
   useDeleteUserRoleMutation,
-
 } = roleApi;
+
+
