@@ -7,29 +7,25 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, UserX, Key, BarChart } from "lucide-react";
 
-/* -----------------------------
-   Reusable Badge Component
------------------------------- */
+import { Edit, UserX, Key, BarChart, Shield } from "lucide-react";
+
 const LoginAccessBadge = ({ enabled }) => (
   <Badge
     variant="secondary"
     className={
       enabled
-        ? "bg-indigo-100 text-indigo-800 hover:bg-indigo-100/80"
-        : "bg-red-100 text-red-800 hover:bg-red-100/80"
+        ? "bg-indigo-100 text-indigo-800"
+        : "bg-red-100 text-red-800"
     }
   >
     {enabled ? "Enabled" : "Disabled"}
   </Badge>
 );
 
-/* -----------------------------
-   Main Table Component
------------------------------- */
 const EmployeeTable = ({
   employees = [],
   loading = false,
@@ -37,10 +33,9 @@ const EmployeeTable = ({
   openResetPasswordDialog,
   openPerformanceDialog,
   openEditDialog,
+  openAssignRoleDialog
 }) => {
-  /* -----------------------------
-     Loading State
-  ------------------------------ */
+
   if (loading) {
     return (
       <div className="text-center py-10 text-muted-foreground">
@@ -49,9 +44,6 @@ const EmployeeTable = ({
     );
   }
 
-  /* -----------------------------
-     Empty State
-  ------------------------------ */
   if (!employees.length) {
     return (
       <div className="text-center py-10 text-muted-foreground">
@@ -76,27 +68,23 @@ const EmployeeTable = ({
       <TableBody>
         {employees.map((employee) => (
           <TableRow key={employee.id}>
-            {/* Name */}
+
             <TableCell className="font-medium">
               {employee.fullName || "—"}
             </TableCell>
 
-            {/* Roles */}
             <TableCell>
               {employee.roles?.length
                 ? employee.roles.map((r) => r?.name).join(", ")
                 : "No Role"}
             </TableCell>
 
-            {/* Email */}
             <TableCell>{employee.email || "—"}</TableCell>
 
-            {/* Login Access */}
             <TableCell>
               <LoginAccessBadge enabled={employee.loginAccess} />
             </TableCell>
 
-            {/* Created Date */}
             <TableCell>
               {employee.createdAt
                 ? new Date(employee.createdAt).toLocaleDateString(
@@ -110,17 +98,23 @@ const EmployeeTable = ({
                 : "—"}
             </TableCell>
 
-            {/* Actions */}
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
+
+                {/* Assign Role */}
                 <Button
                   variant="ghost"
                   size="icon"
-                  title={
-                    employee.loginAccess
-                      ? "Disable Access"
-                      : "Enable Access"
-                  }
+                  title="Assign Role"
+                  onClick={() => openAssignRoleDialog(employee)}
+                >
+                  <Shield className="h-4 w-4 text-indigo-600" />
+                </Button>
+
+                {/* Toggle Access */}
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => handleToggleAccess(employee)}
                 >
                   <UserX
@@ -132,10 +126,10 @@ const EmployeeTable = ({
                   />
                 </Button>
 
+                {/* Reset Password */}
                 <Button
                   variant="ghost"
                   size="icon"
-                  title="Reset Password"
                   onClick={() =>
                     openResetPasswordDialog(employee)
                   }
@@ -143,10 +137,10 @@ const EmployeeTable = ({
                   <Key className="h-4 w-4" />
                 </Button>
 
+                {/* Performance */}
                 <Button
                   variant="ghost"
                   size="icon"
-                  title="View Performance"
                   onClick={() =>
                     openPerformanceDialog(employee)
                   }
@@ -154,16 +148,18 @@ const EmployeeTable = ({
                   <BarChart className="h-4 w-4" />
                 </Button>
 
+                {/* Edit */}
                 <Button
                   variant="ghost"
                   size="icon"
-                  title="Edit Employee"
                   onClick={() => openEditDialog(employee)}
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
+
               </div>
             </TableCell>
+
           </TableRow>
         ))}
       </TableBody>

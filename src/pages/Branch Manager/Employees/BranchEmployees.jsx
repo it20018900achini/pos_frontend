@@ -2,6 +2,15 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { branchAdminRole } from "../../../utils/userRole";
 
+import AssignUserRole from "./AssignUserRole";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 import EmployeeStats from "./EmployeeStats";
 import EmployeeTable from "./EmployeeTable";
 import {
@@ -149,17 +158,20 @@ const BranchEmployees = () => {
 
         {/* -------- Table -------- */}
         <EmployeeTable
-          employees={employees}
-          loading={loading}
-          handleToggleAccess={handleToggleAccess}
-          openEditDialog={(emp) => openDialog("edit", emp)}
-          openResetPasswordDialog={(emp) =>
-            openDialog("resetPassword", emp)
-          }
-          openPerformanceDialog={(emp) =>
-            openDialog("performance", emp)
-          }
-        />
+  employees={employees}
+  loading={loading}
+  handleToggleAccess={handleToggleAccess}
+  openEditDialog={(emp) => openDialog("edit", emp)}
+  openResetPasswordDialog={(emp) =>
+    openDialog("resetPassword", emp)
+  }
+  openPerformanceDialog={(emp) =>
+    openDialog("performance", emp)
+  }
+  openAssignRoleDialog={(emp) =>
+    openDialog("assignRole", emp)
+  }
+/>
 
         {/* ---------------- Dialogs ---------------- */}
 
@@ -187,6 +199,19 @@ const BranchEmployees = () => {
           selectedEmployee={selectedEmployee}
         />
       </div>
+
+      <Dialog
+  open={dialogs.assignRole}
+  onOpenChange={() => closeDialog("assignRole")}
+>
+  <DialogContent className="max-w-md">
+    <DialogHeader>
+      <DialogTitle>Assign Role</DialogTitle>
+    </DialogHeader>
+
+    <AssignUserRole userId={selectedEmployee?.id} />
+  </DialogContent>
+</Dialog>
     </ContentLayout>
   );
 };
