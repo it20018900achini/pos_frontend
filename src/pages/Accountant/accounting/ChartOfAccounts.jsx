@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+
 import {
   useGetChartOfAccountsQuery,
   useCreateChartOfAccountMutation,
@@ -9,8 +11,7 @@ import {
 } from "@/Redux Toolkit/features/accounting/accountingApi";
 
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -67,51 +68,84 @@ const buildParentOptions = (accounts, level = 0) => {
   return result;
 };
 
+/* ================= MAIN COMPONENT ================= */
 export default function ChartOfAccounts() {
-  const { data: accounts = [], isLoading, isError, refetch } =
-    useGetChartOfAccountsQuery();
+  const { userProfile, loading: userLoading } = useSelector((state) => state.user);
+  const storeId = userProfile?.user?.store?.id;
 
-  const [createAccount, { isLoading: creating }] =
-    useCreateChartOfAccountMutation();
+
+const {
+  data: accounts = [],
+  isLoading,
+  isError,
+  refetch,
+} = useGetChartOfAccountsQuery(storeId ?? undefined, {
+  skip: !storeId,
+});
+  const [createAccount, { isLoading: creating }] = useCreateChartOfAccountMutation();
   const [updateAccount] = useUpdateChartOfAccountMutation();
-  const [deleteAccount, { isLoading: deleting }] =
-    useDeleteChartOfAccountMutation();
+  const [deleteAccount, { isLoading: deleting }] = useDeleteChartOfAccountMutation();
 
+  // ================= FORM STATES =================
   const [newAccount, setNewAccount] = useState({
     code: "",
     name: "",
     type: "ASSET",
     parentId: null,
   });
-
   const [editingAccount, setEditingAccount] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteError, setDeleteError] = useState("");
 
-  const parentOptions = useMemo(
-    () => buildParentOptions(accounts),
-    [accounts]
-  );
+  const parentOptions = useMemo(() => buildParentOptions(accounts), [accounts]);
 
-  if (isLoading) return <p>Loading Chart of Accounts...</p>;
+  if (userLoading || !storeId || isLoading) return <p>Loading Chart of Accounts...</p>;
   if (isError) return <p>Error loading accounts</p>;
 
-  /* ================= CREATE ================= */
+  // ================= CREATE =================
   const handleCreate = async () => {
     if (!newAccount.code || !newAccount.name) return;
 
-    await createAccount({
-      code: newAccount.code,
-      name: newAccount.name,
-      type: newAccount.type,
-      parent: newAccount.parentId ? { id: newAccount.parentId } : null,
-    }).unwrap();
+    try {
+      await createAccount({
+        code: newAccount.code,
+        name: newAccount.name,
+        type: newAccount.type,
+        parent: newAccount.parentId ? { id: newAccount.parentId } : null,
+        store: { id: storeId },
+      }).unwrap();
 
-    setNewAccount({ code: "", name: "", type: "ASSET", parentId: null });
-    refetch();
+      setNewAccount({ code: "", name: "", type: "ASSET", parentId: null });
+      refetch();
+    } catch (err) {
+      console.error("Create account error:", err);
+    }
   };
 
-  /* ================= DELETE ================= */
+  // ================= UPDATE =================
+  const handleUpdate = async () => {
+    if (!editingAccount.code || !editingAccount.name) return;
+
+    try {
+      await updateAccount({
+        id: editingAccount.id,
+        code: editingAccount.code,
+        name: editingAccount.name,
+        type: editingAccount.type,
+        parent: editingAccount.parent?.id
+          ? { id: editingAccount.parent.id }
+          : null,
+        store: { id: storeId },
+      }).unwrap();
+
+      setEditingAccount(null);
+      refetch();
+    } catch (err) {
+      console.error("Update account error:", err);
+    }
+  };
+
+  // ================= DELETE =================
   const confirmDelete = async () => {
     try {
       setDeleteError("");
@@ -123,7 +157,7 @@ export default function ChartOfAccounts() {
     }
   };
 
-  /* ================= RENDER TREE ================= */
+  // ================= RENDER TREE =================
   const renderAccount = (acc, level = 0) => {
     const meta = TYPE_META[acc.type ?? "NA"];
     const Icon = meta.icon;
@@ -147,19 +181,11 @@ export default function ChartOfAccounts() {
           </div>
 
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setEditingAccount(acc)}
-            >
+            <Button size="icon" variant="ghost" onClick={() => setEditingAccount(acc)}>
               <Pencil className="w-4 h-4" />
             </Button>
 
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setDeleteTarget(acc)}
-            >
+            <Button size="icon" variant="ghost" onClick={() => setDeleteTarget(acc)}>
               <Trash2 className="w-4 h-4 text-red-600" />
             </Button>
           </div>
@@ -175,83 +201,76 @@ export default function ChartOfAccounts() {
       <h2 className="text-xl font-semibold">Chart of Accounts</h2>
 
       {/* ================= CREATE ================= */}
-      <Card className=" p-3">
-         <CardHeader>
-                      <CardTitle className="text-xl font-bold">Add Chart of Account</CardTitle>
-                    </CardHeader>
+      <Card className="p-3">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold">Add Chart of Account</CardTitle>
+        </CardHeader>
+
         <Input
           placeholder="Code"
           value={newAccount.code}
-          onChange={(e) =>
-            setNewAccount({ ...newAccount, code: e.target.value })
-          }
+          onChange={(e) => setNewAccount({ ...newAccount, code: e.target.value })}
         />
         <Input
           placeholder="Name"
           value={newAccount.name}
-          onChange={(e) =>
-            setNewAccount({ ...newAccount, name: e.target.value })
-          }
+          onChange={(e) => setNewAccount({ ...newAccount, name: e.target.value })}
         />
-<div className="flex gap-2">
 
-        <Select
-          value={newAccount.type}
-          onValueChange={(v) =>
-            setNewAccount({ ...newAccount, type: v, parentId: null })
-          }
-        >
-          <SelectTrigger className="w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.keys(TYPE_META)
-              .filter((t) => t !== "NA")
-              .map((t) => (
-                <SelectItem key={t} value={t}>
-                  {t}
-                </SelectItem>
-              ))}
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2 mt-2">
+          <Select
+            value={newAccount.type}
+            onValueChange={(v) => setNewAccount({ ...newAccount, type: v, parentId: null })}
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.keys(TYPE_META)
+                .filter((t) => t !== "NA")
+                .map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
 
-        <Select
-          value={newAccount.parentId?.toString() ?? "NONE"}
-          onValueChange={(v) =>
-            setNewAccount({
-              ...newAccount,
-              parentId: v === "NONE" ? null : Number(v),
-            })
-          }
-        >
-          <SelectTrigger className="w-64">
-            <SelectValue placeholder="Parent (optional)" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="NONE">No Parent</SelectItem>
-            {parentOptions
-              .filter((p) => p.type === newAccount.type)
-              .map((p) => (
-                <SelectItem key={p.id} value={p.id.toString()}>
-                  {p.label}
-                </SelectItem>
-              ))}
-          </SelectContent>
-        </Select>
-</div>
+          <Select
+            value={newAccount.parentId?.toString() ?? "NONE"}
+            onValueChange={(v) =>
+              setNewAccount({ ...newAccount, parentId: v === "NONE" ? null : Number(v) })
+            }
+          >
+            <SelectTrigger className="w-64">
+              <SelectValue placeholder="Parent (optional)" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="NONE">No Parent</SelectItem>
+              {parentOptions
+                .filter((p) => p.type === newAccount.type)
+                .map((p) => (
+                  <SelectItem key={p.id} value={p.id.toString()}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <Button onClick={handleCreate} disabled={creating}>
+        <Button onClick={handleCreate} disabled={creating} className="mt-2">
           Add Account
         </Button>
       </Card>
-      <hr/>
+
+      <hr />
+
       {/* ================= LIST ================= */}
       <div className="border rounded-md p-2 space-y-1">
         {accounts.map((acc) => renderAccount(acc))}
       </div>
 
-
-      {/* ================= EDIT ================= */}
+      {/* ================= EDIT DIALOG ================= */}
       {editingAccount && (
         <Dialog open onOpenChange={() => setEditingAccount(null)}>
           <DialogContent>
@@ -262,28 +281,16 @@ export default function ChartOfAccounts() {
             <div className="space-y-3">
               <Input
                 value={editingAccount.code}
-                onChange={(e) =>
-                  setEditingAccount({
-                    ...editingAccount,
-                    code: e.target.value,
-                  })
-                }
+                onChange={(e) => setEditingAccount({ ...editingAccount, code: e.target.value })}
               />
               <Input
                 value={editingAccount.name}
-                onChange={(e) =>
-                  setEditingAccount({
-                    ...editingAccount,
-                    name: e.target.value,
-                  })
-                }
+                onChange={(e) => setEditingAccount({ ...editingAccount, name: e.target.value })}
               />
 
               <Select
                 value={editingAccount.type}
-                onValueChange={(v) =>
-                  setEditingAccount({ ...editingAccount, type: v, parent: null })
-                }
+                onValueChange={(v) => setEditingAccount({ ...editingAccount, type: v, parent: null })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -314,11 +321,7 @@ export default function ChartOfAccounts() {
                 <SelectContent>
                   <SelectItem value="NONE">No Parent</SelectItem>
                   {parentOptions
-                    .filter(
-                      (p) =>
-                        p.type === editingAccount.type &&
-                        p.id !== editingAccount.id
-                    )
+                    .filter((p) => p.type === editingAccount.type && p.id !== editingAccount.id)
                     .map((p) => (
                       <SelectItem key={p.id} value={p.id.toString()}>
                         {p.label}
@@ -327,21 +330,7 @@ export default function ChartOfAccounts() {
                 </SelectContent>
               </Select>
 
-              <Button
-                onClick={async () => {
-                  await updateAccount({
-                    id: editingAccount.id,
-                    code: editingAccount.code,
-                    name: editingAccount.name,
-                    type: editingAccount.type,
-                    parent: editingAccount.parent,
-                  }).unwrap();
-                  setEditingAccount(null);
-                  refetch();
-                }}
-              >
-                Save Changes
-              </Button>
+              <Button onClick={handleUpdate}>Save Changes</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -359,23 +348,15 @@ export default function ChartOfAccounts() {
               <p>
                 <strong>{deleteTarget.code}</strong> — {deleteTarget.name}
               </p>
-              <p className="text-red-600">
-                This action cannot be undone.
-              </p>
-              {deleteError && (
-                <p className="text-red-500">{deleteError}</p>
-              )}
+              <p className="text-red-600">This action cannot be undone.</p>
+              {deleteError && <p className="text-red-500">{deleteError}</p>}
             </div>
 
             <div className="flex justify-end gap-2 mt-4">
               <Button variant="outline" onClick={() => setDeleteTarget(null)}>
                 Cancel
               </Button>
-              <Button
-                variant="destructive"
-                onClick={confirmDelete}
-                disabled={deleting}
-              >
+              <Button variant="destructive" onClick={confirmDelete} disabled={deleting}>
                 {deleting ? "Deleting..." : "Delete"}
               </Button>
             </div>

@@ -62,7 +62,7 @@ export default function DashboardLayout() {
           <main className="flex-1 overflow-y-auto relative">
             <Outlet />
             {/* Optional Floating Chat */}
-            <div className="fixed bottom-4 right-4 z-50"><ChatPage /></div>
+            {/* <div className="fixed bottom-4 right-4 z-50"><ChatPage /></div> */}
           </main>
         </div>
       </div>

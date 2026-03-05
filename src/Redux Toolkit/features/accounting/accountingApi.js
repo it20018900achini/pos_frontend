@@ -4,10 +4,13 @@ import { apiSlice } from "@/Redux Toolkit/api/apiSlice";
 export const accountingApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // ===== Chart of Accounts =====
+   
+
     getChartOfAccounts: builder.query({
-      query: () => "/accounting/coa",
-      providesTags: ["COA"],
+      query: (storeId) => `/api/accounting/coa/store/${storeId}`,
     }),
+
+
     createChartOfAccount: builder.mutation({
       query: (account) => ({ url: "/accounting/coa", method: "POST", body: account }),
       invalidatesTags: ["COA"],

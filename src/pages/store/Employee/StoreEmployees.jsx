@@ -19,22 +19,27 @@ import {
 } from "@/Redux Toolkit/features/employee/employeeThunks";
 import { storeAdminRole } from "../../../utils/userRole";
 import ContentLayout from "../../Dashboard/ContentLayout";
+import EmployeeSummaryCards from "./EmployeeSummaryCards";
 
 export default function StoreEmployees() {
   const dispatch = useDispatch();
   const { employees, loading, error  } = useSelector((state) => state.employee);
   const {store}=useSelector(state=>state.store)
 
+  const { userProfile } = useSelector(
+      (state) => state.user
+    );
+
   useEffect(() => {
-    if (store?.id) {
+    if (userProfile?.user?.store?.id) {
       dispatch(
         findStoreEmployees({
-          storeId: store?.id,
+          storeId: userProfile.user.store.id,
           token: localStorage.getItem("jwt"),
         })
       );
     }
-  }, [dispatch, store?.id, localStorage.getItem("jwt")]);
+  }, [dispatch, userProfile, localStorage.getItem("jwt")]);
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -117,7 +122,7 @@ export default function StoreEmployees() {
         {/* <h1 className="text-3xl font-bold tracking-tight">
           Employee Management1
         </h1> */}
-      
+      <EmployeeSummaryCards employees={employees}/>
 
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="max-h-[80vh] overflow-y-auto">
