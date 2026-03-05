@@ -65,10 +65,10 @@ export const pathPermissions = (permissions = []) => {
         { name: "Allowed Branches", path: "/dashboard/store/allowed-branches", icon: Store, permission: "BRANCHES" },
       ],
     });
-  addParentWithChildren("BRANCHES", Store, [
-    { name: "All Branches", path: "/dashboard/store/branches", icon: Store, permission: "BRANCHES" },
-    { name: "Allowed Branches", path: "/dashboard/store/allowed-branches", icon: Store, permission: "BRANCHES" },
-     ]);
+  // addParentWithChildren("BRANCHES", Store, [
+  //   { name: "All Branches", path: "/dashboard/store/branches", icon: Store, permission: "BRANCHES" },
+  //   { name: "Allowed Branches", path: "/dashboard/store/allowed-branches", icon: Store, permission: "BRANCHES" },
+  //    ]);
 
 
 

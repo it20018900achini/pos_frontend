@@ -110,10 +110,8 @@ const DashboardRoutes = () => {
 
           <Route path="settings" element={<Settings />} />
           <Route path="branch/settings" element={<BranchSettings />} />
-          
-      {/* {
-        userProfile?.user?.role[0]=="BRANCH_CASHIER"&&null
-      } */}
+          <Route path="profile/settings" element={< >test</>} />
+    
       
       </Route>
       <Route
