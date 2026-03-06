@@ -17,10 +17,10 @@ const Modal = ({ open, onClose, children }) => {
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center pt-20">
       <div
-        className="absolute inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-md transition-all"
+        className="absolute inset-0 bg-white/50 dark:bg-white/40 backdrop-blur-md transition-all"
         onClick={onClose}
       />
-      <div className="relative bg-white/20 dark:bg-neutral-900/20 backdrop-blur-lg border border-white/10 dark:border-neutral-700/10 rounded-2xl shadow-2xl w-80 max-h-[80vh] overflow-y-auto z-50 transition-all duration-300">
+      <div className="relative bg-white/50  backdrop-blur-lg border border-white/10  rounded-2xl shadow-2xl w-80 max-h-[80vh] overflow-y-auto z-50 transition-all duration-300">
         {children}
       </div>
     </div>
@@ -84,11 +84,11 @@ export default function Sidebar() {
   className={`
     fixed md:static z-50 h-screen top-0 left-0
     transition-all duration-500 ease-in-out
-    border-r border-white/10 dark:border-neutral-700/10 shadow-2xl rounded-r-2xl
+    border-r border-white/10  shadow-2xl rounded-r-2xl
     overflow-y-auto
     ${sidebarOpen
-      ? "w-64 bg-white/40 dark:bg-neutral-900/50"
-      : "w-20 bg-white/20 dark:bg-neutral-900/20"
+      ? "w-64 bg-white/40 "
+      : "w-20 bg-white/50 "
     }
     backdrop-blur-md md:backdrop-blur-none
   `}
@@ -97,7 +97,7 @@ export default function Sidebar() {
           {/* Header */}
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/20 dark:bg-neutral-800/20 backdrop-blur-sm shadow-inner">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/50 dark:bg-neutral-800/20 backdrop-blur-sm shadow-inner">
                 <Store className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
               </div>
               {sidebarOpen && (
@@ -113,7 +113,7 @@ export default function Sidebar() {
             </div>
             <button
               onClick={() => setSidebarOpen((p) => !p)}
-              className="p-2 rounded-lg hover:bg-white/20 dark:hover:bg-neutral-800/20 backdrop-blur-sm transition-all duration-300"
+              className="p-2 rounded-lg hover:bg-white/50 dark:hover:bg-neutral-800/20 backdrop-blur-sm transition-all duration-300"
             >
               <Menu className="w-5 h-5 text-neutral-700 dark:text-neutral-300" />
             </button>
