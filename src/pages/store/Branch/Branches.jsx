@@ -36,14 +36,16 @@ export default function Branches() {
 
   // Fetch branches when component mounts
   useEffect(() => {
+        if (userProfile?.user?.store?.id) {
     dispatch(
-        
+          
         getAllBranchesByStore({
           storeId: userProfile?.user?.store?.id,
           jwt: localStorage.getItem("jwt"),
         })
+        
       );
-    
+    }
   }, [dispatch, userProfile, user]);
 
   console.log("store ", store);
