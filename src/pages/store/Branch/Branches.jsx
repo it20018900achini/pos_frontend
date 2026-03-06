@@ -163,7 +163,8 @@ const branchData = branches.map(branch => ({
   loading={loading}
   isClient={true}               // client-side pagination
   pageSize={10}   
-                 // 5 rows per page
+  exportTypes={["excel","csv"]}
+
   searchFields={["name", "address", "manager", "phone"]} // searchable fields
   actions={(row) => (
     <div className="flex gap-2 justify-end">
