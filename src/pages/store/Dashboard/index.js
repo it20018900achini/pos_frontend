@@ -1,4 +1,4 @@
-export { default as Dashboard } from "./Dashboard";
+export { default as DashboardStore } from "./Dashboard";
 export { default as DashboardStats } from "./DashboardStats";
 export { default as RecentSales } from "./RecentSales";
 export { default as SalesTrend } from "./SalesTrend";

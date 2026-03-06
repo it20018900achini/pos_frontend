@@ -3,7 +3,7 @@ import DashboardStats from "./DashboardStats";
 import RecentSales from "./RecentSales";
 import SalesTrend from "./SalesTrend";
 
-export default function Dashboard() {
+export default function DashboardStore() {
   return (
     <div className="space-y-6  ml-20 md:ml-0">
       <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>

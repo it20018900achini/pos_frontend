@@ -14,17 +14,18 @@ import TodayOverview from "./TodayOverview";
 
 export default function Dashboard() {
   const dispatch = useDispatch();
+  const {selectedBranchId}=useSelector((state)=>state.user)
   const { branch } = useSelector((state) => state.branch);
-  const branchId = branch?.id;
+  
 
   useEffect(() => {
-    if (branchId) {
-      // alert(JSON.stringify(branchId))
-      dispatch(getTodayOverview(branchId));
+    if (selectedBranchId) {
+      // alert(JSON.stringify(selectedBranchId))
+      dispatch(getTodayOverview(selectedBranchId));
       const today = new Date().toISOString().slice(0, 10);
-      dispatch(getPaymentBreakdown({ branchId, date: today }));
+      dispatch(getPaymentBreakdown({ branchId:selectedBranchId, date: today }));
     }
-  }, [branchId, dispatch]);
+  }, [selectedBranchId, dispatch]);
 
   // Helper to determine changeType
  
@@ -39,7 +40,7 @@ export default function Dashboard() {
       </div>
       {/* KPI Cards */}
       {/* {branchId&&} */}
-      <TodayOverview branchId={branchId?.branchId}/>
+      <TodayOverview branchId={selectedBranchId}/>
       
       {/* Payment Breakdown */}
       <PaymentBreakdown/>

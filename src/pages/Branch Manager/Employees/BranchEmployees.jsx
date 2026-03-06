@@ -171,6 +171,7 @@ const BranchEmployees = () => {
   openAssignRoleDialog={(emp) =>
     openDialog("assignRole", emp)
   }
+  selectedBranch={selectedBranchId}
 />
 
         {/* ---------------- Dialogs ---------------- */}

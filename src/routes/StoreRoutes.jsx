@@ -7,7 +7,7 @@ import Branches from "../pages/store/Branch/Branches";
 import Categories from "../pages/store/Category/Categories";
 // import Employees from "../pages/store/Employee/StoreEmployees";
 import Products from "../pages/store/Product/Products";
-import { Dashboard } from "../pages/store/Dashboard";
+import { DashboardStore } from "../pages/store/Dashboard";
 import {
   Reports,
   Sales,
@@ -26,7 +26,7 @@ const StoreRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<StoreDashboard />}>
-        <Route index element={<Dashboard />} />
+        <Route index element={<DashboardStore />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="branches" element={<Branches />} />
         <Route path="categories" element={<Categories />} />

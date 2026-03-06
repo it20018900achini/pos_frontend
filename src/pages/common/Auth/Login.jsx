@@ -121,9 +121,10 @@ const handleLogin = useCallback(
       navigate(redirectByRole(role));
     } catch (err) {
       triggerShake();
+      // alert(JSON.stringify(err));
       toast({
         title: "Login failed",
-        description: err?.message || "Invalid credentials",
+        description: err,
         variant: "destructive",
       });
     }

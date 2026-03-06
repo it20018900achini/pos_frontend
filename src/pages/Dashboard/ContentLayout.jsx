@@ -1,10 +1,12 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import DateRangeFilter from "./DateRangeFilter";
 
 const ContentLayout = ({
   title,
   subTitle,
   right,
+  dateRange,
   requiredPermission, // the permission required to access this page
   children,
 }) => {
@@ -49,8 +51,10 @@ const ContentLayout = ({
               {right}
             </div>
           )}
+         
         </div>
       )}
+      {dateRange&& <DateRangeFilter/>}
 
       {/* Content */}
       <div className="p-6">

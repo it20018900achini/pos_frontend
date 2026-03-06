@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-import { Edit, UserX, Key, BarChart, Shield } from "lucide-react";
+import { Edit, UserX, Key, BarChart, Shield, Dot } from "lucide-react";
 
 /* -----------------------------
    Login Access Badge
@@ -49,6 +49,7 @@ const EmployeeTable = ({
   openPerformanceDialog,
   openEditDialog,
   openAssignRoleDialog,
+  selectedBranch
 }) => {
 
   /* -----------------------------
@@ -99,33 +100,39 @@ const EmployeeTable = ({
               {employee.email || "—"}
             </TableCell>
 
-            {/* Branch Roles */}
-            <TableCell className="space-y-1">
-              {employee.roleBranchMap?.length ? (
-                employee.roleBranchMap.map((rb) => (
-                  <div key={rb.branchId} className="text-sm">
-                    
-                    {/* Branch Name */}
-                    <div className="font-medium text-gray-700">
-                      {rb.branchName}
-                    </div>
+          {/* Branch Roles */}
+<TableCell className="space-y-1">
+  {employee.roleBranchMap?.length ? (
+    employee.roleBranchMap.map((rb) => (
+      <div key={rb.branchId} className="text-sm">
 
-                    {/* Roles */}
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {rb.roles.map((role) => (
-                        <RoleBadge key={role} role={role} />
-                      ))}
-                    </div>
+        {/* Branch Name */}
+        <div
+          className={
+            selectedBranch == rb?.branchId
+              ? "font-medium text-gray-700"
+              : "text-gray-500 font-xs opacity-40"
+          }
+        >
+       <span className="flex ">
+        {selectedBranch == rb?.branchId&& <><Dot className=" text-green-500"/></>}
+          {rb.branchName}
+        </span>   
+        </div>
 
-                  </div>
-                ))
-              ) : (
-                <span className="text-muted-foreground">
-                  No Role Assigned
-                </span>
-              )}
-            </TableCell>
+        {/* Roles */}
+        <div className={`flex flex-wrap gap-1 mt-1 ${selectedBranch == rb?.branchId ? "":"opacity-40"}`}>
+          {rb.roles.map((role) => (
+            <RoleBadge key={role} role={role} />
+          ))}
+        </div>
 
+      </div>
+    ))
+  ) : (
+    <span className="text-muted-foreground">No Role Assigned</span>
+  )}
+</TableCell>
             {/* Last Login */}
             <TableCell>
               {employee.lastLogin

@@ -1,19 +1,27 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 
-import TodayOverview from "../Branch Manager/Dashboard/TodayOverview";
-import { DashboardStats } from "../store/Dashboard";
+import Dashboard from "../Branch Manager/Dashboard/Dashboard";
+import  {DashboardStore}  from "../store/Dashboard";
 
-function Dashboard() {
+function DashboardMain() {
   const { selectedBranchId } = useSelector((state) => state.user);
 
   // Tabs: branch overview only if branch selected
+const branchTab = ()=><>
+<Dashboard />
+</>;
+const storeTab = ()=><><DashboardStore /></>;
+
+
   const tabs = selectedBranchId
     ? [
-        { key: "branch", label: "Branch Overview", component: <TodayOverview /> },
-        { key: "store", label: "Store Overview", component: <DashboardStats /> },
+        { key: "branch", label: "Branch Overview", 
+          component: branchTab() 
+        },
+        { key: "store", label: "Store Overview", component:storeTab() },
       ]
-    : [{ key: "store", label: "Store Overview", component: <DashboardStats /> }];
+    : [{ key: "store", label: "Store Overview", component:storeTab() }];
 
   const [activeTab, setActiveTab] = useState(tabs[0].key);
 
@@ -44,4 +52,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default DashboardMain;

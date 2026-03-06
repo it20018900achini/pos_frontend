@@ -73,12 +73,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0   z-40 transition-all"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      
 
      <aside
   className={`
