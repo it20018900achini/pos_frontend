@@ -37,7 +37,7 @@ const BranchForm = ({ initialValues, onSubmit, onCancel, isEditing }) => {
 
       const branchData = {
         ...values,
-        storeId: userProfile.user.store.id,
+        storeId: userProfile?.user?.store?.id,
       };
 
       if (isEditing) {

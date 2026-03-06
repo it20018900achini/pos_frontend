@@ -9,17 +9,16 @@ const ContentLayout = ({
   dateRange,
   requiredPermission, // the permission required to access this page
   children,
+  loadingSpinner = false, // use prop to control spinner
 }) => {
-  const userProfile = useSelector(
-    (state) => state.user?.userProfile?.user
-  );
-  const selectedBranchId = useSelector(
-    (state) => state.user?.selectedBranchId
-  );
+  const { userProfile, selectedBranchId } = useSelector((state) => state.user);
+
+  // Show spinner if loadingSpinner prop is true
+  
 
   // Find branch permissions
   const branchPermissions =
-    userProfile?.roleBranchMap?.find(
+    userProfile?.user?.roleBranchMap?.find(
       (b) => b.branchId === Number(selectedBranchId)
     )?.permissions || [];
 
@@ -46,15 +45,24 @@ const ContentLayout = ({
             </div>
           )}
 
-          {hasAccess && right && (
+          {hasAccess && right && !loadingSpinner && (
             <div className="px-6 py-4 flex flex-wrap items-center gap-3">
               {right}
             </div>
           )}
-         
         </div>
       )}
-      {dateRange&& <DateRangeFilter/>}
+
+  {loadingSpinner ? (
+  <div
+    className="flex items-center justify-center"
+    style={{ minHeight: "calc(100vh - 200px)" }} // subtract 400px from full viewport height
+  >
+    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-primary"></div>
+  </div>
+):<>
+
+      {dateRange && <DateRangeFilter />}
 
       {/* Content */}
       <div className="p-6">
@@ -71,6 +79,9 @@ const ContentLayout = ({
           </div>
         )}
       </div>
+
+</>}
+
     </div>
   );
 };

@@ -7,9 +7,9 @@ import ContentLayout from '../../Dashboard/ContentLayout'
 
 function AllowedBranches() {
   return (
-    <ContentLayout title="Allowed Branches">
+    <ContentLayout title="Allowed Branches" >
     <div>
-        <AssignUserRole/>
+        {/* <AssignUserRole/> */}
         {/* <hr/>
         <UserRoleList/> */}
         {/* <hr/>

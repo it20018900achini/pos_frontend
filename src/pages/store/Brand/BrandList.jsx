@@ -59,10 +59,9 @@ export default function BrandList({ storeId }) {
     refetch();
   };
 
-  if (isLoading) return <p>Loading brands...</p>;
 
   return (
-    <ContentLayout title="Brands" subTitle="Manage your store's brands here." right={
+    <ContentLayout loadingSpinner={isLoading} title="Brands" subTitle="Manage your store's brands here." right={
               <Button onClick={() => openDialog()}>Create New Brand</Button>
 
     }>

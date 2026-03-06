@@ -147,7 +147,7 @@ export default function BalanceSheet() {
     }
   }, [data]);
 
-  if (isLoading) return <p>Loading Balance Sheet…</p>;
+  // if (isLoading) return <p>Loading Balance Sheet…</p>;
   if (isError) return <p>Error loading Balance Sheet</p>;
 
   const assets = data?.assets || [];
@@ -161,7 +161,7 @@ export default function BalanceSheet() {
   const isBalanced = Math.abs(assetsTotal - (liabilitiesTotal + equityTotal)) < 0.01;
 
   return (
-    <ContentLayout title="Balance Sheet" subTitle="View your financial position at a specific point in time." >
+    <ContentLayout loadingSpinner={isLoading} title="Balance Sheet" subTitle="View your financial position at a specific point in time." >
     <div className="space-y-6">
       <div className="flex justify-end items-center mb-4">
 

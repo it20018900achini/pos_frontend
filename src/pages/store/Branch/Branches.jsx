@@ -3,7 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  Edit,
   Plus,
+  Trash2,
 } from "lucide-react";
 import {
   Dialog,
@@ -20,6 +22,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import BranchTable from "./BranchTable";
 import BranchForm from "./BranchForm";
 import ContentLayout from "../../Dashboard/ContentLayout";
+import ReusableTable from "../../common/ReusableTable";
+import { toast } from "@/components/ui/use-toast";
+import { deleteBranch, } from "@/Redux Toolkit/features/branch/branchThunks";
+import DeleteButton from "./DeleteButton";
 
 export default function Branches() {
   const dispatch = useDispatch();
@@ -64,10 +70,50 @@ export default function Branches() {
     setIsEditDialogOpen(true);
   };
 
+  const handleDeleteBranch = async (id) => {
+    try {
+      const jwt = localStorage.getItem("jwt");
+      if (!id || !jwt) {
+        toast({
+          title: "Error",
+          description: "Branch ID or authentication JWT missing",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      await dispatch(deleteBranch({ id, jwt })).unwrap();
+
+      toast({
+        title: "Success",
+        description: "Branch deleted successfully",
+      });
+
+      // Refresh branches list
+      dispatch(getAllBranchesByStore({ storeId: store.id, jwt }));
+    } catch (error) {
+      console.log("Error")
+    }
+  };
+
+const branchColumns = [
+  { header: "Branch Name", accessor: "name", sortable: true },
+  { header: "Address", accessor: "address", sortable: true },
+  { header: "Manager", accessor: "manager" },
+  { header: "Phone", accessor: "phone" },
+];
+
+const branchData = branches.map(branch => ({
+  id: branch.id,
+  name: branch.name,
+  address: branch.address,
+  manager: branch.manager || "Not Assigned",
+  phone: branch.phone,
+}));
   return (
     <ContentLayout 
     // requiredPermission={"BRANCHES"} 
-    
+    loadingSpinner={loading}
     title="Branch Management" subTitle="Manage your store branches, including adding new branches and editing existing ones." right={
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
@@ -110,15 +156,32 @@ export default function Branches() {
         </Dialog>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <BranchTable 
-            branches={branches} 
-            loading={loading} 
-            onEdit={openEditDialog}
-          />
-        </CardContent>
-      </Card>
+<ReusableTable
+  columns={branchColumns}
+// view="list"
+  data={branchData}
+  loading={loading}
+  isClient={true}               // client-side pagination
+  pageSize={10}   
+                 // 5 rows per page
+  searchFields={["name", "address", "manager", "phone"]} // searchable fields
+  actions={(row) => (
+    <div className="flex gap-2 justify-end">
+      <Button variant="outline" size="sm" onClick={() => openEditDialog(row)}>
+        <Edit className="h-4 w-4" />
+      </Button>
+      
+      <DeleteButton
+  rowId={row.id}
+  handleDeleteBranch={handleDeleteBranch}
+  loading={loading}
+/>
+    </div>
+  )}
+  enableExport={true}  // optional: enable PDF/Excel/CSV export
+/>
+
+      
     </div>
     </ContentLayout>
   );
