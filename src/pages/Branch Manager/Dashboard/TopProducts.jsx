@@ -13,9 +13,9 @@ import { getTopProductsByQuantity } from "@/Redux Toolkit/features/branchAnalyti
 
 const COLORS = ["#6D214F", "#B33771", "#D980FA", "#833471", "#84817a"];
 
-const TopProducts = () => {
+const TopProducts = ({selectedBranchId}) => {
   const dispatch = useDispatch();
-  const branchId = useSelector((state) => state.branch.branch?.id);
+  const branchId = selectedBranchId;
   const { topProducts, loading } = useSelector((state) => state.branchAnalytics);
 
   useEffect(() => {

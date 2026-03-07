@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+
 import { getChangeType } from "../data";
 import { getTodayOverview } from "@/Redux Toolkit/features/branchAnalytics/branchAnalyticsThunks";
 
@@ -15,73 +16,33 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 
-const TodayOverview = () => {
-      const { userProfile,selectedBranchId } = useSelector((state) => state.user);
-  
+const TodayOverview = ({selectedBranchId, startDate, endDate }) => {
+
   const dispatch = useDispatch();
+
+  // const { selectedBranchId } = useSelector((state) => state.user);
+
   const { todayOverview, loading } = useSelector(
     (state) => state.branchAnalytics
   );
 
   const branchId = selectedBranchId;
 
-  // ------------------------
-  // Helper: format YYYY-MM-DD
-  // ------------------------
-  const formatDate = (date) => date.toISOString().split("T")[0];
+  /* ---------------- API Call ---------------- */
 
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-
-  const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - today.getDay()); // Sunday = 0
-
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const yearStart = new Date(today.getFullYear(), 0, 1);
-
-  // ------------------------
-  // State
-  // ------------------------
-  const [startDate, setStartDate] = useState(formatDate(today));
-  const [endDate, setEndDate] = useState(formatDate(today));
-  const [preset, setPreset] = useState("today");
-
-  // ------------------------
-  // Handle preset change
-  // ------------------------
-  const handlePresetChange = (value) => {
-    setPreset(value);
-    switch (value) {
-      case "today":
-        setStartDate(formatDate(today));
-        setEndDate(formatDate(today));
-        break;
-      case "yesterday":
-        setStartDate(formatDate(yesterday));
-        setEndDate(formatDate(yesterday));
-        break;
-      case "thisWeek":
-        setStartDate(formatDate(weekStart));
-        setEndDate(formatDate(today));
-        break;
-      case "thisMonth":
-        setStartDate(formatDate(monthStart));
-        setEndDate(formatDate(today));
-        break;
-      case "thisYear":
-        setStartDate(formatDate(yearStart));
-        setEndDate(formatDate(today));
-        break;
-    }
-  };
-
-  // ------------------------
-  // Fetch overview
-  // ------------------------
   useEffect(() => {
-    dispatch(getTodayOverview({ branchId, start: startDate, end: endDate }));
+    if (!branchId || !startDate || !endDate) return;
+
+    dispatch(
+      getTodayOverview({
+        branchId,
+        start: startDate,
+        end: endDate,
+      })
+    );
   }, [branchId, startDate, endDate, dispatch]);
+
+  /* ---------------- Helpers ---------------- */
 
   const formatPercent = (num) => {
     if (num === undefined || num === null) return "-";
@@ -99,6 +60,8 @@ const TodayOverview = () => {
         return "text-muted-foreground";
     }
   };
+
+  /* ---------------- KPI DATA ---------------- */
 
   const kpis = [
     {
@@ -167,18 +130,14 @@ const TodayOverview = () => {
     },
   ];
 
-  const SkeletonCard = ({ large = false }) => (
-    <Card
-      className={`rounded-xl shadow-md animate-pulse ${
-        large ? "h-40" : "h-40"
-      }`}
-    >
+  /* ---------------- Skeleton Card ---------------- */
+
+  const SkeletonCard = () => (
+    <Card className="rounded-xl shadow-md h-40 animate-pulse">
       <CardContent className="p-5 flex justify-between items-center">
         <div className="space-y-3 w-full">
           <Skeleton className="h-5 w-32 rounded-full" />
-          <Skeleton
-            className={`h-10 ${large ? "w-48" : "w-32"} rounded-md`}
-          />
+          <Skeleton className="h-10 w-32 rounded-md" />
           <Skeleton className="h-5 w-24 rounded-full" />
         </div>
         <Skeleton className="h-12 w-12 rounded-full" />
@@ -186,142 +145,53 @@ const TodayOverview = () => {
     </Card>
   );
 
-  return (
-    <>
-      {/* -------------------------------
-          Preset Dropdown
-      ------------------------------- */}
+  /* ---------------- UI ---------------- */
 
-      {/* Manual Date Inputs */}
-      <div className="flex gap-4 mb-4 items-center justify-end w-full">
-        
-      <div >
-        <label className="block text-sm font-medium text-muted-foreground mb-1">
-          Quick Range
-        </label>
-        <select
-          value={preset}
-          onChange={(e) => handlePresetChange(e.target.value)}
-          className="p-2 rounded-md border border-gray-300 w-40"
-        >
-          <option value="today">Today</option>
-          <option value="yesterday">Yesterday</option>
-          <option value="thisWeek">This Week</option>
-          <option value="thisMonth">This Month</option>
-          <option value="thisYear">This Year</option>
-        </select>
-      </div>
-        <div>
-          <label className="block text-sm font-medium text-muted-foreground">
-            Start Date
-          </label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 p-2"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-muted-foreground">
-            End Date
-          </label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 p-2"
-          />
-        </div>
-      </div>
+  return loading ? (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {[...Array(6)].map((_, i) => (
+        <SkeletonCard key={i} />
+      ))}
+    </div>
+  ) : (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {kpis.map((kpi, idx) => {
+        const Icon = kpi.icon;
 
-      {/* KPIs */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="grid grid-rows-2 gap-4 md:col-span-1">
-            <SkeletonCard large />
-            <SkeletonCard large />
-          </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-2 md:col-span-2">
-            {[...Array(4)].map((_, i) => (
-              <SkeletonCard key={i} />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="grid grid-rows-2 gap-4 md:col-span-1">
-            {kpis.slice(0, 2).map((kpi, idx) => {
-              const Icon = kpi.icon;
-              return (
-                <Card
-                  key={idx}
-                  className="rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-1 animate-fade-in"
+        return (
+          <Card
+            key={idx}
+            className="rounded-xl shadow-md hover:shadow-lg transition transform hover:-translate-y-1"
+          >
+            <CardContent className="p-6 flex justify-between items-center">
+              <div>
+                <p className="text-sm text-muted-foreground font-medium">
+                  {kpi.title}
+                </p>
+
+                <h3 className="text-2xl font-bold mt-2">
+                  {kpi.formatted}
+                </h3>
+
+                <p
+                  className={`text-sm mt-1 font-medium ${getChangeColor(
+                    kpi.changeType
+                  )}`}
                 >
-                  <CardContent className="p-6 flex justify-between items-center">
-                    <div>
-                      <p className="text-sm text-muted-foreground font-medium">
-                        {kpi.title}
-                      </p>
-                      <h3 className="text-2xl font-bold mt-2">
-                        {kpi.formatted}
-                      </h3>
-                      <p
-                        className={`text-sm mt-1 font-medium ${getChangeColor(
-                          kpi.changeType
-                        )}`}
-                      >
-                        {kpi.change}
-                      </p>
-                    </div>
-                    <div
-                      className={`p-5 rounded-full ${kpi.gradient} flex items-center justify-center`}
-                    >
-                      <Icon className="w-8 h-8 text-white" />
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                  {kpi.change}
+                </p>
+              </div>
 
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-2 md:col-span-2">
-            {kpis.slice(2).map((kpi, idx) => {
-              const Icon = kpi.icon;
-              return (
-                <Card
-                  key={idx}
-                  className="rounded-xl shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5 animate-fade-in"
-                >
-                  <CardContent className="p-5 flex justify-between items-center">
-                    <div>
-                      <p className="text-[13px] font-medium text-muted-foreground">
-                        {kpi.title}
-                      </p>
-                      <h3 className="text-xl font-semibold mt-1 tracking-tight">
-                        {kpi.formatted}
-                      </h3>
-                      <p
-                        className={`text-[12px] font-medium mt-1 ${getChangeColor(
-                          kpi.changeType
-                        )}`}
-                      >
-                        {kpi.change}
-                      </p>
-                    </div>
-                    <div
-                      className={`p-4 rounded-full ${kpi.gradient} flex items-center justify-center`}
-                    >
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </>
+              <div
+                className={`p-5 rounded-full ${kpi.gradient} flex items-center justify-center`}
+              >
+                <Icon className="w-8 h-8 text-white" />
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
   );
 };
 

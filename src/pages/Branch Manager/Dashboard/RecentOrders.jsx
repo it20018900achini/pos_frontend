@@ -7,9 +7,9 @@ import { getRecentOrdersByBranch } from "@/Redux Toolkit/features/order/orderThu
 import { getStatusColor } from "../../../utils/getStatusColor";
 import { formatDateTime } from "../../../utils/formateDate";
 
-const RecentOrders = () => {
+const RecentOrders = ({selectedBranchId}) => {
   const dispatch = useDispatch();
-  const branchId = useSelector((state) => state.branch.branch?.id);
+  const branchId = selectedBranchId;
   const { recentOrders, loading } = useSelector((state) => state.order);
 
   useEffect(() => {

@@ -11,21 +11,28 @@ import {
 /* ---------------- LocalStorage Helpers ---------------- */
 
 const getStorage = (key) => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem(key);
-  }
-  return null;
+  if (typeof window === "undefined") return null;
+
+  const value = localStorage.getItem(key);
+  return value === "null" ? null : value;
 };
 
 const setStorage = (key, value) => {
-  if (typeof window !== "undefined") {
-    if (value === null) {
-      localStorage.removeItem(key);
-    } else {
-      localStorage.setItem(key, value);
-    }
+  if (typeof window === "undefined") return;
+
+  if (value === null || value === undefined) {
+    localStorage.removeItem(key);
+  } else {
+    localStorage.setItem(key, value);
   }
 };
+
+/* ---------------- Default Dates ---------------- */
+
+const today = new Date().toISOString().split("T")[0];
+
+const defaultStart = getStorage("startTimeStamp") || today;
+const defaultEnd = getStorage("endTimeStamp") || today;
 
 /* ---------------- Initial State ---------------- */
 
@@ -38,8 +45,8 @@ const initialState = {
   selectedUser: null,
 
   selectedBranchId: getStorage("selectedBranchId"),
-  startTimeStamp: getStorage("startTimeStamp"),
-  endTimeStamp: getStorage("endTimeStamp"),
+  startTimeStamp: defaultStart,
+  endTimeStamp: defaultEnd,
 
   loading: false,
   error: null,
@@ -54,18 +61,17 @@ const userSlice = createSlice({
 
   reducers: {
     clearUserState: (state) => {
-      Object.assign(state, {
-        userProfile: null,
-        selectedUser: null,
-        users: [],
-        customers: [],
-        cashiers: [],
-        usersById: {},
-        error: null,
-        selectedBranchId: null,
-        startTimeStamp: null,
-        endTimeStamp: null,
-      });
+      state.userProfile = null;
+      state.selectedUser = null;
+      state.users = [];
+      state.customers = [];
+      state.cashiers = [];
+      state.usersById = {};
+      state.error = null;
+
+      state.selectedBranchId = null;
+      state.startTimeStamp = today;
+      state.endTimeStamp = today;
 
       setStorage("selectedBranchId", null);
       setStorage("startTimeStamp", null);
@@ -79,16 +85,6 @@ const userSlice = createSlice({
     setSelectedBranch: (state, action) => {
       state.selectedBranchId = action.payload;
       setStorage("selectedBranchId", action.payload);
-    },
-
-    setStartTimeStamp: (state, action) => {
-      state.startTimeStamp = action.payload;
-      setStorage("startTimeStamp", action.payload);
-    },
-
-    setEndTimeStamp: (state, action) => {
-      state.endTimeStamp = action.payload;
-      setStorage("endTimeStamp", action.payload);
     },
 
     setDateRange: (state, action) => {
@@ -107,20 +103,25 @@ const userSlice = createSlice({
       .addCase(getUserProfile.pending, (state) => {
         state.loading = true;
       })
+
       .addCase(getUserProfile.fulfilled, (state, action) => {
-        state.userProfile = action.payload;
         state.loading = false;
         state.initialized = true;
+        state.userProfile = action.payload;
 
         if (!state.selectedBranchId) {
           const user = action.payload?.user;
+
           const branchId =
-            user?.roleBranchMap?.[0]?.id || user?.defaultBranch?.id || null;
+            user?.roleBranchMap?.[0]?.id ||
+            user?.defaultBranch?.id ||
+            null;
 
           state.selectedBranchId = branchId;
           setStorage("selectedBranchId", branchId);
         }
       })
+
       .addCase(getUserProfile.rejected, (state) => {
         state.loading = false;
         state.initialized = true;
@@ -165,8 +166,6 @@ export const {
   clearUserState,
   selectUser,
   setSelectedBranch,
-  setStartTimeStamp,
-  setEndTimeStamp,
   setDateRange,
 } = userSlice.actions;
 

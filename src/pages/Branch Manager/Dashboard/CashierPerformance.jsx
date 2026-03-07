@@ -6,10 +6,9 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { User } from "lucide-react";
 import { getTopCashiersByRevenue } from "@/Redux Toolkit/features/branchAnalytics/branchAnalyticsThunks";
 
-const CashierPerformance = () => {
+const CashierPerformance = ({selectedBranchId}) => {
   const dispatch = useDispatch();
-     const { branch } = useSelector((state) => state.branch);
-     const branchId = branch?.id;
+     const branchId = selectedBranchId;
   const { topCashiers, loading } = useSelector((state) => state.branchAnalytics);
 
   useEffect(() => {

@@ -73,27 +73,13 @@ const POSHeader = () => {
       bg-neutral-50 dark:bg-neutral-900 
       border-b border-neutral-200 dark:border-neutral-700"
     >
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        
-        {/* LEFT */}
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="truncate">
-            <h1 className="text-base sm:text-xl font-bold text-neutral-900 dark:text-neutral-50 truncate">
-              {settings?.businessName}
-            </h1>
-
-            <p className="hidden sm:block text-xs text-neutral-500 dark:text-neutral-400">
-              Point of Sale Dashboard
-            </p>
-          </div>
-        </div>
-
-        {/* RIGHT */}
-        <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center justify-end md:justify-between flex-wrap gap-3">
+        <div className="flex gap-2">
           <ThemeToggle />
 
-          {/* Branch Selector */}
-          {branches.length > 0 && (
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="truncate">
+              {branches.length > 0 && (
             <select
               value={selectedBranchId || ""}
               onChange={handleBranchChange}
@@ -110,6 +96,17 @@ const POSHeader = () => {
               ))}
             </select>
           )}
+          </div>
+        </div>
+        </div>
+        {/* LEFT */}
+
+        {/* RIGHT */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          
+
+          {/* Branch Selector */}
+        
 
           {/* User Info */}
           {user && (

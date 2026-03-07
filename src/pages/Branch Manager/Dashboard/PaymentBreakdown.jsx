@@ -4,10 +4,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { getPaymentIcon } from '../../../utils/getPaymentIcon';
 import { getPaymentBreakdown } from '@/Redux Toolkit/features/branchAnalytics/branchAnalyticsThunks';
 
-const PaymentBreakdown = () => {
+const PaymentBreakdown = ({selectedBranchId}) => {
   const dispatch = useDispatch();
   const { paymentBreakdown, loading } = useSelector((state) => state.branchAnalytics);
-  const { selectedBranchId } = useSelector((state) => state.user);
 
   // State for selected date
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));

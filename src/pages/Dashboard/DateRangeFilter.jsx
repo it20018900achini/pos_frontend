@@ -1,25 +1,40 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setDateRange } from "@/Redux Toolkit/features/user/userSlice";
 
-export default function DateRangeFilter() {
-  const dispatch = useDispatch();
-
-  const { startTimeStamp, endTimeStamp } = useSelector((state) => state.user);
+export default function DateRangeFilter({ start, end, onChange }) {
 
   const today = new Date().toISOString().split("T")[0];
 
-  const [preset, setPreset] = useState("today");
-  const [startDate, setStartDate] = useState(startTimeStamp || today);
-  const [endDate, setEndDate] = useState(endTimeStamp || today);
+  const getStorage = (key) => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(key);
+    }
+    return null;
+  };
+
+  const setStorage = (key, value) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(key, value);
+    }
+  };
+
+  const [preset, setPreset] = useState("");
+
+  const [startDate, setStartDate] = useState(
+    start || getStorage("startTimeStamp") || today
+  );
+
+  const [endDate, setEndDate] = useState(
+    end || getStorage("endTimeStamp") || today
+  );
 
   const format = (d) => d.toISOString().split("T")[0];
 
   const applyRange = (start, end) => {
     setStartDate(start);
     setEndDate(end);
-    dispatch(setDateRange({ start, end }));
   };
+
+  /* ---------------- Preset change ---------------- */
 
   const handlePresetChange = (value) => {
     setPreset(value);
@@ -53,14 +68,59 @@ export default function DateRangeFilter() {
     }
   };
 
+  /* ---------------- Detect preset from dates ---------------- */
+
+  const detectPreset = (start, end) => {
+    const now = new Date();
+
+    const todayStr = format(now);
+
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay());
+
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+
+    if (start === todayStr && end === todayStr) return "today";
+
+    if (start === format(yesterday) && end === format(yesterday))
+      return "yesterday";
+
+    if (start === format(weekStart) && end === todayStr)
+      return "thisWeek";
+
+    if (start === format(monthStart) && end === todayStr)
+      return "thisMonth";
+
+    if (start === format(yearStart) && end === todayStr)
+      return "thisYear";
+
+    return "";
+  };
+
+  /* ---------------- Save + detect preset ---------------- */
+
   useEffect(() => {
-    dispatch(setDateRange({ start: startDate, end: endDate }));
+
+    setStorage("startTimeStamp", startDate);
+    setStorage("endTimeStamp", endDate);
+
+    const detected = detectPreset(startDate, endDate);
+    setPreset(detected);
+
+    if (onChange) {
+      onChange({ start: startDate, end: endDate });
+    }
+
   }, [startDate, endDate]);
 
   return (
     <div className="flex gap-3 mb-4 items-end justify-end w-full flex-wrap">
 
-      {/* Quick Range */}
+      {/* Range */}
       <div>
         <label className="block text-xs font-medium text-muted-foreground mb-1">
           Range
@@ -71,6 +131,7 @@ export default function DateRangeFilter() {
           onChange={(e) => handlePresetChange(e.target.value)}
           className="h-8 text-sm px-2 rounded-md border border-gray-300 w-32"
         >
+          <option value="">Select</option>
           <option value="today">Today</option>
           <option value="yesterday">Yesterday</option>
           <option value="thisWeek">This Week</option>

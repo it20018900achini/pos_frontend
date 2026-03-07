@@ -19,10 +19,9 @@ const UserRolesByUser = () => {
 
   return (
     <div className="p-6">
-      <h2 className="text-xl font-bold mb-4">User Roles</h2>
       
 
-      <table className="w-full border">
+      <table className="w-full ">
         <thead>
           <tr className="bg-gray-100">
             <th className="border p-2">Branch</th>
