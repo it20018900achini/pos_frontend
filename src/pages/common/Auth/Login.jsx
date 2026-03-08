@@ -36,7 +36,7 @@ const UserRoles = {
 };
 
 /* ---------------- REDIRECT BY ROLE ---------------- */
-const redirectByRole = (role) => "/dashboard?loading=true";
+const redirectByRole = (role) => "/dashboard?login=true";
 
 export default function Login() {
   const navigate = useNavigate();

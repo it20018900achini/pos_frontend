@@ -30,6 +30,7 @@ const EndShift = ({ open, onClose }) => {
 
   const [endShift, { isLoading }] = useEndShiftMutation();
   const { currentShift, loading } = useSelector((state) => state.shift);
+  const {selectedBranchId}=useSelector((state)=>state.user)
 
   // ✅ Closing coins state
   const [closingCoins, setClosingCoins] = useState({
@@ -43,9 +44,9 @@ const EndShift = ({ open, onClose }) => {
 
   useEffect(() => {
     if (open) {
-      dispatch(fetchCurrentShift());
+      dispatch(fetchCurrentShift(selectedBranchId));
     }
-  }, [dispatch, open]);
+  }, [dispatch, open,selectedBranchId]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -70,9 +71,10 @@ const EndShift = ({ open, onClose }) => {
   const handleEndShift = async () => {
     try {
       await endShift({
-        actualCash,
-        closingCoins,
-      }).unwrap();
+  branchId: selectedBranchId,
+  actualCash,
+  closingCoins,
+}).unwrap();
 
       toast({
         title: "Shift Ended",

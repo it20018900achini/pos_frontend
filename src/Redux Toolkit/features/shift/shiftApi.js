@@ -13,13 +13,15 @@ startShift: builder.mutation({
 }),
 
     endShift: builder.mutation({
-      query: ({ actualCash }) => ({
-        url: `/shifts/end`,
-        method: "POST",
-        body: { actualCash },
-      }),
-      invalidatesTags: ["Shift"],
-    }),
+  query: ({ branchId, actualCash, closingCoins }) => ({
+    url: `/shifts/end`,
+    method: "POST",
+    body: { branchId, actualCash, closingCoins },
+  }),
+  invalidatesTags: ["Shift"],
+}),
+
+
     getCurrentShift: builder.query({
       query: () => `/shifts/current`,
       providesTags: ["Shift"],

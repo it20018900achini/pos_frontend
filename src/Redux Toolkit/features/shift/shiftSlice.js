@@ -28,15 +28,20 @@ export const fetchShifts = createAsyncThunk(
     }
   }
 );
-
 export const fetchCurrentShift = createAsyncThunk(
   "shift/fetchCurrent",
-  async (_, { rejectWithValue }) => {
+  async (branchId, { rejectWithValue }) => {
     try {
-      const { data } = await api.get("/api/shifts/current", authConfig());
+      const { data } = await api.get(
+        `/api/shifts/current/${branchId}`,
+        authConfig()
+      );
+
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || err.message);
+      return rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );

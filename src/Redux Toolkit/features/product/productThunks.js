@@ -148,17 +148,17 @@ export const deleteProduct = createAsyncThunk(
 );
 
 // 🔹 Get products by store
-export const getProductVariantsByStore = createAsyncThunk(
+export const GetProductVariantsByBranch = createAsyncThunk(
   "product/getByStore",
-  async (storeId, { rejectWithValue }) => {
+  async (branchId, { rejectWithValue }) => {
     try {
-      console.log('🔄 Fetching products by store...', { storeId });
+      console.log('🔄 Fetching products by store...', { branchId });
       
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/products/store/${storeId}`, { headers });
+      const res = await api.get(`/api/products/store/${branchId}`, { headers });
       
       console.log('✅ Products fetched successfully:', {
-        storeId,
+        branchId,
         productCount: res.data.length,
         products: res.data.map(product => ({
           id: product.id,

@@ -3,24 +3,26 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Search, X, LayoutGrid, List, Grid } from "lucide-react";
 import {
-  useGetProductVariantsByStoreQuery,
+  useGetProductVariantsByBranchQuery,
   useSearchProductsQuery,
 } from "@/Redux Toolkit/features/product/productApi";
 import ProductCard from "./ProductCard";
 import ProductSmallCard from "./ProductSmallCard"; // new small card component
 import ProductListRow from "./ProductListRow";
 import { useToast } from "@/components/ui/use-toast";
+import { useSelector } from "react-redux";
 
-const ProductSection = ({ searchInputRef, storeId = 2 }) => {
+const ProductSection = ({ searchInputRef}) => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState("card"); // card | smallCard | list
+  const {selectedBranchId}=useSelector((state)=>state.user)
 
   const { data: products = [], isLoading, isError } =
-    useGetProductVariantsByStoreQuery(storeId);
+    useGetProductVariantsByBranchQuery(selectedBranchId);
 
   const { data: searchResults = [] } = useSearchProductsQuery(
-    { storeId, query: searchTerm },
+    { selectedBranchId, query: searchTerm },
     { skip: searchTerm.trim() === "" }
   );
 

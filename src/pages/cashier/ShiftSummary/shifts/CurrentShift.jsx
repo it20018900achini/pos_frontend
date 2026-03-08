@@ -6,14 +6,20 @@ import {
 } from "../../../../Redux Toolkit/features/shift/shiftSlice";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import StartShiftForm from "./StartShiftForm";
+// import StartShiftForm from "../../StartShiftForm";
 
 const CurrentShift = () => {
   const dispatch = useDispatch();
+  const {  selectedBranchId } = useSelector((state) => state.user);
   const { currentShift, loading } = useSelector((state) => state.shift);
 
   // ✅ FETCH CURRENT SHIFT ON LOAD
   useEffect(() => {
-    dispatch(fetchCurrentShift());
+    if (selectedBranchId) {
+     
+    dispatch(fetchCurrentShift(selectedBranchId)); 
+    }
   }, [dispatch]);
 
   const handleEndShift = async () => {
@@ -21,7 +27,7 @@ const CurrentShift = () => {
     if (!cash || isNaN(cash)) return;
 
     await dispatch(endShift({ actualCash: Number(cash) })).unwrap();
-    dispatch(fetchCurrentShift()); // refresh
+    dispatch(fetchCurrentShift(selectedBranchId)); 
   };
 
   // ✅ Loading state
@@ -39,6 +45,7 @@ const CurrentShift = () => {
     return (
       <div className="p-4 border rounded text-muted-foreground">
         No open shift
+        {/* {JSON.stringify(currentShift)} */}
       </div>
     );
   }
@@ -46,6 +53,12 @@ const CurrentShift = () => {
   return (
     <div className="mb-4 p-4 ">
       <h2 className="text-xl font-bold mb-2">Current Shift</h2>
+      {/* <StartShiftForm/> */}
+      {/* <StartShiftForm/> */}
+      {/* <pre>
+
+{JSON.stringify(currentShift,null,2)}
+      </pre> */}
 
       <p>
         <strong>Start:</strong>{" "}

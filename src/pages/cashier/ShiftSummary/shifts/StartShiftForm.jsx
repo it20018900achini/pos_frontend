@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { startShift, fetchShifts } from "../../../../Redux Toolkit/features/shift/shiftSlice";
+import { useState } from "react";
+import { useStartShiftMutation } from "@/Redux Toolkit/features/shift/shiftApi";
 
 import {
   Dialog,
@@ -13,105 +12,109 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
 
-const StartShiftForm = ({ open, onClose }) => {
-  const dispatch = useDispatch();
-  const { toast } = useToast();
+const COINS = ["1", "5", "10", "50", "100", "500"];
 
-  const [branchId, setBranchId] = useState("");
+export default function StartShiftForm({ open, onClose, branchId }) {
+
   const [openingCash, setOpeningCash] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const [openingCoins, setOpeningCoins] = useState({
+    "1": 0,
+    "5": 0,
+    "10": 0,
+    "50": 0,
+    "100": 0,
+    "500": 0,
+  });
 
-    if (!branchId || !openingCash) {
-      toast({
-        title: "Missing fields",
-        description: "Branch ID and Opening Cash are required",
-        variant: "destructive",
-      });
-      return;
-    }
+  const [startShift, { isLoading, error }] = useStartShiftMutation();
 
+  const handleCoinChange = (coin, value) => {
+    setOpeningCoins((prev) => ({
+      ...prev,
+      [coin]: Number(value) || 0,
+    }));
+  };
+
+  const handleSubmit = async () => {
     try {
-      setLoading(true);
-
-      await dispatch(
-        startShift({
-          branchId: Number(branchId),
-          openingCash: Number(openingCash),
-        })
-      ).unwrap();
-
-      dispatch(fetchShifts());
-
-      toast({
-        title: "Shift Started",
-        description: "New shift opened successfully",
-      });
+      await startShift({
+        branchId,
+        openingCash: Number(openingCash),
+        openingCoins,
+      }).unwrap();
 
       onClose();
-      setBranchId("");
-      setOpeningCash("");
+
     } catch (err) {
-      toast({
-        title: "Error",
-        description: err || "Failed to start shift",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+      console.error(err);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[420px]">
+
+      <DialogContent className="sm:max-w-[480px]">
+
         <DialogHeader>
-          <DialogTitle>Start New Shift</DialogTitle>
+          <DialogTitle>Start Shift</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <Label>Branch ID</Label>
-            <Input
-              type="number"
-              value={branchId}
-              onChange={(e) => setBranchId(e.target.value)}
-              placeholder="Enter branch ID"
-            />
+        {/* Opening cash */}
+        <div className="space-y-2">
+          <Label>Opening Cash</Label>
+          <Input
+            type="number"
+            min="0"
+            value={openingCash}
+            onChange={(e) => setOpeningCash(e.target.value)}
+          />
+        </div>
+
+        {/* Opening coins */}
+        <div className="space-y-3 pt-3">
+          <Label>Opening Coins</Label>
+
+          <div className="grid grid-cols-2 gap-3">
+            {COINS.map((coin) => (
+              <div key={coin} className="space-y-1">
+                <Label className="text-xs">LKR {coin}</Label>
+
+                <Input
+                  type="number"
+                  min="0"
+                  value={openingCoins[coin]}
+                  onChange={(e) =>
+                    handleCoinChange(coin, e.target.value)
+                  }
+                />
+              </div>
+            ))}
           </div>
+        </div>
 
-          <div className="space-y-1">
-            <Label>Opening Cash</Label>
-            <Input
-              type="number"
-              value={openingCash}
-              onChange={(e) => setOpeningCash(e.target.value)}
-              placeholder="Enter opening cash"
-            />
-          </div>
+        {error && (
+          <p className="text-sm text-red-500">
+            {error?.data?.message || "Failed to start shift"}
+          </p>
+        )}
 
-          <DialogFooter className="pt-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={loading}
-            >
-              Cancel
-            </Button>
+        <DialogFooter className="pt-4">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
 
-            <Button type="submit" disabled={loading}>
-              {loading ? "Starting..." : "Start Shift"}
-            </Button>
-          </DialogFooter>
-        </form>
+          <Button
+            onClick={handleSubmit}
+            disabled={isLoading}
+          >
+            {isLoading ? "Starting..." : "Start Shift"}
+          </Button>
+        </DialogFooter>
+
       </DialogContent>
+
     </Dialog>
   );
-};
-
-export default StartShiftForm;
+}

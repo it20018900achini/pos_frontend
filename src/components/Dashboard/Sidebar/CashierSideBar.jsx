@@ -1,15 +1,15 @@
 import { Link, useNavigate, useLocation } from "react-router";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from "react";
-import { getBranchById } from "../../../Redux Toolkit/features/branch/branchThunks";
-import { Button } from "../../../components/ui/button";
+import { getBranchById } from "@/Redux Toolkit/features/branch/branchThunks";
+import { Button } from "@/components/ui/button";
 import { LogOutIcon, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { logout } from "../../../Redux Toolkit/features/user/userThunks";
-import { ThemeToggle } from "../../../components/theme-toggle";
+import { logout } from "@/Redux Toolkit/features/user/userThunks";
+import { ThemeToggle } from "@/components/theme-toggle";
 import BranchInfo from "./BranchInfo";
 import { disconnectPresenceSocket } from "@/Redux Toolkit/features/presence/presenceSocket";
-import { logoutThunk } from "../../../Redux Toolkit/features/auth/authThunk";
+import { logoutThunk } from "@/Redux Toolkit/features/auth/authThunk";
 
 const CashierSideBar = ({ navItems, onClose }) => {
   const dispatch = useDispatch();

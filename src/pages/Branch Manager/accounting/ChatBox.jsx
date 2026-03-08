@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getUserProfile } from "../../../Redux Toolkit/features/user/userThunks";
+import { getUserProfile } from "@/Redux Toolkit/features/user/userThunks";
 
 export default function ChatBox({ receiver, socket }) {
   const dispatch = useDispatch();

@@ -3,8 +3,8 @@ import { apiSlice } from "../../api/apiSlice";
 export const productApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // 1️⃣ Get all variants by store (existing)
-    getProductVariantsByStore: builder.query({
-      query: (storeId) => `/products/store/${storeId}/variants`,
+    GetProductVariantsByBranch: builder.query({
+      query: (branchId) => `/products/branch/${branchId}/variants`,
       providesTags: ["Product"],
     }),
 
@@ -90,7 +90,7 @@ export const productApi = apiSlice.injectEndpoints({
 });
 
 export const {
-  useGetProductVariantsByStoreQuery,
+  useGetProductVariantsByBranchQuery,
   useGetProductsByStoreQuery,
   useSearchProductsQuery,
   useFilterProductVariantsQuery,

@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { addPurchase } from "@/Redux Toolkit/features/purchase/purchaseSlice";
 import { getSuppliers } from "@/Redux Toolkit/features/suppliers/supplierSlice";
-import { useGetProductVariantsByStoreQuery } from "@/Redux Toolkit/features/product/productApi";
+import { useGetProductVariantsByBranchQuery } from "@/Redux Toolkit/features/product/productApi";
 
 import {
   Dialog,
@@ -33,14 +33,14 @@ const INITIAL_PAYMENT = {
 
 
 /* -------------------- component -------------------- */
-const PurchaseModal = ({ open, onClose, storeId = null }) => {
+const PurchaseModal = ({ open, onClose }) => {
       const { userProfile, selectedBranchId } = useSelector((state) => state.user);
   
 const BRANCH_ID = selectedBranchId;
   const dispatch = useDispatch();
   const { suppliers } = useSelector((state) => state.supplier);
 
-  const { data: products = [] } = useGetProductVariantsByStoreQuery(userProfile?.user?.store?.id);
+  const { data: products = [] } = useGetProductVariantsByBranchQuery(selectedBranchId);
 
   const [supplierId, setSupplierId] = useState(null);
   const [items, setItems] = useState([INITIAL_ITEM]);

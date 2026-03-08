@@ -34,7 +34,7 @@ export default function StartShiftForm({ branch }) {
       }).unwrap();
 
       // 🔥 Hard reload
-      window.location.reload();
+      // window.location.reload();
     } catch (err) {
       console.error("Failed to start shift", err);
     }
@@ -48,7 +48,7 @@ export default function StartShiftForm({ branch }) {
         className="w-full max-w-md space-y-4 rounded-xl border bg-white p-6 shadow-lg"
       >
         <h2 className="text-center text-xl font-semibold">
-          Start Shift2
+          Start Shift2-
         </h2>
 
         {/* Branch ID */}

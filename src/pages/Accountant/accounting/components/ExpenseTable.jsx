@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import ExpenseForm from './ExpenseForm';
-import { useGetExpensesQuery } from '../../../../Redux Toolkit/features/expenses/expenseApi';
-import { useDeleteExpenseMutation } from '../../../../Redux Toolkit/features/accounting/accountingApi';
-import { useGetExpenseCategoriesQuery } from '../../../../Redux Toolkit/features/expenseCategory/expenseCategoryApi';
+import { useGetExpensesQuery } from '@/Redux Toolkit/features/expenses/expenseApi';
+import { useDeleteExpenseMutation } from '@/Redux Toolkit/features/accounting/accountingApi';
+import { useGetExpenseCategoriesQuery } from '@/Redux Toolkit/features/expenseCategory/expenseCategoryApi';
 
 export default function ExpenseTable() {
   const [editingExpense, setEditingExpense] = useState(null);

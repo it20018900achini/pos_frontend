@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useCreateExpenseMutation, useUpdateExpenseMutation } from '../../../../Redux Toolkit/features/accounting/accountingApi';
+import { useCreateExpenseMutation, useUpdateExpenseMutation } from '@/Redux Toolkit/features/accounting/accountingApi';
 import { useSelector } from 'react-redux';
 
 export default function ExpenseForm({ expense, onClose, categories, branchId  }) {
