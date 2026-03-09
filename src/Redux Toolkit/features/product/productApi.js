@@ -24,6 +24,7 @@ export const productApi = apiSlice.injectEndpoints({
     // 4️⃣ Filter variants (new endpoint)
     filterProductVariants: builder.query({
       query: ({
+        branchId,
         keyword,
         productId,
         isActive,
@@ -47,7 +48,7 @@ export const productApi = apiSlice.injectEndpoints({
         params.append("sortBy", sortBy);
         params.append("sortDir", sortDir);
 
-        return `/variants/filter?${params.toString()}`;
+        return `/variants/filter?branchId=${branchId}&${params.toString()}`;
       },
       providesTags: ["Product"],
     }),

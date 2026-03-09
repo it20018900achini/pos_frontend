@@ -39,7 +39,9 @@ const ContentLayout = ({
               )}
               {subTitle && (
                 <p className="text-sm text-muted-foreground mt-1">
-                  {subTitle}
+                 <span className="border border-green-300 px-2 text-green-600 bg-green-200">{userProfile?.user?.roleBranchMap?.find(
+      (b) => b.branchId === Number(selectedBranchId)
+    )?.branchName}</span> {subTitle}
                 </p>
               )}
             </div>
