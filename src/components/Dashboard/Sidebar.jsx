@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/context/hooks/useSidebar";
 import { logout } from "@/Redux Toolkit/features/user/userThunks";
 import { pathPermissions } from "./pathPermissions";
+import { pathPermissionsSuperAdmin } from "./pathPermissionsSuperAdmin";
 
 /* -----------------------------
    Premium Glass Modal
@@ -44,7 +45,9 @@ export default function Sidebar() {
     user?.defaultBranch;
   const permissions = selectedBranch?.permissions || [];
 
-  const NAV_LINKS = useMemo(() => pathPermissions(permissions), [permissions]);
+const isSuperAdmin = userProfile?.role === "SUPER_ADMIN";
+
+  const NAV_LINKS = useMemo(() =>isSuperAdmin? pathPermissionsSuperAdmin(permissions): pathPermissions(permissions), [permissions,isSuperAdmin]);
 
   const [openMenus, setOpenMenus] = useState({});
   const [dialogMenu, setDialogMenu] = useState(null);

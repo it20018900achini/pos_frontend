@@ -40,6 +40,9 @@ import AllowedBranches from "../pages/store/AllowedBranches/AllowedBranches";
 import UpdateProfile from "../pages/Dashboard/UpdateProfile";
 import StoreOrders from "../pages/Branch Manager/StoreOrders/StoreOrders";
 import StoreRefunds from "../pages/Branch Manager/StoreRefunds/Refunds";
+import StoreListPage from "../pages/SuperAdminDashboard/store/StoreListPage";
+import StoreDetailsPage from "../pages/SuperAdminDashboard/store/StoreDetailsPage";
+import PendingRequestsPage from "../pages/SuperAdminDashboard/store/PendingRequestsPage";
 
 const DashboardRoutes = () => {
   
@@ -116,6 +119,12 @@ const DashboardRoutes = () => {
           <Route path="profile/settings" element={<UpdateProfile />} />
     
       
+
+
+        <Route path="admin/stores" element={<StoreListPage />} />
+        <Route path="admin/stores/:id" element={<StoreDetailsPage />} />
+        <Route path="admin/requests" element={<PendingRequestsPage />} />
+
       </Route>
       <Route
         path="*"

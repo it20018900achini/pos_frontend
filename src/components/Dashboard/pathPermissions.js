@@ -17,6 +17,8 @@ import {
  * @returns {Array}
  */
 export const pathPermissions = (permissions = []) => {
+
+
   const NAV_LINKS = [];
 
   const addParentWithChildren = (parentName, parentIcon, children) => {
@@ -145,6 +147,11 @@ export const pathPermissions = (permissions = []) => {
     { name: "Branch Settings", path: "/dashboard/branch/settings", icon: Settings, permission: "SETTINGS" },
     { name: "Profile Settings", path: "/dashboard/profile/settings", icon: Settings },
   ]);
+
+
+
+
+
 
   return NAV_LINKS;
 };
