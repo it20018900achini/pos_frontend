@@ -96,7 +96,6 @@ export default function ChartOfAccounts() {
     [accounts]
   );
 
-  if (isLoading) return <p>Loading Chart of Accounts...</p>;
   if (isError) return <p>Error loading accounts..</p>;
 
   /* ================= CREATE ================= */
@@ -174,7 +173,7 @@ export default function ChartOfAccounts() {
   };
 
   return (
-  <ContentLayout title="Chart of Accounts" subTitle="View and manage your chart of accounts." >
+  <ContentLayout loadingSpinner={isLoading} title="Chart of Accounts" subTitle="View and manage your chart of accounts." >
     
     <div className="space-y-6">
 

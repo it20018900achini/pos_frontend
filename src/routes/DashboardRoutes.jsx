@@ -38,6 +38,8 @@ import StoreEmployees from "../pages/store/Employee/StoreEmployees";
 import Onboarding from "../pages/onboarding/Onboarding";
 import AllowedBranches from "../pages/store/AllowedBranches/AllowedBranches";
 import UpdateProfile from "../pages/Dashboard/UpdateProfile";
+import StoreOrders from "../pages/Branch Manager/StoreOrders/StoreOrders";
+import StoreRefunds from "../pages/Branch Manager/StoreRefunds/Refunds";
 
 const DashboardRoutes = () => {
   
@@ -93,8 +95,8 @@ const DashboardRoutes = () => {
           <Route path="branch/orders/refunds" element={<Refunds />} />
           <Route path="branch/orders/quotations" element={<QuotationsPage />} />
 
-          <Route path="store/orders" element={<Orders />} />
-          <Route path="store/orders/refunds" element={<Refunds />} />
+          <Route path="store/orders" element={<StoreOrders />} />
+          <Route path="store/orders/refunds" element={<StoreRefunds />} />
           <Route path="store/orders/quotations" element={<QuotationsPage />} />
 
           <Route path="branch/transactions" element={<Transactions />} />

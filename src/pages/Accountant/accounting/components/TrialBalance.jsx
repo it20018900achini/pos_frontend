@@ -34,12 +34,12 @@ export default function TrialBalance() {
   const totalCredit = data.reduce((sum, tb) => sum + (tb.totalCredit || 0), 0);
   const isBalanced = totalDebit === totalCredit;
 
-  if (isLoading) return <p>Loading Trial Balance...</p>;
   if (isError) return <p>Error loading Trial Balance</p>;
 
   return (
     <ContentLayout
       title="Trial Balance"
+      loadingSpinner={isLoading}
       subTitle="Summary of debits and credits by account"
     >
       {/* Date Inputs */}

@@ -96,7 +96,7 @@ export const getOrdersByBranch = createAsyncThunk(
       if (paymentType) params.push(`paymentType=${paymentType}`);
       if (status) params.push(`status=${status}`);
       const query = params.length ? `?${params.join('&')}` : '';
-      const res = await api.get(`/api/orders/branch/${branchId}${query}`, { headers });
+      const res = await api.get(`/api/orders/branch/${branchId}/pagin/${query}`, { headers });
       console.log('✅ Orders by branch response:', res.data);
       return res.data;
     } catch (err) {
@@ -358,7 +358,49 @@ if (end) {
 
       if (search) params.append("search", search);
 
-      const res = await api.get(`/api/orders/branch/t/${(branchId)}?${params.toString()}`, { headers });
+      const res = await api.get(`/api/orders/branch/${(branchId)}/pagin?${params.toString()}`, { headers });
+console.log(res)
+      return {
+        orders: res.data.content,
+        pageInfo: {
+          page: res.data.number,
+          size: res.data.size,
+          totalPages: res.data.totalPages,
+          totalElements: res.data.totalElements,
+        },
+      };
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch paginated recent orders');
+    }
+  }
+);
+
+
+// 🔹 Get Recent Orders by Branch (Paginated + Filter)
+export const getRecentOrdersByStorePagin = createAsyncThunk(
+  'order/getRecentByStorePagin',
+  async ({ storeId, page = 0, size = 10, sort = "id,desc", start, end, search }, { rejectWithValue }) => {
+    try {
+      const headers = getAuthHeaders();
+      const params = new URLSearchParams();
+      params.append("page", page);
+      params.append("size", size);
+      params.append("sort", sort);
+      
+  if (start) {
+  const formatted = new Date(start).toISOString();
+  params.append("start", formatted);
+}
+
+if (end) {
+  const formatted = new Date(end).toISOString();
+  params.append("end", formatted);
+}
+
+
+      if (search) params.append("search", search);
+
+      const res = await api.get(`/api/orders/store/${(storeId)}?${params.toString()}`, { headers });
 console.log(res)
       return {
         orders: res.data.content,

@@ -10,6 +10,7 @@ import {
   getRecentOrdersByBranch,
   getOrdersByCustomerPagin,
   getRecentOrdersByBranchPagin,
+  getRecentOrdersByStorePagin,
 } from "./orderThunks";
 
 const initialState = {
@@ -152,6 +153,24 @@ const orderSlice = createSlice({
         state.pageInfo = action.payload.pageInfo || null;
       })
       .addCase(getRecentOrdersByBranchPagin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+
+
+      
+      // Recent Orders (pagination)
+      .addCase(getRecentOrdersByStorePagin.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getRecentOrdersByStorePagin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orders = action.payload.orders || [];
+        state.pageInfo = action.payload.pageInfo || null;
+      })
+      .addCase(getRecentOrdersByStorePagin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

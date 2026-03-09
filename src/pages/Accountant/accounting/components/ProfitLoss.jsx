@@ -130,7 +130,6 @@ const {selectedBranchId}=useSelector((state)=>state.user)
 
   const { data: report, isLoading, isError, refetch } = useGetProfitLossQuery({branchId:selectedBranchId, start, end });
 
-  if (isLoading) return <p>Loading Profit & Loss...</p>;
   if (isError) return <p>Error loading report.{selectedBranchId}</p>;
 
   const incomes = report?.incomes || [];
@@ -141,7 +140,7 @@ const {selectedBranchId}=useSelector((state)=>state.user)
   const netProfit = totalIncome - totalExpense;
 
   return (
-    <ContentLayout title="Profit & Loss Statement" subTitle="View your profit and loss for a specific period." >
+    <ContentLayout loadingSpinner={isLoading} title="Profit & Loss Statement" subTitle="View your profit and loss for a specific period." >
     <div className="space-y-6">
 
       {/* Date Inputs */}
