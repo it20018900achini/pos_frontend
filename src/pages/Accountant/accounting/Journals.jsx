@@ -10,9 +10,9 @@ function Journals() {
         
                   <JournalForm/>
                   <hr className="my-"/>
-                  <JournalDashboard />
-        
-                  <JournalByAccount/>
+                 {/* <JournalDashboard /> */}
+         
+                  <JournalByAccount/> {/* */}
     </ContentLayout>
   )
 }

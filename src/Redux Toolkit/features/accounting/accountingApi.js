@@ -77,20 +77,29 @@ createJournal: builder.mutation({
     deleteExpense: builder.mutation({ query: (id) => ({ url: `/expenses/${id}`, method: "DELETE" }), invalidatesTags: ["Expense"] }),
 
     // ===== Reports =====
-    getTrialBalance: builder.query({ query: () => "/accounting/reports/trial-balance" }),
-getProfitLoss: builder.query({
-  query: ({ start, end }) => {
-    const params = new URLSearchParams({ start, end });
-    return `/accounting/reports/profit-loss?${params.toString()}`;
+getTrialBalance: builder.query({
+  query: ({ branchId, start, end }) => {
+    const params = new URLSearchParams();
+    if (branchId) params.append("branchId", branchId);
+    if (start) params.append("start", start);
+    if (end) params.append("end", end);
+    return `/accounting/reports/trial-balance?${params.toString()}`;
   }
-}),
+}),    
+    
+    getProfitLoss: builder.query({
+      query: ({branchId, start, end }) => {
+        const params = new URLSearchParams({ start, end });
+        return `/accounting/reports/profit-loss?branchId=${branchId}&${params.toString()}`;
+      }
+    }),
 getBalanceSheet: builder.query({
-  query: ({ start, end }) => {
+  query: ({branchId, start, end }) => {
     const params = new URLSearchParams({
       start, // e.g., "2026-01-01T00:00:00"
       end,   // e.g., "2026-01-31T23:59:59"
     });
-    return `/accounting/reports/balance-sheet?${params.toString()}`;
+    return `/accounting/reports/balance-sheet?branchId=${branchId}&${params.toString()}`;
   },
 }),
 

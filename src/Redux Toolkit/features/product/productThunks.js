@@ -149,16 +149,53 @@ export const deleteProduct = createAsyncThunk(
 
 // 🔹 Get products by store
 export const GetProductVariantsByBranch = createAsyncThunk(
-  "product/getByStore",
+  "product/getByBranch",
   async (branchId, { rejectWithValue }) => {
     try {
-      console.log('🔄 Fetching products by store...', { branchId });
+      console.log('🔄 Fetching products by branch...', { branchId });
       
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/products/store/${branchId}`, { headers });
+      const res = await api.get(`/api/products/branch/${branchId}`, { headers });
       
       console.log('✅ Products fetched successfully:', {
         branchId,
+        productCount: res.data.length,
+        products: res.data.map(product => ({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          category: product.category
+        }))
+      });
+      
+      return res.data;
+    } catch (err) {
+      console.error('❌ Failed to fetch products by branch:', {
+        branchId,
+        error: err.response?.data || err.message,
+        status: err.response?.status,
+        statusText: err.response?.statusText
+      });
+      
+      return rejectWithValue(
+        err.response?.data?.message || "Failed to fetch products"
+      );
+    }
+  }
+);
+
+// 🔹 Get products by store
+export const GetProductsByStore = createAsyncThunk(
+  "product/getByStore",
+  async (storeId, { rejectWithValue }) => {
+    try {
+      console.log('🔄 Fetching products by store...', { storeId });
+      
+      const headers = getAuthHeaders();
+      const res = await api.get(`/api/products/store/${storeId}`, { headers });
+      
+      console.log('✅ Products fetched successfully:', {
+        storeId,
         productCount: res.data.length,
         products: res.data.map(product => ({
           id: product.id,

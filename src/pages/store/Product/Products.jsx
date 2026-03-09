@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
@@ -8,38 +10,36 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 
-import { GetProductVariantsByBranch } from "@/Redux Toolkit/features/product/productThunks";
 import ProductTable from "./ProductTable";
 import ProductForm from "./ProductForm";
 import ProductSearch from "./ProductSearch";
 import ProductDetails from "./ProductDetails";
 import ContentLayout from "../../Dashboard/ContentLayout";
+import { GetProductsByStore } from "../../../Redux Toolkit/features/product/productThunks";
 
 export default function Products() {
   const dispatch = useDispatch();
   const { products, loading, error, searchResults } = useSelector(
     (state) => state.product
   );
-  const { store } = useSelector((state) => state.store);
-    const { userProfile, selectedBranchId } = useSelector((state) => state.user);
-  
+  const { userProfile } = useSelector((state) => state.user);
 
-  const [dialogOpen, setDialogOpen] = useState(false); // unified add/edit dialog
-  const [currentProduct, setCurrentProduct] = useState(null); // null = add, object = edit
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentProduct, setCurrentProduct] = useState(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [displayedProducts, setDisplayedProducts] = useState([]);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch products
+  // Fetch products from store
   const fetchProducts = useCallback(async () => {
-    if (!userProfile?.user?.store?.id) return;
+    const storeId = userProfile?.user?.store?.id;
+    // if (!storeId) return;
     try {
-      await dispatch(GetProductVariantsByBranch(selectedBranchId)).unwrap();
+      await dispatch(GetProductsByStore(storeId)).unwrap();
     } catch (err) {
       toast({
         title: "Error",
@@ -48,19 +48,20 @@ export default function Products() {
       });
     }
   }, [dispatch, userProfile]);
-
-  useEffect(() => {
+useEffect(() => {
+  if (userProfile?.user?.store?.id) {
     fetchProducts();
-  }, [fetchProducts]);
+  }
+}, [userProfile, fetchProducts]);
 
-  // Update displayed products when products or search changes
+  // Update displayed products based on search or full list
   useEffect(() => {
-    setDisplayedProducts(
-      isSearchActive && searchResults.length > 0 ? searchResults : products
-    );
-  }, [products, searchResults, isSearchActive]);
+  setDisplayedProducts(
+    isSearchActive && searchResults.length > 0 ? searchResults : products
+  );
+}, [products, searchResults, isSearchActive]);
 
-  // Handlers
+  // Refresh handler
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchProducts();
@@ -68,25 +69,23 @@ export default function Products() {
     setIsSearchActive(false);
   };
 
+  // Dialog handlers
   const handleOpenDialog = (product = null) => {
     setCurrentProduct(product);
     setDialogOpen(true);
   };
-
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setCurrentProduct(null);
   };
-
-  const handleFormSubmit = () => {
-    handleCloseDialog();
-  };
+  const handleFormSubmit = () => handleCloseDialog();
 
   const handleOpenView = (product) => {
     setCurrentProduct(product);
     setIsViewDialogOpen(true);
   };
 
+  // Search handler
   const handleSearch = (results) => {
     if (!results) {
       setIsSearchActive(false);
@@ -97,14 +96,12 @@ export default function Products() {
     }
   };
 
-  // Unified dialog render
+  // Render Add/Edit Dialog
   const renderFormDialog = () => (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto p-6">
         <DialogHeader>
-          <DialogTitle>
-            {currentProduct ? "Edit Product" : "Add New Product"}
-          </DialogTitle>
+          <DialogTitle>{currentProduct ? "Edit Product" : "Add New Product"}</DialogTitle>
         </DialogHeader>
         <ProductForm
           initialValues={currentProduct}
@@ -116,7 +113,7 @@ export default function Products() {
     </Dialog>
   );
 
-  // View dialog render
+  // Render View Dialog
   const renderViewDialog = () => (
     <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
       <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto p-6">
@@ -129,72 +126,73 @@ export default function Products() {
   );
 
   return (
-    <ContentLayout title="Product Management" subTitle="Create, edit, and manage your products here." right={
-      <Button onClick={() => handleOpenDialog()} >
-        <Plus className="mr-2 h-4 w-4" /
-        >Add Product
-      </Button>
-    }>
-       <div className="space-y-6">
-
-
-      {/* Search & Refresh */}
-      <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
-        <ProductSearch onSearch={handleSearch} />
-        <Button
-          variant="outline"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="ml-auto"
-        >
-          <RefreshCw
-            className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
-          />
-          {refreshing ? "Refreshing..." : "Refresh"}
+    <ContentLayout
+      title="Product Management"
+      subTitle="Create, edit, and manage your products here."
+      loadingSpinner={loading || refreshing}
+      right={
+        <Button onClick={() => handleOpenDialog()}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Product
         </Button>
-      </div>
-
-      {/* Search Results Notice */}
-      {isSearchActive && (
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-2 rounded-md flex justify-between items-center">
-          <span>
-            Showing search results ({displayedProducts.length}{" "}
-            {displayedProducts.length === 1 ? "product" : "products"} found)
-          </span>
+      }
+    >
+      <div className="space-y-6">
+        {/* Search & Refresh */}
+        <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
+          <ProductSearch onSearch={handleSearch} />
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleSearch(null)}
-            className="text-amber-800 hover:text-amber-900 hover:bg-amber-100"
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="ml-auto"
           >
-            Show all products
+            <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
+            {refreshing ? "Refreshing..." : "Refresh"}
           </Button>
         </div>
-      )}
 
-      {/* Error */}
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-md border border-red-200">
-          {error}
-        </div>
-      )}
+        {/* Search Results Notice */}
+        {isSearchActive && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-2 rounded-md flex justify-between items-center">
+            <span>
+              Showing search results ({displayedProducts.length}{" "}
+              {displayedProducts.length === 1 ? "product" : "products"} found)
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleSearch(null)}
+              className="text-amber-800 hover:text-amber-900 hover:bg-amber-100"
+            >
+              Show all products
+            </Button>
+          </div>
+        )}
 
-      {/* Product Table */}
-      <Card>
-        <CardContent className="p-0">
-          <ProductTable
-            products={displayedProducts}
-            loading={loading || refreshing}
-            onEdit={handleOpenDialog}
-            onView={handleOpenView}
-          />
-        </CardContent>
-      </Card>
+        {/* Error Notice */}
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-md border border-red-200">
+            {error}
+          </div>
+        )}
 
-      {/* Dialogs */}
-      {renderFormDialog()}
-      {renderViewDialog()}
-    </div>
+        {/* Product Table */}
+        <Card>
+          <CardContent className="p-0">
+            <ProductTable
+              products={displayedProducts}
+              loading={loading || refreshing}
+              onEdit={handleOpenDialog}
+              onView={handleOpenView}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Dialogs */}
+        {renderFormDialog()}
+        {renderViewDialog()}
+      </div>
     </ContentLayout>
   );
 }

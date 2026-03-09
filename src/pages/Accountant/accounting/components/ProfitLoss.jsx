@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import ContentLayout from "../../../Dashboard/ContentLayout";
+import { useSelector } from "react-redux";
 
 /* ===================== HELPERS ===================== */
 
@@ -104,7 +105,7 @@ const SectionTable = ({ title, accounts, expanded, toggle }) => {
 /* ===================== MAIN COMPONENT ===================== */
 export default function ProfitLossReport() {
   const today = new Date();
-
+const {selectedBranchId}=useSelector((state)=>state.user)
   const defaultStart = useMemo(
     () => new Date(today.getFullYear(), today.getMonth(), 1).toISOString(),
     [today]
@@ -127,10 +128,10 @@ export default function ProfitLossReport() {
     });
   };
 
-  const { data: report, isLoading, isError, refetch } = useGetProfitLossQuery({ start, end });
+  const { data: report, isLoading, isError, refetch } = useGetProfitLossQuery({branchId:selectedBranchId, start, end });
 
   if (isLoading) return <p>Loading Profit & Loss...</p>;
-  if (isError) return <p>Error loading report.</p>;
+  if (isError) return <p>Error loading report.{selectedBranchId}</p>;
 
   const incomes = report?.incomes || [];
   const expenses = report?.expenses || [];

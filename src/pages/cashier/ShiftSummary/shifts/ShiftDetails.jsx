@@ -1,9 +1,4 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchShiftById,
-  clearSelectedShift,
-} from "../../../../Redux Toolkit/features/shift/shiftSlice";
+import React from "react";
 
 // shadcn
 import {
@@ -14,130 +9,72 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
-const ShiftDetails = ({ shiftId }) => {
-  const dispatch = useDispatch();
-  const { selectedShift, loading, error } = useSelector(
-    (state) => state.shift
-  );
+const ShiftDetails = ({ shift }) => {
+  if (!shift) {
+    return (
+      <div className="border flex items-center justify-center h-full text-muted-foreground">
+        Select a shift to view details
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    if (shiftId) dispatch(fetchShiftById(shiftId));
-    return () => dispatch(clearSelectedShift());
-  }, [dispatch, shiftId]);
-
-  if (!shiftId)
-    return <p className="text-muted-foreground">Select a shift</p>;
-
-  if (loading) return <p>Loading shift details...</p>;
-  if (error) return <p className="text-destructive">{error}</p>;
-  if (!selectedShift) return null;
-
-  const isOpen = selectedShift.status === "OPEN";
+  const isOpen = shift.status === "OPEN";
 
   return (
-    <Card className="w-full shadow-lg border-muted">
+    <Card className="w-full shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xl">
-          Shift #{selectedShift.id}
-        </CardTitle>
+        <CardTitle>Shift #{shift.id}</CardTitle>
 
-        <Badge variant={isOpen ? "success" : "secondary"}>
-          {selectedShift.status}
+        <Badge variant={isOpen ? "default" : "secondary"}>
+          {shift.status}
         </Badge>
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* METRICS */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Metric label="Opening Cash" value={selectedShift.openingCash} />
-          <Metric label="Expected Cash" value={selectedShift.expectedCash} />
+
+        {/* BASIC INFO */}
+        <div className="grid grid-cols-2 gap-4">
           <Metric
-            label="Actual Cash"
-            value={selectedShift.actualCash ?? "-"}
+            label="Start Time"
+            value={new Date(shift.shiftStart).toLocaleString()}
           />
+
           <Metric
-            label="Cash Difference"
-            value={selectedShift.cashDifference ?? "-"}
+            label="End Time"
+            value={
+              shift.shiftEnd
+                ? new Date(shift.shiftEnd).toLocaleString()
+                : "-"
+            }
           />
+
+          <Metric label="Opening Cash" value={shift.openingCash} />
+
+          <Metric label="Total Sales" value={shift.totalSales} />
         </div>
 
         <Separator />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Metric label="Total Sales" value={selectedShift.totalSales} />
-          <Metric label="Total Refunds" value={selectedShift.totalRefunds} />
-          <Metric label="Net Sales" value={selectedShift.netSales} />
-          <Metric label="Orders" value={selectedShift.totalOrders} />
-        </div>
+        {/* SALES SUMMARY */}
+        <div className="grid grid-cols-3 gap-4">
+          <Metric label="Orders" value={shift.totalOrders} />
 
-        {/* TOP PRODUCTS */}
-        <div>
-          <h3 className="font-semibold mb-2">Top Products</h3>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product</TableHead>
-                <TableHead className="text-right">Quantity</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {selectedShift.topProducts?.map((p) => (
-                <TableRow key={p.productId}>
-                  <TableCell>{p.productName}</TableCell>
-                  <TableCell className="text-right font-medium">
-                    {p.quantity}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+          <Metric label="Refunds" value={shift.totalRefunds} />
 
-        {/* PAYMENT SUMMARY */}
-        <div>
-          <h3 className="font-semibold mb-2">Payment Summary</h3>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-right">Transactions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {selectedShift.paymentSummaries?.map((p, idx) => (
-                <TableRow key={idx}>
-                  <TableCell>{p.type}</TableCell>
-                  <TableCell className="text-right">
-                    {p.totalAmount}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {p.transactionCount}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <Metric label="Net Sales" value={shift.netSales} />
         </div>
       </CardContent>
     </Card>
   );
 };
 
-/* ------------------ Small Metric Component ------------------ */
+/* Metric component */
+
 const Metric = ({ label, value }) => (
-  <div className="rounded-lg border p-3 bg-muted/40">
+  <div className="border rounded-lg p-3 bg-muted/40">
     <p className="text-xs text-muted-foreground">{label}</p>
-    <p className="text-lg font-semibold">{value}</p>
+    <p className="text-lg font-semibold">{value ?? "-"}</p>
   </div>
 );
 

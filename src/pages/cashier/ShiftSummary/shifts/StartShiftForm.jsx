@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStartShiftMutation } from "@/Redux Toolkit/features/shift/shiftApi";
 
 import {
@@ -30,6 +30,22 @@ export default function StartShiftForm({ open, onClose, branchId }) {
 
   const [startShift, { isLoading, error }] = useStartShiftMutation();
 
+  /* Reset form when dialog closes */
+
+  useEffect(() => {
+    if (!open) {
+      setOpeningCash("");
+      setOpeningCoins({
+        "1": 0,
+        "5": 0,
+        "10": 0,
+        "50": 0,
+        "100": 0,
+        "500": 0,
+      });
+    }
+  }, [open]);
+
   const handleCoinChange = (coin, value) => {
     setOpeningCoins((prev) => ({
       ...prev,
@@ -53,8 +69,7 @@ export default function StartShiftForm({ open, onClose, branchId }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-[480px]">
 
         <DialogHeader>
@@ -72,7 +87,7 @@ export default function StartShiftForm({ open, onClose, branchId }) {
           />
         </div>
 
-        {/* Opening coins */}
+        {/* Coins */}
         <div className="space-y-3 pt-3">
           <Label>Opening Coins</Label>
 
@@ -105,16 +120,12 @@ export default function StartShiftForm({ open, onClose, branchId }) {
             Cancel
           </Button>
 
-          <Button
-            onClick={handleSubmit}
-            disabled={isLoading}
-          >
+          <Button onClick={handleSubmit} disabled={isLoading}>
             {isLoading ? "Starting..." : "Start Shift"}
           </Button>
         </DialogFooter>
 
       </DialogContent>
-
     </Dialog>
   );
 }

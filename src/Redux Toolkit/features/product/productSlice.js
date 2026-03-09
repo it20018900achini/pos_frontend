@@ -5,7 +5,8 @@ import {
   updateProduct,
   deleteProduct,
   GetProductVariantsByBranch,
-  searchProducts
+  searchProducts,
+  GetProductsByStore
 } from './productThunks';
 import { getRecentOrdersByBranchPagin } from '../order/orderThunks';
 
@@ -44,6 +45,21 @@ const productSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+
+    .addCase(GetProductsByStore.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(GetProductsByStore.fulfilled, (state, action) => {
+      state.loading = false;
+      state.products = action.payload;
+    })
+    .addCase(GetProductsByStore.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.error.message;
+    })
+
+
 
       .addCase(getProductById.fulfilled, (state, action) => {
         state.product = action.payload;

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useGetBalanceSheetQuery } from "@/Redux Toolkit/features/accounting/accountingApi";
 import ContentLayout from "../../../Dashboard/ContentLayout";
+import { useSelector } from "react-redux";
 
 /* ===================== HELPERS ===================== */
 const computeTotal = (acc) =>
@@ -118,7 +119,7 @@ const SectionTable = ({ title, accounts, expandedMap, toggle }) => {
 /* ===================== MAIN COMPONENT ===================== */
 export default function BalanceSheet() {
   const [expandedMap, setExpandedMap] = useState({});
-
+const {selectedBranchId}=useSelector((state)=>state.user)
   const toggle = (id) => {
     setExpandedMap((prev) => ({ ...prev, [id]: !prev[id] }));
   };
@@ -131,6 +132,7 @@ export default function BalanceSheet() {
   const [endDate, setEndDate] = useState(() => new Date().toISOString().slice(0, 10));
 
   const { data, isLoading, isError, refetch } = useGetBalanceSheetQuery({
+    branchId:selectedBranchId,
     start: `${startDate}T00:00:00`,
     end: `${endDate}T23:59:59`,
   });

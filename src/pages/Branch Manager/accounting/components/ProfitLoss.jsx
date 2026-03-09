@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { useSelector } from "react-redux";
 
 /* ===================== HELPERS ===================== */
 
@@ -125,8 +126,8 @@ export default function ProfitLossReport() {
       return next;
     });
   };
-
-  const { data: report, isLoading, isError, refetch } = useGetProfitLossQuery({ start, end });
+const {selectedBranchId}=useSelector((state)=>state.user)
+  const { data: report, isLoading, isError, refetch } = useGetProfitLossQuery({selectedBranchId, start, end });
 
   if (isLoading) return <p>Loading Profit & Loss...</p>;
   if (isError) return <p>Error loading report.</p>;

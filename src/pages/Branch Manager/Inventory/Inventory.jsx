@@ -118,7 +118,6 @@ const Inventory = () => {
 
       {/* PAGE HEADER */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Inventory Management</h1>
 
         <div className="flex gap-2">
           <Button className="gap-2" onClick={() => setIsAddDialogOpen(true)}>
