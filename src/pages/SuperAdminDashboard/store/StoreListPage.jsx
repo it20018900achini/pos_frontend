@@ -4,6 +4,7 @@ import { Plus, Download, Filter } from "lucide-react";
 import StoreTable from "./StoreTable";
 import StoreDetailDrawer from "./StoreDetailDrawer";
 import { useToast } from "@/components/ui/use-toast";
+import ContentLayout from "../../Dashboard/ContentLayout";
 // import { useToast } from "../../hooks/use-toast";
 
 export default function StoreListPage() {
@@ -42,16 +43,10 @@ export default function StoreListPage() {
 
 
   return (
+    <ContentLayout title={"Stores"} subTitle={"Manage all registered stores and their status"}>
+      
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Stores</h2>
-          <p className="text-muted-foreground">
-            Manage all registered stores and their status
-          </p>
-        </div>
-       
-      </div>
+      
 
       <Card>
         <CardHeader>
@@ -75,5 +70,6 @@ export default function StoreListPage() {
         onEditStore={handleEditStore}
       />
     </div>
+    </ContentLayout>
   );
 } 

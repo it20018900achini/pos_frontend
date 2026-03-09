@@ -33,7 +33,7 @@ const StatCard = ({ title, value, icon, description, trend }) => (
   </Card>
 );
 
-export default function Dashboard() {
+export default function DashboardSuperAdmin() {
   const dispatch = useDispatch();
   const {
     dashboardSummary,

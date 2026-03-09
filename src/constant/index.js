@@ -1,6 +1,6 @@
 export const settings={
     // url:"https://pos-dsxh.onrender.com/",
-    businessName: "ABC Supermarket",
+    businessName: "ForkCodes",
     //  url:"https://pos-dsxh.onrender.com",
     //  ws:"wss://pos-dsxh.onrender.com",
      url:"http://localhost:5000",

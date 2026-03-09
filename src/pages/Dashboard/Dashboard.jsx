@@ -3,9 +3,11 @@ import { useSelector } from "react-redux";
 
 import Dashboard from "../Branch Manager/Dashboard/Dashboard";
 import  {DashboardStore}  from "../store/Dashboard";
+import SuperAdminDashboard from "../SuperAdminDashboard/SuperAdminDashboard";
+import DashboardSuperAdmin from "../SuperAdminDashboard/Dashboard";
 
 function DashboardMain() {
-  const { selectedBranchId } = useSelector((state) => state.user);
+  const {userProfile, selectedBranchId } = useSelector((state) => state.user);
 
   // Tabs: branch overview only if branch selected
 const branchTab = ()=><>
@@ -31,7 +33,9 @@ const storeTab = ()=><><DashboardStore /></>;
     <div className="p-4 space-y-4  ml-20 md:ml-0">
       {/* Simple Nav */}
       <div className="flex gap-2 mb-4">
-        {tabs.map((tab) => (
+        {
+        
+        userProfile?.role!=="SUPER_ADMIN"&&tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
@@ -47,7 +51,7 @@ const storeTab = ()=><><DashboardStore /></>;
       </div>
 
       {/* Render Active Overview */}
-      {activeComponent}
+      {userProfile?.role=="SUPER_ADMIN"?<DashboardSuperAdmin/>:activeComponent}
     </div>
   );
 }

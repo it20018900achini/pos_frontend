@@ -25,6 +25,7 @@ import { CheckCircle, XCircle, Eye, Clock } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { getAllStores, moderateStore } from "@/Redux Toolkit/features/store/storeThunks";
 import { formatDateTime } from "@/utils/formateDate";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
 export default function PendingRequestsPage() {
   const dispatch = useDispatch();
@@ -100,19 +101,15 @@ export default function PendingRequestsPage() {
 
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Pending Requests</h2>
-          <p className="text-muted-foreground">
-            Review and approve new store registration requests
-          </p>
-        </div>
-        <Badge variant="secondary" className="flex items-center gap-1">
+    <ContentLayout title={"Pending Requests"} subTitle={"Review and approve new store registration requests"} right={
+<Badge variant="secondary" className="flex items-center gap-1 border border-neutral-300">
           <Clock className="w-3 h-3" />
           {stores.length} Pending
         </Badge>
-      </div>
+
+    }>
+    <div className="space-y-6">
+     
 
       <Card>
         <CardHeader>
@@ -244,6 +241,6 @@ export default function PendingRequestsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </div></ContentLayout>
   );
 } 
