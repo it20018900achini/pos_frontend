@@ -3,8 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  fetchTransactions,
-  fetchAllTransactions,
+  fetchTransactionsByStore,
 } from "@/Redux Toolkit/features/transactions/transactionsSlice";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -53,7 +52,7 @@ function toCsv(rows) {
   ].join("\n");
 }
 
-export default function TransactionTablePagin() {
+export default function StoreTransactionTablePagin() {
   const dispatch = useDispatch();
 
   const {
@@ -65,18 +64,18 @@ export default function TransactionTablePagin() {
     allContent,
   } = useSelector((s) => s.transactions);
 
-  const { selectedBranchId } = useSelector((state) => state.user);
-  const branchId = selectedBranchId;
+  const { userProfile } = useSelector((state) => state.user);
+  const storeId = userProfile?.user?.store?.id;
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [pageSize, setPageSize] = useState(20);
 
   useEffect(() => {
-    if (branchId) {
+    if (storeId) {
       handleFetch(0, pageSize);
     }
-  }, [branchId]);
+  }, [storeId]);
 
   const buildDates = () => {
     const startIso = startDate ? `${startDate}T00:00:00` : null;
@@ -89,8 +88,8 @@ export default function TransactionTablePagin() {
     const { startIso, endIso } = buildDates();
 
     dispatch(
-      fetchTransactions({
-        branchId,
+      fetchTransactionsByStore({
+        storeId,
         start: startIso,
         end: endIso,
         page: p,
@@ -100,9 +99,11 @@ export default function TransactionTablePagin() {
   };
 
   const handleFetchAll = () => {
+    const { startIso, endIso } = buildDates();
+
     dispatch(
-      fetchTransactions({
-        branchId,
+      fetchTransactionsByStore({
+        storeId,
         
       })
     );
@@ -131,7 +132,7 @@ export default function TransactionTablePagin() {
   subTitle="View and manage all sales and purchase transactions"
     >
     <div className="max-w-7xl mx-auto p-6 space-y-6">
-
+test
       {/* Filters */}
       <Card>
         <CardHeader>

@@ -20,7 +20,7 @@ import Products from "../pages/store/Product/Products";
 import ProductVariantsPage from "../pages/store/ProductVariants/ProductVariantsPage";
 import Categories from "../pages/store/Category/Categories";
 import BrandsPage from "../pages/store/Brand/BrandsPage";
-import { Orders, Transactions } from "../pages/Branch Manager";
+import { Orders, StoreTransactions, Transactions } from "../pages/Branch Manager";
 import Refunds from "../pages/Branch Manager/Refunds/Refunds";
 import QuotationsPage from "../pages/Branch Manager/quotations/QuotationsPage";
 import Branches from "../pages/store/Branch/Branches";
@@ -105,6 +105,7 @@ const DashboardRoutes = () => {
           <Route path="store/orders/quotations" element={<QuotationsPage />} />
 
           <Route path="branch/transactions" element={<Transactions />} />
+          <Route path="store/transactions" element={<StoreTransactions />} />
 
 
           <Route path="branch/inventory" element={<Inventory />} />

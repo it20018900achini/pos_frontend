@@ -48,7 +48,30 @@ export const fetchTransactions = createAsyncThunk(
       params.append("size", size);
       const headers = getAuthHeaders();
 
-      const resp = await api.get(`/api/transactions?${params.toString()}`,{headers});
+      const resp = await api.get(`/api/branch/transactions/${branchId}?${params.toString()}`,{headers});
+      return resp.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response?.data || { message: err.message });
+    }
+  }
+);
+
+
+// fetch paged
+export const fetchTransactionsByStore = createAsyncThunk(
+  "transactions/fetchPagedTransaction",
+  async ({ storeId, startDate, endDate, paymentType, page = 0, size = 20 }, thunkAPI) => {
+    try {
+      const params = new URLSearchParams();
+      params.append("storeId", storeId); // comma-separated e.g. "1,2"
+      if (startDate) params.append("startDate", startDate);
+      if (endDate) params.append("endDate", endDate);
+      if (paymentType) params.append("paymentType", paymentType);
+      params.append("page", page);
+      params.append("size", size);
+      const headers = getAuthHeaders();
+
+      const resp = await api.get(`/api/transactions/store/${storeId}?${params.toString()}`,{headers});
       return resp.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data || { message: err.message });
@@ -100,6 +123,8 @@ const slice = createSlice({
   },
   extraReducers(builder) {
     builder
+
+
       .addCase(fetchTransactions.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -116,6 +141,39 @@ const slice = createSlice({
         state.loading = false;
         state.error = action.payload?.message || action.error?.message;
       })
+
+
+//////////////////////
+
+
+
+
+
+      .addCase(fetchTransactionsByStore.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTransactionsByStore.fulfilled, (state, action) => {
+  state.loading = false;
+  state.content = action.payload.content || [];
+  state.page = action.payload.number ?? 0;           // <-- use `number` from backend
+  state.size = action.payload.size ?? state.size;
+  state.totalElements = action.payload.totalElements ?? 0;
+  state.totalPages = action.payload.totalPages ?? 0;
+})
+      .addCase(fetchTransactionsByStore.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || action.error?.message;
+      })
+
+
+
+
+
+
+/////////////////////////
+
+
 
       .addCase(fetchAllTransactions.pending, (state) => {
         state.allLoading = true;

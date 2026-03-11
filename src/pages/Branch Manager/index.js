@@ -2,6 +2,7 @@
 export { default as Dashboard } from './Dashboard/Dashboard';
 export { default as Orders } from './Orders/Orders';
 export { default as Transactions } from './Transaction/Transactions';
+export { default as StoreTransactions } from './Transaction/StoreTransactionTablePagin';
 export { default as Inventory } from './Inventory/Inventory';
 // export { default as Employees } from './Employees/Employees';
 export { default as Customers } from './Customers/Customers';

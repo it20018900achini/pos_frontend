@@ -107,7 +107,8 @@ export const pathPermissions = (permissions = []) => {
   ]);
 
    addParentWithChildren(" Transactions", DollarSign, [
-    { name: "Transactions", path: "/dashboard/branch/transactions", icon: Archive, permission: "TRANSACTIONS" },
+    { name: "Branch Transactions", path: "/dashboard/branch/transactions", icon: Archive, permission: "TRANSACTIONS" },
+    { name: "Store Transactions", path: "/dashboard/store/transactions", icon: Archive, permission: "TRANSACTIONS" },
     ]);
 
   
