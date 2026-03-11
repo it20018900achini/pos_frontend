@@ -37,10 +37,10 @@ const getAuthHeaders = () => {
 // fetch paged
 export const fetchTransactions = createAsyncThunk(
   "transactions/fetchPaged",
-  async ({ branchIds, startDate, endDate, paymentType, page = 0, size = 20 }, thunkAPI) => {
+  async ({ branchId, startDate, endDate, paymentType, page = 0, size = 20 }, thunkAPI) => {
     try {
       const params = new URLSearchParams();
-      params.append("branchIds", branchIds); // comma-separated e.g. "1,2"
+      params.append("branchId", branchId); // comma-separated e.g. "1,2"
       if (startDate) params.append("startDate", startDate);
       if (endDate) params.append("endDate", endDate);
       if (paymentType) params.append("paymentType", paymentType);

@@ -55,8 +55,6 @@ function toCsv(rows) {
 export default function TransactionTablePagin() {
   const dispatch = useDispatch();
 
-  const { branch } = useSelector((state) => state.branch);
-  const branchId = branch?.id;
   const {
     loading,
     content,
@@ -67,18 +65,14 @@ export default function TransactionTablePagin() {
     allLoading,
     allContent,
   } = useSelector((s) => s.transactions);
-
+const {selectedBranchId}=useSelector((state)=>state.user)
+const branchId=selectedBranchId
   // filters
-  const [branchIds, setBranchIds] = useState(`${String(branchId)}`);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [paymentType, setPaymentType] = useState("");
   const [pageSize, setPageSize] = useState(20);
-  useEffect(() => {
-    if (branchId !== undefined) {
-      setBranchIds(String(branchId)); // convert number to string
-    }
-  }, [branchId]);
+  
   useEffect(() => {
     handleFetch(0, pageSize);
     // setBranchIds(branchId)
@@ -95,7 +89,7 @@ export default function TransactionTablePagin() {
     const { startIso, endIso } = buildDates();
     dispatch(
       fetchTransactions({
-        branchIds,
+        branchId,
         startDate: startIso,
         endDate: endIso,
         paymentType: paymentType || undefined,
@@ -109,7 +103,7 @@ export default function TransactionTablePagin() {
     const { startIso, endIso } = buildDates();
     dispatch(
       fetchAllTransactions({
-        branchIds,
+        branchId,
         startDate: startIso,
         endDate: endIso,
         paymentType: paymentType || undefined,
@@ -140,12 +134,7 @@ export default function TransactionTablePagin() {
 
 
           <div>
-            <Input
-              value={branchIds}
-              onChange={(e) => setBranchIds(e.target.value)}
-              placeholder="1,2"
-              className="hidden"
-            />
+           
             <label className="text-sm font-medium">Start Date</label>
             <Input
               type="date"
