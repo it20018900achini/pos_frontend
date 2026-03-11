@@ -3,9 +3,10 @@ import { apiSlice } from "@/Redux Toolkit/api/apiSlice";
 
 export const roleApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    getRoles: builder.query({
-      query: () => "/roles",
-      providesTags: ["Role"],
+
+   getRoles: builder.query({
+  query: ({ storeId }) => `/roles?storeId=${storeId}`,
+  providesTags: ["Role"],
     }),
     getRoleById: builder.query({
       query: (id) => `/roles/${id}`,

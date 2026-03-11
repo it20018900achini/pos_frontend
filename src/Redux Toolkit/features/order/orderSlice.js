@@ -142,20 +142,35 @@ const orderSlice = createSlice({
         state.orders = state.orders.filter((o) => o.id !== action.payload);
       })
 
+.addCase(getRecentOrdersByBranchPagin.fulfilled, (state, action) => {
+  const data = action.payload;
+
+  state.loading = false;
+  state.orders = data.content || [];
+
+  state.pageInfo = {
+    pageNumber: data.number ?? 0,
+    pageSize: data.size ?? 10,
+    totalPages: data.totalPages ?? 0,
+    totalElements: data.totalElements ?? 0,
+    first: data.first ?? false,
+    last: data.last ?? false,
+    numberOfElements: data.numberOfElements ?? 0,
+  };
+})
+
       // Recent Orders (pagination)
       .addCase(getRecentOrdersByBranchPagin.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(getRecentOrdersByBranchPagin.fulfilled, (state, action) => {
-        state.loading = false;
-        state.orders = action.payload.orders || [];
-        state.pageInfo = action.payload.pageInfo || null;
-      })
       .addCase(getRecentOrdersByBranchPagin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
+
+
+
 
 
 
@@ -165,6 +180,7 @@ const orderSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
+
       .addCase(getRecentOrdersByStorePagin.fulfilled, (state, action) => {
         state.loading = false;
         state.orders = action.payload.orders || [];

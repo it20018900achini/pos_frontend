@@ -20,6 +20,7 @@ import {
 import { storeAdminRole } from "../../../utils/userRole";
 import ContentLayout from "../../Dashboard/ContentLayout";
 import EmployeeSummaryCards from "./EmployeeSummaryCards";
+import StoreEmployeeForm from "./StoreEmployeeForm";
 
 export default function StoreEmployees() {
   const dispatch = useDispatch();
@@ -100,7 +101,7 @@ export default function StoreEmployees() {
             <DialogHeader>
               <DialogTitle>Add New Employee1</DialogTitle>
             </DialogHeader>-
-            <EmployeeForm
+            <StoreEmployeeForm
               onSubmit={handleAddEmployee}
               initialData={{
                 fullName: "",
@@ -118,7 +119,7 @@ export default function StoreEmployees() {
     }
     >
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="w-full flex justify-between items-center">
         {/* <h1 className="text-3xl font-bold tracking-tight">
           Employee Management1
         </h1> */}

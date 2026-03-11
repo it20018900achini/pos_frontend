@@ -46,7 +46,7 @@ export default function EmployeeSummaryCards({ employees = [] }) {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 w-full">
       {cards.map((card, index) => {
         const Icon = card.icon;
 

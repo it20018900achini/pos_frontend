@@ -1,11 +1,15 @@
 import { useState } from "react";
-import SalaryPayrollDialog from "./SalaryPayrollDialog";
-import { useGetSalariesByBranchQuery } from "../../../../Redux Toolkit/features/salary/salaryApi";
+import { useGetSalariesByBranchQuery } from "@/Redux Toolkit/features/salary/salaryApi";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import AddSalaryPayrollDialog from "./AddSalaryPayrollDialog";
+import { useSelector } from "react-redux";
+import SalaryPayrollDialog from "../components/payroll/SalaryPayrollDialog";
+import AddSalaryPayrollDialog from "../components/payroll/AddSalaryPayrollDialog";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
-export default function SalaryTable({ branchId }) {
+export default function SalaryTable() {
+    const {selectedBranchId}=useSelector((state)=>state.user)
+    const branchId=selectedBranchId;
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogOpenAdd, setDialogOpenAdd] = useState(false);
@@ -27,7 +31,10 @@ export default function SalaryTable({ branchId }) {
   };
 
   return (
-    <div className="w-full overflow-auto">
+     <ContentLayout
+      title="Employee Payroll"
+      subTitle="Manage employee salary configuration"
+    >
           <AddSalaryPayrollDialog
             open={dialogOpenAdd}
             setOpen={setDialogOpenAdd}
@@ -39,6 +46,7 @@ export default function SalaryTable({ branchId }) {
           </Button>
 
           <h2 className="text-lg font-semibold mb-4">Employee Salaries</h2>
+    <div className="w-full overflow-x-auto">
 
           <table className="w-full table-auto border">
             <thead className="bg-gray-100">
@@ -81,7 +89,7 @@ export default function SalaryTable({ branchId }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
 
       {selectedEmployeeId && (
         <SalaryPayrollDialog
@@ -90,6 +98,7 @@ export default function SalaryTable({ branchId }) {
           employeeId={selectedEmployeeId}
         />
       )}
-    </div>
+    
+    </ContentLayout>
   );
 }

@@ -43,6 +43,8 @@ import StoreRefunds from "../pages/Branch Manager/StoreRefunds/Refunds";
 import StoreListPage from "../pages/SuperAdminDashboard/store/StoreListPage";
 import StoreDetailsPage from "../pages/SuperAdminDashboard/store/StoreDetailsPage";
 import PendingRequestsPage from "../pages/SuperAdminDashboard/store/PendingRequestsPage";
+import EmployeeSalary from "../pages/Branch Manager/payroll/EmployeeSalary";
+import Payroll from "../pages/Branch Manager/payroll/Payroll";
 
 const DashboardRoutes = () => {
   
@@ -111,7 +113,9 @@ const DashboardRoutes = () => {
           <Route path="branch/inventory/suppliers" element={<Suppliers />} />
 
           
-          <Route path="branch/payroll" element={<PayrollPage />} />
+          <Route path="branch/employee/payroll-dashboard" element={<PayrollPage />} />
+          <Route path="branch/employee/salary" element={<EmployeeSalary />} />
+          <Route path="branch/employee/payroll" element={<Payroll />} />
           {/* <Route path="branch/salary/:branchId" element={<SalaryPage />} /> */}
 
           <Route path="settings" element={<Settings />} />

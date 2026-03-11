@@ -32,7 +32,7 @@ const schema = z.object({
   roles: z.string({ required_error: "Role is required" }),
 });
 
-export default function EmployeeForm({ initialData = {}, onSubmit }) {
+export default function StoreEmployeeForm({ initialData = {}, onSubmit }) {
     const { toast } = useToast();
   
   const dispatch = useDispatch();
@@ -68,7 +68,6 @@ export default function EmployeeForm({ initialData = {}, onSubmit }) {
       email: initialData?.email || "",
       phone: initialData?.phone || "",
       password: "",
-      roles: initialData?.roles || "",
     },
   });
 
@@ -81,10 +80,9 @@ export default function EmployeeForm({ initialData = {}, onSubmit }) {
         createBranchEmployee({
           employee: {
             ...data,
-            branchId: Number(selectedBranchId),
             storeId: storeId,
           },
-          branchId: selectedBranchId,
+          storeId: storeId,
           token,
         })
       ).unwrap();
@@ -142,38 +140,7 @@ export default function EmployeeForm({ initialData = {}, onSubmit }) {
         {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
       </div>
 
-      {/* Role */}
-      <div>
-        <Label>Role</Label>
-        <Select
-          value={watch("roles") || ""}
-          onValueChange={(val) => setValue("roles", val)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select role" />
-          </SelectTrigger>
-          <SelectContent>
-            {roles.map((role) => (
-              <SelectItem key={role.id} value={role.name}>
-                {role.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.roles && <p className="text-red-500 text-sm">{errors.roles.message}</p>}
 
-        {/* Permissions */}
-        {selectedRole?.permissions?.length > 0 && (
-          <div className="mt-2 p-2 bg-gray-50 rounded-md border max-h-[150px] overflow-y-auto">
-            <p className="font-medium text-gray-700">Permissions:</p>
-            <ul className="list-disc list-inside text-sm text-gray-600">
-              {selectedRole.permissions.map((perm, i) => (
-                <li key={i}>{perm.name}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
 
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Creating..." : "Create Employee"}

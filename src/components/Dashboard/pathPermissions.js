@@ -106,14 +106,11 @@ export const pathPermissions = (permissions = []) => {
     { name: "Store Refunds", path: "/dashboard/store/orders/refunds", icon: FileText, permission: "ORDERS" },
   ]);
 
-  /* ---------------- Transactions ---------------- */
-  if (permissions.includes("TRANSACTIONS")) {
-    NAV_LINKS.push({
-      name: "Transactions",
-      path: "/dashboard/branch/transactions",
-      icon: Settings,
-    });
-  }
+   addParentWithChildren(" Transactions", DollarSign, [
+    { name: "Transactions", path: "/dashboard/branch/transactions", icon: Archive, permission: "TRANSACTIONS" },
+    ]);
+
+  
 
   /* ---------------- Products ---------------- */
   addParentWithChildren("Products", ClipboardList, [
@@ -131,14 +128,20 @@ export const pathPermissions = (permissions = []) => {
     { name: "Suppliers", path: "/dashboard/branch/inventory/suppliers", icon: FileText, permission: "INVENTORY" },
   ]);
 
+  addParentWithChildren("Payroll", ClipboardList, [
+    { name: "Payroll Report", path: "/dashboard/branch/employee/payroll-dashboard", icon: Archive, permission: "PAYROLL" },
+    { name: "Employee Salary ", path: "/dashboard/branch/employee/salary", icon: FileText, permission: "PAYROLL" },
+    { name: "Payroll ", path: "/dashboard/branch/employee/payroll", icon: FileText, permission: "PAYROLL" },
+  ]);
+
   /* ---------------- Payroll ---------------- */
-  if (permissions.includes("PAYROLL")) {
-    NAV_LINKS.push({
-      name: "Payroll",
-      path: "/dashboard/branch/payroll",
-      icon: FileText,
-    });
-  }
+  // if (permissions.includes("PAYROLL")) {
+  //   NAV_LINKS.push({
+  //     name: "Payroll",
+  //     path: "/dashboard/branch/payroll",
+  //     icon: FileText,
+  //   });
+  // }
 
   /* ---------------- Settings ---------------- */
   addParentWithChildren("Settings", Settings, [

@@ -27,14 +27,7 @@ export const createStoreEmployee = createAsyncThunk(
       // 🔥 Normalize role → roles (backend expects Set<String>)
       const payload = {
         ...employee,
-        roles: employee.roles
-          ? employee.roles
-          : employee.role
-          ? [employee.role]
-          : [],
 
-        // optional cleanup
-        role: undefined,
       };
 
       const res = await api.post(
@@ -66,8 +59,7 @@ export const createBranchEmployee = createAsyncThunk(
   async ({ employee, branchId, token }, { rejectWithValue }) => {
     try {
       const payload = {
-        ...employee,
-        roles: employee.roles ? [employee.role] : [employee.role],
+        ...employee
       };
         
       const res = await api.post(

@@ -16,9 +16,13 @@ import {
   useGetRolesQuery,
   useDeleteRoleMutation,
 } from "@/Redux Toolkit/features/role/roleApi";
+import { useSelector } from "react-redux";
 
 const RoleList = ({ onEdit }) => {
-  const { data: roles, isLoading } = useGetRolesQuery();
+  const {userProfile}=useSelector((state)=>state.user)
+ 
+ const storeId=userProfile?.user?.store?.id
+ const { data: roles, isLoading } = useGetRolesQuery({ storeId });  
   const [deleteRole] = useDeleteRoleMutation();
 
   if (isLoading) {
