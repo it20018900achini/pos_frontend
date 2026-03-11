@@ -105,13 +105,13 @@ const slice = createSlice({
         state.error = null;
       })
       .addCase(fetchTransactions.fulfilled, (state, action) => {
-        state.loading = false;
-        state.content = action.payload.content || [];
-        state.page = action.payload.page ?? 0;
-        state.size = action.payload.size ?? state.size;
-        state.totalElements = action.payload.totalElements ?? 0;
-        state.totalPages = action.payload.totalPages ?? 0;
-      })
+  state.loading = false;
+  state.content = action.payload.content || [];
+  state.page = action.payload.number ?? 0;           // <-- use `number` from backend
+  state.size = action.payload.size ?? state.size;
+  state.totalElements = action.payload.totalElements ?? 0;
+  state.totalPages = action.payload.totalPages ?? 0;
+})
       .addCase(fetchTransactions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || action.error?.message;
