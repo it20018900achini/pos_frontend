@@ -96,7 +96,7 @@ export const getOrdersByBranch = createAsyncThunk(
       if (paymentType) params.push(`paymentType=${paymentType}`);
       if (status) params.push(`status=${status}`);
       const query = params.length ? `?${params.join('&')}` : '';
-      const res = await api.get(`/api/orders/branch/${branchId}/pagin/${query}`, { headers });
+      const res = await api.get(`/api/orders/branch/${branchId}/pagin${query}`, { headers });
       console.log('✅ Orders by branch response:', res.data);
       return res.data;
     } catch (err) {

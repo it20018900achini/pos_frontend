@@ -16,7 +16,7 @@ function Orders() {
       subTitle="orders"
     >
       
-      <RecentOrders branches={selectedBranchId ? branches.filter(b => b.id === selectedBranchId):branches} />
+      <RecentOrders  />
     </ContentLayout>
   );
 }
