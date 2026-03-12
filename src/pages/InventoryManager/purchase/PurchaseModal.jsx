@@ -94,7 +94,7 @@ const PurchaseModal = ({ open, onClose }) => {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Create Purchase</DialogTitle>
+          <DialogTitle>Create Purchase--</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -107,6 +107,7 @@ const PurchaseModal = ({ open, onClose }) => {
 
           {/* Items */}
           <div className="space-y-2">
+            {JSON.stringify(products)}
             {items.map((item, index) => (
               <PurchaseRow
                 key={index}

@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 
 import SettingsContent from "./components/SettingsContent";
 import ContentLayout from "../../Dashboard/ContentLayout";
+import { getStoreById } from "../../../Redux Toolkit/features/store/storeThunks";
 
 export default function Settings() {
   const dispatch = useDispatch();
   const { store, loading } = useSelector((state) => state.store);
-
+  const {userProfile}=useSelector((state)=>state.user)
+const storeId=userProfile?.user?.store?.id
   const [storeSettings, setStoreSettings] = useState({
     storeName: "",
     storeEmail: "",
@@ -23,8 +25,8 @@ export default function Settings() {
   });
 
   useEffect(() => {
-    dispatch(getStoreByAdmin());
-  }, [dispatch]);
+    dispatch(getStoreById(storeId));
+  }, [dispatch,storeId]);
 
   useEffect(() => {
     if (store) {
