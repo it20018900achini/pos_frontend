@@ -8,10 +8,15 @@ import PurchaseRow from "./PurchaseRow";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useGetProductVariantsByBranchQuery } from "../../../Redux Toolkit/features/product/productApi";
 
 const PurchaseModal = ({ open, onClose }) => {
   const dispatch = useDispatch();
-  const { products } = useSelector((state) => state.product); // adjust if different slice
+
+const {selectedBranchId}=useSelector((state)=>state.user)
+  const { data: products = [], isLoading, isError } =
+    useGetProductVariantsByBranchQuery(selectedBranchId);
+
 
   const [supplierId, setSupplierId] = useState("");
   const [items, setItems] = useState([
@@ -78,6 +83,7 @@ const PurchaseModal = ({ open, onClose }) => {
     const payload = {
       supplierId: Number(supplierId),
       totalAmount,
+      branchId:selectedBranchId,
       items: items.map((item) => ({
         productVariantId: Number(item.productVariantId),
         quantity: Number(item.quantity),
@@ -107,7 +113,7 @@ const PurchaseModal = ({ open, onClose }) => {
 
           {/* Items */}
           <div className="space-y-2">
-            {JSON.stringify(products)}
+            {/* {JSON.stringify(products)} */}
             {items.map((item, index) => (
               <PurchaseRow
                 key={index}

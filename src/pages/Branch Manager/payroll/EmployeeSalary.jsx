@@ -18,7 +18,6 @@ export default function SalaryTable() {
     skip: !branchId,
   });
 
-  if (isLoading) return <p>Loading salaries...</p>;
   if (!data?.length) return <p>No salaries found</p>;
 
   const handleEditClick = (employeeId) => {
@@ -32,6 +31,7 @@ export default function SalaryTable() {
 
   return (
      <ContentLayout
+     loadingSpinner={isLoading}
       title="Employee Payroll"
       subTitle="Manage employee salary configuration"
     >

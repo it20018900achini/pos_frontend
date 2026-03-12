@@ -1,7 +1,7 @@
 import api, { getAuthHeaders } from '@/utils/api2';
 
-export const fetchPurchases = async ({ page = 0, size = 10, search = '', from, to }) => {
-  const response = await api.get('/api/purchases/search', {
+export const fetchPurchases = async ({ branchId,page = 0, size = 10, search = '', from, to }) => {
+  const response = await api.get(`/api/purchases/search/branch/${branchId}`, {
     headers: getAuthHeaders(),
     params: { page, size, supplierKeyword: search, startDate: from, endDate: to },
   });

@@ -27,7 +27,8 @@ const PurchaseList = () => {
   const [search, setSearch] = useState("");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const [page, setPage] = useState(0);
-
+const {selectedBranchId}=useSelector((state)=>state.user)
+const branchId=selectedBranchId
   // Debounced fetch
   const debouncedFetch = useMemo(
     () =>
@@ -39,6 +40,7 @@ const PurchaseList = () => {
 
   useEffect(() => {
     debouncedFetch({
+      branchId,
       page,
       size: PAGE_SIZE,
       search,
@@ -47,7 +49,7 @@ const PurchaseList = () => {
     });
 
     return () => debouncedFetch.cancel();
-  }, [page, search, dateRange, debouncedFetch]);
+  }, [branchId,page, search, dateRange, debouncedFetch]);
 
   // Handlers
   const handleSearchChange = (e) => {
@@ -76,7 +78,7 @@ const PurchaseList = () => {
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Purchases</CardTitle>
+          <CardTitle>Purchases-</CardTitle>
           <Button onClick={() => setOpenCreate(true)}>+ New Purchase</Button>
         </CardHeader>
 
