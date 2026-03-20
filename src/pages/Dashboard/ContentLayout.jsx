@@ -11,7 +11,9 @@ const ContentLayout = ({
   children,
   loadingSpinner = false, // use prop to control spinner
 }) => {
-  const { userProfile, selectedBranchId } = useSelector((state) => state.user);
+
+
+  const { userProfile, selectedBranchId,branchLoading   } = useSelector((state) => state.user);
 
   // Show spinner if loadingSpinner prop is true
   
@@ -39,7 +41,15 @@ const ContentLayout = ({
               )}
               {subTitle && (
                 <p className="text-sm text-muted-foreground mt-1">
-                 <span className="border border-green-300 px-2 text-green-600 bg-green-200">{userProfile?.user?.roleBranchMap?.find(
+                 <span className=" relative border border-green-300 px-2 text-green-600 bg-green-200">
+                  {
+                    branchLoading&&<span class="absolute w-10 -left-4 top-1">
+  <div class="w-3 h-3 border-1 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+</span>
+                  }
+                  
+                
+                  {userProfile?.user?.roleBranchMap?.find(
       (b) => b.branchId === Number(selectedBranchId)
     )?.branchName}</span> {subTitle}
                 </p>
@@ -55,7 +65,8 @@ const ContentLayout = ({
         </div>
       )}
 
-  {loadingSpinner ? (
+
+  {loadingSpinner || branchLoading ? (
   <div
     className="flex items-center justify-center"
     style={{ minHeight: "calc(100vh - 200px)" }} // subtract 400px from full viewport height

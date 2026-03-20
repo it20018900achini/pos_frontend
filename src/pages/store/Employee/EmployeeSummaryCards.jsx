@@ -18,7 +18,7 @@ export default function EmployeeSummaryCards({ employees = [] }) {
 
   const managers = employees.filter((e) =>
     e.roleBranchMap?.some((rb) =>
-      rb.roles.includes("BRANCH_MANAGER")
+      rb.role=="BRANCH_MANAGER"
     )
   ).length;
 

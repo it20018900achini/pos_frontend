@@ -7,6 +7,7 @@ import {
   getUserById,
   logout,
 } from "./userThunks";
+import { switchBranch } from "../auth/authThunk";
 
 /* ---------------- LocalStorage Helpers ---------------- */
 
@@ -45,6 +46,9 @@ const initialState = {
   selectedUser: null,
 
   selectedBranchId: getStorage("selectedBranchId"),
+    branchLoading: false,   // ✅ ADD THIS
+
+
   startTimeStamp: defaultStart,
   endTimeStamp: defaultEnd,
 
@@ -100,6 +104,33 @@ const userSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
+
+
+.addCase(switchBranch.pending, (state) => {
+  state.branchLoading = true;
+})
+
+.addCase(switchBranch.fulfilled, (state, action) => {
+  state.branchLoading = false;
+
+  const branchId = action.meta.arg;
+  state.selectedBranchId = branchId;
+  setStorage("selectedBranchId", branchId);
+
+  if (action.payload?.user) {
+    state.userProfile = {
+      ...state.userProfile,
+      user: action.payload.user,
+    };
+  }
+})
+
+.addCase(switchBranch.rejected, (state, action) => {
+  state.branchLoading = false;
+  state.error = action.payload;
+})
+
+
       .addCase(getUserProfile.pending, (state) => {
         state.loading = true;
       })

@@ -1,9 +1,22 @@
 // store/auth/authSlice.ts
 import { createSlice } from "@reduxjs/toolkit";
-import { login, signup, forgotPassword, resetPassword, logoutThunk } from "./authThunk";
+import { login, signup, forgotPassword, resetPassword, logoutThunk, switchBranch } from "./authThunk";
 
 // Load persisted data from localStorage
-const persistedUser = localStorage.getItem("user");
+
+
+const persistedUserRaw = localStorage.getItem("user");
+let persistedUser = null;
+
+try {
+  if (persistedUserRaw && persistedUserRaw !== "undefined") {
+    persistedUser = JSON.parse(persistedUserRaw);
+  }
+} catch (err) {
+  console.warn("Failed to parse persisted user from localStorage:", err);
+  persistedUser = null;
+}
+
 const persistedToken = localStorage.getItem("jwt");
 
 const initialState = {
@@ -46,6 +59,34 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+
+
+//  .addCase(switchBranch.pending, (state) => {
+//     state.loading = true;
+//     state.error = null;
+//   })
+//   .addCase(switchBranch.fulfilled, (state, action) => {
+//   state.user = action.payload.user;
+//   state.token = action.payload.jwt;
+//   state.selectedBranchId = action.payload.user.selectedBranchId; // auth slice
+//   state.isAuthenticated = true;
+// })
+
+.addCase(switchBranch.fulfilled, (state, action) => {
+  state.token = action.payload.token; // ✅ use token, not jwt
+  state.user = action.payload.user;
+
+  localStorage.setItem("jwt", action.payload.token);
+  localStorage.setItem("user", JSON.stringify(action.payload.user));
+})
+  .addCase(switchBranch.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  })
+
+
+
+
       // ✅ SIGNUP
       .addCase(signup.pending, (state) => {
         state.loading = true;

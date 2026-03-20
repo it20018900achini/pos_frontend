@@ -40,7 +40,7 @@ const AuthGuard = ({ allowedRoles = [], children }) => {
   }
 
   // Check if user has the required role
-  if (allowedRoles.length && !allowedRoles.some((role) => userProfile.user.roles.includes(role))) {
+  if (allowedRoles.length && !allowedRoles.some((role) => userProfile.user.role==role)) {
     navigate("/unauthorized", { replace: true });
     return null;
   }

@@ -101,3 +101,54 @@ export const resetPassword = createAsyncThunk(
     }
   }
 );
+
+// ---------------- SWITCH BRANCH ----------------
+export const switchBranch = createAsyncThunk(
+  "auth/switchBranch",
+  async (branchId, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("jwt");
+      if (!token) throw new Error("No JWT found");
+
+      const res = await api.post(
+        `/auth/switch-branch?branchId=${branchId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // ✅ Backend returns { token, branchId }
+      const data = res.data;
+
+      // ------------------ HANDLE TOKEN ------------------
+      if (data?.token) {
+        // Update localStorage
+        localStorage.setItem("jwt", data.token);
+
+        // Update axios default header immediately
+        api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+      } else {
+        // If token not returned, keep old token in place
+        console.warn(
+          "[SWITCH BRANCH] No new token returned — keeping existing JWT"
+        );
+      }
+
+      // ------------------ HANDLE BRANCH ID ------------------
+      if (data?.branchId) {
+        localStorage.setItem("branchId", data.branchId);
+      }
+
+      return data;
+    } catch (err) {
+      console.error("[SWITCH BRANCH ERROR]", err);
+
+      return rejectWithValue(
+        err?.response?.data?.message || err?.message || "Switch branch failed"
+      );
+    }
+  }
+);

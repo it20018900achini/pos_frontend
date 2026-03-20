@@ -28,6 +28,13 @@ const Modal = ({ open, onClose, children }) => {
   );
 };
 
+const SkeletonItem = ({ wide = false }) => (
+  <div
+    className={`h-8 rounded-lg animate-pulse
+      bg-neutral-200 dark:bg-neutral-700
+      ${wide ? "w-full" : "w-3/4"}`}
+  />
+);
 /* -----------------------------
    Premium Glass Sidebar
 ------------------------------ */
@@ -37,7 +44,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { userProfile, selectedBranchId } = useSelector((state) => state.user);
+  const { userProfile, selectedBranchId,branchLoading } = useSelector((state) => state.user);
   const user = userProfile?.user;
 
   const selectedBranch =
@@ -118,66 +125,81 @@ const isSuperAdmin = userProfile?.role === "SUPER_ADMIN";
           </div>
 
           {/* NAVIGATION */}
-          <nav className="flex-1 overflow-y-auto">
-            <ul className="space-y-1">
-              {NAV_LINKS.map((link) => {
-                const Icon = link.icon;
-                const active = isParentActive(link);
-                const hasChildren = !!link.children;
-                const isOpen = openMenus[link.name];
+         <nav className="flex-1 overflow-y-auto">
+  {branchLoading ? (
+    <ul className="space-y-2 px-2">
+      {[...Array(8)].map((_, i) => (
+        <li key={i} className="flex items-center gap-3">
+          <div className="w-5 h-5 rounded bg-neutral-200 dark:bg-neutral-700 animate-pulse" />
+          {sidebarOpen && <SkeletonItem wide />}
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <ul className="space-y-1">
+      {NAV_LINKS.map((link) => {
+        const Icon = link.icon;
+        const active = isParentActive(link);
+        const hasChildren = !!link.children;
+        const isOpen = openMenus[link.name];
 
-                return (
-                  <li key={link.name} className="relative">
-                    <button
-                      onClick={() => handleParentClick(link)}
-                      className={`
-                        w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-300
-                        ${active
-                          ? "bg-gradient-to-r from-indigo-400/20 via-pink-400/20 to-purple-400/20 text-indigo-700 dark:text-indigo-300 shadow-inner"
-                          : "text-neutral-700 hover:bg-gradient-to-r hover:from-indigo-200/10 hover:via-pink-200/10 hover:to-purple-200/10 dark:text-neutral-300 dark:hover:bg-gradient-to-r dark:hover:from-indigo-400/10 dark:hover:via-pink-400/10 dark:hover:to-purple-400/10"
-                        }
-                      `}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
-                        {sidebarOpen && <span className="text-sm font-medium">{link.name}</span>}
-                      </div>
-                      {hasChildren && sidebarOpen && (isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />)}
-                    </button>
+        return (
+          <li key={link.name} className="relative">
+            <button
+              onClick={() => handleParentClick(link)}
+              disabled={branchLoading} // ✅ disable clicks
+              className={`
+                w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-300
+                ${active
+                  ? "bg-gradient-to-r from-indigo-400/20 via-pink-400/20 to-purple-400/20 text-indigo-700 dark:text-indigo-300 shadow-inner"
+                  : "text-neutral-700 hover:bg-gradient-to-r hover:from-indigo-200/10 hover:via-pink-200/10 hover:to-purple-200/10 dark:text-neutral-300 dark:hover:bg-gradient-to-r dark:hover:from-indigo-400/10 dark:hover:via-pink-400/10 dark:hover:to-purple-400/10"
+                }
+                ${branchLoading ? "opacity-50 cursor-not-allowed" : ""}
+              `}
+            >
+              <div className="flex items-center gap-3">
+                <Icon className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+                {sidebarOpen && <span className="text-sm font-medium">{link.name}</span>}
+              </div>
 
-                    {/* CHILDREN */}
-                    {hasChildren && isOpen && sidebarOpen && (
-                      <ul className="ml-9 mt-1 space-y-1">
-                        {link.children.map((child) => {
-                          const ChildIcon = child.icon;
-                          const activeChild = isExactActive(child.path);
+              {hasChildren && sidebarOpen && (
+                isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+              )}
+            </button>
 
-                          return (
-                            <li key={child.name}>
-                              <Link
-                                to={child.path}
-                                className={`
-                                  flex items-center gap-2 px-3 py-1 text-sm rounded transition-all duration-300
-                                  ${activeChild
-                                    ? "bg-gradient-to-r from-indigo-400/20 via-pink-400/20 to-purple-400/20 text-indigo-700 font-medium dark:text-indigo-300 shadow-inner"
-                                    : "text-neutral-600 hover:bg-gradient-to-r hover:from-indigo-200/10 hover:via-pink-200/10 hover:to-purple-200/10 dark:text-neutral-400 dark:hover:bg-gradient-to-r dark:hover:from-indigo-400/10 dark:hover:via-pink-400/10 dark:hover:to-purple-400/10"
-                                  }
-                                `}
-                              >
-                                <ChildIcon className="w-4 h-4" />
-                                {child.name}
-                              </Link>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </nav>
+            {/* CHILDREN */}
+            {hasChildren && isOpen && sidebarOpen && (
+              <ul className="ml-9 mt-1 space-y-1">
+                {link.children.map((child) => {
+                  const ChildIcon = child.icon;
+                  const activeChild = isExactActive(child.path);
 
+                  return (
+                    <li key={child.name}>
+                      <Link
+                        to={child.path}
+                        className={`
+                          flex items-center gap-2 px-3 py-1 text-sm rounded transition-all duration-300
+                          ${activeChild
+                            ? "bg-gradient-to-r from-indigo-400/20 via-pink-400/20 to-purple-400/20 text-indigo-700 font-medium dark:text-indigo-300 shadow-inner"
+                            : "text-neutral-600 hover:bg-gradient-to-r hover:from-indigo-200/10 hover:via-pink-200/10 hover:to-purple-200/10 dark:text-neutral-400 dark:hover:bg-gradient-to-r dark:hover:from-indigo-400/10 dark:hover:via-pink-400/10 dark:hover:to-purple-400/10"
+                          }
+                        `}
+                      >
+                        <ChildIcon className="w-4 h-4" />
+                        {child.name}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  )}
+</nav>
           {/* LOGOUT */}
           <Button
             variant="ghost"

@@ -122,9 +122,8 @@ const EmployeeTable = ({
 
         {/* Roles */}
         <div className={`flex flex-wrap gap-1 mt-1 ${selectedBranch == rb?.branchId ? "":"opacity-40"}`}>
-          {rb.roles.map((role) => (
-            <RoleBadge key={role} role={role} />
-          ))}
+            <RoleBadge  role={rb?.role} />
+      
         </div>
 
       </div>
