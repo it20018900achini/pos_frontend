@@ -21,7 +21,7 @@ const Modal = ({ open, onClose, children }) => {
         className="absolute inset-0 bg-black/30 dark:bg-black/50 backdrop-blur-sm transition-all"
         onClick={onClose}
       />
-      <div className="relative bg-white/30 dark:bg-neutral-900/30 backdrop-blur-lg border border-white/10 dark:border-neutral-700 rounded-2xl shadow-2xl w-80 max-h-[80vh] overflow-y-auto transition-all duration-300">
+      <div className="relative bg-white/80 dark:bg-neutral-900/30 backdrop-blur-lg border border-white/10 dark:border-neutral-700 rounded-2xl shadow-2xl w-80 max-h-[80vh] overflow-y-auto transition-all duration-300">
         {children}
       </div>
     </div>
