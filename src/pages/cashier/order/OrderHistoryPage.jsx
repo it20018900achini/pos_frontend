@@ -1,11 +1,14 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCw, SearchIcon } from "lucide-react";
-import POSHeader from "../components/POSHeader";
-import OrderTable from "./OrderTable";
-import RefundModal from "./RefundModal";
 import { useToast } from "@/components/ui/use-toast";
+
+import ContentLayout from "../../Dashboard/ContentLayout";
+import ReusableTable from "../../common/ReusableTable";
+import RefundModal from "./RefundModal";
+
 import { setCurrentOrder } from "@/Redux Toolkit/features/order/orderSlice";
 import { useGetOrdersByCashierQuery } from "@/Redux Toolkit/features/order/orderApi";
 
@@ -14,28 +17,25 @@ const OrderHistoryPage = () => {
   const { toast } = useToast();
   const { userProfile } = useSelector((state) => state.user);
 
-  const [showRefundModal, setShowRefundModal] = useState(false);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
-  const [searchText, setSearchText] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState({ field: "id", direction: "desc" });
+  const [showRefundModal, setShowRefundModal] = useState(false);
 
   const { data, isLoading, error, refetch } = useGetOrdersByCashierQuery(
     {
       cashierId: userProfile?.user.id,
       page,
       size,
-      sort: "id,desc",
-      start: startDate ? new Date(startDate).toISOString() : undefined,
-      end: endDate ? new Date(endDate).toISOString() : undefined,
-      search: searchText || undefined,
+      search,
+      sort: `${sort.field},${sort.direction}`,
     },
     { skip: !userProfile?.user.id }
   );
 
   const orders = data?.orders || [];
-  const pageInfo = data?.pageInfo || null;
+  const pageInfo = data?.pageInfo;
 
   useEffect(() => {
     if (error) {
@@ -47,111 +47,120 @@ const OrderHistoryPage = () => {
     }
   }, [error]);
 
-  const handleViewOrder = (order) => {
+  const selectedOrder = useSelector((state) => state.order.selectedOrder);
+
+  const handleViewOrder = (row) => {
+    const order = row.raw || row;
     dispatch(setCurrentOrder(order));
+    toast({ title: `Viewing Order #${order.id}` });
   };
 
-  const handleRefundOrder = (order) => {
+  const handleRefundOrder = (row) => {
+    const order = row.raw || row;
     dispatch(setCurrentOrder(order));
     setShowRefundModal(true);
   };
 
-  const handleRefundSubmit = (updatedOrder) => {
-    dispatch(setCurrentOrder(updatedOrder));
-    setShowRefundModal(false);
-    toast({ title: "Refund processed successfully" });
-  };
+    // Modern status badge
+  const renderStatus = (status) => {
+    const classes =
+      status === "REFUNDED"
+        ? "bg-red-100 text-red-800"
+        : status === "PAID" || status === "COMPLETED"
+        ? "bg-green-100 text-green-800"
+        : status === "PENDING"
+        ? "bg-yellow-100 text-yellow-800"
+        : "bg-gray-100 text-gray-800";
 
-  const handleRefresh = () => {
-    refetch();
-    toast({ title: "Refreshing orders..." });
+    return (
+      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${classes}`}>
+        {status}
+      </span>
+    );
   };
+  // Map orders for ReusableTable
+  const tableData = orders.map((o) => ({
+    id: o.id,
+    customerName: o.customer?.fullName || "Walk-in",
+    customerPhone: o.customer?.phone || "-",
+    customerEmail: o.customer?.email || "-",
+    items: o.items?.map((i) => `${i.product.name} x${i.quantity}`).join(", "),
+    payments: o.payments?.map((p) => `${p.paymentMethod}: ${p.amount}`).join(", "),
+    subtotal: o.subtotal,
+    discount: o.discountAmount,
+    netAmount: o.netAmount,
+    status: o.status, // render badge here
+    createdAt: new Date(o.createdAt).toLocaleString(),
+    raw: o, // keep full object for modal
+  }));
 
-  const resetFilters = () => {
-    setStartDate("");
-    setEndDate("");
-    setSearchText("");
-    setPage(0);
-  };
-
-  const nextPage = () => {
-    if (pageInfo && page < pageInfo.totalPages - 1) setPage(p => p + 1);
-  };
-
-  const prevPage = () => {
-    if (page > 0) setPage(p => p - 1);
-  };
-
-  const selectedOrder = useSelector(state => state.order.selectedOrder);
+  const columns = [
+    { header: "ID", accessor: "id", sortable: true },
+    { header: "Customer", accessor: "customerName",  },
+    { header: "Phone", accessor: "customerPhone" },
+    { header: "Email", accessor: "customerEmail" },
+    { header: "Items", accessor: "items" },
+    { header: "Payments", accessor: "payments" },
+    { header: "Subtotal", accessor: "subtotal",  },
+    { header: "Discount", accessor: "discount",  },
+    { header: "Net Amount", accessor: "netAmount",  },
+    { header: "Status", accessor: "status",  },
+    { header: "Date", accessor: "createdAt",  },
+  ];
 
   return (
-    <div className="h-full flex flex-col">
-      {/* <POSHeader /> */}
-
-      {/* Header */}
-      <div className="p-4 bg-card border-b flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Order History</h1>
-        <Button variant="outline" onClick={handleRefresh}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading && "animate-spin"}`} />
+    <ContentLayout
+      title="Order History"
+      subTitle="Server-side advanced table with full details"
+      right={
+        <Button onClick={() => { refetch(); toast({ title: "Refreshing..." }); }}>
           Refresh
         </Button>
-      </div>
-
-      {/* Filters */}
-      <div className="p-4 flex gap-2 flex-wrap">
-        <input type="datetime-local" value={startDate} onChange={e => setStartDate(e.target.value)} className="border p-1" />
-        <input type="datetime-local" value={endDate} onChange={e => setEndDate(e.target.value)} className="border p-1" />
-        <input type="text" placeholder="Search by ID or Customer" value={searchText} onChange={e => setSearchText(e.target.value)} className="border p-1" />
-        <select value={size} onChange={e => setSize(Number(e.target.value))} className="border p-1">
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={20}>20</option>
-          <option value={50}>50</option>
-        </select>
-        <Button size="sm" onClick={() => refetch()}>Filter</Button>
-        <Button size="sm" variant="outline" onClick={resetFilters}>Reset</Button>
-      </div>
-
-      {/* Orders Table */}
-      <div className="flex-1 p-4 overflow-auto">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-full">
-            <Loader2 className="animate-spin h-12 w-12" />
-            <p className="mt-2">Loading orders...</p>
-          </div>
-        ) : orders.length ? (
-          <>
-            <OrderTable
-              orders={orders}
-              handleViewOrder={handleViewOrder}
-              handleRefundOrder={handleRefundOrder}
-            />
-
-            {/* Pagination */}
-            <div className="flex justify-between mt-4">
-              <Button variant="outline" onClick={prevPage} disabled={page === 0}>Prev</Button>
-              <span>Page {page + 1} of {pageInfo?.totalPages || 1}</span>
-              <Button variant="outline" onClick={nextPage} disabled={pageInfo?.last}>Next</Button>
+      }
+    >
+      <div className="p-4">
+        <ReusableTable
+          columns={columns}
+          data={tableData}
+          loading={isLoading}
+          isServer={true}
+          page={page + 1} // ReusableTable expects 1-based page
+          totalPages={pageInfo?.totalPages || 1}
+          pageSize={size}
+          onPageChange={(p) => setPage(p - 1)} // convert back to 0-based
+          searchFields={["id", "customerName", "customerPhone", "customerEmail", "items"]}
+          onSearchChange={(text) => {
+            setSearch(text);
+            setPage(0);
+          }}
+          sort={sort}
+          onSortChange={(s) => {
+            setSort(s);
+            setPage(0);
+          }}
+          actions={(row) => (
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => handleViewOrder(row)}>
+                View
+              </Button>
+              <Button size="sm" variant="destructive" onClick={() => handleRefundOrder(row)}>
+                Refund
+              </Button>
             </div>
-          </>
-        ) : (
-          <div className="text-center text-muted-foreground">
-            <SearchIcon size={40} />
-            <p>No orders found</p>
-          </div>
+          )}
+          exportTypes={["csv", "excel", "pdf"]}
+        />
+
+        {selectedOrder && (
+          <RefundModal
+            open={showRefundModal}
+            order={selectedOrder}
+            onClose={() => setShowRefundModal(false)}
+            onSubmit={() => setShowRefundModal(false)}
+          />
         )}
       </div>
-
-      {/* Refund Modal */}
-      {selectedOrder && (
-        <RefundModal
-          open={showRefundModal}
-          order={selectedOrder}
-          onClose={() => setShowRefundModal(false)}
-          onSubmit={handleRefundSubmit}
-        />
-      )}
-    </div>
+    </ContentLayout>
   );
 };
 
