@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FileText, FileSpreadsheet, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, FileText, FileSpreadsheet } from "lucide-react";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -45,6 +45,7 @@ const ReusableTable = ({
   /** SORT */
   const handleSort = (col) => {
     if (!col.sortable) return;
+
     if (isServer) {
       let direction = "asc";
       if (sort?.field === col.accessor) direction = sort.direction === "asc" ? "desc" : "asc";
@@ -56,6 +57,7 @@ const ReusableTable = ({
   const filteredData = useMemo(() => {
     if (isServer) return data;
     let temp = data;
+
     if (search && searchFields) {
       temp = temp.filter((row) =>
         searchFields.some((field) =>
@@ -63,6 +65,7 @@ const ReusableTable = ({
         )
       );
     }
+
     return temp;
   }, [data, search, searchFields, isServer]);
 
@@ -93,10 +96,9 @@ const ReusableTable = ({
     }
   };
 
-  /** STATUS BADGES WITH LIGHT/DARK */
+  /** STATUS BADGES */
   const renderStatusBadge = (value) => {
     let base = "px-2 py-1 rounded-full text-sm font-semibold ";
-
     switch (value) {
       case "REFUNDED":
         base += "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100";
@@ -111,11 +113,10 @@ const ReusableTable = ({
       default:
         base += "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
     }
-
     return <span className={base}>{value}</span>;
   };
 
-  /** ROW BACKGROUND BASED ON STATUS & DARK MODE */
+  /** ROW CLASS BY STATUS */
   const rowClassByStatus = (status) => {
     switch (status) {
       case "REFUNDED":
@@ -130,11 +131,51 @@ const ReusableTable = ({
     }
   };
 
+  /** PAGINATION COMPONENT */
+  const renderPagination = () => {
+    const isSinglePage = totalPages <= 1;
+
+    return (
+      <div className="flex flex-wrap items-center justify-end gap-2 mt-3">
+        <Button
+          size="sm"
+          disabled={isSinglePage || page <= 0}
+          onClick={() => onPageChange(0)}
+        >
+          {"<<"} First
+        </Button>
+        <Button
+          size="sm"
+          disabled={isSinglePage || page <= 0}
+          onClick={() => onPageChange(page - 1)}
+        >
+          Prev
+        </Button>
+        <span className="px-2 text-sm font-medium">
+          Page {Math.min(page + 1, totalPages || 1)} of {totalPages || 1}
+        </span>
+        <Button
+          size="sm"
+          disabled={isSinglePage || page + 1 >= totalPages}
+          onClick={() => onPageChange(page + 1)}
+        >
+          Next
+        </Button>
+        <Button
+          size="sm"
+          disabled={isSinglePage || page + 1 >= totalPages}
+          onClick={() => onPageChange(totalPages - 1)}
+        >
+          Last {">>"}
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4">
-
       {/* Search + Export */}
-      <div className="flex justify-between">
+      <div className="flex flex-wrap justify-between items-center gap-2">
         <Input
           placeholder="Search..."
           value={search}
@@ -144,22 +185,26 @@ const ReusableTable = ({
           }}
           className="max-w-xs"
         />
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {exportTypes.includes("csv") && <Button size="sm" onClick={() => exportData("csv")}>CSV</Button>}
           {exportTypes.includes("excel") && <Button size="sm" onClick={() => exportData("excel")}>Excel</Button>}
           {exportTypes.includes("pdf") && <Button size="sm" onClick={() => exportData("pdf")}>PDF</Button>}
         </div>
       </div>
-
-      {/* TABLE */}
-      <ShadTable className="overflow-x-auto rounded-lg shadow-md bg-white dark:bg-gray-900">
+{/* Summary */}
+<div className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+  Showing {filteredData.length ? page * pageSize + 1 : 0} -{' '}
+  {Math.min((page + 1) * pageSize, filteredData.length)} of {filteredData.length}
+</div>
+      {/* Table */}
+      <ShadTable className="overflow-x-auto rounded-lg shadow-lg bg-white dark:bg-gray-900">
         <TableHeader>
           <TableRow>
             {columns.map((col) => (
               <TableHead
                 key={col.accessor}
                 onClick={() => handleSort(col)}
-                className={col.sortable ? "cursor-pointer" : ""}
+                className={col.sortable ? "cursor-pointer select-none" : ""}
               >
                 <div className="flex items-center gap-1">
                   {col.header}
@@ -191,7 +236,7 @@ const ReusableTable = ({
         <TableBody>
           {loading ? (
             <TableRow>
-              <TableCell colSpan={columns.length + 1} className="text-center">
+              <TableCell colSpan={columns.length + (actions ? 1 : 0)} className="text-center py-4">
                 Loading...
               </TableCell>
             </TableRow>
@@ -208,20 +253,16 @@ const ReusableTable = ({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length + 1} className="text-center">
-                No data
+              <TableCell colSpan={columns.length + (actions ? 1 : 0)} className="text-center py-4">
+                No data available
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </ShadTable>
 
-      {/* PAGINATION */}
-      <div className="flex justify-end gap-2">
-        <Button disabled={page === 0} onClick={() => onPageChange(page - 1)}>Prev</Button>
-        <span>Page {page + 1} / {totalPages}</span>
-        <Button disabled={page + 1 >= totalPages} onClick={() => onPageChange(page + 1)}>Next</Button>
-      </div>
+      {/* Pagination */}
+      {renderPagination()}
     </div>
   );
 };
