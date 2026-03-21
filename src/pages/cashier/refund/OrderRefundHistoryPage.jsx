@@ -14,7 +14,6 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 
 import {
-  SearchIcon,
   Loader2,
   RefreshCw,
   Download,
@@ -22,7 +21,6 @@ import {
   EyeIcon,
 } from "lucide-react";
 
-import POSHeader from "../components/POSHeader";
 import ReusableTable from "../../common/ReusableTable";
 import OrderDetails from "./OrderDetails/OrderDetails";
 
@@ -34,50 +32,46 @@ const OrderRefundHistoryPage = () => {
   const dispatch = useDispatch();
   const { toast } = useToast();
   const { userProfile } = useSelector((state) => state.user);
-  const { refunds, pageInfo, loading, error } = useSelector(
-    (state) => state.refund
-  );
+  const { refunds, pageInfo, loading, error } = useSelector((state) => state.refund);
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderDetailsDialog, setShowOrderDetailsDialog] = useState(false);
+  const [sort, setSort] = useState(null);
 
-  // Pagination & filters
-  const [page, setPage] = useState(0);
-  const [size, setSize] = useState(10);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [searchText, setSearchText] = useState("");
-
-  // Load Orders
-  const loadOrders = (start = startDate, end = endDate, search = searchText) => {
+  /** Load orders based on filters */
+  const loadOrders = ({ startDate, endDate, search, status, paymentType, pageSize }, page = 0) => {
     if (!userProfile?.user?.id) return;
+
     dispatch(
       getRefundsByCashier({
         cashierId: userProfile.user.id,
         page,
-        size,
-        sort: "id,desc",
-        start,
-        end,
+        size: pageSize,
+        sort: sort ? `${sort.field},${sort.direction}` : "id,desc",
+        start: startDate || undefined,
+        end: endDate || undefined,
         search: search || undefined,
+        status: status || undefined,
+        paymentType: paymentType || undefined,
       })
     );
   };
 
   useEffect(() => {
-    if (userProfile?.user?.id) loadOrders();
-  }, [userProfile, page, size]);
+    if (userProfile?.user?.id) loadOrders({ pageSize: 10 });
+  }, [userProfile, sort]);
 
   useEffect(() => {
     if (error) {
       toast({
-        title: "Error Loading Orders",
+        title: "Error Loading Refunds",
         description: error,
         variant: "destructive",
       });
     }
   }, [error]);
 
+  /** Table actions */
   const handleViewOrder = (refund) => {
     setSelectedOrder(refund);
     setShowOrderDetailsDialog(true);
@@ -88,23 +82,7 @@ const OrderRefundHistoryPage = () => {
     await handleDownloadOrderPDF(selectedOrder, toast);
   };
 
-  const handleRefreshOrders = () => {
-    loadOrders();
-    toast({
-      title: "Refreshing Orders",
-      description: "Please wait...",
-    });
-  };
-
-  const resetFilters = () => {
-    setStartDate("");
-    setEndDate("");
-    setSearchText("");
-    setPage(0);
-    loadOrders("", "", "");
-  };
-
-  // Columns for ReusableTable
+  /** Columns for ReusableTable */
   const columns = [
     { header: "Refund ID", accessor: "id", sortable: true },
     { header: "Order ID", accessor: "orderId", sortable: true },
@@ -115,7 +93,7 @@ const OrderRefundHistoryPage = () => {
     { header: "Status", accessor: "status", type: "status", sortable: true },
   ];
 
-  // Transform refunds to match ReusableTable
+  /** Transform refunds for table */
   const tableData = refunds.map((r) => ({
     id: r.id,
     orderId: r.order?.id || "-",
@@ -124,128 +102,73 @@ const OrderRefundHistoryPage = () => {
     totalAmount: `LKR ${Number(r.totalAmount || 0).toFixed(2)}`,
     paymentType: r.paymentType || "CASH",
     status: r.status || "REFUNDED",
-    original: r, // keep original for actions
+    original: r,
   }));
 
   return (
-    <ContentLayout loadingSpinner={loading} title={"Refund History"} subTitle={"Showing the latest refund records with pagination and search."} right={
-   <Button variant="outline" onClick={handleRefreshOrders} disabled={loading}>
+    <ContentLayout
+      loadingSpinner={loading}
+      title={"Refund History"}
+      subTitle={"View, filter, and paginate refund records."}
+      right={
+        <Button variant="outline" onClick={() => loadOrders({ pageSize: 10 })} disabled={loading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           Refresh
         </Button>
-    }>    <div className="h-full flex flex-col">
-      {/* <POSHeader /> */}
-
-    
-      {/* Filters */}
-      <div className="p-4 md:flex gap-2 items-center flex-wrap">
-        <input
-          type="datetime-local"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className="border p-1 m-1"
-        />
-        <input
-          type="datetime-local"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          className="border p-1 m-1"
-        />
-        <input
-          type="text"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          className="border p-1 m-1"
-          placeholder="Search by ID or Customer"
-        />
-
-        <select
-          value={size}
-          onChange={(e) => setSize(Number(e.target.value))}
-          className="border p-1 m-1"
-        >
-          <option value={5}>5 per page</option>
-          <option value={10}>10 per page</option>
-          <option value={20}>20 per page</option>
-          <option value={50}>50 per page</option>
-        </select>
-
-        <Button onClick={() => loadOrders()} disabled={loading} size="sm" className="m-1">
-          Filter
-        </Button>
-        <Button variant="outline" onClick={resetFilters} disabled={loading} size="sm" className="m-1">
-          Reset
-        </Button>
-      </div>
-
-      {/* Main Table */}
-      <div className="flex-1 p-4 overflow-auto">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+      }
+    >
+      <div className="h-full flex flex-col p-4">
+        {loading && tableData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
             <Loader2 className="animate-spin h-16 w-16 text-primary" />
             <p className="mt-4">Loading refunds...</p>
           </div>
-        ) : tableData.length > 0 ? (
+        ) : (
           <ReusableTable
             columns={columns}
             data={tableData}
             loading={loading}
             actions={(row) => (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleViewOrder(row.original)}
-              >
+              <Button variant="ghost" size="icon" onClick={() => handleViewOrder(row.original)}>
                 <EyeIcon className="h-4 w-4" />
               </Button>
             )}
             isServer={true}
-            page={page}
+            page={pageInfo?.currentPage || 0}
             totalPages={pageInfo?.totalPages || 1}
-            onPageChange={setPage}
-            onSearchChange={(search) => {
-              setSearchText(search);
-              setPage(0);
-              loadOrders(startDate, endDate, search);
-            }}
+            sort={sort}
+            onSortChange={(newSort) => setSort(newSort)}
+            onPageChange={(newPage) => loadOrders({ pageSize: pageInfo?.pageSize || 10 }, newPage)}
+            onFilter={(filters) => loadOrders(filters, 0)}
           />
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-            <SearchIcon size={48} strokeWidth={1} />
-            <p className="mt-4">No refunds found</p>
-            <p className="text-sm">Try refreshing or adjusting filters</p>
-          </div>
         )}
+
+        {/* Order Details Modal */}
+        <Dialog open={showOrderDetailsDialog} onOpenChange={setShowOrderDetailsDialog}>
+          {selectedOrder && (
+            <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Order Refund Details - Invoice</DialogTitle>
+              </DialogHeader>
+
+              <OrderDetails selectedOrder={selectedOrder} />
+
+              <DialogFooter className="gap-2">
+                <Button variant="outline" onClick={handleDownloadPDF}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PDF
+                </Button>
+
+                <Button>
+                  <PrinterIcon className="h-4 w-4 mr-2" />
+                  Print Invoice
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          )}
+        </Dialog>
       </div>
-
-      {/* Order Details Modal */}
-      <Dialog open={showOrderDetailsDialog} onOpenChange={setShowOrderDetailsDialog}>
-        {selectedOrder && (
-          <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Order Refund Details - Invoice</DialogTitle>
-            </DialogHeader>
-
-            <OrderDetails selectedOrder={selectedOrder} />
-
-            <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={handleDownloadPDF}>
-                <Download className="h-4 w-4 mr-2" />
-                Download PDF
-              </Button>
-
-              <Button 
-              // onClick={() => handlePrintInvoice(selectedOrder)}
-              >
-                <PrinterIcon className="h-4 w-4 mr-2" />
-                Print Invoice
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        )}
-      </Dialog>
-    </div></ContentLayout>
-
+    </ContentLayout>
   );
 };
 

@@ -11,11 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, FileText, FileSpreadsheet } from "lucide-react";
-import { saveAs } from "file-saver";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 const ReusableTable = ({
   columns = [],
@@ -28,73 +24,42 @@ const ReusableTable = ({
   page = 0,
   totalPages = 1,
   onPageChange = () => {},
-  onSearchChange = () => {},
+  onFilter = () => {}, // This will be called when filter button clicked
   sort = null,
   onSortChange = () => {},
-
-  // CLIENT MODE
-  isClient = false,
-  pageSize = 10,
-  searchFields = null,
-
-  fetchAllData = null,
-  exportTypes = ["csv", "excel", "pdf"],
 }) => {
-  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState({
+    startDate: "",
+    endDate: "",
+    search: "",
+    status: "",
+    paymentType: "",
+    pageSize: 10,
+  });
 
   /** SORT */
   const handleSort = (col) => {
     if (!col.sortable) return;
-
-    if (isServer) {
-      let direction = "asc";
-      if (sort?.field === col.accessor) direction = sort.direction === "asc" ? "desc" : "asc";
-      onSortChange({ field: col.accessor, direction });
-    }
+    let direction = "asc";
+    if (sort?.field === col.accessor) direction = sort.direction === "asc" ? "desc" : "asc";
+    onSortChange({ field: col.accessor, direction });
   };
 
   /** CLIENT FILTER */
   const filteredData = useMemo(() => {
     if (isServer) return data;
-    let temp = data;
 
-    if (search && searchFields) {
+    let temp = data;
+    if (filters.search) {
       temp = temp.filter((row) =>
-        searchFields.some((field) =>
-          String(row[field]).toLowerCase().includes(search.toLowerCase())
-        )
+        columns.some((col) => String(row[col.accessor]).toLowerCase().includes(filters.search.toLowerCase()))
       );
     }
+    if (filters.status) temp = temp.filter((row) => row.status === filters.status);
+    if (filters.paymentType) temp = temp.filter((row) => row.paymentType === filters.paymentType);
 
     return temp;
-  }, [data, search, searchFields, isServer]);
-
-  /** EXPORT */
-  const exportData = async (type) => {
-    let exportRows = filteredData;
-    if (fetchAllData) exportRows = await fetchAllData();
-
-    const headers = columns.map((c) => c.header);
-    const rows = exportRows.map((r) => columns.map((c) => r[c.accessor]));
-
-    if (type === "csv") {
-      const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
-      saveAs(new Blob([csv]), "data.csv");
-    }
-
-    if (type === "excel") {
-      const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Sheet");
-      XLSX.writeFile(wb, "data.xlsx");
-    }
-
-    if (type === "pdf") {
-      const doc = new jsPDF();
-      doc.autoTable({ head: [headers], body: rows });
-      doc.save("data.pdf");
-    }
-  };
+  }, [data, filters, columns, isServer]);
 
   /** STATUS BADGES */
   const renderStatusBadge = (value) => {
@@ -137,35 +102,19 @@ const ReusableTable = ({
 
     return (
       <div className="flex flex-wrap items-center justify-end gap-2 mt-3">
-        <Button
-          size="sm"
-          disabled={isSinglePage || page <= 0}
-          onClick={() => onPageChange(0)}
-        >
+        <Button size="sm" disabled={isSinglePage || page <= 0} onClick={() => onPageChange(0)}>
           {"<<"} First
         </Button>
-        <Button
-          size="sm"
-          disabled={isSinglePage || page <= 0}
-          onClick={() => onPageChange(page - 1)}
-        >
+        <Button size="sm" disabled={isSinglePage || page <= 0} onClick={() => onPageChange(page - 1)}>
           Prev
         </Button>
         <span className="px-2 text-sm font-medium">
           Page {Math.min(page + 1, totalPages || 1)} of {totalPages || 1}
         </span>
-        <Button
-          size="sm"
-          disabled={isSinglePage || page + 1 >= totalPages}
-          onClick={() => onPageChange(page + 1)}
-        >
+        <Button size="sm" disabled={isSinglePage || page + 1 >= totalPages} onClick={() => onPageChange(page + 1)}>
           Next
         </Button>
-        <Button
-          size="sm"
-          disabled={isSinglePage || page + 1 >= totalPages}
-          onClick={() => onPageChange(totalPages - 1)}
-        >
+        <Button size="sm" disabled={isSinglePage || page + 1 >= totalPages} onClick={() => onPageChange(totalPages - 1)}>
           Last {">>"}
         </Button>
       </div>
@@ -174,28 +123,63 @@ const ReusableTable = ({
 
   return (
     <div className="space-y-4">
-      {/* Search + Export */}
-      <div className="flex flex-wrap justify-between items-center gap-2">
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <input
+          type="datetime-local"
+          value={filters.startDate}
+          onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+          className="border p-1 m-1"
+          placeholder="Start Date"
+        />
+        <input
+          type="datetime-local"
+          value={filters.endDate}
+          onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+          className="border p-1 m-1"
+          placeholder="End Date"
+        />
         <Input
           placeholder="Search..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            if (isServer) onSearchChange(e.target.value);
-          }}
+          value={filters.search}
+          onChange={(e) => setFilters({ ...filters, search: e.target.value })}
           className="max-w-xs"
         />
-        <div className="flex gap-2 flex-wrap">
-          {exportTypes.includes("csv") && <Button size="sm" onClick={() => exportData("csv")}>CSV</Button>}
-          {exportTypes.includes("excel") && <Button size="sm" onClick={() => exportData("excel")}>Excel</Button>}
-          {exportTypes.includes("pdf") && <Button size="sm" onClick={() => exportData("pdf")}>PDF</Button>}
-        </div>
+        <select
+          value={filters.status}
+          onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+          className="border p-1 m-1"
+        >
+          <option value="">All Status</option>
+          <option value="REFUNDED">Refunded</option>
+          <option value="PAID">Paid</option>
+          <option value="PENDING">Pending</option>
+          <option value="COMPLETED">Completed</option>
+        </select>
+        <select
+          value={filters.paymentType}
+          onChange={(e) => setFilters({ ...filters, paymentType: e.target.value })}
+          className="border p-1 m-1"
+        >
+          <option value="">All Payment Types</option>
+          <option value="CASH">Cash</option>
+          <option value="CARD">Card</option>
+        </select>
+        <select
+          value={filters.pageSize}
+          onChange={(e) => setFilters({ ...filters, pageSize: Number(e.target.value) })}
+          className="border p-1 m-1"
+        >
+          <option value={5}>5 per page</option>
+          <option value={10}>10 per page</option>
+          <option value={20}>20 per page</option>
+          <option value={50}>50 per page</option>
+        </select>
+        <Button size="sm" onClick={() => onFilter(filters)}>
+          Filter
+        </Button>
       </div>
-{/* Summary */}
-<div className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-  Showing {filteredData.length ? page * pageSize + 1 : 0} -{' '}
-  {Math.min((page + 1) * pageSize, filteredData.length)} of {filteredData.length}
-</div>
+
       {/* Table */}
       <ShadTable className="overflow-x-auto rounded-lg shadow-lg bg-white dark:bg-gray-900">
         <TableHeader>
@@ -212,14 +196,14 @@ const ReusableTable = ({
                     <>
                       <ChevronUp
                         className={`w-3 h-3 ${
-                          isServer && sort?.field === col.accessor && sort?.direction === "asc"
+                          sort?.field === col.accessor && sort?.direction === "asc"
                             ? "text-blue-600 dark:text-blue-400"
                             : "text-gray-400 dark:text-gray-300"
                         }`}
                       />
                       <ChevronDown
                         className={`w-3 h-3 ${
-                          isServer && sort?.field === col.accessor && sort?.direction === "desc"
+                          sort?.field === col.accessor && sort?.direction === "desc"
                             ? "text-blue-600 dark:text-blue-400"
                             : "text-gray-400 dark:text-gray-300"
                         }`}
