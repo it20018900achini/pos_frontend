@@ -43,7 +43,6 @@ const ReusableTable = ({
     if (sort?.field === col.accessor) {
       direction = sort.direction === "asc" ? "desc" : "asc";
     }
-
     onSortChange({ field: col.accessor, direction });
   };
 
