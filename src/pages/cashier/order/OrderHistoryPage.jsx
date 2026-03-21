@@ -120,6 +120,7 @@ const OrderHistoryPage = () => {
     >
       <div className="p-4">
         <ReusableTable
+        enableSearch={true}
           columns={columns}
           data={tableData}
           loading={isLoading}

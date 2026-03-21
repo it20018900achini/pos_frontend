@@ -34,33 +34,45 @@ const OrderRefundHistoryPage = () => {
   const { userProfile } = useSelector((state) => state.user);
   const { refunds, pageInfo, loading, error } = useSelector((state) => state.refund);
 
+  /** ----------------- FILTER STATE (GLOBAL) ----------------- */
+  const [filters, setFilters] = useState({
+    startDate: "",
+    endDate: "",
+    search: "",
+    status: "",
+    paymentType: "",
+    pageSize: 10,
+  });
+
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderDetailsDialog, setShowOrderDetailsDialog] = useState(false);
   const [sort, setSort] = useState(null);
 
-  /** Load orders based on filters */
-  const loadOrders = ({ startDate, endDate, search, status, paymentType, pageSize }, page = 0) => {
+  /** ----------------- LOAD ORDERS ----------------- */
+  const loadOrders = (customFilters = filters, page = 0) => {
     if (!userProfile?.user?.id) return;
 
     dispatch(
       getRefundsByCashier({
         cashierId: userProfile.user.id,
         page,
-        size: pageSize,
+        size: customFilters.pageSize,
         sort: sort ? `${sort.field},${sort.direction}` : "id,desc",
-        start: startDate || undefined,
-        end: endDate || undefined,
-        search: search || undefined,
-        status: status || undefined,
-        paymentType: paymentType || undefined,
+        start: customFilters.startDate || undefined,
+        end: customFilters.endDate || undefined,
+        search: customFilters.search || undefined,
+        status: customFilters.status || undefined,
+        paymentType: customFilters.paymentType || undefined,
       })
     );
   };
 
+  /** ----------------- INITIAL LOAD ----------------- */
   useEffect(() => {
-    if (userProfile?.user?.id) loadOrders({ pageSize: 10 });
+    if (userProfile?.user?.id) loadOrders(filters, 0);
   }, [userProfile, sort]);
 
+  /** ----------------- ERROR HANDLING ----------------- */
   useEffect(() => {
     if (error) {
       toast({
@@ -71,7 +83,7 @@ const OrderRefundHistoryPage = () => {
     }
   }, [error]);
 
-  /** Table actions */
+  /** ----------------- TABLE ACTIONS ----------------- */
   const handleViewOrder = (refund) => {
     setSelectedOrder(refund);
     setShowOrderDetailsDialog(true);
@@ -82,7 +94,11 @@ const OrderRefundHistoryPage = () => {
     await handleDownloadOrderPDF(selectedOrder, toast);
   };
 
-  /** Columns for ReusableTable */
+  const handleRefresh = () => {
+    loadOrders(filters, pageInfo?.number ?? 0);
+  };
+
+  /** ----------------- TABLE COLUMNS ----------------- */
   const columns = [
     { header: "Refund ID", accessor: "id", sortable: true },
     { header: "Order ID", accessor: "orderId", sortable: true },
@@ -93,7 +109,7 @@ const OrderRefundHistoryPage = () => {
     { header: "Status", accessor: "status", type: "status", sortable: true },
   ];
 
-  /** Transform refunds for table */
+  /** ----------------- TRANSFORM DATA FOR TABLE ----------------- */
   const tableData = refunds.map((r) => ({
     id: r.id,
     orderId: r.order?.id || "-",
@@ -108,10 +124,10 @@ const OrderRefundHistoryPage = () => {
   return (
     <ContentLayout
       loadingSpinner={loading}
-      title={"Refund History"}
-      subTitle={"View, filter, and paginate refund records."}
+      title="Refund History"
+      subTitle="View, filter, and paginate refund records."
       right={
-        <Button variant="outline" onClick={() => loadOrders({ pageSize: 10 })} disabled={loading}>
+        <Button variant="outline" onClick={handleRefresh} disabled={loading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           Refresh
         </Button>
@@ -124,26 +140,35 @@ const OrderRefundHistoryPage = () => {
             <p className="mt-4">Loading refunds...</p>
           </div>
         ) : (
-          <ReusableTable
-            columns={columns}
-            data={tableData}
-            loading={loading}
-            actions={(row) => (
-              <Button variant="ghost" size="icon" onClick={() => handleViewOrder(row.original)}>
-                <EyeIcon className="h-4 w-4" />
-              </Button>
-            )}
-            isServer={true}
-            page={pageInfo?.currentPage || 0}
-            totalPages={pageInfo?.totalPages || 1}
-            sort={sort}
-            onSortChange={(newSort) => setSort(newSort)}
-            onPageChange={(newPage) => loadOrders({ pageSize: pageInfo?.pageSize || 10 }, newPage)}
-            onFilter={(filters) => loadOrders(filters, 0)}
-          />
+  <ReusableTable
+  columns={columns}
+  data={tableData}
+  loading={loading}
+  isServer={true}
+  page={pageInfo?.number ?? 0}
+  totalPages={pageInfo?.totalPages ?? 1}
+  sort={sort}
+  onSortChange={(newSort) => setSort(newSort)}
+  onPageChange={(newPage) => loadOrders(filters, newPage)}
+  
+  /** Pass filters from parent */
+  filters={filters}
+  setFilters={setFilters}
+  onFilter={(newFilters) => {
+    setFilters(newFilters);
+    loadOrders(newFilters, 0);
+  }}
+
+  /** Enable filters */
+  enableSearch
+  enableDateRange
+  enableStatusFilter
+  enablePaymentFilter
+  enablePageSize
+/>
         )}
 
-        {/* Order Details Modal */}
+        {/* ----------------- ORDER DETAILS MODAL ----------------- */}
         <Dialog open={showOrderDetailsDialog} onOpenChange={setShowOrderDetailsDialog}>
           {selectedOrder && (
             <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto">
