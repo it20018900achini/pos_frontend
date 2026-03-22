@@ -25,9 +25,7 @@ export default function LedgerWithDialog({ accountId }) {
       </DialogTrigger>
 
         <DialogContent className="sm:max-w-[90%] overflow-y-auto h-screen">
-        <DialogHeader>
-          <DialogTitle>Ledger – {accountId}</DialogTitle>
-        </DialogHeader>
+   
 
         {/* Ledger inside dialog */}
         <Ledger accountId={accountId} />

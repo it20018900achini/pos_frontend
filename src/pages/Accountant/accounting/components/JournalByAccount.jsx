@@ -1,207 +1,126 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useState, useMemo } from "react";
+import { useSelector } from "react-redux";
 import {
   useGetJournalsQuery,
-  useGetChartOfAccountsQuery,
   useDeleteJournalMutation,
   useUpdateJournalEntryMutation,
 } from "@/Redux Toolkit/features/accounting/accountingApi";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatDistanceToNow } from "date-fns";
-import { Trash2, Edit, ChevronLeft, ChevronRight } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useSelector } from "react-redux";
-
-// Flatten nested accounts
-const flattenAccounts = (accounts) => {
-  let result = [];
-  const traverse = (accList) => {
-    accList.forEach((acc) => {
-      result.push(acc);
-      if (acc.children?.length) traverse(acc.children);
-    });
-  };
-  traverse(accounts);
-  return result;
-};
+import { Trash2, Edit } from "lucide-react";
+import ReusableTable from "@/pages/common/ReusableTable"; // Adjust path as needed
 
 export default function JournalByAccount() {
-    const { userProfile,selectedBranchId } = useSelector((state) => state.user);
+  const { selectedBranchId } = useSelector((state) => state.user);
+  
+  const [filters, setFilters] = useState({ 
+    search: "", 
+    status: "", 
+    startDate: "", 
+    endDate: "", 
+    pageSize: 5 
+  });
+  const [page, setPage] = useState(0);
 
-  const storeId = userProfile?.user?.store?.id;
-  const { data: accountsNested = [] } = useGetChartOfAccountsQuery(storeId);
-  const accounts = useMemo(() => flattenAccounts(accountsNested), [accountsNested]);
-
-  const [deleteId, setDeleteId] = useState(null);
-  const [editEntry, setEditEntry] = useState(null);
-  const [selectedAccount, setSelectedAccount] = useState(null);
-  const [page, setPage] = useState(0); // current page
-  const size = 5; // items per page
-  const [searchTerm, setSearchTerm] = useState(""); // search input
-
-  // server-side fetch
+  // Server-side fetch
   const { data: journalsPage, isLoading, refetch } = useGetJournalsQuery({
     branchId: selectedBranchId,
-    entryId: searchTerm ? Number(searchTerm) : null, // filter by entryId if numeric
-    page,
-    size,
+    entryId: filters.search ? Number(filters.search) : null,
+    page: page,
+    size: filters.pageSize,
   });
 
-  const [deleteJournal, { isLoading: deleting }] = useDeleteJournalMutation();
-  const [updateJournal, { isLoading: updating }] = useUpdateJournalEntryMutation();
+  const [deleteJournal] = useDeleteJournalMutation();
 
-  if (isLoading) return <p>Loading...</p>;
+  // Define Columns for the ReusableTable
+  const columns = [
+    {
+      header: "Journal Details",
+      accessor: "description",
+      render: (val, row) => (
+        <div className="space-y-1 min-w-[200px]">
+          <div className="font-bold text-slate-900">{val}</div>
+          <div className="text-[10px] text-slate-500 uppercase tracking-tight">
+            ID: #{row.id} • {formatDate(new Date(row.entryDate), "yyyy-MM-dd")}
+          </div>
+          <div className="text-[10px] italic text-slate-400">
+            {formatDistanceToNow(new Date(row.entryDate), { addSuffix: true })}
+          </div>
+        </div>
+      ),
+    },
+    {
+      header: "Account Entries (Lines)",
+      accessor: "lines",
+      render: (lines) => (
+        <div className="w-full">
+          {lines.map((line, idx) => (
+            <div key={idx} className="grid grid-cols-3 gap-4 py-1 border-b border-slate-50 last:border-0">
+              <span className="text-xs font-medium text-slate-600">#{line.account?.name || "N/A"}</span>
+              <span className="text-right text-xs text-emerald-600 font-semibold">
+                {line.debit > 0 ? line.debit.toLocaleString(undefined, { minimumFractionDigits: 2 }) : "-"}
+              </span>
+              <span className="text-right text-xs text-red-500 font-semibold">
+                {line.credit > 0 ? line.credit.toLocaleString(undefined, { minimumFractionDigits: 2 }) : "-"}
+              </span>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+  ];
 
-  const journals = journalsPage?.content || [];
-  const totalPages = journalsPage?.totalPages || 1;
-
-  // client-side filter for description or account code
-  const filteredJournals = journals.filter((journal) => {
-    const matchDesc = journal.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchAccount = selectedAccount
-      ? journal.lines.some((line) => line.account?.code === selectedAccount)
-      : true;
-    return matchDesc || matchAccount;
-  });
-
-  const confirmDelete = async () => {
-    try {
-      await deleteJournal(deleteId).unwrap();
-    } finally {
-      setDeleteId(null);
-      refetch();
-    }
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
   };
 
-  const handleUpdate = async () => {
-    try {
-      await updateJournal({
-        id: editEntry.id,
-        description: editEntry.description,
-        lines: editEntry.lines,
-      }).unwrap();
-      setEditEntry(null);
-      refetch();
-    } catch (err) {
-      console.error(err);
-    }
+  const handleFilterApply = (newFilters) => {
+    setFilters(newFilters);
+    setPage(0); // Reset to first page on filter
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold mt-10">Journal Entries</h2>
-
-      {/* Search & Account Select */}
-      <div className="flex gap-2 items-center">
-        <input
-          type="text"
-          placeholder="Search by description or entry ID..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setPage(0); // reset to first page
-          }}
-          className="border p-2 rounded w-80"
-        />
-        
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold tracking-tight text-slate-900">Journal Entries</h2>
       </div>
 
-      {/* Journal Table */}
-      {filteredJournals.length === 0 ? (
-        <p className="text-gray-500">No journal entries found</p>
-      ) : (
-        filteredJournals.map((journal) => (
-          <div key={journal.id}>
-            <table className="w-full border-collapse border border-gray-300 mb-2">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th></th>
-                  <th className="border border-gray-300 p-2 text-left">Account</th>
-                  <th className="border border-gray-300 p-2 text-right">Debit</th>
-                  <th className="border border-gray-300 p-2 text-right">Credit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {journal.lines
-                  .filter((line) => !selectedAccount || line.account?.code === selectedAccount)
-                  .map((line, idx, arr) => (
-                    <tr key={idx} className="hover:bg-gray-50">
-                      {idx === 0 && (
-                        <td
-                          rowSpan={arr.length}
-                          className="border border-gray-300 p-2 align-top text-sm text-gray-600"
-                        >
-                          <div className="font-semibold text-gray-800">{journal.description}</div>
-                          <div className="text-xs mt-1">
-                            {formatDate(new Date(journal.entryDate), "yyyy-MM-dd")}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {formatDistanceToNow(new Date(journal.entryDate), { addSuffix: true })}
-                          </div>
-
-                          <div className="mt-1 flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="link"
-                              className="text-blue-500 hover:text-blue-600"
-                              onClick={() => setEditEntry(journal)}
-                            >
-                              <Edit />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="link"
-                              className="text-red-500 hover:text-red-600"
-                              onClick={() => setDeleteId(journal.id)}
-                            >
-                              <Trash2 />
-                            </Button>
-                          </div>
-                        </td>
-                      )}
-                      <td className="border border-gray-300 p-2">#{line.account?.name || "N/A"}</td>
-                      <td className="border border-gray-300 p-2 text-right text-green-700">
-                        {(line.debit || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                      </td>
-                      <td className="border border-gray-300 p-2 text-right text-red-600">
-                        {(line.credit || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
+      <ReusableTable
+        columns={columns}
+        data={journalsPage?.content || []}
+        loading={isLoading}
+        isServer={true} // Since you are using RTK Query pagination
+        page={page}
+        totalPages={journalsPage?.totalPages || 1}
+        onPageChange={handlePageChange}
+        filters={filters}
+        setFilters={setFilters}
+        onFilter={handleFilterApply}
+        enableSearch={true}
+        enablePageSize={true}
+        actions={(row) => (
+          <div className="flex gap-2">
+            <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-500">
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button 
+              size="icon" 
+              variant="ghost" 
+              className="h-8 w-8 text-red-500"
+              onClick={async () => {
+                if(confirm("Delete this journal?")) {
+                  await deleteJournal(row.id);
+                  refetch();
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
-        ))
-      )}
-
-      {/* Pagination Controls */}
-      <div className="flex justify-center gap-2 mt-4">
-        <Button
-          variant="outline"
-          onClick={() => setPage((p) => Math.max(0, p - 1))}
-          disabled={page === 0}
-        >
-          <ChevronLeft /> Prev
-        </Button>
-        <span className="px-2 py-1">{page + 1} / {totalPages}</span>
-        <Button
-          variant="outline"
-          onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-          disabled={page >= totalPages - 1}
-        >
-          Next <ChevronRight />
-        </Button>
-      </div>
-
-      {/* Delete & Update Dialogs remain unchanged */}
+        )}
+      />
     </div>
   );
 }
