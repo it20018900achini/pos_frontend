@@ -1,15 +1,24 @@
 "use client";
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import PurchaseList from './PurchaseList'
 import ContentLayout from '../../Dashboard/ContentLayout'
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import PurchaseModal from "./PurchaseModal"
+import { useDispatch, useSelector } from 'react-redux';
+import { getSuppliers } from "@/Redux Toolkit/features/suppliers/supplierSlice";
 
 function Purchase() {
-  const [openCreate, setOpenCreate] = useState(false);
+    const dispatch = useDispatch();
 
+  const [openCreate, setOpenCreate] = useState(false);
+  const supplierState = useSelector((state) => state.supplier);
+  const suppliers = supplierState?.suppliers || []; 
+
+  useEffect(() => {
+    dispatch(getSuppliers({ page: 0, size: 100 })); // Fetch enough for the dropdown
+  }, [dispatch]);
   return (
     <ContentLayout 
       title="Purchase Management" 
@@ -31,6 +40,7 @@ function Purchase() {
       <PurchaseModal
         open={openCreate}
         onClose={() => setOpenCreate(false)}
+        suppliers={suppliers} // Pass the array here
       />
     </ContentLayout>
   )
