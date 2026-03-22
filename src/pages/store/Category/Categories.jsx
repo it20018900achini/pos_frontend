@@ -44,7 +44,7 @@ export default function Categories() {
   };
 
   return (
-    <ContentLayout title="Category Management" subTitle="Manage product categories for your store"
+    <ContentLayout loadingSpinner={loading} title="Category Management" subTitle="Manage product categories for your store"
     right={
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>

@@ -1,196 +1,168 @@
+"use client";
+
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { debounce } from "lodash";
+import { format } from "date-fns";
+import { Plus, RotateCcw, Eye, Package } from "lucide-react";
 
 import { getPurchases } from "@/Redux Toolkit/features/purchase/purchaseSlice";
 import PurchaseModal from "./PurchaseModal";
 import ReturnPurchaseModal from "./ReturnPurchaseModal";
-
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import ReusableTable from "@/pages/common/ReusableTable";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
-const PAGE_SIZE = 10;
 
 const PurchaseList = () => {
   const dispatch = useDispatch();
-  const { purchases, total, loading, error } = useSelector(
-    (state) => state.purchase
-  );
+  const { purchases, total, loading } = useSelector((state) => state.purchase);
+  const { selectedBranchId } = useSelector((state) => state.user);
 
   // UI state
   const [openCreate, setOpenCreate] = useState(false);
   const [openReturn, setOpenReturn] = useState(false);
   const [selectedPurchase, setSelectedPurchase] = useState(null);
 
-  // Filters
-  const [search, setSearch] = useState("");
-  const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  // Filter State (Matching ReusableTable requirements)
+  const [filters, setFilters] = useState({
+    search: "",
+    startDate: "",
+    endDate: "",
+    pageSize: 10,
+  });
   const [page, setPage] = useState(0);
-const {selectedBranchId}=useSelector((state)=>state.user)
-const branchId=selectedBranchId
-  // Debounced fetch
-  const debouncedFetch = useMemo(
-    () =>
-      debounce((params) => {
-        dispatch(getPurchases(params));
-      }, 400),
-    [dispatch]
+
+  /**
+   * TABLE COLUMNS
+   */
+  const columns = [
+    { 
+      header: "Purchase ID", 
+      accessor: "id", 
+      render: (val) => <span className="font-mono text-xs font-bold text-slate-500">#{val}</span> 
+    },
+    { 
+      header: "Supplier", 
+      accessor: "supplier.name",
+      render: (_, row) => (
+        <div className="flex flex-col">
+          <span className="font-semibold text-slate-900 dark:text-white">{row.supplier?.name || "N/A"}</span>
+          <span className="text-[10px] text-slate-400 uppercase tracking-tighter">Verified Provider</span>
+        </div>
+      )
+    },
+    { 
+      header: "Items", 
+      accessor: "items",
+      render: (items) => (
+        <div className="flex items-center gap-1.5">
+          <Package className="w-3.5 h-3.5 text-slate-400" />
+          <span className="text-sm font-medium">{items?.length || 0} Products</span>
+        </div>
+      )
+    },
+    { 
+      header: "Total Amount", 
+      accessor: "totalAmount",
+      render: (val) => (
+        <span className="font-bold text-indigo-600 dark:text-indigo-400">
+          Rs. {Number(val).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+        </span>
+      )
+    },
+    { 
+      header: "Purchase Date", 
+      accessor: "purchaseDate",
+      render: (val) => val ? format(new Date(val), "MMM dd, yyyy • hh:mm a") : "—"
+    },
+    { 
+      header: "Actions", 
+      accessor: "id",
+      render: (_, row) => (
+        <div className="flex justify-end gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 w-8 p-0"
+            onClick={() => {
+               // Logic to view specific items could go here
+               console.log("Viewing items for:", row.items);
+            }}
+          >
+            <Eye className="w-4 h-4 text-slate-400" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
+            onClick={() => {
+              setSelectedPurchase(row);
+              setOpenReturn(true);
+            }}
+          >
+            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+            Return
+          </Button>
+        </div>
+      )
+    },
+  ];
+
+  /**
+   * FETCHING LOGIC
+   */
+  const handleFetch = useCallback(
+    debounce((p, s, currentFilters) => {
+      dispatch(getPurchases({
+        branchId: selectedBranchId,
+        page: p,
+        size: s,
+        search: currentFilters.search,
+        from: currentFilters.startDate || undefined,
+        to: currentFilters.endDate || undefined,
+      }));
+    }, 400),
+    [dispatch, selectedBranchId]
   );
 
   useEffect(() => {
-    debouncedFetch({
-      branchId,
-      page,
-      size: PAGE_SIZE,
-      search,
-      from: dateRange.from || undefined,
-      to: dateRange.to || undefined,
-    });
+    if (selectedBranchId) {
+      handleFetch(page, filters.pageSize, filters);
+    }
+  }, [selectedBranchId, page, filters, handleFetch]);
 
-    return () => debouncedFetch.cancel();
-  }, [branchId,page, search, dateRange, debouncedFetch]);
-
-  // Handlers
-  const handleSearchChange = (e) => {
-    setSearch(e.target.value);
-    setPage(0);
-  };
-
-  const handleDateChange = (key, value) => {
-    setDateRange((prev) => ({ ...prev, [key]: value }));
-    setPage(0);
-  };
-
-  const openReturnModal = (purchase) => {
-    setSelectedPurchase(purchase);
-    setOpenReturn(true);
-  };
-
-  const formatDateTime = useCallback(
-    (date) => (date ? new Date(date).toLocaleString() : "-"),
-    []
-  );
-
-  const totalPages = total ? Math.ceil(total / PAGE_SIZE) : 1;
+  const totalPages = total ? Math.ceil(total / filters.pageSize) : 0;
 
   return (
-    <>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Purchases-</CardTitle>
-          <Button onClick={() => setOpenCreate(true)}>+ New Purchase</Button>
-        </CardHeader>
+    <div className="space-y-6">
+      {/* Premium Header */}
+      
 
-        <CardContent>
-          {/* Filters */}
-          <div className="mb-4 flex flex-wrap gap-2">
-            <Input
-              placeholder="Search supplier..."
-              value={search}
-              onChange={handleSearchChange}
-              className="w-56"
-            />
-            <Input
-              type="datetime-local"
-              value={dateRange.from}
-              onChange={(e) => handleDateChange("from", e.target.value)}
-            />
-            <Input
-              type="datetime-local"
-              value={dateRange.to}
-              onChange={(e) => handleDateChange("to", e.target.value)}
-            />
-          </div>
-
-          {/* Content */}
-          {loading && <p>Loading...</p>}
-          {error && <p className="text-red-500">{error}</p>}
-
-          {!loading && !error && purchases?.length === 0 && (
-            <p className="text-muted-foreground">No purchases found</p>
-          )}
-
-          {!loading && !error && purchases?.length > 0 && (
-            <>
-              {/* Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full border rounded-md">
-                  <thead className="bg-muted">
-                    <tr>
-                      <th className="p-2 text-left">ID</th>
-                      <th className="p-2 text-left">Supplier</th>
-                      <th className="p-2 text-left">Total</th>
-                      <th className="p-2 text-left">Date</th>
-                      <th className="p-2 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {purchases.map((p) => (
-                      <React.Fragment key={p.id}>
-                        <tr className="border-t">
-                          <td className="p-2">{p.id}</td>
-                          <td className="p-2">{p?.supplier?.name}</td>
-                          <td className="p-2">Rs. {p.totalAmount}</td>
-                          <td className="p-2">
-                            {formatDateTime(p.purchaseDate)}
-                          </td>
-                          <td className="p-2 text-right">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => openReturnModal(p)}
-                            >
-                              Return
-                            </Button>
-                          </td>
-                        </tr>
-
-                        {p.items.map((item) => (
-                          <tr key={item.id} className="bg-gray-50">
-                            <td />
-                            <td className="p-2">{item.variantName}</td>
-                            <td className="p-2">
-                              Qty: {item.quantity}
-                            </td>
-                            <td className="p-2">
-                              Rs. {item.price}
-                            </td>
-                            <td />
-                          </tr>
-                        ))}
-                      </React.Fragment>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              <div className="mt-4 flex items-center justify-end gap-2">
-                <Button
-                  variant="outline"
-                  disabled={page === 0}
-                  onClick={() => setPage((p) => p - 1)}
-                >
-                  Prev
-                </Button>
-
-                <span className="text-sm">
-                  Page {page + 1} of {totalPages}
-                </span>
-
-                <Button
-                  variant="outline"
-                  disabled={page + 1 >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+      {/* Main Table Container */}
+      <div className="">
+        <ReusableTable
+          isServer={true}
+          columns={columns}
+          data={purchases || []}
+          loading={loading}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(p) => setPage(p)}
+          
+          // Filtering Props
+          filters={filters}
+          setFilters={setFilters}
+          onFilter={(updated) => {
+            setFilters(updated);
+            setPage(0);
+          }}
+          
+          // Component Features
+          enableSearch={true}
+          enableDateRange={true}
+          enablePageSize={true}
+          searchPlaceholder="Search suppliers..."
+        />
+      </div>
 
       {/* Modals */}
       <PurchaseModal
@@ -201,11 +173,14 @@ const branchId=selectedBranchId
       {selectedPurchase && (
         <ReturnPurchaseModal
           open={openReturn}
-          onClose={() => setOpenReturn(false)}
+          onClose={() => {
+            setOpenReturn(false);
+            setSelectedPurchase(null);
+          }}
           purchase={selectedPurchase}
         />
       )}
-    </>
+    </div>
   );
 };
 

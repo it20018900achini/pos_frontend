@@ -1,344 +1,221 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchTransactions,
-  fetchAllTransactions,
-} from "@/Redux Toolkit/features/transactions/transactionsSlice";
-
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table";
-
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-
+import { fetchTransactions, fetchAllTransactions } from "@/Redux Toolkit/features/transactions/transactionsSlice";
 import { format } from "date-fns";
-import { Loader2, Download } from "lucide-react";
+import { Download, FileText, Database, ReceiptText, Search } from "lucide-react";
 
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
+import { Button } from "@/components/ui/button";
+import { 
+  DropdownMenu, 
+  DropdownMenuTrigger, 
+  DropdownMenuContent, 
+  DropdownMenuItem 
 } from "@/components/ui/dropdown-menu";
 import ContentLayout from "../../Dashboard/ContentLayout";
+import ReusableTable from "@/pages/common/ReusableTable";
 
-function toCsv(rows) {
-  if (!rows || rows.length === 0) return "";
+/**
+ * UTILITY: Safe CSV Export
+ * Handles encoding, BOM for Excel, and DOM cleanup
+ */
+const exportToCsv = (rows, filename) => {
+  if (!rows || rows.length === 0) {
+    alert("No data available to export.");
+    return;
+  }
 
-  const headers = Object.keys(rows[0]);
+  try {
+    const headers = Object.keys(rows[0]);
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((r) =>
+        headers
+          .map((h) => {
+            const cell = r[h] === null || r[h] === undefined ? "" : String(r[h]);
+            return `"${cell.replace(/"/g, '""')}"`;
+          })
+          .join(",")
+      ),
+    ].join("\n");
 
-  return [
-    headers.join(","),
-    ...rows.map((r) =>
-      headers
-        .map((h) => `"${String(r[h] ?? "").replace(/"/g, '""')}"`)
-        .join(",")
-    ),
-  ].join("\n");
-}
+    // Add UTF-8 BOM for Excel compatibility
+    const blob = new Blob(["\ufeff", csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.body.appendChild(document.createElement("a"));
+    
+    link.href = url;
+    link.download = filename;
+    link.click();
+    
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Export failed:", err);
+  }
+};
 
 export default function TransactionTablePagin() {
   const dispatch = useDispatch();
-
-  const {
-    loading,
-    content,
-    page,
-    totalPages,
-    totalElements,
-    allContent,
-  } = useSelector((s) => s.transactions);
-
+  
+  // Redux State
+  const { loading, content, page, totalPages, totalElements, allContent } = useSelector((s) => s.transactions);
   const { selectedBranchId } = useSelector((state) => state.user);
-  const branchId = selectedBranchId;
 
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [pageSize, setPageSize] = useState(20);
+  // Filter State
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "",
+    paymentType: "",
+    startDate: "",
+    endDate: "",
+    pageSize: 20,
+  });
 
-  useEffect(() => {
-    if (branchId) {
-      handleFetch(0, pageSize);
-    }
-  }, [branchId]);
+  /**
+   * TABLE COLUMNS
+   * Premium renderers for financial data
+   */
+  const columns = [
+    { 
+      header: "Type", 
+      accessor: "type", 
+      sortable: true,
+      render: (val) => (
+        <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-widest ${
+          val === "ORDER" 
+            ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400" 
+            : "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+        }`}>
+          {val}
+        </span>
+      )
+    },
+    { 
+      header: "Ref ID", 
+      accessor: "referenceId", 
+      sortable: true,
+      render: (val) => <span className="font-mono text-xs text-slate-500">#{val}</span>
+    },
+    { header: "Customer", accessor: "customer" },
+    { header: "Cashier", accessor: "cashier" },
+    { 
+      header: "Amount", 
+      accessor: "amount", 
+      sortable: true,
+      render: (val) => (
+        <span className="font-bold text-slate-900 dark:text-white">
+          LKR {(val ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+        </span>
+      )
+    },
+    { header: "Payment", accessor: "paymentMethod" },
+    { 
+      header: "Date", 
+      accessor: "paidAt", 
+      sortable: true,
+      render: (val) => val ? format(new Date(val), "MMM dd, hh:mm a") : "—"
+    },
+  ];
 
-  const buildDates = () => {
-    const startIso = startDate ? `${startDate}T00:00:00` : null;
-    const endIso = endDate ? `${endDate}T23:59:59` : null;
+  /**
+   * DATA FETCHING
+   */
+  const handleFetch = useCallback((p = 0, s = filters.pageSize, currentFilters = filters) => {
+    if (!selectedBranchId) return;
 
-    return { startIso, endIso };
-  };
-
-  const handleFetch = (p = 0, s = pageSize) => {
-    const { startIso, endIso } = buildDates();
+    const startIso = currentFilters.startDate ? `${currentFilters.startDate}T00:00:00` : null;
+    const endIso = currentFilters.endDate ? `${currentFilters.endDate}T23:59:59` : null;
 
     dispatch(
       fetchTransactions({
-        branchId,
+        branchId: selectedBranchId,
         start: startIso,
         end: endIso,
         page: p,
         size: s,
       })
     );
-  };
+  }, [selectedBranchId, dispatch, filters]);
 
-  const handleFetchAll = () => {
-    dispatch(
-      fetchTransactions({
-        branchId,
-        
-      })
-    );
-  };
-
-  const downloadCsv = (rows, filename) => {
-    const csv = toCsv(rows);
-
-    const blob = new Blob([csv], {
-      type: "text/csv;charset=utf-8;",
-    });
-
-    const url = URL.createObjectURL(blob);
-
-    const el = document.createElement("a");
-    el.href = url;
-    el.download = filename;
-    el.click();
-
-    URL.revokeObjectURL(url);
-  };
+  useEffect(() => {
+    handleFetch(0, filters.pageSize);
+  }, [selectedBranchId, handleFetch]);
 
   return (
-    <ContentLayout
-      title="Transactions"
-  subTitle="View and manage all sales and purchase transactions"
+    <ContentLayout 
+      title="Branch Transactions" 
+      subTitle="Audit financial movements and sales history"
     >
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Filters</CardTitle>
-        </CardHeader>
-
-        <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4">
-
+      <div className="max-w-[1600px] mx-auto p-4 md:p-6 space-y-6">
+        
+        {/* --- HEADER ACTIONS --- */}
+        <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <div>
-            <label className="text-sm font-medium">Start Date</label>
-            <Input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-tight">Audit Overview</h3>
+            <p className="text-2xl font-black text-slate-900 dark:text-white">
+              {totalElements.toLocaleString()} <span className="text-sm font-medium text-slate-500">Records</span>
+            </p>
           </div>
 
-          <div>
-            <label className="text-sm font-medium">End Date</label>
-            <Input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
+          <div className="flex gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-10 rounded-xl px-4 border-slate-200 dark:border-slate-800">
+                  <Download className="w-4 h-4 mr-2 text-indigo-500" /> 
+                  Export Data
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl">
+                <DropdownMenuItem 
+                  className="rounded-lg cursor-pointer py-2"
+                  onClick={() => exportToCsv(content, `transactions_page_${page + 1}.csv`)}
+                >
+                  <FileText className="w-4 h-4 mr-2 opacity-60" /> Export Current Page
+                </DropdownMenuItem>
+                
+                <DropdownMenuItem 
+                  className="rounded-lg cursor-pointer py-2 text-indigo-600 font-semibold"
+                  onClick={() => {
+                    if (allContent?.length > 0) {
+                      exportToCsv(allContent, `full_audit_log.csv`);
+                    } else {
+                      alert("Please fetch all records first or wait for the background sync.");
+                    }
+                  }}
+                >
+                  <Database className="w-4 h-4 mr-2" /> Full Audit Log (CSV)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-
-          <div className="flex items-end gap-2">
-            <Button onClick={() => handleFetch(0, pageSize)}>
-              Search
-            </Button>
-
-            <Button
-              variant="secondary"
-              onClick={handleFetchAll}
-            >
-              Fetch All
-            </Button>
-          </div>
-
-        </CardContent>
-      </Card>
-
-      {/* Header */}
-      <div className="flex justify-between items-center">
-
-        <div className="text-sm text-muted-foreground">
-          Total Records: {totalElements}
         </div>
 
-        <div className="flex gap-3">
-
-          <Select
-            value={String(pageSize)}
-            onValueChange={(v) => {
-              const size = Number(v);
-              setPageSize(size);
-              handleFetch(0, size);
-            }}
-          >
-            <SelectTrigger className="w-28">
-              <SelectValue />
-            </SelectTrigger>
-
-            <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="20">20</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button>
-                <Download className="w-4 h-4 mr-1" />
-                Export
-              </Button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent>
-
-              <DropdownMenuItem
-                onClick={() =>
-                  downloadCsv(content, `transactions_page_${page}.csv`)
-                }
-              >
-                Page CSV
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                onClick={() =>
-                  downloadCsv(allContent, `transactions_all.csv`)
-                }
-              >
-                All CSV
-              </DropdownMenuItem>
-
-            </DropdownMenuContent>
-          </DropdownMenu>
-
+        {/* --- TABLE CONTAINER --- */}
+        <div className="bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <ReusableTable
+            isServer={true}
+            columns={columns}
+            data={content || []}
+            loading={loading}
+            page={page}
+            totalPages={totalPages}
+            onPageChange={(p) => handleFetch(p, filters.pageSize)}
+            
+            // Filter Props
+            filters={filters}
+            setFilters={setFilters}
+            onFilter={(updated) => handleFetch(0, updated.pageSize, updated)}
+            
+            // Configurations
+            enableDateRange={true}
+            enableStatusFilter={true}
+            enablePageSize={true}
+            enableSearch={true}
+          />
         </div>
       </div>
-
-      {/* Table */}
-      <Card>
-        <CardContent className="p-0">
-
-          <Table>
-
-            <TableHeader>
-              <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>ID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Cashier</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead>Reference</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan="8" className="text-center p-6">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto" />
-                  </TableCell>
-                </TableRow>
-              ) : content?.length > 0 ? (
-                content.map((row) => (
-
-                  <TableRow key={`${row.type}-${row.id}`}>
-
-                    <TableCell>{row.type}</TableCell>
-
-                    <TableCell>{row.referenceId}</TableCell>
-
-                    <TableCell>{row.customer}</TableCell>
-
-                    <TableCell>{row.cashier}</TableCell>
-
-                    <TableCell
-                      className={`font-medium ${
-                        row.type === "ORDER"
-                          ? "text-indigo-600"
-                          : "text-blue-600"
-                      }`}
-                    >
-                      + LKR {(row.amount ?? 0).toFixed(2)}
-                    </TableCell>
-
-                    <TableCell>{row.paymentMethod}</TableCell>
-
-                    <TableCell>{row.reference}</TableCell>
-
-                    <TableCell>
-                      {row.paidAt
-                        ? format(new Date(row.paidAt), "yyyy-MM-dd HH:mm:ss")
-                        : ""}
-                    </TableCell>
-
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan="8" className="text-center py-6">
-                    No Results
-                  </TableCell>
-                </TableRow>
-              )}
-
-            </TableBody>
-
-          </Table>
-
-        </CardContent>
-      </Card>
-
-      {/* Pagination */}
-     <div className="flex items-center justify-center gap-3 mt-4">
-
-  <Button
-    size="sm"
-    variant="outline"
-    disabled={page === 0 || totalPages === 0}
-    onClick={() => handleFetch(page - 1, pageSize)}
-  >
-    Prev
-  </Button>
-
-  <span className="text-sm font-medium">
-    Page {totalPages === 0 ? 0 : page + 1} of {totalPages}
-  </span>
-
-  <Button
-    size="sm"
-    variant="outline"
-    disabled={page >= totalPages - 1 || totalPages === 0}
-    onClick={() => handleFetch(page + 1, pageSize)}
-  >
-    Next
-  </Button>
-
-</div>
-    </div>
     </ContentLayout>
   );
 }
