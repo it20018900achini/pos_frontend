@@ -27,6 +27,7 @@ import {
 } from "../../../Redux Toolkit/features/employee/employeeThunks";
 
 import ContentLayout from "../../Dashboard/ContentLayout";
+import { useGetRolesQuery } from "@/Redux Toolkit/features/role/roleApi";
 
 /* -----------------------------
    Component
@@ -41,16 +42,21 @@ const BranchEmployees = () => {
   const { userProfile, selectedBranchId } = useSelector(
     (state) => state.user
   );
+const storeId=userProfile.user.store.id
+    const { data: roles = [], isLoading } = useGetRolesQuery({ storeId }, { skip: !storeId });
+  
+
 
   /* -----------------------------
      Local State
   ------------------------------ */
   const [dialogs, setDialogs] = useState({
-    add: false,
-    edit: false,
-    resetPassword: false,
-    performance: false,
-  });
+  add: false,
+  edit: false,
+  resetPassword: false,
+  performance: false,
+  assignRole: false, // ✅ ADD THIS
+});
 
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
@@ -210,7 +216,7 @@ const BranchEmployees = () => {
       <DialogTitle>Assign Role</DialogTitle>
     </DialogHeader>
 
-    <AssignUserRole userId={selectedEmployee?.id} />
+    <AssignUserRole userId={selectedEmployee?.id} roles={roles} />
   </DialogContent>
 </Dialog>
     </ContentLayout>

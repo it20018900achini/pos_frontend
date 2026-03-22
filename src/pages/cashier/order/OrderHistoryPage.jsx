@@ -17,18 +17,31 @@ const OrderHistoryPage = () => {
   const { toast } = useToast();
   const { userProfile } = useSelector((state) => state.user);
 
+  /** ✅ CENTRALIZED FILTER STATE */
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "",
+    paymentType: "",
+    startDate: "",
+    endDate: "",
+    pageSize: 10,
+  });
+
   const [page, setPage] = useState(0);
-  const [size, setSize] = useState(10);
-  const [search, setSearch] = useState("");
   const [sort, setSort] = useState({ field: "id", direction: "desc" });
   const [showRefundModal, setShowRefundModal] = useState(false);
 
+  /** ✅ API CALL USING FILTERS */
   const { data, isLoading, error, refetch } = useGetOrdersByCashierQuery(
     {
       cashierId: userProfile?.user.id,
       page,
-      size,
-      search,
+      size: filters.pageSize,
+      search: filters.search,
+      status: filters.status,
+      paymentType: filters.paymentType,
+      start: filters.startDate,
+      end: filters.endDate,
       sort: `${sort.field},${sort.direction}`,
     },
     { skip: !userProfile?.user.id }
@@ -61,24 +74,7 @@ const OrderHistoryPage = () => {
     setShowRefundModal(true);
   };
 
-    // Modern status badge
-  const renderStatus = (status) => {
-    const classes =
-      status === "REFUNDED"
-        ? "bg-red-100 text-red-800"
-        : status === "PAID" || status === "COMPLETED"
-        ? "bg-green-100 text-green-800"
-        : status === "PENDING"
-        ? "bg-yellow-100 text-yellow-800"
-        : "bg-gray-100 text-gray-800";
-
-    return (
-      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${classes}`}>
-        {status}
-      </span>
-    );
-  };
-  // Map orders for ReusableTable
+  /** ✅ TABLE DATA */
   const tableData = orders.map((o) => ({
     id: o.id,
     customerName: o.customer?.fullName || "Walk-in",
@@ -89,67 +85,91 @@ const OrderHistoryPage = () => {
     subtotal: o.subtotal,
     discount: o.discountAmount,
     netAmount: o.netAmount,
-    status: o.status, // render badge here
+    status: o.status,
     createdAt: new Date(o.createdAt).toLocaleString(),
-    raw: o, // keep full object for modal
+    raw: o,
   }));
 
+  /** ✅ COLUMNS */
   const columns = [
     { header: "ID", accessor: "id", sortable: true },
-    { header: "Customer", accessor: "customerName",  },
+    { header: "Customer", accessor: "customerName" },
     { header: "Phone", accessor: "customerPhone" },
     { header: "Email", accessor: "customerEmail" },
     { header: "Items", accessor: "items" },
     { header: "Payments", accessor: "payments" },
-    { header: "Subtotal", accessor: "subtotal",  },
-    { header: "Discount", accessor: "discount",  },
-    { header: "Net Amount", accessor: "netAmount",  },
-    { header: "Status", accessor: "status",  },
-    { header: "Date", accessor: "createdAt",  },
+    { header: "Subtotal", accessor: "subtotal" },
+    { header: "Discount", accessor: "discount" },
+    { header: "Net Amount", accessor: "netAmount" },
+    { header: "Status", accessor: "status", type: "status" }, // ✅ use reusable badge
+    { header: "Date", accessor: "createdAt" },
   ];
 
   return (
     <ContentLayout
       title="Order History"
-      subTitle="Server-side advanced table with full details"
+      subTitle="Server-side advanced table"
       right={
-        <Button onClick={() => { refetch(); toast({ title: "Refreshing..." }); }}>
+        <Button
+          onClick={() => {
+            refetch();
+            toast({ title: "Refreshing..." });
+          }}
+        >
           Refresh
         </Button>
       }
     >
       <div className="p-4">
         <ReusableTable
-        enableSearch={true}
           columns={columns}
           data={tableData}
           loading={isLoading}
+
+          /** ✅ SERVER MODE */
           isServer={true}
-          page={page + 1} // ReusableTable expects 1-based page
+
+          /** ✅ PAGINATION */
+          page={page}
           totalPages={pageInfo?.totalPages || 1}
-          pageSize={size}
-          onPageChange={(p) => setPage(p - 1)} // convert back to 0-based
-          searchFields={["id", "customerName", "customerPhone", "customerEmail", "items"]}
-          onSearchChange={(text) => {
-            setSearch(text);
+          onPageChange={(p) => setPage(p)}
+
+          /** ✅ FILTER SYSTEM */
+          filters={filters}
+          setFilters={setFilters}
+          onFilter={(f) => {
             setPage(0);
           }}
+
+          /** ✅ ENABLE FEATURES */
+          enableSearch
+          enableDateRange
+          // enableStatusFilter
+          // enablePaymentFilter
+          enablePageSize
+
+          /** ✅ SORT */
           sort={sort}
           onSortChange={(s) => {
             setSort(s);
             setPage(0);
           }}
+
+          /** ✅ ACTIONS */
           actions={(row) => (
             <div className="flex gap-2">
               <Button size="sm" onClick={() => handleViewOrder(row)}>
                 View
               </Button>
-              <Button size="sm" variant="destructive" onClick={() => handleRefundOrder(row)}>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => handleRefundOrder(row)}
+              >
                 Refund
               </Button>
             </div>
           )}
-          exportTypes={["csv", "excel", "pdf"]}
         />
 
         {selectedOrder && (

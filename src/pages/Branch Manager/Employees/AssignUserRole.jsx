@@ -1,5 +1,7 @@
 // src/pages/userRoles/AssignUserRole.jsx
 
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -8,7 +10,7 @@ import { useAssignUserRoleMutation } from "@/Redux Toolkit/features/role/roleApi
 import { getAllBranchesByStore } from "@/Redux Toolkit/features/branch/branchThunks";
 import { selectBranches } from "@/Redux Toolkit/features/branch/branchSelectors";
 
-const AssignUserRole = ({ userId }) => {
+const AssignUserRole = ({ userId, roles = [] }) => {
   const dispatch = useDispatch();
 
   const [assignUserRole, { isLoading }] = useAssignUserRoleMutation();
@@ -44,6 +46,11 @@ const AssignUserRole = ({ userId }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!form.roleId || !form.branchId) {
+      alert("Please select role and branch");
+      return;
+    }
+
     try {
       await assignUserRole({
         user: { id: Number(form.userId) },
@@ -66,34 +73,57 @@ const AssignUserRole = ({ userId }) => {
 
   return (
     <div className="space-y-4">
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form onSubmit={handleSubmit} className="space-y-4">
 
-        <input
-          className="border p-2 w-full"
-          placeholder="Role ID"
-          value={form.roleId}
-          onChange={(e) =>
-            setForm({ ...form, roleId: e.target.value })
-          }
-        />
+        {/* ✅ Role Select */}
+        <div>
+          <p className="font-semibold mb-1">Select Role</p>
+          <select
+            className="border p-2 w-full rounded"
+            value={form.roleId}
+            onChange={(e) =>
+              setForm({ ...form, roleId: e.target.value })
+            }
+          >
+            <option value="">-- Select Role --</option>
 
-        <p className="font-semibold">Select Branch</p>
+            {roles.length === 0 ? (
+              <option disabled>No roles available</option>
+            ) : (
+              roles.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {role.name}
+                </option>
+              ))
+            )}
+          </select>
+        </div>
 
-        {branches?.map((branch) => (
-          <div key={branch.id} className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="branch"
-              value={branch.id}
-              checked={form.branchId === String(branch.id)}
-              onChange={(e) =>
-                setForm({ ...form, branchId: e.target.value })
-              }
-            />
-            <label>{branch.name}</label>
-          </div>
-        ))}
+        {/* ✅ Branch Selection */}
+        <div>
+          <p className="font-semibold mb-1">Select Branch</p>
 
+          {branches?.length > 0 ? (
+            branches.map((branch) => (
+              <div key={branch.id} className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="branch"
+                  value={branch.id}
+                  checked={form.branchId === String(branch.id)}
+                  onChange={(e) =>
+                    setForm({ ...form, branchId: e.target.value })
+                  }
+                />
+                <label>{branch.name}</label>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-gray-500">No branches available</p>
+          )}
+        </div>
+
+        {/* ✅ Submit */}
         <button
           disabled={isLoading}
           className="bg-indigo-600 text-white px-4 py-2 w-full rounded"

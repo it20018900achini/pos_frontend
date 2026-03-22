@@ -24,8 +24,9 @@ const ReusableTable = ({
   onPageChange = () => {},
   sort = null,
   onSortChange = () => {},
-  filters,          // <- coming from parent
-  setFilters,       // <- coming from parent
+    filters = {},          // ✅ FIX HERE
+  setFilters = () => {}, // ✅ FIX HERE
+
   onFilter = () => {},
   enableSearch = false,
   enableDateRange = false,
@@ -43,6 +44,7 @@ const ReusableTable = ({
     if (sort?.field === col.accessor) {
       direction = sort.direction === "asc" ? "desc" : "asc";
     }
+
     onSortChange({ field: col.accessor, direction });
   };
 
