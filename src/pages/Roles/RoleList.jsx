@@ -69,7 +69,7 @@ const RoleList = ({ onEdit }) => {
   );
 
   return (
-    <Card className="border-none shadow-sm bg-white overflow-hidden">
+    <Card className="border-none shadow-sm  overflow-hidden">
       <CardHeader className="pb-2">
         <CardTitle className="text-xl font-bold flex items-center gap-2 text-slate-800">
           <ShieldCheck className="h-5 w-5 text-emerald-600" /> Roles & Permissions

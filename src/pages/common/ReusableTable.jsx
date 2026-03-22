@@ -11,8 +11,23 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp } from "lucide-react";
-
+import { ChevronDown, ChevronUp, Search, X } from "lucide-react";
+const FilterChip = ({ label, value, onClear }) => (
+  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border transition-all animate-in fade-in zoom-in duration-200
+    bg-white border-nebg-neutral-200 text-nebg-neutral-600 shadow-sm
+    dark:bg-neutral-800 dark:border-nebg-neutral-700 dark:text-nebg-neutral-200">
+    
+    <span className="opacity-50 uppercase tracking-tighter text-[9px]">{label}:</span> 
+    <span>{value}</span>
+    
+    <button
+      onClick={onClear}
+      className="ml-1 p-0.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 text-nebg-neutral-400 hover:text-rose-500 transition-colors"
+    >
+      <X className="h-3 w-3" />
+    </button>
+  </div>
+);
 const ReusableTable = ({
   columns = [],
   data = [],
@@ -96,19 +111,23 @@ const ReusableTable = ({
 
     return <span className={base}>{value}</span>;
   };
-
-  /** ROW STYLE */
+/** PREMIUM ROW STYLE (Light & Dark Mode) */
   const rowClassByStatus = (status) => {
+    const base = "transition-colors duration-200 border-b border-nebg-neutral-100 dark:border-nebg-neutral-800/50";
+    
     switch (status) {
       case "REFUNDED":
-        return "bg-red-50 hover:bg-red-100";
+        return `${base} bg-rose-50/30 hover:bg-rose-50 dark:bg-rose-500/5 dark:hover:bg-rose-500/10`;
+      
       case "PAID":
       case "COMPLETED":
-        return "bg-green-50 hover:bg-green-100";
+        return `${base} bg-emerald-50/30 hover:bg-emerald-50 dark:bg-emerald-500/5 dark:hover:bg-emerald-500/10`;
+      
       case "PENDING":
-        return "bg-yellow-50 hover:bg-yellow-100";
+        return `${base} bg-amber-50/30 hover:bg-amber-50 dark:bg-amber-500/5 dark:hover:bg-amber-500/10`;
+      
       default:
-        return "hover:bg-gray-50";
+        return `${base} hover:bg-neutral-50 dark:hover:bg-neutral-800/50`;
     }
   };
 
@@ -181,178 +200,104 @@ const ReusableTable = ({
 
   return (
     <div className="space-y-4">
-      {/* DISPLAY APPLIED FILTERS WITH CLEAR BUTTONS */}
-      <div className="flex flex-wrap gap-2 mb-2 text-sm items-center">
-        {filters.search && (
-          <span className="bg-gray-200 px-2 py-1 rounded flex items-center gap-1">
-            Search: {filters.search}
-            <button
-              className="text-gray-500 hover:text-gray-700"
-              onClick={() => setFilters({ ...filters, search: "" })}
-            >
-              ×
-            </button>
-          </span>
-        )}
-        {filters.startDate && (
-          <span className="bg-gray-200 px-2 py-1 rounded flex items-center gap-1">
-            From: {new Date(filters.startDate).toLocaleString()}
-            <button
-              className="text-gray-500 hover:text-gray-700"
-              onClick={() => setFilters({ ...filters, startDate: "" })}
-            >
-              ×
-            </button>
-          </span>
-        )}
-        {filters.endDate && (
-          <span className="bg-gray-200 px-2 py-1 rounded flex items-center gap-1">
-            To: {new Date(filters.endDate).toLocaleString()}
-            <button
-              className="text-gray-500 hover:text-gray-700"
-              onClick={() => setFilters({ ...filters, endDate: "" })}
-            >
-              ×
-            </button>
-          </span>
-        )}
-        {filters.status && (
-          <span className="bg-gray-200 px-2 py-1 rounded flex items-center gap-1">
-            Status: {filters.status}
-            <button
-              className="text-gray-500 hover:text-gray-700"
-              onClick={() => setFilters({ ...filters, status: "" })}
-            >
-              ×
-            </button>
-          </span>
-        )}
-        {filters.paymentType && (
-          <span className="bg-gray-200 px-2 py-1 rounded flex items-center gap-1">
-            Payment: {filters.paymentType}
-            <button
-              className="text-gray-500 hover:text-gray-700"
-              onClick={() => setFilters({ ...filters, paymentType: "" })}
-            >
-              ×
-            </button>
-          </span>
-        )}
-        {filters.pageSize && (
-          <span className="bg-gray-200 px-2 py-1 rounded flex items-center gap-1">
-            Page Size: {filters.pageSize}
-            <button
-              className="text-gray-500 hover:text-gray-700"
-              onClick={() => setFilters({ ...filters, pageSize: 10 })}
-            >
-              ×
-            </button>
-          </span>
-        )}
-        {/* CLEAR ALL BUTTON */}
-        {Object.values(filters).some((val) => val) && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={clearAllFilters}
-            className="ml-2"
-          >
-            Clear All
-          </Button>
-        )}
+     {/* --- APPLIED FILTERS (CHIPS) --- */}
+<div className="flex flex-wrap gap-2 mb-4 items-center min-h-[32px]">
+  {/* Filter Chips mapping - ensuring a cleaner, organized row */}
+  {filters.search && <FilterChip label="Search" value={filters.search} onClear={() => setFilters({ ...filters, search: "" })} />}
+  {filters.startDate && <FilterChip label="From" value={new Date(filters.startDate).toLocaleDateString()} onClear={() => setFilters({ ...filters, startDate: "" })} />}
+  {filters.endDate && <FilterChip label="To" value={new Date(filters.endDate).toLocaleDateString()} onClear={() => setFilters({ ...filters, endDate: "" })} />}
+  {filters.status && <FilterChip label="Status" value={filters.status} onClear={() => setFilters({ ...filters, status: "" })} />}
+  {filters.paymentType && <FilterChip label="Payment" value={filters.paymentType} onClear={() => setFilters({ ...filters, paymentType: "" })} />}
+  {filters.pageSize !== 10 && <FilterChip label="Size" value={filters.pageSize} onClear={() => setFilters({ ...filters, pageSize: 10 })} />}
+
+  {/* Clear All - Premium Ghost Style */}
+  {Object.values(filters).some((val) => val && val !== 10) && (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={clearAllFilters}
+      className="h-7 px-3 text-xs font-bold text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all rounded-full"
+    >
+      Clear All
+    </Button>
+  )}
+</div>
+
+{/* --- MODERN TOOLBAR --- */}
+{(enableSearch || enableDateRange || enableStatusFilter || enablePaymentFilter || enablePageSize) && (
+  <div className="flex flex-wrap items-center gap-3 p-3 bg-neutral-50/50 dark:bg-neutral-900/50 border border-nebg-neutral-200 dark:border-nebg-neutral-800 rounded-xl mb-6 shadow-sm">
+    
+    {/* Date Range Inputs - Styled as a single group */}
+    {enableDateRange && (
+      <div className="flex items-center gap-1 bg-white dark:bg-neutral-950 border border-nebg-neutral-200 dark:border-nebg-neutral-800 rounded-lg px-2 h-10 shadow-sm focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all">
+        <input
+          type="datetime-local"
+          value={filters.startDate}
+          onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+          className="bg-transparent text-xs outline-none dark:text-nebg-neutral-200 dark:invert-[0.9] dark:hue-rotate-180"
+        />
+        <span className="text-nebg-neutral-300 dark:text-nebg-neutral-700">|</span>
+        <input
+          type="datetime-local"
+          value={filters.endDate}
+          onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+          className="bg-transparent text-xs outline-none dark:text-nebg-neutral-200 dark:invert-[0.9] dark:hue-rotate-180"
+        />
       </div>
+    )}
 
-      {/* FILTERS */}
-      {(enableSearch ||
-        enableDateRange ||
-        enableStatusFilter ||
-        enablePaymentFilter ||
-        enablePageSize) && (
-        <div className="flex flex-wrap gap-2 items-center">
-          {enableDateRange && (
-            <>
-              <input
-                type="datetime-local"
-                value={filters.startDate}
-                onChange={(e) =>
-                  setFilters({ ...filters, startDate: e.target.value })
-                }
-                className="border p-1"
-              />
-              <input
-                type="datetime-local"
-                value={filters.endDate}
-                onChange={(e) =>
-                  setFilters({ ...filters, endDate: e.target.value })
-                }
-                className="border p-1"
-              />
-            </>
-          )}
+    {/* Modern Search Input */}
+    {enableSearch && (
+      <div className="relative group">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-nebg-neutral-400 group-focus-within:text-emerald-500 transition-colors" />
+        <Input
+          placeholder="Search records..."
+          value={filters?.search || ""}
+          onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+          className="pl-9 h-10 w-64 bg-white dark:bg-neutral-950 border-nebg-neutral-200 dark:border-nebg-neutral-800 rounded-lg shadow-sm focus:ring-emerald-500/20 transition-all"
+        />
+      </div>
+    )}
 
-          {enableSearch && (
-           <Input
-              placeholder="Search..."
-              // ✅ FIX 2: Ensure value is never undefined to prevent read-only error
-              value={filters?.search || ""} 
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-              className="pl-9 h-10 w-64 bg-white border-slate-200 shadow-sm focus:ring-emerald-500"
-            />
-          )}
-
-          {enableStatusFilter && (
-            <select
-              value={filters.status}
-              onChange={(e) =>
-                setFilters({ ...filters, status: e.target.value })
-              }
-              className="border p-1"
-            >
-              <option value="">All Status</option>
-              <option value="REFUNDED">Refunded</option>
-              <option value="PAID">Paid</option>
-              <option value="PENDING">Pending</option>
-              <option value="COMPLETED">Completed</option>
-            </select>
-          )}
-
-          {enablePaymentFilter && (
-            <select
-              value={filters.paymentType}
-              onChange={(e) =>
-                setFilters({ ...filters, paymentType: e.target.value })
-              }
-              className="border p-1"
-            >
-              <option value="">All Payment</option>
-              <option value="CASH">Cash</option>
-              <option value="CARD">Card</option>
-            </select>
-          )}
-
-          {enablePageSize && (
-            <select
-              value={filters.pageSize}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  pageSize: Number(e.target.value),
-                })
-              }
-              className="border p-1"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-          )}
-
-          <Button size="sm" onClick={() => onFilter(filters)}>
-            Filter
-          </Button>
-        </div>
+    {/* Styled Selects */}
+    <div className="flex items-center gap-2">
+      {enableStatusFilter && (
+        <select
+          value={filters.status}
+          onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+          className="h-10 px-3 text-xs bg-white dark:bg-neutral-950 border border-nebg-neutral-200 dark:border-nebg-neutral-800 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all text-nebg-neutral-600 dark:text-nebg-neutral-300 shadow-sm"
+        >
+          <option value="">All Status</option>
+          <option value="REFUNDED">Refunded</option>
+          <option value="PAID">Paid</option>
+          <option value="PENDING">Pending</option>
+          <option value="COMPLETED">Completed</option>
+        </select>
       )}
+
+      {enablePaymentFilter && (
+        <select
+          value={filters.paymentType}
+          onChange={(e) => setFilters({ ...filters, paymentType: e.target.value })}
+          className="h-10 px-3 text-xs bg-white dark:bg-neutral-950 border border-nebg-neutral-200 dark:border-nebg-neutral-800 rounded-lg outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all text-nebg-neutral-600 dark:text-nebg-neutral-300 shadow-sm"
+        >
+          <option value="">All Payment</option>
+          <option value="CASH">Cash</option>
+          <option value="CARD">Card</option>
+        </select>
+      )}
+    </div>
+
+    {/* Apply Filter Button - High Contrast */}
+    <Button 
+      size="sm" 
+      onClick={() => onFilter(filters)}
+      className="h-10 px-5 bg-neutral-900 hover:bg-neutral-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-md active:scale-95 transition-all ml-auto"
+    >
+      Apply Filters
+    </Button>
+  </div>
+)}
 
       {/* TABLE */}
       <ShadTable>
@@ -382,7 +327,7 @@ const ReusableTable = ({
             filteredData.map((row, i) => (
               <TableRow key={i} className={rowClassByStatus(row.status)}>
                 {columns.map((col) => (
-                    <TableCell key={col.accessor} className="py-4 px-4 text-sm font-medium text-slate-600">
+                    <TableCell key={col.accessor} className="py-4 px-4 text-sm font-medium text-nebg-neutral-600">
                       {/* ✅ FIX 3: Prioritize custom render function for objects/arrays */}
                       {col.render 
                         ? col.render(row[col.accessor], row) 
