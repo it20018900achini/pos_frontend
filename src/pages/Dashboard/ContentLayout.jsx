@@ -38,16 +38,28 @@ const ContentLayout = ({
               )}
               {subTitle && (
                 <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
-                  <span className="relative border border-green-300 px-2 py-0.5 rounded text-green-600 bg-green-100/50 font-medium">
-                    {branchLoading && (
-                      <span className="absolute -left-5 top-1">
-                        <Loader2 className="w-3 h-3 animate-spin text-green-600" />
-                      </span>
-                    )}
-                    {userProfile?.user?.roleBranchMap?.find(
-                      (b) => b.branchId === Number(selectedBranchId)
-                    )?.branchName}
-                  </span>{" "}
+                  <span className="group relative inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border transition-all duration-300
+  /* Light Mode: Emerald/Mint palette */
+  bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm
+  /* Dark Mode: Deep Forest glow */
+  dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400">
+  
+  {branchLoading ? (
+    <Loader2 className="w-3 h-3 animate-spin text-emerald-600 dark:text-emerald-400" />
+  ) : (
+    /* Subtle dot indicator for a "Live/Active" look */
+    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+  )}
+
+  <span className="truncate max-w-[150px]">
+    {userProfile?.user?.roleBranchMap?.find(
+      (b) => b.branchId === Number(selectedBranchId)
+    )?.branchName || "Select Branch"}
+  </span>
+
+  {/* Subtle hover shine effect */}
+  <span className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none" />
+</span>{" "}
                   {subTitle}
                 </p>
               )}
