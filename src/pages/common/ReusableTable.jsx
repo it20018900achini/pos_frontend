@@ -19,13 +19,15 @@ const FilterChip = ({ label, value, onClear }) => (
     
     <span className="opacity-50 uppercase tracking-tighter text-[9px]">{label}:</span> 
     <span>{value}</span>
-    
-    <button
+    {
+      label!=="Size"&&<button
       onClick={onClear}
       className="ml-1 p-0.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 text-nebg-neutral-400 hover:text-rose-500 transition-colors"
     >
       <X className="h-3 w-3" />
     </button>
+    }
+    
   </div>
 );
 const ReusableTable = ({
@@ -208,6 +210,8 @@ const ReusableTable = ({
   {filters.endDate && <FilterChip label="To" value={new Date(filters.endDate).toLocaleDateString()} onClear={() => setFilters({ ...filters, endDate: "" })} />}
   {filters.status && <FilterChip label="Status" value={filters.status} onClear={() => setFilters({ ...filters, status: "" })} />}
   {filters.paymentType && <FilterChip label="Payment" value={filters.paymentType} onClear={() => setFilters({ ...filters, paymentType: "" })} />}
+  
+  
   {filters.pageSize !== 10 && <FilterChip label="Size" value={filters.pageSize} onClear={() => setFilters({ ...filters, pageSize: 10 })} />}
 
   {/* Clear All - Premium Ghost Style */}
