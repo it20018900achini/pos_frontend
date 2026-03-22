@@ -1,43 +1,62 @@
-import { useState } from "react";
-import BrandForm from "./BrandForm";
+"use client";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import { Edit, Trash2, Power, PowerOff, Plus } from "lucide-react";
 
+// UI Components
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
+// Custom Components
+import ContentLayout from "../../Dashboard/ContentLayout";
+import BrandForm from "./BrandForm";
+
+// API
 import {
   useDeleteBrandMutation,
   useGetBrandsByStoreQuery,
   useUpdateBrandMutation,
 } from "../../../Redux Toolkit/features/brand/brandApi";
-import { useSelector } from "react-redux";
-import ContentLayout from "../../Dashboard/ContentLayout";
+import { toast } from "sonner";
+import ReusableTable from "../../common/ReusableTable";
 
 export default function BrandList({ storeId }) {
+  const { userProfile } = useSelector((state) => state.user);
+
+  // Table & Modal State
   const [editingBrand, setEditingBrand] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
   const [page, setPage] = useState(0);
+  const [filters, setFilters] = useState({ search: "" });
   const size = 10;
 
-  // Fetch brands paginated
+  // Fetch Brands
   const { data, refetch, isLoading } = useGetBrandsByStoreQuery(
     { storeId, page, size },
     { refetchOnMountOrArgChange: true }
   );
 
-  const { userProfile } = useSelector((state) => state.user);
-
-  const pagination = {
-    first: data?.first ?? true,
-    last: data?.last ?? true,
-    pageNumber: data?.number ?? 0,
-    totalPages: data?.totalPages ?? 1,
-  };
-
   const [deleteBrand] = useDeleteBrandMutation();
   const [updateBrand] = useUpdateBrandMutation();
 
+  // Columns Definition
+  const columns = [
+    { header: "Brand Name", accessor: "name", sortable: true },
+    { header: "Description", accessor: "description" },
+    { 
+      header: "Status", 
+      accessor: "isActive", 
+      type: "custom", 
+      render: (val) => (
+        <Badge variant={val ? "default" : "secondary"}>
+          {val ? "Active" : "Inactive"}
+        </Badge>
+      ) 
+    },
+  ];
+
+  // Handlers
   const openDialog = (brand = null) => {
     setEditingBrand(brand);
     setShowDialog(true);
@@ -50,31 +69,78 @@ export default function BrandList({ storeId }) {
 
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this brand?")) return;
-    await deleteBrand(id).unwrap();
-    refetch();
+    try {
+      await deleteBrand(id).unwrap();
+      toast({ title: "Deleted", description: "Brand removed successfully" });
+      refetch();
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to delete brand", variant: "destructive" });
+    }
   };
 
   const toggleActive = async (brand) => {
-    await updateBrand({ id: brand.id, dto: { ...brand, isActive: !brand.isActive } }).unwrap();
-    refetch();
+    try {
+      await updateBrand({ id: brand.id, dto: { ...brand, isActive: !brand.isActive } }).unwrap();
+      toast({ title: "Updated", description: `Brand ${brand.isActive ? 'deactivated' : 'activated'}` });
+      refetch();
+    } catch (err) {
+      toast({ title: "Error", description: "Update failed", variant: "destructive" });
+    }
   };
 
+  // Actions column renderer
+  const renderActions = (brand) => (
+    <div className="flex items-center gap-2">
+      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openDialog(brand)}>
+        <Edit size={14} />
+      </Button>
+      <Button 
+        size="icon" 
+        variant="ghost" 
+        className={`h-8 w-8 ${brand.isActive ? 'text-orange-500' : 'text-green-500'}`} 
+        onClick={() => toggleActive(brand)}
+      >
+        {brand.isActive ? <PowerOff size={14} /> : <Power size={14} />}
+      </Button>
+      <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => handleDelete(brand.id)}>
+        <Trash2 size={14} />
+      </Button>
+    </div>
+  );
 
   return (
-    <ContentLayout loadingSpinner={isLoading} title="Brands" subTitle="Manage your store's brands here." right={
-              <Button onClick={() => openDialog()}>Create New Brand</Button>
+    <ContentLayout 
+      title="Brands" 
+      subTitle="Manage your store's brands and manufacturers" 
+      right={
+        <Button onClick={() => openDialog()} className="gap-2">
+          <Plus size={16} /> Create Brand
+        </Button>
+      }
+    >
+      <div className="bg-card rounded-xl border shadow-sm p-4">
+        <ReusableTable
+          columns={columns}
+          data={data?.brands || []}
+          loading={isLoading}
+          isServer={true} // Set to true since you're using paginated API
+          page={page}
+          totalPages={data?.totalPages || 1}
+          onPageChange={(newPage) => setPage(newPage)}
+          // enableSearch={true}
+          filters={filters}
+          setFilters={setFilters}
+          actions={renderActions}
+        />
+      </div>
 
-    }>
-    <div className="space-y-4">
-
-      {/* Dialog for Create/Edit */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingBrand ? "Edit Brand" : "Create Brand"}</DialogTitle>
+            <DialogTitle>{editingBrand ? "Update Brand" : "Add New Brand"}</DialogTitle>
           </DialogHeader>
           <BrandForm
-            storeId={userProfile?.user?.storeId}
+            storeId={storeId || userProfile?.user?.storeId}
             brand={editingBrand}
             onSuccess={() => {
               closeDialog();
@@ -83,51 +149,6 @@ export default function BrandList({ storeId }) {
           />
         </DialogContent>
       </Dialog>
-
-      {/* Header Section */}
-      
-
-      {/* Brand Cards */}
-      {data?.brands?.length === 0 && !isLoading && (
-        <p className="text-center text-muted-foreground">No brands found.</p>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {data?.brands.map((b) => (
-          <Card key={b.id} className="flex flex-col justify-between p-4 shadow-sm hover:shadow-md transition">
-            <div className="space-y-2">
-              <p className="text-lg font-bold">{b.name}</p>
-              <p className="text-sm text-muted-foreground">{b.description}</p>
-              <Badge variant={b.isActive ? "default" : "secondary"}>
-                {b.isActive ? "Active" : "Inactive"}
-              </Badge>
-            </div>
-            <div className="flex justify-end space-x-2 mt-4">
-              <Button size="sm" variant="outline" onClick={() => openDialog(b)}>Edit</Button>
-              <Button size="sm" variant="destructive" onClick={() => handleDelete(b.id)}>Delete</Button>
-              <Button size="sm" variant="ghost" onClick={() => toggleActive(b)}>
-                {b.isActive ? "Deactivate" : "Activate"}
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Pagination */}
-      {data?.brands?.length > 0 && (
-        <div className="flex justify-center items-center gap-4 mt-4">
-          <Button onClick={() => setPage((p) => Math.max(p - 1, 0))} disabled={pagination.first}>
-            Previous
-          </Button>
-          <span className="px-2 py-1 text-sm">
-            Page {pagination.pageNumber + 1} of {pagination.totalPages}
-          </span>
-          <Button onClick={() => setPage((p) => p + 1)} disabled={pagination.last}>
-            Next
-          </Button>
-        </div>
-      )}
-    </div>
     </ContentLayout>
   );
 }
