@@ -97,6 +97,10 @@ export const pathPermissions = (permissions = []) => {
     { name: "Balance Sheet", path: "/dashboard/branch/accounts/balance-sheet", icon: Report, permission: "ACCOUNTS" },
     { name: "Trial Balance", path: "/dashboard/branch/accounts/trial-balance", icon: Report, permission: "ACCOUNTS" },
   ]);
+  addParentWithChildren("Quik Ledgers", DollarSign, [
+    { name: "Stationary Exprenses", path: "/dashboard/branch/accounts/custom-ledgers", icon: Archive, permission: "ACCOUNTS" },
+    ])
+    ;
 
   /* ---------------- Orders / Transactions ---------------- */
   addParentWithChildren("Orders / Transactions", DollarSign, [

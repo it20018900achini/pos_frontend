@@ -45,6 +45,7 @@ import StoreDetailsPage from "../pages/SuperAdminDashboard/store/StoreDetailsPag
 import PendingRequestsPage from "../pages/SuperAdminDashboard/store/PendingRequestsPage";
 import EmployeeSalary from "../pages/Branch Manager/payroll/EmployeeSalary";
 import Payroll from "../pages/Branch Manager/payroll/Payroll";
+import QuickLedgers from "../pages/Accountant/accounting/QuickLedgers";
 
 const DashboardRoutes = () => {
   
@@ -77,7 +78,9 @@ const DashboardRoutes = () => {
       <Route path="branch/accounts/profit-loss" element={<ProfitLossReport />} />
       <Route path="branch/accounts/trial-balance" element={<TrialBalance />} />
       <Route path="branch/accounts/journals" element={<Journals />} />
-         
+
+      <Route path="branch/accounts/custom-ledgers" element={<QuickLedgers />} />
+
       
 
         <Route path="store/users" element={<StoreEmployees />} />
