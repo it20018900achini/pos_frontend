@@ -44,6 +44,7 @@ const flattenAccounts = (accounts) => {
 
 export default function JournalForm() {
   const { userProfile, selectedBranchId } = useSelector((state) => state.user);
+  const storeId=userProfile?.user?.store?.id
   const { toast } = useToast();
   
   const { data: accountsNested = [] } = useGetChartOfAccountsQuery(userProfile?.user?.store?.id);
@@ -115,10 +116,22 @@ export default function JournalForm() {
   }, [journal, isBalanced]);
 
   const handleSubmit = async () => {
+    // Safety check: ensure storeId exists before proceeding
+    if (!storeId) {
+      toast({ 
+        title: "Missing Context", 
+        description: "Store ID not found. Please refresh or re-login.", 
+        variant: "destructive" 
+      });
+      return;
+    }
+
     try {
       const payload = {
         entryDate: new Date(journal.date).toISOString(),
         description: journal.description,
+        storeId: Number(storeId), // ✅ Crucial fix: Include the store context
+        branchId: selectedBranchId ? Number(selectedBranchId) : null,
         lines: journal.lines.map((l) => ({
           accountId: Number(l.accountId),
           debit: Number(l.debit) || 0,
@@ -126,15 +139,26 @@ export default function JournalForm() {
         })),
       };
 
-      await createJournal({ branchId: selectedBranchId, ...payload }).unwrap();
+      // Ensure your createJournal mutation is set up to receive this storeId
+      await createJournal(payload).unwrap();
+      
       toast({ title: "Success", description: "Journal entry posted successfully." });
+      
+      // Reset form
       setJournal({
         date: new Date().toISOString().split('T')[0],
         description: "",
-        lines: [{ accountId: "", debit: 0, credit: 0 }, { accountId: "", debit: 0, credit: 0 }],
+        lines: [
+          { accountId: "", debit: 0, credit: 0 },
+          { accountId: "", debit: 0, credit: 0 }
+        ],
       });
     } catch (err) {
-      toast({ title: "Error", description: "Failed to post journal entry.", variant: "destructive" });
+      toast({ 
+        title: "Error", 
+        description: err.data?.message || "Failed to post journal entry.", 
+        variant: "destructive" 
+      });
     }
   };
 
@@ -192,6 +216,8 @@ export default function JournalForm() {
             </div>
           </div>
 
+          
+
           {/* Table */}
           <div className="rounded-2xl border border-border overflow-hidden">
             <table className="w-full text-left">
@@ -217,9 +243,14 @@ export default function JournalForm() {
                         <SelectContent className="max-h-[300px]">
                           {accounts.map((acc) => (
                             <SelectItem key={acc.id} value={acc.id.toString()}>
-                              <span className="font-mono text-xs text-muted-foreground mr-2">{acc.code}</span>
-                              <span className="font-medium">{acc.name}</span>
-                            </SelectItem>
+  <div className="flex justify-between items-center w-full gap-4">
+    <span>
+      <span className="font-mono text-[10px] bg-muted px-1 py-0.5 rounded mr-2">{acc.code}</span>
+      <span className="font-medium">{acc.name}</span>
+    </span>
+    <span className="text-[9px] uppercase opacity-50">{acc.type}</span>
+  </div>
+</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>

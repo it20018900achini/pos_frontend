@@ -37,6 +37,7 @@ import LedgerWithDialog from "./LedgerWithDialog";
 import ContentLayout from "../../../Dashboard/ContentLayout";
 import { useSelector } from "react-redux";
 import { cn } from "@/lib/utils";
+import { toast } from "@/components/ui/use-toast";
 
 /* ================= THEME-AWARE META ================= */
 const TYPE_META = {
@@ -114,7 +115,6 @@ const AccountRow = ({ acc, level, onEdit, onDelete }) => {
 
       {hasChildren && isOpen && (
         <div className="relative">
-          {/* Visual Vertical Line for hierarchy */}
           <div className="absolute left-[10px] top-0 bottom-2 w-px bg-border/40" style={{ marginLeft: `${level * 24}px` }} />
           {acc.children.map((child) => (
             <AccountRow key={child.id} acc={child} level={level + 1} onEdit={onEdit} onDelete={onDelete} />
@@ -128,10 +128,11 @@ const AccountRow = ({ acc, level, onEdit, onDelete }) => {
 /* ================= MAIN COMPONENT ================= */
 export default function ChartOfAccounts() {
   const storeId = useSelector((state) => state.user.userProfile?.user?.store?.id);
-  const { data: accounts = [], isLoading, isError, refetch } = useGetChartOfAccountsQuery(storeId);
+  const { data: accounts = [], isLoading, refetch } = useGetChartOfAccountsQuery(storeId);
+  
   const [createAccount, { isLoading: creating }] = useCreateChartOfAccountMutation();
   const [updateAccount] = useUpdateChartOfAccountMutation();
-  const [deleteAccount, { isLoading: deleting }] = useDeleteChartOfAccountMutation();
+  const [deleteAccount] = useDeleteChartOfAccountMutation();
 
   const [newAccount, setNewAccount] = useState({ code: "", name: "", type: "ASSET", parentId: null });
   const [editingAccount, setEditingAccount] = useState(null);
@@ -141,15 +142,31 @@ export default function ChartOfAccounts() {
   const parentOptions = useMemo(() => buildParentOptions(accounts), [accounts]);
 
   const handleCreate = async () => {
-    if (!newAccount.code || !newAccount.name) return;
-    await createAccount({
-      code: newAccount.code,
-      name: newAccount.name,
-      type: newAccount.type,
-      parent: newAccount.parentId ? { id: newAccount.parentId } : null,
-    }).unwrap();
-    setNewAccount({ code: "", name: "", type: "ASSET", parentId: null });
-    refetch();
+    if (!newAccount.code || !newAccount.name) {
+        toast({ title: "Validation Error", description: "Code and Name are required.", variant: "destructive" });
+        return;
+    }
+
+    if (!storeId) {
+        toast({ title: "Context Error", description: "No Store ID found in session.", variant: "destructive" });
+        return;
+    }
+
+    try {
+        await createAccount({
+            code: newAccount.code.trim(),
+            name: newAccount.name.trim(),
+            type: newAccount.type,
+            storeId: Number(storeId), // ✅ FIX: Added storeId
+            parent: newAccount.parentId ? { id: newAccount.parentId } : null,
+        }).unwrap();
+        
+        toast({ title: "Success", description: "Account registered successfully." });
+        setNewAccount({ code: "", name: "", type: "ASSET", parentId: null });
+        refetch();
+    } catch (err) {
+        toast({ title: "Error", description: err.data?.message || "Failed to create account.", variant: "destructive" });
+    }
   };
 
   return (
@@ -229,7 +246,13 @@ export default function ChartOfAccounts() {
         </div>
 
         {/* MODALS */}
-        <EditDialog editingAccount={editingAccount} setEditingAccount={setEditingAccount} updateAccount={updateAccount} parentOptions={parentOptions} refetch={refetch} />
+        <EditDialog 
+            editingAccount={editingAccount} 
+            setEditingAccount={setEditingAccount} 
+            updateAccount={updateAccount} 
+            refetch={refetch} 
+            storeId={storeId} // ✅ Passing storeId to modal
+        />
         <DeleteDialog deleteTarget={deleteTarget} setDeleteTarget={setDeleteTarget} deleteAccount={deleteAccount} refetch={refetch} />
       </div>
     </ContentLayout>
@@ -237,7 +260,7 @@ export default function ChartOfAccounts() {
 }
 
 /* ================= MODAL COMPONENTS ================= */
-const EditDialog = ({ editingAccount, setEditingAccount, updateAccount, parentOptions, refetch }) => (
+const EditDialog = ({ editingAccount, setEditingAccount, updateAccount, refetch, storeId }) => (
   <Dialog open={!!editingAccount} onOpenChange={() => setEditingAccount(null)}>
     <DialogContent className="sm:max-w-[425px] rounded-3xl">
       <DialogHeader>
@@ -269,7 +292,11 @@ const EditDialog = ({ editingAccount, setEditingAccount, updateAccount, parentOp
       )}
       <DialogFooter>
         <Button className="w-full rounded-xl font-bold" onClick={async () => {
-          await updateAccount({ ...editingAccount }).unwrap();
+          await updateAccount({ 
+            ...editingAccount,
+            storeId: Number(storeId) // ✅ FIX: Added storeId here too
+          }).unwrap();
+          toast({ title: "Updated", description: "Account changes saved." });
           setEditingAccount(null);
           refetch();
         }}>Update Ledger</Button>
@@ -295,6 +322,7 @@ const DeleteDialog = ({ deleteTarget, setDeleteTarget, deleteAccount, refetch })
         <Button variant="outline" className="rounded-xl font-bold" onClick={() => setDeleteTarget(null)}>Cancel</Button>
         <Button variant="destructive" className="rounded-xl font-bold px-8" onClick={async () => {
           await deleteAccount(deleteTarget.id).unwrap();
+          toast({ title: "Deleted", description: "Account removed from ledger." });
           setDeleteTarget(null);
           refetch();
         }}>Confirm Delete</Button>

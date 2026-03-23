@@ -3,6 +3,7 @@ import JournalForm from './components/JournalForm'
 import JournalDashboard from './JournalDashboard'
 import JournalByAccount from './components/JournalByAccount'
 import ContentLayout from '../../Dashboard/ContentLayout'
+import CustomForm from './CustomForm'
 
 function Journals() {
   return (
@@ -13,6 +14,8 @@ function Journals() {
                  {/* <JournalDashboard /> */}
          
                   <JournalByAccount/> {/* */}
+                  <hr/>
+                  <CustomForm/>
     </ContentLayout>
   )
 }
