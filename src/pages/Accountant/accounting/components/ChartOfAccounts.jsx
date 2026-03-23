@@ -30,7 +30,7 @@ import {
 import { 
   DollarSign, CreditCard, User, TrendingUp, BookOpen, 
   HelpCircle, Pencil, Trash2, Plus, ChevronRight, 
-  Layers, Search, FolderTree, AlertCircle
+  Layers, Search, FolderTree, AlertCircle, Lock
 } from "lucide-react";
 
 import LedgerWithDialog from "./LedgerWithDialog";
@@ -39,7 +39,7 @@ import { useSelector } from "react-redux";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 
-/* ================= THEME-AWARE META ================= */
+/* ================= SYSTEM CONSTANTS ================= */
 const TYPE_META = {
   ASSET: { icon: DollarSign, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
   LIABILITY: { icon: CreditCard, color: "text-rose-600 dark:text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20" },
@@ -49,6 +49,11 @@ const TYPE_META = {
   NA: { icon: HelpCircle, color: "text-slate-500", bg: "bg-slate-500/10", border: "border-slate-500/20" },
 };
 
+const SYSTEM_TITLES = ["1000", "2000"]; 
+const SYSTEM_SUBTITLES = ["1100", "1200", "2100", "2200"];
+const PROTECTED_CODES = [...SYSTEM_TITLES, ...SYSTEM_SUBTITLES];
+
+/* ================= HELPERS ================= */
 const buildParentOptions = (accounts, level = 0) => {
   let result = [];
   accounts.forEach((acc) => {
@@ -70,52 +75,92 @@ const AccountRow = ({ acc, level, onEdit, onDelete }) => {
   const meta = TYPE_META[acc.type ?? "NA"];
   const Icon = meta.icon;
   const hasChildren = acc.children && acc.children.length > 0;
+  
+  const isTitle = SYSTEM_TITLES.includes(acc.code);
+  const isSubTitle = SYSTEM_SUBTITLES.includes(acc.code);
+  const isProtected = PROTECTED_CODES.includes(acc.code);
 
   return (
     <div className="w-full">
       <div className={cn(
-        "group flex items-center justify-between py-2 px-3 rounded-xl transition-all duration-200 mb-1",
-        "hover:bg-accent/50 border border-transparent hover:border-border/60",
-        level === 0 ? "bg-muted/30" : "bg-transparent"
+        "group relative flex items-center justify-between py-3 px-4 rounded-2xl transition-all duration-300 mb-2",
+        "border border-white/5 backdrop-blur-sm", // Premium Glass Effect
+        isTitle 
+          ? "bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20 shadow-[0_0_20px_-12px_rgba(var(--primary),0.5)]" 
+          : "hover:bg-white/5 hover:border-white/10 hover:translate-x-1",
+        level === 0 && !isTitle ? "bg-white/[0.02]" : "bg-transparent"
       )}
-      style={{ marginLeft: `${level * 24}px`, width: `calc(100% - ${level * 24}px)` }}>
+      style={{ marginLeft: `${level * 28}px`, width: `calc(100% - ${level * 28}px)` }}>
         
-        <div className="flex items-center gap-3 overflow-hidden">
+        {/* Decorative Left Glow for Titles */}
+        {isTitle && <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.8)]" />}
+
+        <div className="flex items-center gap-4 overflow-hidden">
           {hasChildren ? (
-            <button onClick={() => setIsOpen(!isOpen)} className="hover:bg-background p-1 rounded transition-colors">
-              <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", isOpen && "rotate-90")} />
+            <button 
+              onClick={() => setIsOpen(!isOpen)} 
+              className="hover:bg-white/10 p-1.5 rounded-lg transition-all active:scale-90"
+            >
+              <ChevronRight className={cn("h-4 w-4 text-muted-foreground transition-transform duration-300", isOpen && "rotate-90 text-primary")} />
             </button>
           ) : (
-            <div className="w-5.5 px-2 text-muted-foreground/30">•</div>
+            <div className="w-7 flex justify-center opacity-20"><div className="h-1 w-1 rounded-full bg-current" /></div>
           )}
           
-          <div className={cn("p-1.5 rounded-lg", meta.bg)}>
+          <div className={cn(
+            "p-2 rounded-xl shadow-inner transition-transform group-hover:scale-110 duration-500", 
+            meta.bg, "ring-1 ring-white/10"
+          )}>
             <Icon className={cn("h-4 w-4", meta.color)} />
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 overflow-hidden">
-            <span className="font-mono text-xs font-bold text-muted-foreground tracking-tighter">{acc.code}</span>
-            <span className="font-semibold text-sm truncate text-foreground">{acc.name}</span>
-            <Badge variant="outline" className={cn("text-[10px] uppercase font-black px-1.5 py-0", meta.color, meta.border)}>
-              {acc.type}
-            </Badge>
+          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4">
+            <span className={cn(
+                "font-mono text-[10px] tracking-widest opacity-50 uppercase",
+                isTitle ? "text-primary opacity-100 font-black" : "font-bold"
+            )}>{acc.code}</span>
+            
+            <div className="flex items-center gap-3">
+                <span className={cn(
+                    "truncate tracking-tight transition-colors",
+                    isTitle ? "text-base font-black uppercase tracking-normal" : "text-sm font-medium text-foreground/90 group-hover:text-foreground"
+                )}>{acc.name}</span>
+                
+                {isProtected && (
+                    <div className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
+                       <Lock className="h-2.5 w-2.5 text-muted-foreground/60" />
+                       <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-tighter">System</span>
+                    </div>
+                )}
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <LedgerWithDialog accountId={acc.id} />
-          <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full" onClick={() => onEdit(acc)}>
-            <Pencil className="h-3.5 w-3.5" />
-          </Button>
-          <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full text-rose-500 hover:text-rose-600 hover:bg-rose-500/10" onClick={() => onDelete(acc)}>
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+        <div className="flex items-center gap-1 px-2">
+            {!isProtected && (
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                <LedgerWithDialog accountId={acc.id} />
+                <Button size="icon" variant="ghost" className="h-9 w-9 rounded-xl hover:bg-white/10" onClick={() => onEdit(acc)}>
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+                <Button size="icon" variant="ghost" className="h-9 w-9 rounded-xl hover:bg-rose-500/10 text-rose-500/70 hover:text-rose-500" onClick={() => onDelete(acc)}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )}
+            <Badge variant="outline" className={cn(
+                "text-[9px] uppercase font-black px-2 py-0.5 rounded-lg border-0 bg-white/5", 
+                meta.color
+            )}>
+              {acc.type}
+            </Badge>
         </div>
       </div>
 
       {hasChildren && isOpen && (
-        <div className="relative">
-          <div className="absolute left-[10px] top-0 bottom-2 w-px bg-border/40" style={{ marginLeft: `${level * 24}px` }} />
+        <div className="relative ml-6">
+          {/* Refined connection line with gradient */}
+          <div className="absolute left-[2px] top-0 bottom-4 w-[1px] bg-gradient-to-b from-border/60 via-border/20 to-transparent" />
           {acc.children.map((child) => (
             <AccountRow key={child.id} acc={child} level={level + 1} onEdit={onEdit} onDelete={onDelete} />
           ))}
@@ -157,7 +202,7 @@ export default function ChartOfAccounts() {
             code: newAccount.code.trim(),
             name: newAccount.name.trim(),
             type: newAccount.type,
-            storeId: Number(storeId), // ✅ FIX: Added storeId
+            storeId: Number(storeId),
             parent: newAccount.parentId ? { id: newAccount.parentId } : null,
         }).unwrap();
         
@@ -173,7 +218,7 @@ export default function ChartOfAccounts() {
     <ContentLayout loadingSpinner={isLoading} title="Chart of Accounts" subTitle="Manage your financial ledger structure.">
       <div className="max-w-6xl mx-auto space-y-6 pb-20">
         
-        {/* ACTION BAR & CREATION */}
+        {/* ADD FORM */}
         <Card className="border-none shadow-xl bg-card overflow-hidden">
           <CardHeader className="bg-muted/30 border-b pb-4">
             <div className="flex items-center gap-2">
@@ -211,13 +256,13 @@ export default function ChartOfAccounts() {
                 </Select>
               </div>
             </div>
-            <Button className="mt-6 w-full md:w-auto px-8 rounded-xl font-bold shadow-lg shadow-primary/20 transition-all active:scale-95" onClick={handleCreate} disabled={creating}>
+            <Button className="mt-6 w-full md:w-auto px-8 rounded-xl font-bold" onClick={handleCreate} disabled={creating}>
               {creating ? "Creating..." : "Register Account"}
             </Button>
           </CardContent>
         </Card>
 
-        {/* ACCOUNT TREE LIST */}
+        {/* LIST */}
         <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="p-4 border-b bg-muted/10 flex items-center justify-between">
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -228,7 +273,7 @@ export default function ChartOfAccounts() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <input 
                   placeholder="Filter accounts..." 
-                  className="bg-muted/50 border border-border/50 text-xs rounded-full pl-9 pr-4 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary w-48 md:w-64"
+                  className="bg-muted/50 border border-border/50 text-xs rounded-full pl-9 pr-4 py-1.5 focus:outline-none w-48 md:w-64"
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
@@ -239,33 +284,24 @@ export default function ChartOfAccounts() {
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                 <Layers className="h-10 w-10 mb-4 opacity-20" />
-                <p className="text-sm font-medium">No accounts found in this store.</p>
+                <p className="text-sm font-medium">No accounts found.</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* MODALS */}
-        <EditDialog 
-            editingAccount={editingAccount} 
-            setEditingAccount={setEditingAccount} 
-            updateAccount={updateAccount} 
-            refetch={refetch} 
-            storeId={storeId} // ✅ Passing storeId to modal
-        />
+        <EditDialog editingAccount={editingAccount} setEditingAccount={setEditingAccount} updateAccount={updateAccount} refetch={refetch} storeId={storeId} />
         <DeleteDialog deleteTarget={deleteTarget} setDeleteTarget={setDeleteTarget} deleteAccount={deleteAccount} refetch={refetch} />
       </div>
     </ContentLayout>
   );
 }
 
-/* ================= MODAL COMPONENTS ================= */
 const EditDialog = ({ editingAccount, setEditingAccount, updateAccount, refetch, storeId }) => (
   <Dialog open={!!editingAccount} onOpenChange={() => setEditingAccount(null)}>
     <DialogContent className="sm:max-w-[425px] rounded-3xl">
       <DialogHeader>
         <DialogTitle className="text-xl font-black">Modify Account</DialogTitle>
-        <DialogDescription>Update the ledger details for {editingAccount?.name}.</DialogDescription>
       </DialogHeader>
       {editingAccount && (
         <div className="space-y-4 py-4">
@@ -277,26 +313,12 @@ const EditDialog = ({ editingAccount, setEditingAccount, updateAccount, refetch,
             <label className="text-right text-xs font-bold">Name</label>
             <Input className="col-span-3" value={editingAccount.name} onChange={e => setEditingAccount({...editingAccount, name: e.target.value})} />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label className="text-right text-xs font-bold">Type</label>
-            <div className="col-span-3">
-              <Select value={editingAccount.type} onValueChange={v => setEditingAccount({...editingAccount, type: v, parent: null})}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.keys(TYPE_META).filter(t => t !== "NA").map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
         </div>
       )}
       <DialogFooter>
         <Button className="w-full rounded-xl font-bold" onClick={async () => {
-          await updateAccount({ 
-            ...editingAccount,
-            storeId: Number(storeId) // ✅ FIX: Added storeId here too
-          }).unwrap();
-          toast({ title: "Updated", description: "Account changes saved." });
+          await updateAccount({ ...editingAccount, storeId: Number(storeId) }).unwrap();
+          toast({ title: "Updated", description: "Account saved." });
           setEditingAccount(null);
           refetch();
         }}>Update Ledger</Button>
@@ -307,25 +329,17 @@ const EditDialog = ({ editingAccount, setEditingAccount, updateAccount, refetch,
 
 const DeleteDialog = ({ deleteTarget, setDeleteTarget, deleteAccount, refetch }) => (
   <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
-    <DialogContent className="rounded-3xl border-rose-500/20">
+    <DialogContent className="rounded-3xl">
       <DialogHeader>
-        <div className="bg-rose-500/10 w-fit p-3 rounded-full mb-2">
-            <AlertCircle className="h-6 w-6 text-rose-600" />
-        </div>
-        <DialogTitle className="text-xl font-black">Permanent Deletion</DialogTitle>
-        <DialogDescription>
-          Are you sure you want to delete <span className="font-bold text-foreground">{deleteTarget?.name}</span>? 
-          This will fail if the account has existing transactions.
-        </DialogDescription>
+        <DialogTitle className="text-xl font-black">Confirm Deletion</DialogTitle>
       </DialogHeader>
-      <DialogFooter className="gap-2 sm:gap-0">
-        <Button variant="outline" className="rounded-xl font-bold" onClick={() => setDeleteTarget(null)}>Cancel</Button>
-        <Button variant="destructive" className="rounded-xl font-bold px-8" onClick={async () => {
+      <DialogFooter>
+        <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+        <Button variant="destructive" onClick={async () => {
           await deleteAccount(deleteTarget.id).unwrap();
-          toast({ title: "Deleted", description: "Account removed from ledger." });
           setDeleteTarget(null);
           refetch();
-        }}>Confirm Delete</Button>
+        }}>Delete</Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>

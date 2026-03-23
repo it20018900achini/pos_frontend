@@ -1,193 +1,195 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useSelector } from "react-redux";
+import { 
+  useCreateJournalMutation, 
+  useGetChartOfAccountsQuery 
+} from "@/Redux Toolkit/features/accounting/accountingApi";
+import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Save, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+import { 
+  Sparkles, Wallet, Receipt, 
+  Calendar as CalendarIcon, CreditCard, Save, Loader2 
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export default function CustomForm() {
-  // 1. State Structure (Header + Array of Objects for Lines)
-  const [journal, setJournal] = useState({
-    entryDate: new Date().toISOString().split('T')[0],
-    reference: "",
-    notes: "",
-    lines: [
-      { accountId: "", description: "", debit: 0, credit: 0 },
-      { accountId: "", description: "", debit: 0, credit: 0 },
-    ],
+// Reuse your flattening helper
+const flattenAccounts = (accounts) => {
+  let result = [];
+  const traverse = (accList) => {
+    accList.forEach((acc) => {
+      result.push(acc);
+      if (acc.children?.length) traverse(acc.children);
+    });
+  };
+  traverse(accounts || []);
+  return result;
+};
+
+export default function SimpleExpenseForm() {
+  const { toast } = useToast();
+  const { userProfile, selectedBranchId } = useSelector((state) => state.user);
+  const storeId = userProfile?.user?.store?.id;
+
+  // API Hooks
+  const { data: accountsNested = [] } = useGetChartOfAccountsQuery(storeId, { skip: !storeId });
+  const [createJournal, { isLoading }] = useCreateJournalMutation();
+
+  const accounts = useMemo(() => flattenAccounts(accountsNested), [accountsNested]);
+
+  const [expense, setExpense] = useState({
+    description: "",
+    amount: "",
+    date: new Date().toISOString().split('T')[0],
+    accountId: "", // The Expense Account (Debit)
   });
 
-  // 2. Logic to calculate totals from the array of objects
-  const totals = useMemo(() => {
-    return journal.lines.reduce(
-      (acc, line) => {
-        acc.debit += Number(line.debit || 0);
-        acc.credit += Number(line.credit || 0);
-        return acc;
-      },
-      { debit: 0, credit: 0 }
-    );
-  }, [journal.lines]);
+  const handlePost = async () => {
+    if (!storeId || !expense.accountId || !expense.amount) return;
 
-  const isBalanced = totals.debit > 0 && totals.debit === totals.credit;
+    try {
+      const payload = {
+        entryDate: new Date(expense.date).toISOString(),
+        description: expense.description || "Quick Expense",
+        storeId: Number(storeId),
+        branchId: selectedBranchId ? Number(selectedBranchId) : null,
+        lines: [
+          { 
+            accountId: Number(expense.accountId), 
+            debit: Number(expense.amount), 
+            credit: 0 
+          },
+          { 
+            accountId: 1, // 🚨 REPLACE with your actual Cash Account ID (e.g., from a constant)
+            debit: 0, 
+            credit: Number(expense.amount) 
+          }
+        ]
+      };
 
-  // 3. Handlers for Array Manipulation
-  const handleLineChange = (index, field, value) => {
-    const newLines = [...journal.lines];
-    newLines[index][field] = value;
-
-    // Standard Accounting UX: If debit is entered, clear credit and vice versa
-    if (field === "debit" && value > 0) newLines[index].credit = 0;
-    if (field === "credit" && value > 0) newLines[index].debit = 0;
-
-    setJournal({ ...journal, lines: newLines });
-  };
-
-  const addLine = () => {
-    setJournal({
-      ...journal,
-      lines: [...journal.lines, { accountId: "", description: "", debit: 0, credit: 0 }],
-    });
-  };
-
-  const removeLine = (index) => {
-    if (journal.lines.length <= 2) return; // Keep minimum 2 lines
-    setJournal({
-      ...journal,
-      lines: journal.lines.filter((_, i) => i !== index),
-    });
-  };
-
-  const handleSubmit = () => {
-    console.log("Submitting Journal Entity:", journal);
-    // Call your RTK Mutation here
+      await createJournal(payload).unwrap();
+      
+      toast({ title: "Success", description: "Expense recorded and balanced." });
+      setExpense({ ...expense, amount: "", description: "", accountId: "" });
+    } catch (err) {
+      toast({ 
+        title: "Error", 
+        description: err.data?.message || "Failed to post expense.", 
+        variant: "destructive" 
+      });
+    }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
-      <Card className="shadow-lg border-t-4 border-t-primary">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-xl font-bold">New Journal Entry</CardTitle>
-          <div className={cn(
-            "px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2",
-            isBalanced ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
-          )}>
-            {isBalanced ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
-            {isBalanced ? "Balanced" : `Unbalanced: ${(totals.debit - totals.credit).toFixed(2)}`}
+    <div className="max-w-xl mx-auto p-6 md:pt-12">
+      <div className="space-y-8">
+        <div className="space-y-2 px-2">
+          <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.3em]">
+            <Sparkles size={14} /> Quick Ledger
           </div>
-        </CardHeader>
+          <h1 className="text-4xl font-black tracking-tighter text-slate-900">Record Expense</h1>
+        </div>
 
-        <CardContent className="space-y-6">
-          {/* --- HEADER SECTION --- */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase text-gray-500">Date</label>
-              <Input 
-                type="date" 
-                value={journal.entryDate} 
-                onChange={(e) => setJournal({...journal, entryDate: e.target.value})}
-              />
+        <Card className="border-none shadow-[0_40px_80px_-15px_rgba(0,0,0,0.1)] bg-white rounded-[2.5rem] overflow-hidden">
+          <CardContent className="p-10 space-y-8">
+            
+            {/* Amount Hero */}
+            <div className="relative group flex flex-col items-center justify-center py-8 bg-slate-50 rounded-[2rem] border border-slate-100 transition-all focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/5">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Amount to Debit</span>
+              <div className="flex items-center">
+                <span className="text-2xl font-black text-slate-300 mr-2">$</span>
+                <input 
+                  type="number"
+                  placeholder="0.00"
+                  value={expense.amount}
+                  onChange={(e) => setExpense({...expense, amount: e.target.value})}
+                  className="bg-transparent text-5xl font-black tracking-tighter w-full max-w-[220px] text-center outline-none placeholder:text-slate-200"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase text-gray-500">Reference #</label>
-              <Input 
-                placeholder="JE-1001" 
-                value={journal.reference} 
-                onChange={(e) => setJournal({...journal, reference: e.target.value})}
-              />
-            </div>
-          </div>
 
-          {/* --- LINES SECTION (Array of Objects) --- */}
-          <div className="rounded-lg border overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="p-3 text-left">Account</th>
-                  <th className="p-3 text-right w-32">Debit</th>
-                  <th className="p-3 text-right w-32">Credit</th>
-                  <th className="p-3 text-center w-12"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {journal.lines.map((line, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="p-2">
-                      <Select 
-                        value={line.accountId} 
-                        onValueChange={(v) => handleLineChange(idx, 'accountId', v)}
-                      >
-                        <SelectTrigger className="border-none shadow-none focus:ring-0">
-                          <SelectValue placeholder="Select Account" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1001 - Cash</SelectItem>
-                          <SelectItem value="2">4001 - Revenue</SelectItem>
-                          <SelectItem value="3">5001 - Rent Expense</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </td>
-                    <td className="p-2">
-                      <Input 
-                        type="number" 
-                        className="text-right border-none shadow-none focus-visible:ring-1" 
-                        value={line.debit || ""}
-                        onChange={(e) => handleLineChange(idx, 'debit', parseFloat(e.target.value) || 0)}
-                      />
-                    </td>
-                    <td className="p-2">
-                      <Input 
-                        type="number" 
-                        className="text-right border-none shadow-none focus-visible:ring-1" 
-                        value={line.credit || ""}
-                        onChange={(e) => handleLineChange(idx, 'credit', parseFloat(e.target.value) || 0)}
-                      />
-                    </td>
-                    <td className="p-2 text-center">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-red-500" 
-                        onClick={() => removeLine(idx)}
-                      >
-                        <Trash2 size={14} />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="p-3 bg-gray-50/50 border-t">
-              <Button variant="outline" size="sm" onClick={addLine} className="text-xs">
-                <Plus size={14} className="mr-1" /> Add Line
-              </Button>
-            </div>
-          </div>
+            <div className="grid gap-6">
+              {/* Account Selection */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                  <Receipt size={12} /> Expense Category
+                </label>
+                <Select 
+                  value={expense.accountId} 
+                  onValueChange={(v) => setExpense({...expense, accountId: v})}
+                >
+                  <SelectTrigger className="h-14 rounded-2xl bg-slate-50 border-none px-6 text-base font-bold">
+                    <SelectValue placeholder="Select Account" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl shadow-2xl border-slate-100">
+                    {accounts.map((acc) => (
+                      <SelectItem key={acc.id} value={acc.id.toString()} className="py-3">
+                        <div className="flex justify-between items-center w-64">
+                          <span className="font-bold text-sm">{acc.name}</span>
+                          <span className="text-[10px] font-mono opacity-40">{acc.code}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {/* --- FOOTER TOTALS --- */}
-          <div className="flex flex-col items-end gap-2 pr-12">
-            <div className="flex justify-between w-64 text-sm">
-              <span className="text-gray-500 font-medium">Total Debit:</span>
-              <span className="font-bold">{totals.debit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div className="flex justify-between w-64 text-sm border-b pb-2">
-              <span className="text-gray-500 font-medium">Total Credit:</span>
-              <span className="font-bold">{totals.credit.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-            </div>
-          </div>
+              {/* Description */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Notes / Ref</label>
+                <Input 
+                  placeholder="What was this for?"
+                  value={expense.description}
+                  onChange={(e) => setExpense({...expense, description: e.target.value})}
+                  className="h-14 rounded-2xl bg-slate-50 border-none px-6 font-bold"
+                />
+              </div>
 
-          <Button 
-            className="w-full" 
-            disabled={!isBalanced || !journal.reference}
-            onClick={handleSubmit}
-          >
-            <Save size={16} className="mr-2" /> Post Journal Entry
-          </Button>
-        </CardContent>
-      </Card>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2 text-left">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                    <CalendarIcon size={12} /> Date
+                  </label>
+                  <Input 
+                    type="date"
+                    value={expense.date}
+                    onChange={(e) => setExpense({...expense, date: e.target.value})}
+                    className="h-14 rounded-2xl bg-slate-50 border-none px-6 font-bold"
+                  />
+                </div>
+                <div className="space-y-2 text-left">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                    <Wallet size={12} /> Paid From
+                  </label>
+                  <div className="h-14 rounded-2xl bg-slate-100/50 border border-slate-100 px-6 flex items-center gap-3">
+                    <CreditCard size={14} className="text-primary" />
+                    <span className="text-xs font-black uppercase text-slate-600">Cash Account</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Button 
+              onClick={handlePost}
+              disabled={isLoading || !expense.amount || !expense.accountId}
+              className="w-full h-16 rounded-[1.5rem] bg-slate-900 hover:bg-slate-800 text-white font-black text-lg shadow-xl transition-all active:scale-[0.98]"
+            >
+              {isLoading ? <Loader2 className="animate-spin" /> : <><Save className="mr-3" size={20} /> Post Expense</>}
+            </Button>
+
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
