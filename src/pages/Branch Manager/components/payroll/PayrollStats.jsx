@@ -20,6 +20,7 @@ import {
   CalendarDays 
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import PayrollAdmin from "./PayrollAdmin";
 
 export default function PayrollStats({ branchId, renderChart }) {
   const [year, setYear] = useState(new Date().getFullYear());
@@ -46,7 +47,7 @@ export default function PayrollStats({ branchId, renderChart }) {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      
+      <PayrollAdmin/>
       {/* --- HEADER & FILTERS --- */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
         <div>

@@ -1,27 +1,46 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useSelector } from "react-redux";
+import ReusableTable from "@/pages/common/ReusableTable"; // Changed to Default Import
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import ConfirmDialog from "./ConfirmDialog";
-
-import {
-  useGetBranchPayrollsQuery,
-  useApprovePayrollMutation,
-  useMarkPayrollPaidMutation,
+import { 
+  useGetBranchPayrollsQuery, 
+  useApprovePayrollMutation, 
+  useMarkPayrollPaidMutation 
 } from "@/Redux Toolkit/features/payroll/payrollApi";
 
-export default function PayrollTable({ branchId, year, month, onSelectEmployee, onActionComplete }) {
-  const { data: payrolls, isLoading, error } = useGetBranchPayrollsQuery({ branchId, year, month });
+export default function PayrollTable({ onSelectEmployee, onActionComplete }) {
+  const { selectedBranchId } = useSelector((state) => state.user);
+  
+  // 1. Unified Filter State (matches your ReusableTable structure)
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "",
+    paymentType: "",
+    startDate: "",
+    endDate: "",
+    pageSize: 10,
+    page: 0, // Track page inside filters or separately
+  });
+
+  const { data, isLoading } = useGetBranchPayrollsQuery({
+    branchId: selectedBranchId,
+    year: 2025,
+    month: 11,
+    page: filters.page,
+    size: filters.pageSize,
+    search: filters.search, // Passing search to server if isServer={true}
+    status: filters.status
+  }, { skip: !selectedBranchId });
+
   const [approvePayroll] = useApprovePayrollMutation();
   const [markPaid] = useMarkPayrollPaidMutation();
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogData, setDialogData] = useState({}); // { action: "approve" | "pay", payrollId: number }
-
-  if (isLoading) return <p>Loading payrolls...</p>;
-  if (error) return <p>Error loading payrolls</p>;
-  if (!payrolls?.length) return <p>No payrolls found</p>;
+  const [dialogData, setDialogData] = useState({ action: "", payrollId: null });
 
   const handleActionClick = (action, payrollId) => {
     setDialogData({ action, payrollId });
@@ -29,79 +48,87 @@ export default function PayrollTable({ branchId, year, month, onSelectEmployee, 
   };
 
   const handleConfirm = async () => {
-    const { action, payrollId } = dialogData;
     try {
-      if (action === "approve") await approvePayroll(payrollId);
-      if (action === "pay") await markPaid({ payrollId });
+      if (dialogData.action === "approve") await approvePayroll(dialogData.payrollId).unwrap();
+      else await markPaid({ payrollId: dialogData.payrollId }).unwrap();
+      setDialogOpen(false);
       onActionComplete?.();
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  const statusColors = {
-    DRAFT: "bg-gray-300 text-gray-800",
-    APPROVED: "bg-blue-300 text-blue-800",
-    PAID: "bg-green-300 text-green-800",
-    CANCELLED: "bg-red-300 text-red-800",
-    PENDING: "bg-orange-300 text-orange-800",
-  };
+  // 2. Column Definitions
+  const columns = [
+    {
+      header: "Employee",
+      accessor: "employeeName", // Matches DTO
+      render: (value, row) => (
+        <div onClick={() => onSelectEmployee?.(row.employeeId)} className="cursor-pointer">
+          <p className="font-bold text-gray-900">{value}</p>
+          <p className="text-[10px] text-gray-500 uppercase">{row.employeeEmail}</p>
+        </div>
+      ),
+    },
+    { 
+      header: "Net Salary", 
+      accessor: "netSalary", 
+      render: (val) => `Rs. ${val?.toLocaleString()}` 
+    },
+    { 
+      header: "Status", 
+      accessor: "status", 
+      type: "status" // This triggers your renderStatusBadge in ReusableTable
+    },
+  ];
+
+  // 3. Row Actions
+  const renderActions = (row) => (
+    <div className="flex gap-2">
+      {row.status === "DRAFT" && (
+        <Button size="sm" variant="outline" onClick={() => handleActionClick("approve", row.id)}>
+          Approve
+        </Button>
+      )}
+      {row.status === "APPROVED" && (
+        <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => handleActionClick("pay", row.id)}>
+          Mark Paid
+        </Button>
+      )}
+    </div>
+  );
+
+  if (!selectedBranchId) return <div className="p-8 text-center text-amber-600 font-medium">Please select a branch.</div>;
 
   return (
-    <>
-      <table className="w-full table-auto border border-gray-300">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2 border">Employee</th>
-            <th className="p-2 border">Basic Salary</th>
-            <th className="p-2 border">Allowances</th>
-            <th className="p-2 border">Deductions</th>
-            <th className="p-2 border">Gross Salary</th>
-            <th className="p-2 border">Net Salary</th>
-            <th className="p-2 border">Status</th>
-            <th className="p-2 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {payrolls.map((p) => (
-            <tr key={p.id} className="hover:bg-gray-50 cursor-pointer">
-              <td className="p-2 border" onClick={() => onSelectEmployee?.(p.employee.id)}>
-                
-                  <div className="font-medium">{p?.employee?.fullName}</div>
-                    <div className="text-xs text-gray-500">{p?.employee.email}</div>
-                  
-
-              </td>
-              <td className="p-2 border">{p.basicSalary}</td>
-              <td className="p-2 border">{p.allowances}</td>
-              <td className="p-2 border">{p.totalDeductions}</td>
-              <td className="p-2 border">{p.grossSalary}</td>
-              <td className="p-2 border">{p.netSalary}</td>
-              <td className="p-2 border">
-                <Badge className={statusColors[p.status] || "bg-gray-300 text-gray-800"}>
-                  {p.status}
-                </Badge>
-              </td>
-              <td className="p-2 border flex gap-2">
-                {p.status === "DRAFT" && (
-                  <Button size="sm" onClick={() => handleActionClick("approve", p.id)}>Approve</Button>
-                )}
-                {p.status === "APPROVED" && (
-                  <Button size="sm" onClick={() => handleActionClick("pay", p.id)}>Mark Paid</Button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="p-4 bg-white dark:bg-neutral-950 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-800">
+      <ReusableTable
+        isServer={true} // Setting to true since we are using RTK Query pagination
+        columns={columns}
+        data={data?.content || []}
+        loading={isLoading}
+        actions={renderActions}
+        
+        // Pagination Props
+        page={filters.page}
+        totalPages={data?.totalPages || 0}
+        onPageChange={(newPage) => setFilters({ ...filters, page: newPage })}
+        
+        // Filter Props
+        filters={filters}
+        setFilters={setFilters}
+        enableSearch={true}
+        enableStatusFilter={true}
+        onFilter={(updatedFilters) => {
+            // This triggers when "Apply Filters" is clicked
+            setFilters({ ...updatedFilters, page: 0 }); 
+        }}
+      />
 
       <ConfirmDialog
         open={dialogOpen}
         setOpen={setDialogOpen}
-        title={dialogData.action === "approve" ? "Confirm Approve" : "Confirm Mark Paid"}
-        description={`Are you sure you want to ${dialogData.action === "approve" ? "approve" : "mark as paid"} this payroll?`}
+        title="Confirm Payroll Action"
         onConfirm={handleConfirm}
       />
-    </>
+    </div>
   );
 }
