@@ -118,6 +118,30 @@ getBalanceSheet: builder.query({
         `/accounting/journals/account/${accountId}?page=${page}&size=${size}`,
       providesTags: ["Ledger"],
     }),
+
+    getQuickLedgers: builder.query({
+      query: (storeId) => `/quick-ledgers/store/${storeId}`,
+      providesTags: ["QuickLedger"],
+    }),
+
+    getQuickLedgersById: builder.query({
+      query: (id) => `/quick-ledgers/${id}`,
+      providesTags: ["QuickLedger"],
+    }),
+    createQuickLedger: builder.mutation({
+      query: (body) => ({ url: "/quick-ledgers", method: "POST", body }),
+      invalidatesTags: ["QuickLedger"],
+    }),
+    updateQuickLedger: builder.mutation({
+      query: ({ id, ...body }) => ({ url: `/quick-ledgers/${id}`, method: "PUT", body }),
+      invalidatesTags: ["QuickLedger"],
+    }),
+    deleteQuickLedger: builder.mutation({
+      query: (id) => ({ url: `/quick-ledgers/${id}`, method: "DELETE" }),
+      invalidatesTags: ["QuickLedger"],
+    }),
+
+    
   }),
   overrideExisting: false,
 });
@@ -150,4 +174,10 @@ export const {
   useGetBalanceSheetQuery,
   useGetTotalExpensesPerCategoryQuery,
   useGetExpenseReportQuery,
+
+  useGetQuickLedgersQuery, 
+  useGetQuickLedgersByIdQuery, 
+  useCreateQuickLedgerMutation, 
+  useUpdateQuickLedgerMutation, 
+  useDeleteQuickLedgerMutation
 } = accountingApi;

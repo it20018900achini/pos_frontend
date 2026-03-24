@@ -79,8 +79,7 @@ const DashboardRoutes = () => {
       <Route path="branch/accounts/trial-balance" element={<TrialBalance />} />
       <Route path="branch/accounts/journals" element={<Journals />} />
 
-      <Route path="branch/accounts/custom-ledgers" element={<QuickLedgers />} />
-
+<Route path="branch/accounts/custom-ledgers/:id" element={<QuickLedgers />} />
       
 
         <Route path="store/users" element={<StoreEmployees />} />
