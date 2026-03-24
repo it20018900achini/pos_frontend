@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { 
   useGetQuickLedgersQuery, 
-  useCreateQuickLedgerMutation, 
+   
   useUpdateQuickLedgerMutation,
   useDeleteQuickLedgerMutation,
   useGetChartOfAccountsQuery 
@@ -18,7 +18,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { Trash2, Plus, LayoutGrid, Receipt, Wallet, Settings2, Loader2, Save, AlertCircle } from "lucide-react";
+import { Trash2, Plus, LayoutGrid, Receipt, Wallet, Settings2, Loader2, Save, ArrowLeftRight, Info } from "lucide-react";
+import { useCreateJournalMutation } from "../../../Redux Toolkit/features/accounting/accountingApi";
 
 export default function ManageQuickLedgers() {
   const { toast } = useToast();
@@ -29,90 +30,65 @@ export default function ManageQuickLedgers() {
   const { data: templates, isLoading: fetchingTemplates } = useGetQuickLedgersQuery(storeId, { skip: !storeId });
   const { data: accounts } = useGetChartOfAccountsQuery(storeId, { skip: !storeId });
   
-  const [createTemplate, { isLoading: isCreating }] = useCreateQuickLedgerMutation();
+  const [createTemplate, { isLoading: isCreating }] = useCreateJournalMutation(); 
   const [updateTemplate, { isLoading: isUpdating }] = useUpdateQuickLedgerMutation();
   const [deleteTemplate] = useDeleteQuickLedgerMutation();
 
   // --- UI STATE ---
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  
-  // Important: Changed 'row' to 'rows' to match Backend DTO
   const [formData, setFormData] = useState({ title: "", rows: [] });
 
-  // --- UTILS ---
-  const flattenAccounts = (nodes, level = 0) => {
-    if (!nodes) return [];
-    return nodes.reduce((acc, node) => {
-      const isParent = node.children && node.children.length > 0;
-      const flatNode = { id: node.id, name: node.name, code: node.code, level, isParent };
-      return [...acc, flatNode, ...flattenAccounts(node.children, level + 1)];
-    }, []);
-  };
+  // --- UTILS: Flatten Accounts for Select ---
+  const treeAccounts = useMemo(() => {
+    const flatten = (nodes, level = 0) => {
+      if (!nodes) return [];
+      return nodes.reduce((acc, node) => {
+        const isParent = node.children && node.children.length > 0;
+        return [...acc, { ...node, level, isParent }, ...flatten(node.children, level + 1)];
+      }, []);
+    };
+    return flatten(accounts);
+  }, [accounts]);
 
-  const treeAccounts = useMemo(() => (accounts ? flattenAccounts(accounts) : []), [accounts]);
-
-  // --- HANDLERS ---
-  const resetForm = () => {
-    setFormData({ title: "", rows: [] });
-    setEditingId(null);
-    setIsOpen(false);
-  };
-
-  const handleOpenCreate = () => {
-    resetForm();
-    setIsOpen(true);
-  };
-
-  const handleOpenEdit = (template) => {
-    setEditingId(template.id);
-    setFormData({
-      title: template.title,
-      // Map DTO rows back to form state
-      rows: template.rows.map(r => ({ 
-        ...r, 
-        accountId: r.accountId?.toString() // Select components usually prefer strings
-      }))
-    });
-    setIsOpen(true);
-  };
-
-  const addRow = () => {
-    setFormData(prev => ({
-      ...prev,
-      rows: [...prev.rows, { 
-        accountId: "", label: "", creditOrDebit: "DEBIT", 
-        isInputTag: true, isVisible: true, type: "input", position: "top" 
-      }]
-    }));
-  };
-
-  const removeRow = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      rows: prev.rows.filter((_, i) => i !== index)
-    }));
-  };
-
+  // --- SMART UPDATE LOGIC ---
   const updateRow = (index, field, value) => {
-    const updatedRows = [...formData.rows];
-    updatedRows[index][field] = value;
-    setFormData(prev => ({ ...prev, rows: updatedRows }));
+    setFormData((prev) => {
+      const newRows = [...prev.rows];
+      newRows[index] = { ...newRows[index], [field]: value };
+
+      // 1. AUTO-BALANCE: If updating Debit/Credit on 2-row template
+      if (field === "creditOrDebit" && newRows.length === 2) {
+        const otherIdx = index === 0 ? 1 : 0;
+        newRows[otherIdx].creditOrDebit = value === "DEBIT" ? "CREDIT" : "DEBIT";
+      }
+
+      // 2. INPUT TOGGLE: Ensure only one side is the "System Offset"
+      if (field === "isInputTag" && value === true && newRows.length === 2) {
+        const otherIdx = index === 0 ? 1 : 0;
+        newRows[otherIdx].isInputTag = false;
+      }
+
+      return { ...prev, rows: newRows };
+    });
   };
 
   const handleSave = async () => {
-    // Basic Validation
-    if (!formData.title || formData.rows.length < 2) {
-      return toast({ title: "Incomplete", description: "Need title and min 2 rows.", variant: "destructive" });
+    const hasDebit = formData.rows.some(r => r.creditOrDebit === "DEBIT");
+    const hasCredit = formData.rows.some(r => r.creditOrDebit === "CREDIT");
+
+    if (!formData.title || formData.rows.length < 2 || !hasDebit || !hasCredit) {
+      return toast({ title: "Invalid Ledger", description: "Title and balanced rows required.", variant: "destructive" });
     }
 
-    // Transform to match QuickLedgerRequest.java
     const payload = {
       title: formData.title,
       storeId: Number(storeId),
-      rows: formData.rows.map(({ accountId, ...r }) => ({ 
-        ...r, 
-        accountId: Number(accountId) 
+      rows: formData.rows.map(({ accountId, ...r }) => ({
+        ...r,
+        accountId: Number(accountId),
+        isInputTag: !!r.isInputTag,
+        isVisible: true
       }))
     };
 
@@ -123,94 +99,76 @@ export default function ManageQuickLedgers() {
         await createTemplate(payload).unwrap();
       }
       toast({ title: "Success", description: "Template saved." });
-      resetForm();
+      setIsOpen(false);
     } catch (err) {
-      toast({ title: "Error", description: err.data?.message || "Failed to save.", variant: "destructive" });
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Delete this template?")) {
-      try {
-        await deleteTemplate(id).unwrap();
-        toast({ title: "Deleted", description: "Template removed." });
-      } catch (err) {
-        toast({ title: "Error", description: "Failed to delete.", variant: "destructive" });
-      }
+      toast({ title: "Error", description: "Failed to save.", variant: "destructive" });
     }
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8">
-      {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-black">Quick Ledger Config</h1>
-          <p className="text-muted-foreground text-sm">Automated double-entry templates.</p>
-        </div>
-        <Button onClick={handleOpenCreate} className="h-12 px-6 rounded-xl font-bold gap-2">
-          <Plus size={20} /> New Template
+    <div className="space-y-6">
+      <div className="flex justify-between items-center px-2">
+        <h2 className="text-xl font-black flex items-center gap-2">
+          <Settings2 size={20} className="text-primary" /> Template Manager
+        </h2>
+        <Button onClick={() => { setEditingId(null); setFormData({ title: "", rows: [] }); setIsOpen(true); }} className="rounded-xl font-bold">
+          <Plus size={18} className="mr-1" /> New
         </Button>
       </div>
 
-      {/* DIALOG */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {templates?.map((t) => (
+          <Card key={t.id} className="rounded-[2rem] border-none shadow-lg bg-white dark:bg-neutral-900 group overflow-hidden">
+            <CardHeader className="p-6 flex flex-row justify-between items-center bg-neutral-50 dark:bg-neutral-800/50">
+               <span className="font-bold truncate max-w-[150px]">{t.title}</span>
+               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="icon" onClick={() => {
+                    setEditingId(t.id);
+                    setFormData({ title: t.title, rows: t.rows.map(r => ({ ...r, accountId: r.accountId.toString() })) });
+                    setIsOpen(true);
+                  }} className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary"><Settings2 size={14} /></Button>
+               </div>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
+
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-3xl rounded-[2rem] p-0 overflow-hidden bg-white dark:bg-neutral-950">
+        <DialogContent className="max-w-2xl rounded-[2.5rem] p-0 overflow-hidden">
           <DialogHeader className="p-8 bg-neutral-50 dark:bg-neutral-900 border-b">
-            <h2 className="text-2xl font-black">{editingId ? 'Modify' : 'Create'} Template</h2>
+            <h2 className="text-xl font-black">{editingId ? 'Modify' : 'Construct'} Ledger</h2>
           </DialogHeader>
 
           <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Template Name</Label>
-              <Input 
-                value={formData.title}
-                onChange={(e) => setFormData(p => ({...p, title: e.target.value}))}
-                className="h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 border-none px-4 font-bold"
-                placeholder="e.g. Sales Template"
-              />
+              <Label className="text-[10px] font-black uppercase text-neutral-400">Template Title</Label>
+              <Input value={formData.title} onChange={e => setFormData(p => ({...p, title: e.target.value}))} className="h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 border-none px-4 font-bold" />
             </div>
 
             <div className="space-y-4">
-              <div className="flex justify-between items-center px-1">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Rows</Label>
-                <Button variant="ghost" size="sm" onClick={addRow} className="text-primary font-bold text-xs">+ Add Account</Button>
+              <div className="flex justify-between items-center">
+                <Label className="text-[10px] font-black uppercase text-neutral-400">Rows Configuration</Label>
+                <Button variant="ghost" size="sm" onClick={() => setFormData(p => ({ ...p, rows: [...p.rows, { label: "", accountId: "", creditOrDebit: "DEBIT", isInputTag: true }] }))} className="text-primary font-bold">+ Row</Button>
               </div>
 
               {formData.rows.map((r, index) => (
-                <div key={index} className="grid grid-cols-12 gap-3 p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
-                  <div className="col-span-5">
-                    <Select value={r.accountId} onValueChange={(v) => updateRow(index, "accountId", v)}>
-                      <SelectTrigger className="h-10 rounded-lg border-none bg-white dark:bg-neutral-900 shadow-sm font-semibold">
-                        <SelectValue placeholder="Account" />
+                <div key={index} className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-100 dark:border-neutral-800 space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <Select value={r.accountId} onValueChange={v => updateRow(index, "accountId", v)}>
+                      <SelectTrigger className="rounded-lg border-none bg-white dark:bg-neutral-900 font-medium">
+                        <SelectValue placeholder="Select Account" />
                       </SelectTrigger>
-                      <SelectContent className="max-h-[300px]">
-                        {treeAccounts.map((acc) => (
-                          <SelectItem key={acc.id} value={acc.id.toString()} disabled={acc.isParent}>
-                            <div className="flex items-center" style={{ paddingLeft: `${acc.level * 12}px` }}>
-                              <span className={acc.isParent ? "text-[10px] font-black text-neutral-400 uppercase" : "font-medium"}>
-                                {!acc.isParent && <span className="mr-2 text-[9px] font-mono bg-neutral-100 dark:bg-neutral-800 px-1">{acc.code}</span>}
-                                {acc.name}
-                              </span>
-                            </div>
+                      <SelectContent>
+                        {treeAccounts.map(acc => (
+                          <SelectItem key={acc.id} value={acc.id.toString()} disabled={acc.isParent} style={{ paddingLeft: `${acc.level * 10}px` }}>
+                            {acc.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
 
-                  <div className="col-span-4">
-                    <Input 
-                      placeholder="Label (e.g. Cash)" 
-                      value={r.label}
-                      onChange={(e) => updateRow(index, "label", e.target.value)}
-                      className="h-10 rounded-lg border-none bg-white dark:bg-neutral-900 shadow-sm"
-                    />
-                  </div>
-
-                  <div className="col-span-3 flex items-center gap-2">
-                    <Select value={r.creditOrDebit} onValueChange={(v) => updateRow(index, "creditOrDebit", v)}>
-                      <SelectTrigger className="h-10 rounded-lg border-none bg-white dark:bg-neutral-900 shadow-sm font-bold">
+                    <Select value={r.creditOrDebit} onValueChange={v => updateRow(index, "creditOrDebit", v)}>
+                      <SelectTrigger className={`rounded-lg border-none font-bold ${r.creditOrDebit === 'DEBIT' ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'}`}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -218,14 +176,14 @@ export default function ManageQuickLedgers() {
                         <SelectItem value="CREDIT">CREDIT</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Button variant="ghost" size="icon" onClick={() => removeRow(index)} className="text-neutral-400 hover:text-rose-500">
-                      <Trash2 size={16} />
-                    </Button>
                   </div>
 
-                  <div className="col-span-12 flex items-center space-x-2">
-                    <Checkbox id={`chk-${index}`} checked={r.isInputTag} onCheckedChange={(v) => updateRow(index, "isInputTag", v)} />
-                    <label htmlFor={`chk-${index}`} className="text-[10px] font-bold text-neutral-500 uppercase cursor-pointer">Require Input</label>
+                  <div className="flex items-center justify-between gap-4">
+                    <Input placeholder="Label (e.g. Sales Tax)" value={r.label} onChange={e => updateRow(index, "label", e.target.value)} className="h-10 rounded-lg bg-white dark:bg-neutral-900 border-none flex-1" />
+                    <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-neutral-900 rounded-lg shadow-sm">
+                        <Checkbox checked={r.isInputTag} onCheckedChange={v => updateRow(index, "isInputTag", !!v)} id={`in-${index}`} />
+                        <label htmlFor={`in-${index}`} className="text-[9px] font-black uppercase text-neutral-500 cursor-pointer">Input Required</label>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -233,46 +191,12 @@ export default function ManageQuickLedgers() {
           </div>
 
           <DialogFooter className="p-8 bg-neutral-50 dark:bg-neutral-900 border-t">
-            <Button onClick={handleSave} disabled={isCreating || isUpdating} className="w-full h-14 rounded-2xl bg-primary font-black text-lg">
-              {(isCreating || isUpdating) ? <Loader2 className="animate-spin" /> : <Save size={20} className="mr-2" />}
-              Save Template
+            <Button onClick={handleSave} className="w-full h-14 rounded-2xl bg-primary font-black text-lg gap-2">
+              {isCreating || isUpdating ? <Loader2 className="animate-spin" /> : <><Save size={20} /> Update Configuration</>}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* LIST GRID */}
-      {fetchingTemplates ? (
-        <div className="flex justify-center p-20"><Loader2 className="animate-spin text-neutral-300" size={40} /></div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates?.map((item) => (
-            <Card key={item.id} className="border-none shadow-xl bg-white dark:bg-neutral-900 rounded-[2.5rem] overflow-hidden group">
-              <CardHeader className="p-8 pb-4 flex flex-row justify-between items-start">
-                <div className="p-4 bg-primary/10 rounded-2xl"><LayoutGrid className="text-primary" size={24} /></div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(item)} className="rounded-full text-neutral-400 hover:text-primary"><Settings2 size={18} /></Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} className="rounded-full text-neutral-400 hover:text-rose-500"><Trash2 size={18} /></Button>
-                </div>
-              </CardHeader>
-              <div className="px-8 pb-8 space-y-4">
-                <h3 className="text-xl font-black">{item.title}</h3>
-                <div className="space-y-2">
-                  {item.rows?.map((r, i) => (
-                    <div key={i} className="flex justify-between text-[10px] font-bold p-2 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
-                      <span className="flex items-center gap-2 uppercase tracking-tighter">
-                        {r.creditOrDebit === 'DEBIT' ? <Receipt size={12} className="text-emerald-500"/> : <Wallet size={12} className="text-rose-500"/>}
-                        {r.label}
-                      </span>
-                      <span className="text-neutral-400">{r.isInputTag ? "INPUT" : "FIXED"}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
