@@ -98,13 +98,7 @@ function QuickLedgers() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-neutral-100 dark:border-neutral-800">
-           <div className="mb-8">
-              <h3 className="text-2xl font-black">All Templates</h3>
-              <p className="text-sm text-neutral-400">Manage and switch between your ledger configurations.</p>
-           </div>
-           <ManageQuickLedgers />
-        </div>
+  
       </div>
     </ContentLayout>
   );
