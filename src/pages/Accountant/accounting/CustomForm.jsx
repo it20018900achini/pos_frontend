@@ -31,7 +31,7 @@ const totals = useMemo(() => {
   // Add this check: if data.rows is undefined, return zeros
   if (!data?.rows) return { debitSum, creditSum };
 
-  data.rows.forEach(row => {
+  data?.rows?.forEach(row => {
     if (row.isInputTag) {
       const val = Math.abs(Number(amounts[row.accountId] || 0));
       if (row.creditOrDebit === "DEBIT") debitSum += val;
@@ -51,7 +51,7 @@ const totals = useMemo(() => {
     }
 
     try {
-      const lines = data.rows.map((row) => {
+      const lines = data?.rows?.map((row) => {
         const amount = row.isInputTag ? Number(amounts[row.accountId] || 0) : autoBalanceAmount;
 
         return {
@@ -100,7 +100,7 @@ const totals = useMemo(() => {
 
           {/* Dynamic Rows */}
           <div className="space-y-6">
-            {data.rows.map((item) => (
+            {data?.rows?.map((item) => (
               <div key={item.accountId} className="space-y-2">
                 <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest flex items-center gap-2 px-2">
                   {item.creditOrDebit === "DEBIT" ? <Receipt size={12} className="text-emerald-500"/> : <Wallet size={12} className="text-rose-500"/>}
@@ -149,14 +149,14 @@ const totals = useMemo(() => {
               <div className="flex-1 text-center">
                 <p className="text-[9px] font-bold text-neutral-400 uppercase">Debits</p>
                 <p className="text-lg font-black text-emerald-600">
-                   ${(totals.debitSum + (data.rows.find(r => !r.isInputTag)?.creditOrDebit === "DEBIT" ? autoBalanceAmount : 0)).toFixed(2)}
+                   ${(totals.debitSum + (data?.rows?.find(r => !r.isInputTag)?.creditOrDebit === "DEBIT" ? autoBalanceAmount : 0)).toFixed(2)}
                 </p>
               </div>
               <div className="w-[1px] h-10 bg-neutral-200" />
               <div className="flex-1 text-center">
                 <p className="text-[9px] font-bold text-neutral-400 uppercase">Credits</p>
                 <p className="text-lg font-black text-rose-600">
-                   ${(totals.creditSum + (data.rows.find(r => !r.isInputTag)?.creditOrDebit === "CREDIT" ? autoBalanceAmount : 0)).toFixed(2)}
+                   ${(totals.creditSum + (data?.rows?.find(r => !r.isInputTag)?.creditOrDebit === "CREDIT" ? autoBalanceAmount : 0)).toFixed(2)}
                 </p>
               </div>
           </div>

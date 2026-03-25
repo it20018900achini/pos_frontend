@@ -161,7 +161,23 @@ export default function JournalForm() {
       });
     }
   };
-
+// --- UTILS: Flatten Accounts for Select ---
+const treeAccounts = useMemo(() => {
+  const flatten = (nodes, level = 0) => {
+    if (!nodes) return [];
+    return nodes.reduce((acc, node) => {
+      // Logic: If it has children, it is a parent/header and should be disabled
+      const isParent = node.children && node.children.length > 0;
+      
+      return [
+        ...acc, 
+        { ...node, level, isParent }, 
+        ...flatten(node.children, level + 1)
+      ];
+    }, []);
+  };
+  return flatten(accountsNested); // Use your raw nested data here
+}, [accountsNested]);
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-10">
       <Card className="border-none shadow-xl bg-card">
@@ -232,29 +248,39 @@ export default function JournalForm() {
               <tbody className="divide-y divide-border/40 bg-card">
                 {journal.lines.map((line, idx) => (
                   <tr key={idx} className="group hover:bg-muted/30 transition-colors">
-                    <td className="p-3">
-                      <Select
-                        value={line.accountId}
-                        onValueChange={(v) => handleChange(idx, "accountId", v)}
-                      >
-                        <SelectTrigger className="w-full bg-transparent border-none focus:ring-0 shadow-none font-medium">
-                          <SelectValue placeholder="Select Ledger Account" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-[300px]">
-                          {accounts.map((acc) => (
-                            <SelectItem key={acc.id} value={acc.id.toString()}>
-  <div className="flex justify-between items-center w-full gap-4">
-    <span>
-      <span className="font-mono text-[10px] bg-muted px-1 py-0.5 rounded mr-2">{acc.code}</span>
-      <span className="font-medium">{acc.name}</span>
-    </span>
-    <span className="text-[9px] uppercase opacity-50">{acc.type}</span>
-  </div>
-</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </td>
+                  <td className="p-3">
+ <Select 
+  value={line.accountId?.toString()} 
+  onValueChange={(val) => handleChange(idx, "accountId", val)}
+>
+  <SelectTrigger className="w-full border-none bg-transparent focus:ring-0 shadow-none">
+    <SelectValue placeholder="Select Account" />
+  </SelectTrigger>
+  
+  <SelectContent className="max-h-[300px]">
+    {treeAccounts.map((acc) => (
+      <SelectItem
+        key={acc.id}
+        value={acc.id.toString()}
+        // 1. Disable the item if it's a parent
+        disabled={acc.isParent} 
+        className={cn(
+          "flex items-center gap-2",
+          // 2. Add visual distinction for parents vs children
+          acc.isParent ? "font-black text-neutral-900 dark:text-white opacity-100" : "pl-4"
+        )}
+        style={{ paddingLeft: `${acc.level * 12 + 10}px` }}
+      >
+        <div className="flex items-center gap-2">
+          {/* Optional: Add a small dot for actual selectable accounts */}
+          {!acc.isParent && <div className="w-1 h-1 rounded-full bg-primary/40" />}
+          <span>{acc.name}</span>
+        </div>
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+</td>
                     <td className="p-3">
                       <Input
                         type="number"

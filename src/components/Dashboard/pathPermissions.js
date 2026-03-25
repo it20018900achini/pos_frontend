@@ -10,6 +10,8 @@ import {
   FileText as Report,
   ClipboardList,
 } from "lucide-react";
+import { useGetQuickLedgersQuery } from "../../Redux Toolkit/features/accounting/accountingApi";
+import { useSelector } from "react-redux";
 
 /**
  * Build sidebar navigation based on permissions
@@ -17,7 +19,6 @@ import {
  * @returns {Array}
  */
 export const pathPermissions = (permissions = []) => {
-
 
   const NAV_LINKS = [];
 
@@ -97,8 +98,8 @@ export const pathPermissions = (permissions = []) => {
     { name: "Balance Sheet", path: "/dashboard/branch/accounts/balance-sheet", icon: Report, permission: "ACCOUNTS" },
     { name: "Trial Balance", path: "/dashboard/branch/accounts/trial-balance", icon: Report, permission: "ACCOUNTS" },
   ]);
-  addParentWithChildren("Quik Ledgers", DollarSign, [
-    { name: "Stationary Exprenses", path: "/dashboard/branch/accounts/custom-ledgers", icon: Archive, permission: "ACCOUNTS" },
+  addParentWithChildren("Quick Ledgers", DollarSign, [
+    { name: "Quick form manager", path: "/dashboard/branch/accounts/custom-form-manager", icon: Archive, permission: "ACCOUNTS" },
     ])
     ;
 

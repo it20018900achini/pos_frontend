@@ -46,6 +46,7 @@ import PendingRequestsPage from "../pages/SuperAdminDashboard/store/PendingReque
 import EmployeeSalary from "../pages/Branch Manager/payroll/EmployeeSalary";
 import Payroll from "../pages/Branch Manager/payroll/Payroll";
 import QuickLedgers from "../pages/Accountant/accounting/QuickLedgers";
+import ManageQuickLedgers from "../pages/Accountant/accounting/ManageQuickLedger";
 
 const DashboardRoutes = () => {
   
@@ -80,6 +81,7 @@ const DashboardRoutes = () => {
       <Route path="branch/accounts/journals" element={<Journals />} />
 
 <Route path="branch/accounts/custom-ledgers/:id" element={<QuickLedgers />} />
+<Route path="branch/accounts/custom-form-manager" element={<ManageQuickLedgers />} />
       
 
         <Route path="store/users" element={<StoreEmployees />} />
