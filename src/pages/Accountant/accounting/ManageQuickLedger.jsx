@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Trash2, Plus, Settings2, Loader2, Save, AlertTriangle } from "lucide-react";
+import ContentLayout from "../../Dashboard/ContentLayout";
 
 export default function ManageQuickLedgers() {
   const { toast } = useToast();
@@ -115,16 +116,24 @@ export default function ManageQuickLedgers() {
     }
   };
 
-  return (
+  return (<ContentLayout 
+  title="Template Manager" 
+  subTitle="Standardize your financial operations with custom-built automated ledger templates." 
+  right={
+    <Button 
+      onClick={() => { 
+        setEditingId(null); 
+        setFormData({ title: "", rows: [] }); 
+        setIsOpen(true); 
+      }} 
+      className="rounded-xl font-bold bg-primary hover:shadow-lg hover:shadow-primary/20 transition-all"
+    >
+      <Plus size={18} className="mr-1" /> New Template
+    </Button>
+  }
+>
     <div className="space-y-6">
-      <div className="flex justify-between items-center px-2">
-        <h2 className="text-xl font-black flex items-center gap-2">
-          <Settings2 size={20} className="text-primary" /> Template Manager
-        </h2>
-        <Button onClick={() => { setEditingId(null); setFormData({ title: "", rows: [] }); setIsOpen(true); }} className="rounded-xl font-bold">
-          <Plus size={18} className="mr-1" /> New Template
-        </Button>
-      </div>
+      
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {templates?.map((t) => (
@@ -244,5 +253,6 @@ export default function ManageQuickLedgers() {
         </DialogContent>
       </Dialog>
     </div>
+    </ContentLayout>
   );
 }
