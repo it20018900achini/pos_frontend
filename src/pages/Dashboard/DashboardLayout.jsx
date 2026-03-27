@@ -3,11 +3,12 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import Sidebar from "@/components/Dashboard/Sidebar";
 import POSHeader from "@/components/Dashboard/POSHeader";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { Fragment, useEffect } from "react";
 
 import ChatPage from "../Branch Manager/Chat/ChatPage";
 import { getAllBranchesByStore, getBranchById } from "@/Redux Toolkit/features/branch/branchThunks";
 import { getStoreByAdmin } from "@/Redux Toolkit/features/store/storeThunks";
+import SelectBranch from "../../components/Dashboard/SelectBranch";
 
 export default function DashboardLayout() {
   const dispatch = useDispatch();
@@ -53,6 +54,13 @@ export default function DashboardLayout() {
     <SidebarProvider>
       <div className="flex h-screen overflow-hidden bg-neutral-50 dark:bg-neutral-900">
         {/* Sidebar */}
+  
+
+
+  {!selectedBranchId?<SelectBranch/>:
+  <Fragment>
+
+
         <Sidebar />
 
         {/* Main Section */}
@@ -65,6 +73,7 @@ export default function DashboardLayout() {
             {/* <div className="fixed bottom-4 right-4 z-50"><ChatPage /></div> */}
           </main>
         </div>
+  </Fragment>}
       </div>
     </SidebarProvider>
   );
