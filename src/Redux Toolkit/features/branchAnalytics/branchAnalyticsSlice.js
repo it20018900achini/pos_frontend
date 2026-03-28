@@ -5,7 +5,8 @@ import {
   getTopCashiersByRevenue,
   getCategoryWiseSalesBreakdown,
   getTodayOverview,
-  getPaymentBreakdown
+  getPaymentBreakdown,
+  getFullAnalyticsReport
 } from './branchAnalyticsThunks';
 
 const initialState = {
@@ -16,7 +17,8 @@ const initialState = {
   todayOverview: null,
   paymentBreakdown: [],
   loading: false,
-  error: null,
+  error: null,recentOrders: [],    // New field
+  recentRefunds: [],   // New field
 };
 
 const branchAnalyticsSlice = createSlice({
@@ -104,6 +106,28 @@ const branchAnalyticsSlice = createSlice({
         state.paymentBreakdown = action.payload;
       })
       .addCase(getPaymentBreakdown.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // --- FULL REPORT CASE ---
+      .addCase(getFullAnalyticsReport.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getFullAnalyticsReport.fulfilled, (state, action) => {
+        const data = action.payload;
+        state.loading = false;
+        
+        // Map the combined response to your state fields
+        state.todayOverview = data.overview;
+        state.dailySales = data.dailySales;
+        state.topProducts = data.topProducts;
+        state.topCashiers = data.topCashiers;
+        state.paymentBreakdown = data.paymentBreakdown;
+        state.recentOrders = data.recentOrders;
+        state.recentRefunds = data.recentRefunds;
+      })
+      .addCase(getFullAnalyticsReport.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

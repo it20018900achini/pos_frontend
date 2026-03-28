@@ -1,63 +1,66 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useSelector } from "react-redux";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, X, LayoutGrid, List, Grid } from "lucide-react";
+import { 
+  Loader2, Search, X, LayoutGrid, List, Grid, 
+  PackageSearch, Command 
+} from "lucide-react";
 import {
   useGetProductVariantsByBranchQuery,
   useSearchProductsQuery,
 } from "@/Redux Toolkit/features/product/productApi";
 import ProductCard from "./ProductCard";
-import ProductSmallCard from "./ProductSmallCard"; // new small card component
+import ProductSmallCard from "./ProductSmallCard";
 import ProductListRow from "./ProductListRow";
 import { useToast } from "@/components/ui/use-toast";
-import { useSelector } from "react-redux";
 
-const ProductSection = ({ searchInputRef}) => {
+const ProductSection = ({ searchInputRef }) => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const [view, setView] = useState("card"); // card | smallCard | list
-  const {selectedBranchId}=useSelector((state)=>state.user)
+  const [debouncedTerm, setDebouncedTerm] = useState("");
+  const [view, setView] = useState("card");
 
+  // Pulling IDs from your Redux User State
+  const { selectedBranchId, userProfile } = useSelector((state) => state.user);
+  const storeId = userProfile?.user?.store?.id; 
+
+  // 1. Debounce: Wait 300ms after user stops typing to trigger API
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedTerm(searchTerm), 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  // 2. Data Fetching: Standard Branch Products
   const { data: products = [], isLoading, isError } =
-    useGetProductVariantsByBranchQuery(selectedBranchId);
+    useGetProductVariantsByBranchQuery(selectedBranchId, { skip: !selectedBranchId });
 
-  const { data: searchResults = [] } = useSearchProductsQuery(
-    { selectedBranchId, query: searchTerm },
-    { skip: searchTerm.trim() === "" }
+  // 3. Data Fetching: Store-wide Search
+  const { data: searchResults = [], isFetching: isSearching } = useSearchProductsQuery(
+    { storeId, query: debouncedTerm },
+    { skip: debouncedTerm.trim() === "" || !storeId }
   );
 
-  const displayProducts = searchTerm.trim() ? searchResults : products;
-
-  useEffect(() => {
-    if (isError) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch products",
-        variant: "destructive",
-      });
-    }
-  }, [isError, toast]);
+  // 4. Result Logic: Show search results if typing, otherwise show branch inventory
+  const displayProducts = useMemo(() => 
+    debouncedTerm.trim() ? searchResults : products
+  , [debouncedTerm, searchResults, products]);
 
   // ---------------- POS Keyboard Support ----------------
-  const handleKeyDown = useCallback(
-    (e) => {
-      if (e.key === "F1") {
-        e.preventDefault();
-        searchInputRef?.current?.focus();
-      }
-      if (e.key === "F2") {
-        e.preventDefault();
-        setView((v) =>
-          v === "card" ? "smallCard" : v === "smallCard" ? "list" : "card"
-        );
-      }
-      if (e.key === "F3") {
-        e.preventDefault();
-        setView((v) => (v === "list" ? "card" : "list"));
-      }
-    },
-    [searchInputRef]
-  );
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === "F1") {
+      e.preventDefault();
+      searchInputRef?.current?.focus();
+    }
+    if (e.key === "F2") {
+      e.preventDefault();
+      const views = ["card", "smallCard", "list"];
+      setView(prev => views[(views.indexOf(prev) + 1) % views.length]);
+    }
+    if (e.key === "Escape") {
+      setSearchTerm("");
+    }
+  }, [searchInputRef]);
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -65,92 +68,103 @@ const ProductSection = ({ searchInputRef}) => {
   }, [handleKeyDown]);
 
   return (
-    <div className="w-2/5 flex flex-col bg-white dark:bg-gray-900 border-r dark:border-gray-700 shadow-lg">
-      {/* Search + View Toggle */}
-      <div className="p-4 border-b bg-gray-100 dark:bg-gray-800 flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <Input
-            ref={searchInputRef}
-            placeholder="Search or scan barcode (F1)"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-12 pr-4 py-3 text-lg rounded-xl"
-            disabled={isLoading}
-          />
-          {searchTerm && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-2 top-1/2 -translate-y-1/2"
-              onClick={() => setSearchTerm("")}
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          )}
+    <div className="w-full lg:w-[60%] flex flex-col bg-neutral-50 dark:bg-[#09090b] border-r border-neutral-200 dark:border-neutral-800">
+      
+      {/* HEADER: Search & View Controls */}
+      <div className="p-4 space-y-4 bg-white dark:bg-[#09090b] border-b border-neutral-200 dark:border-neutral-800 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-indigo-500/10 rounded-lg">
+              <PackageSearch className="w-4 h-4 text-indigo-600" />
+            </div>
+            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-neutral-400">Inventory</h2>
+          </div>
+          
+          <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl">
+            <ViewBtn active={view === "card"} onClick={() => setView("card")} Icon={LayoutGrid} />
+            <ViewBtn active={view === "smallCard"} onClick={() => setView("smallCard")} Icon={Grid} />
+            <ViewBtn active={view === "list"} onClick={() => setView("list")} Icon={List} />
+          </div>
         </div>
 
-        {/* View Toggle */}
-        <div className="flex gap-1">
-          <Button
-            size="icon"
-            variant={view === "card" ? "default" : "outline"}
-            onClick={() => setView("card")}
-            title="Card View"
-          >
-            <LayoutGrid className="w-4 h-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant={view === "smallCard" ? "default" : "outline"}
-            onClick={() => setView("smallCard")}
-            title="Small Card View"
-          >
-            <Grid className="w-4 h-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant={view === "list" ? "default" : "outline"}
-            onClick={() => setView("list")}
-            title="List View"
-          >
-            <List className="w-4 h-4" />
-          </Button>
+        <div className="relative group">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+            {isSearching ? (
+              <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+            ) : (
+              <Search className="w-5 h-5 text-neutral-400 group-focus-within:text-indigo-500 transition-colors" />
+            )}
+          </div>
+          <Input
+            ref={searchInputRef}
+            placeholder="Search all variants or scan barcode..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-12 pr-12 py-7 text-base font-medium rounded-2xl border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 focus:ring-4 focus:ring-indigo-500/10 transition-all"
+          />
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            {!searchTerm && (
+              <kbd className="hidden sm:inline-flex h-6 items-center gap-1 rounded border bg-white dark:bg-neutral-800 px-1.5 font-mono text-[10px] font-black text-neutral-400">
+                F1
+              </kbd>
+            )}
+            {searchTerm && (
+              <button onClick={() => setSearchTerm("")} className="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-full">
+                <X className="w-4 h-4 text-neutral-400" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Products */}
-      <div className="flex-1 overflow-y-auto p-4">
+      {/* BODY: Product Canvas */}
+      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
         {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="animate-spin w-8 h-8" />
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4">
+            {[...Array(9)].map((_, i) => (
+              <div key={i} className="h-48 bg-neutral-200 dark:bg-neutral-800 rounded-2xl animate-pulse" />
+            ))}
           </div>
         ) : displayProducts.length === 0 ? (
-          <div className="text-center text-gray-500 py-10">
-            No products found
-          </div>
-        ) : view === "card" ? (
-          <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-3">
-            {displayProducts.map((product, index) => (
-              <ProductCard key={index} product={product} />
-            ))}
-          </div>
-        ) : view === "smallCard" ? (
-          <div className="grid lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-2">
-            {displayProducts.map((product) => (
-              <ProductSmallCard key={product.id} product={product} />
-            ))}
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-2 opacity-40 py-20">
+            <PackageSearch className="w-12 h-12" />
+            <p className="font-bold text-sm uppercase tracking-widest">
+              {searchTerm ? `No results for "${searchTerm}"` : "Inventory is empty"}
+            </p>
           </div>
         ) : (
-          <div className="space-y-1">
+          <div className={`
+            animate-in fade-in slide-in-from-bottom-2 duration-500
+            ${view === "card" && "grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4"}
+            ${view === "smallCard" && "grid lg:grid-cols-4 md:grid-cols-3 grid-cols-2 gap-2"}
+            ${view === "list" && "space-y-1"}
+          `}>
             {displayProducts.map((product) => (
-              <ProductListRow key={product.id} product={product} />
+              <ProductRenderer key={product.id || product.productVariant?.id} view={view} product={product} />
             ))}
           </div>
         )}
       </div>
     </div>
   );
+};
+
+// Internal Pro Components
+const ViewBtn = ({ active, onClick, Icon }) => (
+  <Button
+    size="sm"
+    variant="ghost"
+    className={`h-8 w-10 rounded-lg transition-all ${active ? "bg-white dark:bg-neutral-700 shadow-sm text-indigo-600" : "text-neutral-500"}`}
+    onClick={onClick}
+  >
+    <Icon className="w-4 h-4" />
+  </Button>
+);
+
+const ProductRenderer = ({ view, product }) => {
+  if (view === "card") return <ProductCard product={product} />;
+  if (view === "smallCard") return <ProductSmallCard product={product} />;
+  return <ProductListRow product={product} />;
 };
 
 export default ProductSection;

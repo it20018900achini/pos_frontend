@@ -251,17 +251,27 @@ const ReusableTable = ({
     )}
 
     {/* Modern Search Input */}
-    {enableSearch && (
-      <div className="relative group">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-nebg-neutral-400 group-focus-within:text-emerald-500 transition-colors" />
-        <Input
-          placeholder="Search records..."
-          value={filters?.search || ""}
-          onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-          className="pl-9 h-10 w-64 bg-white dark:bg-neutral-950 border-nebg-neutral-200 dark:border-nebg-neutral-800 rounded-lg shadow-sm focus:ring-emerald-500/20 transition-all"
-        />
-      </div>
-    )}
+  {enableSearch && (
+  <div className="relative group">
+    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 group-focus-within:text-emerald-500 transition-colors" />
+    <Input
+      placeholder="Search records..."
+      // Ensure we fallback to empty string so it's always "controlled"
+      value={filters?.search || ""} 
+      onChange={(e) => {
+        const newValue = e.target.value;
+        // 1. Update the local state immediately so the cursor moves
+        setFilters({ ...filters, search: newValue });
+        
+        // 2. If it's client-side, we want the filtering to happen live
+        if (!isServer) {
+          onFilter({ ...filters, search: newValue });
+        }
+      }}
+      className="pl-9 h-10 w-64 bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 rounded-lg shadow-sm focus:ring-emerald-500/20 transition-all"
+    />
+  </div>
+)}
 
     {/* Styled Selects */}
     <div className="flex items-center gap-2">

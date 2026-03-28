@@ -4,79 +4,104 @@ import { Badge } from "../../../components/ui/badge";
 import { useDispatch } from "react-redux";
 import { useToast } from "../../../components/ui/use-toast";
 import { addToCart } from "../../../Redux Toolkit/features/cart/cartSlice";
-import { CircleSlash } from "lucide-react";
+import { CircleSlash, Package, Layers } from "lucide-react";
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
-  const toast = useToast();
+  const { toast } = useToast(); // Destructure properly from hook
 
-  const handleAddToCart = (product) => {
-    dispatch(addToCart(product?.productVariant));
+  const variant = product?.productVariant;
+  const stock = product?.inventory?.quantity ?? 0;
+  const isOutOfStock = stock <= 0;
+
+  const handleAddToCart = (e) => {
+    // Prevent click if out of stock
+    if (isOutOfStock) {
+      toast({
+        title: "Stock Alert",
+        description: "This item is currently out of stock.",
+        variant: "destructive",
+        duration: 2000,
+      });
+      return;
+    }
+
+    dispatch(addToCart(variant));
     toast({
-      title: "Added to cart",
-      description: `${product?.productVariant?.name} added to cart`,
-      duration: 1200,
+      title: "Added to Cart",
+      description: `${variant?.name} added successfully.`,
+      duration: 1000,
     });
   };
 
   return (
     <Card
-      key={product?.productVariant?.id}
-      className="
-        cursor-pointer 
-        bg-white dark:bg-gray-800 
-        border border-neutral-200 dark:border-gray-700
-        rounded-xl
-        shadow-sm 
-        transition-all duration-300 
-        hover:shadow-md 
-        hover:border-indigo-300 dark:hover:border-indigo-500
-        hover:scale-[1.015]
-      "
-      onClick={() => handleAddToCart(product)}
+      onClick={handleAddToCart}
+      className={`
+        relative group overflow-hidden border-none transition-all duration-300 select-none
+        ${isOutOfStock 
+          ? "opacity-60 cursor-not-allowed grayscale-[0.5]" 
+          : "cursor-pointer hover:ring-2 hover:ring-indigo-500 hover:shadow-xl active:scale-95"}
+        bg-white dark:bg-[#121214] shadow-sm ring-1 ring-neutral-200 dark:ring-white/5
+      `}
     >
-      <CardContent className="p-3 relative">
-     {(product?.inventory?.quantity==null || product?.inventory?.quantity <= 0) && <CircleSlash className="absolute top-2 right-2 w-5 h-5 text-red-500 " />}
-        {/* Image Wrapper */}
-        {product?.inventory?.quantity}
-        <div
-          className="
-            aspect-square 
-            bg-neutral-100 dark:bg-gray-700
-            rounded-lg 
-            mb-3
-            flex items-center justify-center 
-            overflow-hidden
-          "
-        >
-          <img
-            className="h-full w-full object-cover rounded-md"
-            src={product?.productVariant?.imageUrl}
-            alt={product?.productVariant?.name}
-          />
-        </div>
-
-        {/* Name */}
-        <h3 className="font-semibold text-sm text-neutral-800 dark:text-gray-200 truncate">
-          {product?.productVariant?.name}
-        </h3>
-
-        {/* SKU */}
-        <p className="text-xs text-neutral-500 dark:text-gray-400 mb-1">{product?.productVariant?.sku}</p>
-
-        {/* Price + Category */}
-        <div className="flex items-center justify-between mt-1">
-          <span className="font-bold text-indigo-600 dark:text-indigo-400">
-            LKR {product?.productVariant?.sellingPrice || product?.productVariant?.price}
-          </span>
-
-          <Badge
-            variant="secondary"
-            className="text-[10px] rounded-full px-2 bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-200"
-          >
-            {product?.productVariant?.category}
+      {/* Stock Overlay for Pro Look */}
+      {isOutOfStock && (
+        <div className="absolute inset-0 z-10 bg-white/40 dark:bg-black/40 backdrop-blur-[1px] flex items-center justify-center">
+          <Badge variant="destructive" className="font-black tracking-widest uppercase py-1 px-3 shadow-lg">
+            Out of Stock
           </Badge>
         </div>
+      )}
+
+      <CardContent className="p-3">
+        {/* Header: Stock & Category */}
+        <div className="flex justify-between items-center mb-2">
+          <div className="flex items-center gap-1.5">
+            <Layers className="w-3 h-3 text-indigo-500" />
+            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight truncate max-w-[80px]">
+              {variant?.category || "General"}
+            </span>
+          </div>
+          
+          <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md ${stock < 10 && stock > 0 ? "bg-amber-100 dark:bg-amber-900/30 text-amber-600" : "bg-neutral-100 dark:bg-white/5 text-neutral-500"}`}>
+            <Package className="w-3 h-3" />
+            <span className="text-[10px] font-black">{stock}</span>
+          </div>
+        </div>
+
+        {/* Media Wrapper */}
+        <div className="relative aspect-square mb-3 overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-800 ring-1 ring-black/5">
+          <img
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            src={variant?.imageUrl || "https://placehold.co/400x400?text=No+Image"}
+            alt={variant?.name}
+          />
+          
+          {/* Subtle Price Overlay on Image */}
+          <div className="absolute bottom-2 right-2 bg-black/70 backdrop-blur-md text-white px-2 py-1 rounded-lg text-[11px] font-black shadow-lg">
+            LKR {Number(variant?.sellingPrice || variant?.price).toLocaleString()}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="space-y-0.5">
+          <h3 className="font-bold text-sm text-neutral-900 dark:text-neutral-100 leading-tight truncate group-hover:text-indigo-600 transition-colors">
+            {variant?.name}
+          </h3>
+          <p className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">
+            {variant?.sku || "NO-SKU"}
+          </p>
+        </div>
+
+        {/* Action Indicator (Visible on Hover) */}
+        {!isOutOfStock && (
+          <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-white/5 flex items-center justify-center">
+            <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+              + Quick Add
+            </span>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,57 +1,93 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import Dashboard from "../Branch Manager/Dashboard/Dashboard";
-import  {DashboardStore}  from "../store/Dashboard";
-import SuperAdminDashboard from "../SuperAdminDashboard/SuperAdminDashboard";
+import { DashboardStore } from "../store/Dashboard";
 import DashboardSuperAdmin from "../SuperAdminDashboard/Dashboard";
+import BranchDashboard from "./BranchDashboard";
 
 function DashboardMain() {
-  const {userProfile, selectedBranchId } = useSelector((state) => state.user);
+  const { userProfile, selectedBranchId } = useSelector((state) => state.user);
 
-  // Tabs: branch overview only if branch selected
-const branchTab = ()=><>
-<Dashboard />
-</>;
-const storeTab = ()=><><DashboardStore /></>;
+  // 1. Define tabs using useMemo for better performance
+  const tabs = useMemo(() => {
+    const availableTabs = [];
 
+    // If a branch is selected, show Branch Overview first
+    if (selectedBranchId) {
+      availableTabs.push({ 
+        key: "branch", 
+        label: "Branch Intelligence", 
+        component:<>
+        <BranchDashboard/>
+        <Dashboard />
+        </>  
+      });
+    }
 
-  const tabs = selectedBranchId
-    ? [
-        { key: "branch", label: "Branch Overview", 
-          component: branchTab() 
-        },
-        { key: "store", label: "Store Overview", component:storeTab() },
-      ]
-    : [{ key: "store", label: "Store Overview", component:storeTab() }];
+    // Always show Store Overview for Branch Managers/Staff
+    availableTabs.push({ 
+      key: "store", 
+      label: "Store Insights", 
+      component: <DashboardStore /> 
+    });
 
-  const [activeTab, setActiveTab] = useState(tabs[0].key);
+    return availableTabs;
+  }, [selectedBranchId]);
 
-  const activeComponent = tabs.find((t) => t.key === activeTab)?.component;
+  // 2. State management for tabs
+  const [activeTab, setActiveTab] = useState(tabs[0]?.key || "store");
 
+  // 3. Early return for Super Admin (The "Command Center" view)
+  if (userProfile?.role === "SUPER_ADMIN") {
+    return (
+      <div className="p-6 space-y-6 ml-20 md:ml-0 bg-slate-50 min-h-screen">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-slate-900">Executive Overview</h1>
+          <p className="text-slate-500">Global performance across all operational branches</p>
+        </div>
+        <DashboardSuperAdmin />
+      </div>
+    );
+  }
+
+  // 4. Main Dashboard Layout for Branch Managers/Staff
   return (
-    <div className="p-4 space-y-4  ml-20 md:ml-0">
-      {/* Simple Nav */}
-      <div className="flex gap-2 mb-4">
-        {
+    <div className="p-6 space-y-6 ml-20 md:ml-0 bg-slate-50 min-h-screen">
+      {/* Modern Tab Navigation */}
+      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div className="flex gap-4">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`relative pb-3 text-sm font-semibold transition-all duration-200 ${
+                activeTab === tab.key
+                  ? "text-blue-600"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              {tab.label}
+              {activeTab === tab.key && (
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-full" />
+              )}
+            </button>
+          ))}
+        </div>
         
-        userProfile?.role!=="SUPER_ADMIN"&&tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-md font-medium ${
-              activeTab === tab.key
-                ? "bg-neutral-600 text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {/* Branch Indicator Badge */}
+        {selectedBranchId && activeTab === 'branch' && (
+          <div className="hidden md:flex items-center px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-100">
+            <span className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></span>
+            Branch ID: {selectedBranchId}
+          </div>
+        )}
       </div>
 
-      {/* Render Active Overview */}
-      {userProfile?.role=="SUPER_ADMIN"?<DashboardSuperAdmin/>:activeComponent}
+      {/* Render Active Component */}
+      <div className="transition-opacity duration-300">
+        {tabs.find((t) => t.key === activeTab)?.component}
+      </div>
     </div>
   );
 }

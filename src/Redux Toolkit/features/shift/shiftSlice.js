@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk, isPending, isRejected } from "@reduxjs/t
 import api from "@/utils/api";
 
 /* =========================
-   Helpers
+    Helpers
 ========================= */
 const authConfig = () => ({
   headers: {
@@ -12,7 +12,7 @@ const authConfig = () => ({
 });
 
 /* =========================
-   Thunks
+    Thunks
 ========================= */
 export const fetchShifts = createAsyncThunk(
   "shift/fetchAll",
@@ -28,6 +28,7 @@ export const fetchShifts = createAsyncThunk(
     }
   }
 );
+
 export const fetchCurrentShift = createAsyncThunk(
   "shift/fetchCurrent",
   async (branchId, { rejectWithValue }) => {
@@ -36,12 +37,9 @@ export const fetchCurrentShift = createAsyncThunk(
         `/api/shifts/current/${branchId}`,
         authConfig()
       );
-
       return data;
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      return rejectWithValue(err.response?.data?.message || err.message);
     }
   }
 );
@@ -91,7 +89,7 @@ export const endShift = createAsyncThunk(
 );
 
 /* =========================
-   Slice
+    Slice
 ========================= */
 const initialState = {
   shifts: [],
@@ -115,10 +113,29 @@ const shiftSlice = createSlice({
     setPage: (state, action) => {
       state.currentPage = action.payload;
     },
+    resetShiftError: (state) => {
+      state.error = null;
+    }
   },
   extraReducers: (builder) => {
     builder
-      // Fetch all shifts (paginated)
+      /* --- Fetch Current Shift --- */
+      .addCase(fetchCurrentShift.pending, (state) => {
+        state.loading = true;
+        state.currentShift = null; // Clear old branch data immediately on start
+        state.error = null;
+      })
+      .addCase(fetchCurrentShift.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentShift = action.payload;
+      })
+      .addCase(fetchCurrentShift.rejected, (state, action) => {
+        state.loading = false;
+        state.currentShift = null; // Ensure it's null if branch has no open shift
+        state.error = action.payload;
+      })
+
+      /* --- Fetch All Shifts (Paginated) --- */
       .addCase(fetchShifts.fulfilled, (state, action) => {
         state.loading = false;
         state.shifts = action.payload.content || [];
@@ -128,26 +145,20 @@ const shiftSlice = createSlice({
         state.totalElements = action.payload.totalElements || 0;
       })
 
-      // Fetch current shift
-      .addCase(fetchCurrentShift.fulfilled, (state, action) => {
-        state.loading = false;
-        state.currentShift = action.payload;
-      })
-
-      // Fetch shift by ID
+      /* --- Fetch Shift By ID --- */
       .addCase(fetchShiftById.fulfilled, (state, action) => {
         state.loading = false;
         state.selectedShift = action.payload;
       })
 
-      // Start shift
+      /* --- Start Shift --- */
       .addCase(startShift.fulfilled, (state, action) => {
         state.loading = false;
         state.currentShift = action.payload;
         state.shifts.unshift(action.payload);
       })
 
-      // End shift
+      /* --- End Shift --- */
       .addCase(endShift.fulfilled, (state, action) => {
         state.loading = false;
         state.currentShift = null;
@@ -155,19 +166,26 @@ const shiftSlice = createSlice({
         if (idx !== -1) state.shifts[idx] = action.payload;
       })
 
-      // Global loading handler
-      .addMatcher(isPending, (state) => {
-        state.loading = true;
-        state.error = null;
+      /* --- Global Matchers --- */
+      // Global Pending (catches all thunks not explicitly handled above)
+      .addMatcher(isPending, (state, action) => {
+        // Skip fetchCurrentShift because we already cleared state in its specific .pending case
+        if (action.type !== fetchCurrentShift.pending.type) {
+          state.loading = true;
+          state.error = null;
+        }
       })
 
-      // Global error handler
+      // Global Rejected (catches all thunks not explicitly handled above)
       .addMatcher(isRejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+        // Skip fetchCurrentShift because we handled it above
+        if (action.type !== fetchCurrentShift.rejected.type) {
+          state.loading = false;
+          state.error = action.payload;
+        }
       });
   },
 });
 
-export const { clearSelectedShift, setPage } = shiftSlice.actions;
+export const { clearSelectedShift, setPage, resetShiftError } = shiftSlice.actions;
 export default shiftSlice.reducer;

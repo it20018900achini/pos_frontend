@@ -10,8 +10,6 @@ import {
   FileText as Report,
   ClipboardList,
 } from "lucide-react";
-import { useGetQuickLedgersQuery } from "../../Redux Toolkit/features/accounting/accountingApi";
-import { useSelector } from "react-redux";
 
 /**
  * Build sidebar navigation based on permissions

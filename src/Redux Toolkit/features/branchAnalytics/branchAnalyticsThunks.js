@@ -122,3 +122,22 @@ export const getPaymentBreakdown = createAsyncThunk(
     }
   }
 ); 
+
+// Get Full Analytics Report (Combined Data)
+export const getFullAnalyticsReport = createAsyncThunk(
+  'branchAnalytics/getFullAnalyticsReport',
+  async ({ branchId, start, end }, { rejectWithValue }) => {
+    try {
+      const headers = getAuthHeaders();
+      const res = await api.get('/api/branch-analytics/full-report', {
+        headers,
+        params: { branchId, start, end },
+      });
+      console.log('✅ Full Analytics Report response:', res.data);
+      return res.data;
+    } catch (err) {
+      console.error('❌ Failed to fetch full report:', err.response?.data || err.message);
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch full report');
+    }
+  }
+);

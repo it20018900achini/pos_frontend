@@ -17,7 +17,7 @@ export const productApi = apiSlice.injectEndpoints({
     // 3️⃣ Search products by query (existing)
     searchProducts: builder.query({
       query: ({ storeId, query }) =>
-        `/products/store/${storeId}/variants/search?q=${encodeURIComponent(query)}`,
+        `/products/store/${storeId}/variants?search?q=${encodeURIComponent(query)}`,
       providesTags: ["Product"],
     }),
 
