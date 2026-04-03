@@ -2,7 +2,9 @@
 
 import React from "react";
 import { useSelector } from "react-redux";
-import { Separator } from "../../../components/ui/separator";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Receipt, Info } from "lucide-react";
 import {
   selectDiscountAmount,
   selectSubtotal,
@@ -18,62 +20,82 @@ const CartSummary = () => {
 
   const hasDiscount = discountAmount > 0;
 
+  // Consistent LKR Formatter
+  const formatLKR = (val) => 
+    val.toLocaleString("en-LK", { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
+
   return (
-    <div className="border-t bg-neutral-50/50 dark:bg-[#09090b] p-6 space-y-4">
-      <div className="space-y-2.5">
-        {/* Subtotal */}
-        <div className="flex justify-between items-center text-sm">
-          <span className="font-medium text-neutral-500 dark:text-neutral-400 tracking-tight">
-            Subtotal
-          </span>
-          <span className="font-bold text-neutral-800 dark:text-neutral-200">
-            LKR {subtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-          </span>
-        </div>
-
-        {/* Tax */}
-        <div className="flex justify-between items-center text-sm">
-          <span className="font-medium text-neutral-500 dark:text-neutral-400 tracking-tight">
-            Tax (GST 0%)
-          </span>
-          <span className="font-bold text-neutral-800 dark:text-neutral-200">
-            LKR {tax.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+    <div className="bg-white dark:bg-slate-950 px-8 py-6 space-y-5 border-t border-slate-200 dark:border-slate-800">
+      
+      {/* 1. BREAKDOWN SECTION */}
+      <div className="space-y-3">
+        <div className="flex justify-between items-center group">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Subtotal</span>
+            <div className="h-px w-4 bg-slate-100 group-hover:w-8 transition-all" />
+          </div>
+          <span className="text-sm font-black text-slate-700 dark:text-slate-300 tabular-nums">
+            Rs {formatLKR(subtotal)}
           </span>
         </div>
 
-        {/* Discount Section */}
+        <div className="flex justify-between items-center group">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Tax (VAT 0%)</span>
+            <Info className="w-3 h-3 text-slate-300 cursor-help" />
+          </div>
+          <span className="text-sm font-black text-slate-700 dark:text-slate-300 tabular-nums">
+            Rs {formatLKR(tax)}
+          </span>
+        </div>
+
         {hasDiscount && (
-          <div className="flex justify-between items-center text-sm animate-in fade-in slide-in-from-bottom-1 duration-300">
-            <span className="font-medium text-emerald-600 dark:text-emerald-500 tracking-tight flex items-center gap-1.5">
-              Promotion Applied
-            </span>
-            <span className="font-black text-emerald-600 dark:text-emerald-500">
-              - LKR {discountAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          <div className="flex justify-between items-center animate-in fade-in slide-in-from-right-4 duration-500">
+            <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 text-[10px] font-black uppercase py-0 px-2 h-5">
+              Savings Applied
+            </Badge>
+            <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
+              - Rs {formatLKR(discountAmount)}
             </span>
           </div>
         )}
       </div>
 
-      <Separator className="bg-neutral-200 dark:bg-white/5" />
+      <Separator className="bg-slate-100 dark:bg-slate-800" />
 
-      {/* Grand Total */}
-      <div className="space-y-1">
-        <div className="flex justify-between items-baseline">
-          <span className="text-xs font-black uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500">
-            Total Payable
-          </span>
+      {/* 2. GRAND TOTAL SECTION */}
+      <div className="relative group">
+        {/* Subtle Decorative Icon */}
+        <Receipt className="absolute -left-1 opacity-5 text-slate-400 h-12 w-12 group-hover:rotate-12 transition-transform duration-500" />
+        
+        <div className="flex justify-between items-end relative z-10">
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-[0.25em]">
+              Total Amount Payable
+            </p>
+            <p className="text-xs text-slate-400 font-medium">Inclusive of all duties</p>
+          </div>
+          
           <div className="text-right">
-            <span className="text-2xl font-black tracking-tighter text-indigo-600 dark:text-indigo-400">
-              LKR {total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-            </span>
+            <div className="flex items-baseline justify-end gap-1.5">
+              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 mb-1">LKR</span>
+              <span className="text-4xl font-black tracking-tighter text-slate-900 dark:text-white tabular-nums drop-shadow-sm">
+                {formatLKR(total)}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Pro Tip: Visual "Savings" Badge */}
+        {/* 3. SAVINGS BADGE */}
         {hasDiscount && (
-          <div className="flex justify-end">
-            <div className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
-              You saved LKR {discountAmount.toFixed(2)}
+          <div className="flex justify-end mt-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none">
+              <span className="text-[10px] font-black uppercase tracking-wider">Total Savings</span>
+              <div className="w-px h-3 bg-indigo-400/50" />
+              <span className="text-xs font-bold font-mono">Rs {formatLKR(discountAmount)}</span>
             </div>
           </div>
         )}

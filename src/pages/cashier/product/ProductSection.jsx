@@ -68,7 +68,7 @@ const ProductSection = ({ searchInputRef }) => {
   }, [handleKeyDown]);
 
   return (
-    <div className="w-full lg:w-[60%] flex flex-col bg-neutral-50 dark:bg-[#09090b] border-r border-neutral-200 dark:border-neutral-800">
+    <div className="w-full  flex flex-col bg-neutral-50 dark:bg-[#09090b] border-r border-neutral-200 dark:border-neutral-800">
       
       {/* HEADER: Search & View Controls */}
       <div className="p-4 space-y-4 bg-white dark:bg-[#09090b] border-b border-neutral-200 dark:border-neutral-800 shadow-sm">

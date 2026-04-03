@@ -1,15 +1,10 @@
 import DiscountSection from "./DiscountSection";
 import NoteSection from "./NoteSection";
-import CustomerSection from "./CustomerSection";
 import PaymentSection from "./PaymentSection";
 
 const CustomerPaymentSection = ({ setShowCustomerDialog, setShowPaymentDialog }) => {
   return (
-    <div className="w-1/5 flex flex-col bg-card overflow-y-auto">
-      {/* Customer Section */}
-      <CustomerSection setShowCustomerDialog={setShowCustomerDialog} />
-
-      {/* Discount Section */}
+    <div className="w-full flex flex-col bg-card overflow-y-auto">
       <DiscountSection />
 
       {/* Note Section */}

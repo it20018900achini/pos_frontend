@@ -81,32 +81,43 @@ const cartSlice = createSlice({
     setPaymentMethod: (state, action) => {
       state.paymentMethod = action.payload?.toUpperCase() || "CASH";
     },
-
-    holdOrder: (state) => {
+holdOrder: (state) => {
       if (state.items.length > 0) {
+        // 1. Push the current cart into held orders
         state.heldOrders.push({
           id: Date.now(),
           items: [...state.items],
           customer: state.selectedCustomer,
           note: state.note,
-          discount: state.discount,
-          // Use ISO string for Redux serializability best practices
+          discount: { ...state.discount },
           timestamp: new Date().toISOString(),
         });
 
-        // Reset state but preserve heldOrders
-        return { ...initialState, heldOrders: state.heldOrders };
+        // 2. MANUALLY reset the fields instead of returning initialState
+        state.items = [];
+        state.selectedCustomer = null;
+        state.note = "";
+        state.discount = { type: "percentage", value: 0 };
+        state.paymentMethod = "CASH";
+        // Notice: We do NOT return anything here.
       }
     },
 
     resumeOrder: (state, action) => {
       const order = action.payload;
+      
+      // 1. Update state with the resumed order data
       state.items = order.items;
       state.selectedCustomer = order.customer;
       state.note = order.note;
       state.discount = order.discount;
+      
+      // 2. Filter out the resumed order from the held list
       state.heldOrders = state.heldOrders.filter((o) => o.id !== order.id);
+      
+      // Again: No "return state" or "return { ... }"
     },
+    
 // Add this specifically
     setCurrentOrder: (state, action) => {
       const order = action.payload;
