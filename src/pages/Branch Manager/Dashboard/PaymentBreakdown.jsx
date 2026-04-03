@@ -4,37 +4,50 @@ import { useSelector, useDispatch } from 'react-redux';
 import { getPaymentIcon } from '../../../utils/getPaymentIcon';
 import { getPaymentBreakdown } from '@/Redux Toolkit/features/branchAnalytics/branchAnalyticsThunks';
 
-const PaymentBreakdown = ({selectedBranchId}) => {
+const PaymentBreakdown = ({ selectedBranchId }) => {
   const dispatch = useDispatch();
   const { paymentBreakdown, loading } = useSelector((state) => state.branchAnalytics);
 
-  // State for selected date
+  // 1. Initial state defaults to today
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
 
-  // Load data whenever branchId or date changes
+  // 2. Fetch data when branchId or date changes
   useEffect(() => {
     if (!selectedBranchId) return;
     dispatch(getPaymentBreakdown({ branchId: selectedBranchId, date }));
   }, [dispatch, selectedBranchId, date]);
 
-  // Handlers for arrows
+  // 3. NEW: Sync local date with latestRecordDate from backend on first success
+  useEffect(() => {
+    if (paymentBreakdown?.latestRecordDate) {
+      // Update state to the actual latest date found in the DB
+      setDate(paymentBreakdown.latestRecordDate);
+    }
+  }, [paymentBreakdown?.latestRecordDate]); // Only runs when the backend value changes
+
   const changeDate = (days) => {
-    const newDate = new Date(date);
-    newDate.setDate(newDate.getDate() + days);
-    setDate(newDate.toISOString().slice(0, 10));
+    // We use the current state date to calculate the next/prev day
+    const currentDate = new Date(date);
+    currentDate.setDate(currentDate.getDate() + days);
+    setDate(currentDate.toISOString().slice(0, 10));
   };
 
   return (
     <Card>
       <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <CardTitle className="text-xl font-semibold">Payment Breakdown</CardTitle>
+        <div>
+           <CardTitle className="text-xl font-semibold">Payment Breakdown</CardTitle>
+           {/* Optional: Show the user they are looking at the latest data */}
+           <p className="text-xs text-muted-foreground">
+             Latest data: {paymentBreakdown?.latestRecordDate || "..."}
+           </p>
+        </div>
         
-        {/* Date Controls */}
         <div className="flex items-center gap-2">
           <button
-            className="p-1 rounded-md bg-gray-200 hover:bg-gray-300"
+            className="p-1.5 rounded-md bg-secondary hover:bg-secondary/80 disabled:opacity-50"
             onClick={() => changeDate(-1)}
-            title="Previous Day"
+            disabled={loading}
           >
             &#8592;
           </button>
@@ -43,23 +56,24 @@ const PaymentBreakdown = ({selectedBranchId}) => {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="p-1 border border-gray-300 rounded-md"
+            className="p-1 border border-input rounded-md bg-background text-sm"
           />
 
           <button
-            className="p-1 rounded-md bg-gray-200 hover:bg-gray-300"
+            className="p-1.5 rounded-md bg-secondary hover:bg-secondary/80 disabled:opacity-50"
             onClick={() => changeDate(1)}
-            title="Next Day"
+            disabled={loading}
           >
             &#8594;
           </button>
         </div>
       </CardHeader>
 
+     
       <CardContent>
         <div className="space-y-4">
-          {paymentBreakdown && paymentBreakdown.length > 0 ? (
-            paymentBreakdown.map((payment) => (
+          {paymentBreakdown?.breakdown && paymentBreakdown?.breakdown.length > 0 ? (
+            paymentBreakdown?.breakdown.map((payment) => (
               <div key={payment.type} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {getPaymentIcon(payment.type)}

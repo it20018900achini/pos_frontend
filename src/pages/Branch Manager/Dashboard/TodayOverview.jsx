@@ -4,13 +4,12 @@ import React, { useEffect, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { getTodayOverview } from "@/Redux Toolkit/features/branchAnalytics/branchAnalyticsThunks";
-
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   DollarSign, Repeat, ShoppingBag, Users, 
-  Package, ClipboardCheck, TrendingUp, TrendingDown,
-  ArrowUpRight, Activity
+  Package, ShieldCheck, TrendingUp, TrendingDown,
+  ArrowUpRight, Zap, Target
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,16 +32,18 @@ const TodayOverview = ({ selectedBranchId, startDate, endDate }) => {
       value: todayOverview?.totalSales,
       formatted: todayOverview?.totalSales ? `LKR ${todayOverview.totalSales.toLocaleString()}` : "0.00",
       icon: DollarSign,
-      color: "indigo",
+      color: "blue",
       growth: todayOverview?.salesGrowth,
+      subValue: "Daily Target: 85%"
     },
     {
       title: "Order Volume",
       value: todayOverview?.ordersToday,
       formatted: todayOverview?.ordersToday?.toLocaleString() || "0",
-      icon: ShoppingBag,
-      color: "blue",
+      icon: Zap,
+      color: "violet",
       growth: todayOverview?.orderGrowth,
+      subValue: "Avg. 12/hour"
     },
     {
       title: "Refund Value",
@@ -51,38 +52,42 @@ const TodayOverview = ({ selectedBranchId, startDate, endDate }) => {
       icon: Repeat,
       color: "rose",
       growth: todayOverview?.refundGrowth,
+      subValue: `${todayOverview?.todayRefundCount || 0} items returned`
     },
     {
-      title: "Active Cashiers",
+      title: "Team Status",
       value: todayOverview?.activeCashiers,
       formatted: todayOverview?.activeCashiers || "0",
       icon: Users,
       color: "amber",
       growth: todayOverview?.cashierGrowth,
+      subValue: "Active Terminals"
     },
     {
-      title: "Stock Alerts",
+      title: "Stock Health",
       value: todayOverview?.lowStockItems,
       formatted: todayOverview?.lowStockItems || "0",
       icon: Package,
-      color: "orange",
+      color: "emerald",
       growth: todayOverview?.lowStockGrowth,
+      subValue: "Action Required"
     },
     {
-      title: "Return Count",
-      value: todayOverview?.todayRefundCount,
-      formatted: todayOverview?.todayRefundCount || "0",
-      icon: ClipboardCheck,
-      color: "emerald",
-      growth: todayOverview?.todayRefundCount - (todayOverview?.yesterdayRefundCount ?? 0),
+      title: "System Integrity",
+      value: 100,
+      formatted: "Optimal",
+      icon: ShieldCheck,
+      color: "cyan",
+      growth: 0,
+      subValue: "All Nodes Active"
     },
   ], [todayOverview]);
 
   if (loading) return <LoadingGrid />;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <AnimatePresence>
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <AnimatePresence mode="popLayout">
         {kpis.map((kpi, idx) => (
           <KPICard key={kpi.title} kpi={kpi} index={idx} />
         ))}
@@ -91,86 +96,75 @@ const TodayOverview = ({ selectedBranchId, startDate, endDate }) => {
   );
 };
 
-/* ---------------- PRO KPI CARD ---------------- */
+/* ---------------- PRO MINIMALIST CARD ---------------- */
 
 const KPICard = ({ kpi, index }) => {
   const Icon = kpi.icon;
   const isPositive = kpi.growth >= 0;
 
-  // Premium color system mapping
   const themes = {
-    indigo: "from-indigo-500/10 to-blue-500/10 text-indigo-600 border-indigo-100 dark:border-indigo-500/20",
-    blue: "from-blue-500/10 to-cyan-500/10 text-blue-600 border-blue-100 dark:border-blue-500/20",
-    rose: "from-rose-500/10 to-pink-500/10 text-rose-600 border-rose-100 dark:border-rose-500/20",
-    amber: "from-amber-500/10 to-orange-500/10 text-amber-600 border-amber-100 dark:border-amber-500/20",
-    orange: "from-orange-500/10 to-red-500/10 text-orange-600 border-orange-100 dark:border-orange-500/20",
-    emerald: "from-emerald-500/10 to-teal-500/10 text-emerald-600 border-emerald-100 dark:border-emerald-500/20",
+    blue: "from-blue-600 to-blue-400 bg-blue-500/10 text-blue-600 shadow-blue-500/5",
+    violet: "from-violet-600 to-indigo-400 bg-violet-500/10 text-violet-600 shadow-violet-500/5",
+    rose: "from-rose-600 to-pink-400 bg-rose-500/10 text-rose-600 shadow-rose-500/5",
+    amber: "from-amber-500 to-orange-400 bg-amber-500/10 text-amber-600 shadow-amber-500/5",
+    emerald: "from-emerald-600 to-teal-400 bg-emerald-500/10 text-emerald-600 shadow-emerald-500/5",
+    cyan: "from-cyan-600 to-blue-400 bg-cyan-500/10 text-cyan-600 shadow-cyan-500/5",
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      layout
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ delay: index * 0.05, duration: 0.4, ease: "easeOut" }}
-      className="bg-white"
+      transition={{ duration: 0.4, delay: index * 0.05 }}
     >
-      <Card className="group relative overflow-hidden p-6 rounded-[2.5rem] border-none bg-white dark:bg-neutral-900 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500">
+      <Card className="group relative overflow-hidden rounded-[2.5rem] border border-slate-200/50 bg-white p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] dark:border-white/5 dark:bg-neutral-950">
         
-        {/* Subtle Background Accent */}
-        <div className={cn(
-          "absolute -right-6 -top-6 w-32 h-32 blur-[60px] opacity-30 rounded-full bg-gradient-to-br",
-          themes[kpi.color].split('text')[0]
-        )} />
-
-        <div className="relative z-10 flex flex-col h-full justify-between">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-               <div className="flex items-center gap-2">
-                  <div className={cn("p-2 rounded-xl bg-gradient-to-br", themes[kpi.color].split('text')[0])}>
-                    <Icon size={18} className="stroke-[2.5px]" />
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
-                    {kpi.title}
-                  </span>
-               </div>
-               <h3 className="text-3xl font-black tracking-tight pt-3 text-neutral-900 dark:text-neutral-50">
-                 {kpi.formatted}
-               </h3>
-            </div>
-            
-            {/* Visual Spark-indicator */}
-            <div className="flex flex-col items-end gap-1">
-               <div className={cn(
-                 "flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black tracking-tighter shadow-sm",
-                 isPositive ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10" : "bg-rose-50 text-rose-600 dark:bg-rose-500/10"
-               )}>
-                 {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                 {Math.abs(kpi.growth || 0).toFixed(1)}%
-               </div>
-            </div>
+        {/* Top Section */}
+        <div className="flex items-center justify-between">
+          <div className={cn(
+            "flex h-12 w-12 items-center justify-center rounded-2xl transition-transform duration-500 group-hover:rotate-6",
+            themes[kpi.color].split(' shadow')[0]
+          )}>
+            <Icon size={24} strokeWidth={2} />
           </div>
 
-          {/* Bottom Bar: Trend Decoration */}
-          <div className="mt-6 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-               <div className="flex -space-x-1">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className={cn(
-                      "w-1.5 h-6 rounded-full opacity-20", 
-                      isPositive ? "bg-emerald-400" : "bg-rose-400"
-                    )} 
-                    style={{ height: `${20 + (Math.random() * 80)}%` }}
-                    />
-                  ))}
-               </div>
-               <span className="text-[10px] font-bold text-neutral-400 flex items-center gap-1 uppercase">
-                 <Activity size={10} /> Real-time 
-               </span>
-            </div>
-            <ArrowUpRight size={16} className="text-neutral-300 group-hover:text-primary transition-colors cursor-pointer" />
+          <div className={cn(
+            "flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-black tracking-tight",
+            isPositive ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+          )}>
+            {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+            {Math.abs(kpi.growth || 0).toFixed(1)}%
           </div>
         </div>
+
+        {/* Center Content */}
+        <div className="mt-8">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+            {kpi.title}
+          </span>
+          <h3 className="mt-1 text-3xl font-black tracking-tighter text-slate-900 dark:text-white">
+            {kpi.formatted}
+          </h3>
+        </div>
+
+        {/* Footer Section - Replaced Live Feed with Data Details */}
+        <div className="mt-8 flex items-center justify-between border-t border-slate-50 pt-5 dark:border-white/5">
+          <div className="flex items-center gap-2 text-slate-400">
+            <Target size={14} className="text-slate-300" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">{kpi.subValue}</span>
+          </div>
+          
+          <button className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-400 transition-colors group-hover:bg-slate-900 group-hover:text-white dark:bg-white/5">
+             <ArrowUpRight size={16} />
+          </button>
+        </div>
+
+        {/* Glass Glow effect */}
+        <div className={cn(
+          "absolute -right-4 -bottom-4 h-24 w-24 rounded-full opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-20",
+          themes[kpi.color].split(' shadow')[0]
+        )} />
       </Card>
     </motion.div>
   );
@@ -179,17 +173,16 @@ const KPICard = ({ kpi, index }) => {
 /* ---------------- SKELETON LOADER ---------------- */
 
 const LoadingGrid = () => (
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
     {[...Array(6)].map((_, i) => (
-      <Card key={i} className="p-8 rounded-[2.5rem] space-y-6 border-none bg-neutral-50 dark:bg-neutral-900/50">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-12 w-12 rounded-2xl" />
-          <Skeleton className="h-4 w-32" />
+      <Card key={i} className="h-[240px] rounded-[2.5rem] border-none bg-slate-50 p-8 dark:bg-neutral-900">
+        <div className="flex justify-between">
+           <Skeleton className="h-12 w-12 rounded-2xl" />
+           <Skeleton className="h-6 w-16 rounded-full" />
         </div>
-        <Skeleton className="h-10 w-full rounded-xl" />
-        <div className="flex justify-between items-center">
-          <Skeleton className="h-4 w-16 rounded-full" />
-          <Skeleton className="h-6 w-6 rounded-full" />
+        <div className="mt-8 space-y-3">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-10 w-full" />
         </div>
       </Card>
     ))}

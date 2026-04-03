@@ -4,6 +4,18 @@ import { apiSlice } from "@/Redux Toolkit/api/apiSlice";
 export const accountingApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // ===== Chart of Accounts =====
+  getFullAnalyticsReport: builder.query({
+  query: ({ branchId, start, end }) => ({
+    url: '/branch-analytics/full-report',
+    method: 'GET',
+    params: { branchId, start, end },
+  }),
+  // We use a specific tag for Analytics so we can invalidate it 
+  // when orders or refunds are processed
+  providesTags: ["Analytics"], 
+}),
+
+    // ===== Chart of Accounts =====
     getChartOfAccounts: builder.query({
   query: (storeId) => `/accounting/coa/store/${storeId}`,
   providesTags: ["COA"],
@@ -147,6 +159,7 @@ getBalanceSheet: builder.query({
 });
 
 export const {
+  useGetFullAnalyticsReportQuery,
   useGetLedgerQuery,
     useLazyGetLedgerQuery,  // for manual trigger
 

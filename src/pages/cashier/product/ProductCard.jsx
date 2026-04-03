@@ -77,6 +77,7 @@ const ProductCard = ({ product }) => {
             src={variant?.imageUrl || "https://placehold.co/400x400?text=No+Image"}
             alt={variant?.name}
           />
+         
           
           {/* Subtle Price Overlay on Image */}
           <div className="absolute bottom-2 right-2 bg-black/70 backdrop-blur-md text-white px-2 py-1 rounded-lg text-[11px] font-black shadow-lg">
@@ -93,7 +94,9 @@ const ProductCard = ({ product }) => {
             {variant?.sku || "NO-SKU"}
           </p>
         </div>
-
+ <pre>
+            {JSON.stringify(variant,2,null)}
+          </pre>
         {/* Action Indicator (Visible on Hover) */}
         {!isOutOfStock && (
           <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-white/5 flex items-center justify-center">
