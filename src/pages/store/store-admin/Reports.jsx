@@ -78,8 +78,8 @@ export default function Reports() {
   const fetchReportsData = async () => {
     try {
       await Promise.all([
-        dispatch(getMonthlySales(userProfile.user.id)).unwrap(),
-        dispatch(getSalesByCategory(userProfile.user.id)).unwrap(),
+        dispatch(getMonthlySales(userProfile.user?.store.id)).unwrap(),
+        dispatch(getSalesByCategory(userProfile.user?.store.id)).unwrap(),
       ]);
     } catch (err) {
       toast({

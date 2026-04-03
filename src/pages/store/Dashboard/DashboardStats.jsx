@@ -18,7 +18,7 @@ const DashboardStats = () => {
 
   const fetchStoreOverview = async () => {
     try {
-      await dispatch(getStoreOverview(userProfile.user.id)).unwrap();
+      await dispatch(getStoreOverview(userProfile.user.store.id)).unwrap();
     } catch (err) {
       toast({
         title: "Error",
