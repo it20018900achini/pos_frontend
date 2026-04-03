@@ -163,27 +163,7 @@ const CreateOrderPage = () => {
             <div className="flex-1 flex min-h-0 overflow-y-auto">
               
               {/* 1. NAV RAIL (60px) - Hidden on smallest mobile */}
-              <div className="hidden sm:flex w-[60px] border-r border-slate-100 dark:border-slate-800 flex flex-col items-center py-8 space-y-8 bg-slate-50/20 dark:bg-slate-900/20">
-                <TooltipProvider delayDuration={0}>
-                  {[
-                    { icon: LayoutDashboard, label: "Stats", color: "text-blue-500" },
-                    { icon: Clock, label: "History", color: "text-amber-500", action: () => setShowHeldOrdersDialog(true) },
-                    { icon: Zap, label: "Shortcuts", color: "text-indigo-500" }
-                  ].map((btn, i) => (
-                    <Tooltip key={i}>
-                      <TooltipTrigger asChild>
-                        <button 
-                          onClick={btn.action}
-                          className="p-3 rounded-xl hover:bg-white dark:hover:bg-slate-800 transition-all group border border-transparent hover:border-slate-200"
-                        >
-                          <btn.icon className={`h-5 w-5 text-slate-400 group-hover:${btn.color}`} />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="text-[10px] font-bold uppercase">{btn.label}</TooltipContent>
-                    </Tooltip>
-                  ))}
-                </TooltipProvider>
-              </div>
+              
 
               {/* 2. ITEM LISTING (Main Cart Area) */}
               <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800">

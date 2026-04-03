@@ -27,11 +27,11 @@ const ProductCard = ({ product }) => {
     }
 
     dispatch(addToCart(variant));
-    toast({
-      title: "Added to Cart",
-      description: `${variant?.name} added successfully.`,
-      duration: 1000,
-    });
+    // toast({
+    //   title: "Added to Cart",
+    //   description: `${variant?.name} added successfully.`,
+    //   duration: 1000,
+    // });
   };
 
   return (

@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 
 import {
@@ -44,16 +43,13 @@ const CartSection = ({ setShowHeldOrdersDialog }) => {
     <div className="flex flex-col h-full w-full bg-white dark:bg-slate-950">
       
       {/* 1. HEADER: ACTION BAR */}
-      <div className="px-6 py-4 border-b bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+      <div className="px-6 py-4 border-b bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-600 rounded-lg">
+          <div className="p-2 bg-indigo-600 rounded-lg relative mr-2">
             <ShoppingCart className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <h2 className="text-sm font-bold tracking-tight">Active Cart</h2>
-            <p className="text-[10px] text-slate-500 font-medium uppercase tracking-tighter">
-              {cartItems.length} Products Registered
-            </p>
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black rounded-full h-5 w-5 flex items-center justify-center border-2 border-white dark:border-slate-900">
+              {cartItems.length}
+            </span>
           </div>
         </div>
 
@@ -61,7 +57,7 @@ const CartSection = ({ setShowHeldOrdersDialog }) => {
           <Button
             variant="outline"
             size="sm"
-            className="h-8 rounded-lg border-slate-200 dark:border-slate-800 text-xs font-semibold gap-1.5"
+            className="h-8 rounded-lg border-slate-200 dark:border-slate-800 text-[10px] font-bold uppercase tracking-tight gap-1.5"
             onClick={() => setShowHeldOrdersDialog(true)}
           >
             <Pause className="w-3.5 h-3.5 text-amber-500" />
@@ -70,7 +66,7 @@ const CartSection = ({ setShowHeldOrdersDialog }) => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-8 text-xs font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg"
+            className="bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 h-8 text-[10px] font-bold uppercase text-red-500 hover:bg-red-100 rounded-lg"
             onClick={handleClearCart}
           >
             <Trash2 className="w-3.5 h-3.5 mr-1" />
@@ -79,107 +75,115 @@ const CartSection = ({ setShowHeldOrdersDialog }) => {
         </div>
       </div>
 
-      {/* 2. TRIPLE COLUMN HEADER */}
-      <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 sticky top-0 z-10">
-        <div className="col-span-6 flex items-center gap-2">
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">01. Product Information</span>
-          <Info className="w-3 h-3 text-slate-300" />
+
+
+      {/* 3. SCROLLABLE ITEM LIST */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/20 dark:bg-transparent">
+        {cartItems.length === 0 ? (
+          <div className="h-full  flex flex-col items-center justify-center p-12 text-center">
+            <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-4 rotate-3">
+              <PackageSearch className="w-8 h-8 text-slate-300" />
+            </div>
+            <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">Terminal Idle</h3>
+            <p className="text-[10px] font-bold text-slate-400 mt-2 max-w-[180px] uppercase leading-relaxed tracking-wider">
+              Scan barcode or select items from catalog
+            </p>
+          </div>
+        ) : (
+         <div className="space-y-4 p-4">
+  {cartItems.map((item) => (
+    <div
+      key={item.id}
+      className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/60 shadow-sm hover:shadow-md transition-all duration-200"
+    >
+      {/* 1. TOP SECTION: Product Details */}
+      <div className="p-4 flex items-center gap-4">
+        {/* Image Container with Inner Shadow */}
+        <div className="relative h-14 w-14 shrink-0 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-1.5 overflow-hidden shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)]">
+          {item.image ? (
+            <img src={item.image} alt={item.name} className="h-full w-full object-contain" />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 font-black text-lg">
+              {item.name.charAt(0)}
+            </div>
+          )}
         </div>
-        <div className="col-span-3 text-center">
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">02. Quantity</span>
-        </div>
-        <div className="col-span-3 text-right">
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">03. Line Total</span>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight leading-tight mb-1">
+                {item.name}
+              </h3>
+              <div className="flex items-center gap-3">
+                 <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 rounded-md">
+                   Rs {Number(item.price).toLocaleString()}
+                 </span>
+                 <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-tighter">
+                   REF: {item.id.toString().slice(-6)}
+                 </span>
+              </div>
+            </div>
+            
+            {/* Trash Icon - Visible on hover for desktop, always available for touch */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full md:opacity-0 md:group-hover:opacity-100 transition-all duration-200"
+              onClick={() => dispatch(removeFromCart(item.id))}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* 3. SCROLLABLE DATA ROWS */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/20">
-        {cartItems.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center p-12 text-center">
-            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-              <PackageSearch className="w-10 h-10 text-slate-300" />
-            </div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Ready for scanning</h3>
-            <p className="text-xs text-slate-400 mt-1 max-w-[200px]">Add products from the catalog to begin the checkout process.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
-            {cartItems.map((item) => (
-              <div 
-                key={item.id} 
-                className="group grid grid-cols-12 gap-4 px-6 py-5 items-center hover:bg-white dark:hover:bg-slate-900 transition-all duration-150"
-              >
-                {/* Product Info (Col 1) */}
-                <div className="col-span-6 flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-white border border-slate-100 dark:border-slate-800 p-1 shadow-xs flex-shrink-0">
-                    <div className="h-full w-full bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-center font-bold text-slate-400 text-xs">
-                      {item.image ? <img src={item.image} alt="" className="object-contain" /> : item.name.charAt(0)}
-                    </div>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate uppercase tracking-tight leading-none mb-1.5">
-                      {item.name}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[9px] font-mono border-slate-200 text-slate-500 py-0 h-4">
-                        Rs {Number(item.price).toLocaleString()}
-                      </Badge>
-                      <span className="text-[10px] text-slate-400 font-medium tracking-tight">ID: {item.id.toString().slice(-5)}</span>
-                    </div>
-                  </div>
-                </div>
+      {/* 2. BOTTOM SECTION: Controls & Total */}
+      <div className="px-4 py-3 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        {/* Sleek Quantity Stepper */}
+        <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            onClick={() => handleUpdateQty(item.id, item.quantity - 1)}
+          >
+            <Minus className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+          </Button>
+          
+          <span className="w-10 text-center text-sm font-black text-slate-900 dark:text-white tabular-nums">
+            {item.quantity}
+          </span>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            onClick={() => handleUpdateQty(item.id, item.quantity + 1)}
+          >
+            <Plus className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+          </Button>
+        </div>
 
-                {/* Quantity Stepper (Col 2) */}
-                <div className="col-span-3 flex justify-center">
-                  <div className="flex items-center p-1 bg-slate-100/50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 rounded-lg hover:bg-white dark:hover:bg-slate-700 shadow-xs"
-                      onClick={() => handleUpdateQty(item.id, item.quantity - 1)}
-                    >
-                      <Minus className="w-3 h-3" />
-                    </Button>
-                    <span className="w-10 text-center text-sm font-black text-slate-900 dark:text-white">
-                      {item.quantity}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 rounded-lg hover:bg-white dark:hover:bg-slate-700 shadow-xs"
-                      onClick={() => handleUpdateQty(item.id, item.quantity + 1)}
-                    >
-                      <Plus className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
+        {/* Line Total Display */}
+        <div className="text-right">
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] leading-none mb-1">Subtotal</p>
+          <p className="text-base font-black text-slate-900 dark:text-white tabular-nums tracking-tight">
+            Rs {(item.price * item.quantity).toLocaleString()}
+          </p>
+        </div>
+      </div>
 
-                {/* Line Total (Col 3) */}
-                <div className="col-span-3 flex items-center justify-end gap-5">
-                  <div className="text-right">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase leading-none mb-1">Subtotal</p>
-                    <p className="text-sm font-black text-indigo-600 dark:text-indigo-400">
-                      Rs {(item.price * item.quantity).toLocaleString()}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-opacity opacity-0 group-hover:opacity-100"
-                    onClick={() => dispatch(removeFromCart(item.id))}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Visual Indicator on Hover */}
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-600 scale-y-0 group-hover:scale-y-100 transition-transform duration-200 origin-center" />
+    </div>
+  ))}
+</div>
         )}
       </div>
 
-      {/* 4. FOOTER SHADOW OVERLAY (Optional placeholder for CartSummary) */}
-      <div className="h-2 bg-linear-to-t from-slate-100/50 to-transparent pointer-events-none" />
+      {/* 4. BOTTOM FADE (Indicates scroll) */}
+      <div className="h-4 bg-gradient-to-t from-slate-50/80 dark:from-slate-950/80 to-transparent pointer-events-none shrink-0" />
     </div>
   );
 };
