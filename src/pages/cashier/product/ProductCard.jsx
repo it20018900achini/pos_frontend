@@ -94,9 +94,7 @@ const ProductCard = ({ product }) => {
             {variant?.sku || "NO-SKU"}
           </p>
         </div>
- <pre>
-            {JSON.stringify(variant,2,null)}
-          </pre>
+
         {/* Action Indicator (Visible on Hover) */}
         {!isOutOfStock && (
           <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-white/5 flex items-center justify-center">

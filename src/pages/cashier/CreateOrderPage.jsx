@@ -120,7 +120,7 @@ const CreateOrderPage = () => {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/40 dark:bg-transparent p-4 lg:p-8">
+        <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/40 dark:bg-transparent ">
           <ProductSection searchInputRef={searchInputRef} />
         </div>
       </main>
@@ -174,38 +174,75 @@ const CreateOrderPage = () => {
 
               {/* 3. CHECKOUT & CUSTOMER (300px) - Responsive Stack on mobile */}
               <div className="hidden xl:flex w-[300px] flex-col bg-slate-50/30 dark:bg-slate-900/50">
-                <div className="p-6 bg-white dark:bg-slate-900 border-b">
-                  <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4">Customer Profile</h4>
-                  {selectedCustomer ? (
-                    <div className="group relative p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 transition-all hover:border-indigo-200">
-                      <div className="flex items-start gap-4">
-                        <div className="relative flex-shrink-0">
-                          <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-md">
-                            <User className="h-5 w-5 text-white" />
-                          </div>
-                          <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-emerald-500 border-2 border-white rounded-full" />
-                        </div>
-                        <div className="flex-1 min-w-0 text-left">
-                          <p className="text-xs font-black text-slate-900 dark:text-white truncate uppercase tracking-tight leading-none mb-1.5">
-                            {selectedCustomer.fullName || selectedCustomer.name}
-                          </p>
-                          <p className="text-[11px] font-bold text-slate-500 tabular-nums">
-                            {selectedCustomer.phone || "No Phone"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <Button 
-                      variant="outline" 
-                      className="w-full h-16 border-dashed border-2 rounded-2xl flex flex-col gap-2 hover:bg-indigo-50 hover:border-indigo-300 transition-all group"
-                      onClick={() => setShowCustomerDialog(true)}
-                    >
-                      <User className="h-4 w-4 text-slate-400 group-hover:text-indigo-600" />
-                      <span className="text-[10px] font-black uppercase text-slate-400 group-hover:text-indigo-600">Assign (F2)</span>
-                    </Button>
-                  )}
-                </div>
+              <div className="p-6 bg-white dark:bg-slate-900 border-b">
+  <div className="flex items-center justify-between mb-4">
+    <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">
+      Buyer Identity
+    </h4>
+    {selectedCustomer && (
+      <button 
+        onClick={() => setShowCustomerDialog(true)}
+        className="text-[9px] font-black uppercase text-indigo-600 hover:text-indigo-700 transition-colors"
+      >
+        Change
+      </button>
+    )}
+  </div>
+
+  {selectedCustomer ? (
+    <div className="relative group overflow-hidden rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 p-4 transition-all hover:shadow-md">
+      <div className="flex items-center gap-4 relative z-10">
+        {/* Profile Avatar with Status Ring */}
+        <div className="relative shrink-0">
+          <div className="h-12 w-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-200 dark:shadow-none transition-transform group-hover:scale-105">
+            <User className="h-6 w-6 text-white" />
+          </div>
+          <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full" />
+        </div>
+
+        {/* Name & Contact */}
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-black text-slate-900 dark:text-white truncate uppercase tracking-tight leading-none mb-1.5">
+            {selectedCustomer.fullName || selectedCustomer.name}
+          </p>
+          <div className="flex flex-col gap-0.5">
+            <p className="text-[11px] font-bold text-slate-500 tabular-nums">
+              {selectedCustomer.phone || "No Phone Registered"}
+            </p>
+            {selectedCustomer.email && (
+              <p className="text-[10px] font-medium text-slate-400 truncate italic">
+                {selectedCustomer.email}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Decorative background element for premium feel */}
+      <div className="absolute -right-4 -bottom-4 opacity-[0.03] dark:opacity-[0.05] pointer-events-none group-hover:scale-110 transition-transform">
+        <User size={100} weight="fill" />
+      </div>
+    </div>
+  ) : (
+    /* Premium Empty State Button */
+    <button 
+      onClick={() => setShowCustomerDialog(true)}
+      className="w-full group relative flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50/30 transition-all duration-300"
+    >
+      <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-indigo-600 group-hover:shadow-lg group-hover:shadow-indigo-100 dark:group-hover:shadow-none transition-all">
+        <User className="h-5 w-5 text-slate-400 group-hover:text-white" />
+      </div>
+      <div className="text-center">
+        <p className="text-[11px] font-black uppercase tracking-widest text-slate-500 group-hover:text-indigo-600">
+          Assign Customer
+        </p>
+        <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">
+          Press <span className="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-[8px]">F2</span> for Quick Search
+        </p>
+      </div>
+    </button>
+  )}
+</div>
 
                 <div className="flex-1 overflow-y-auto">
                   <CartSummary />
