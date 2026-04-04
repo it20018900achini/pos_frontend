@@ -65,7 +65,7 @@ const PaymentSection = ({ setShowPaymentDialog }) => {
             disabled={cartItems.length === 0}
           >
             {selectedCustomer ? (
-              <CreditCard className="w-5 h-5 mr-2" />
+              <CreditCard className="w-5 h-5 mr-2 text-green-500" />
             ) : (
               <CircleX className="w-5 h-5 mr-2 text-red-500" />
             )}
