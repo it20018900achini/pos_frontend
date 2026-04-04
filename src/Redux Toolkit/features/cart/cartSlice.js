@@ -4,8 +4,12 @@ import { createSlice, createSelector } from "@reduxjs/toolkit";
  * Pro Tip: Use a constant for tax rates to make 
  * global changes easier in the future.
  */
+const getStorageKey = (selectedBranchId) => `held_orders_${selectedBranchId}`;
 const TAX_RATE = 0.00; 
-
+// Helper to sync with localStorage
+const syncHeldOrdersToStorage = (selectedBranchId, heldOrders) => {
+  localStorage.setItem(`held_orders_${selectedBranchId}`, JSON.stringify(heldOrders));
+};
 const initialState = {
   items: [],
   selectedCustomer: null,
@@ -81,43 +85,70 @@ const cartSlice = createSlice({
     setPaymentMethod: (state, action) => {
       state.paymentMethod = action.payload?.toUpperCase() || "CASH";
     },
-holdOrder: (state) => {
+
+
+    holdOrder: (state, action) => {
+      const { selectedBranchId } = action.payload; // Extract selectedBranchId from payload
+      
       if (state.items.length > 0) {
-        // 1. Push the current cart into held orders
-        state.heldOrders.push({
+        const newOrder = {
           id: Date.now(),
           items: [...state.items],
           customer: state.selectedCustomer,
           note: state.note,
           discount: { ...state.discount },
           timestamp: new Date().toISOString(),
-        });
+          selectedBranchId, // Tag the order with the branch ID
+        };
 
-        // 2. MANUALLY reset the fields instead of returning initialState
+        state.heldOrders.push(newOrder);
+
+        // ✅ Save to LocalStorage using a branch-specific key
+        syncHeldOrdersToStorage(selectedBranchId, state.heldOrders);
+
+        // Reset fields
         state.items = [];
         state.selectedCustomer = null;
         state.note = "";
         state.discount = { type: "percentage", value: 0 };
         state.paymentMethod = "CASH";
-        // Notice: We do NOT return anything here.
       }
     },
 
-    resumeOrder: (state, action) => {
-      const order = action.payload;
-      
-      // 1. Update state with the resumed order data
-      state.items = order.items;
-      state.selectedCustomer = order.customer;
-      state.note = order.note;
-      state.discount = order.discount;
-      
-      // 2. Filter out the resumed order from the held list
-      state.heldOrders = state.heldOrders.filter((o) => o.id !== order.id);
-      
-      // Again: No "return state" or "return { ... }"
+   loadHeldOrdersFromStorage: (state, action) => {
+      const { selectedBranchId } = action.payload;
+      const stored = localStorage.getItem(getStorageKey(selectedBranchId));
+      if (stored) {
+        state.heldOrders = JSON.parse(stored);
+      }
     },
-    
+resumeOrder: (state, action) => {
+  // Destructure from the new payload format: { order, selectedBranchId }
+  const { order, selectedBranchId } = action.payload;
+  
+  // 1. Restore the items and customer to the active cart
+  state.items = order.items;
+  state.selectedCustomer = order.customer;
+  state.note = order.note;
+  state.discount = order.discount;
+
+  // 2. Remove from the held list in Redux
+  state.heldOrders = state.heldOrders.filter((o) => o.id !== order.id);
+  
+  // 3. Update localStorage to reflect the removal
+  // Change this:
+if (selectedBranchId) {
+  localStorage.setItem(
+    `held_orders_${selectedBranchId}`, 
+    JSON.stringify(state.heldOrders)
+  );
+}
+
+// To this (Cleaner and matches your holdOrder logic):
+if (selectedBranchId) {
+  syncHeldOrdersToStorage(selectedBranchId, state.heldOrders);
+}
+},
 // Add this specifically
     setCurrentOrder: (state, action) => {
       const order = action.payload;
@@ -192,6 +223,7 @@ export const {
   holdOrder,
   resumeOrder,
   setCurrentOrder,
+  loadHeldOrdersFromStorage,
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

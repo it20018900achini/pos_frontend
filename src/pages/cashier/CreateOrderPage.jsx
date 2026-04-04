@@ -51,7 +51,7 @@ const CreateOrderPage = () => {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [showReceiptDialog, setShowReceiptDialog] = useState(false);
   const [showHeldOrdersDialog, setShowHeldOrdersDialog] = useState(false);
-
+const {selectedBranchId} = useSelector((state) => state.user);
   const { data: customers = [], isLoading, isError, error, refetch } = useGetAllCustomersQuery();
   const selectedCustomer = useSelector((state) => state.cart?.selectedCustomer);
   const cartItems = useSelector((state) => state.cart?.items || []);
@@ -92,14 +92,7 @@ const CreateOrderPage = () => {
           </div>
 
           <div className="flex items-center gap-2 lg:gap-4">
-            <Button 
-              variant="outline" 
-              className="hidden sm:flex gap-2 rounded-xl h-9 px-3 lg:h-10 lg:px-4 bg-slate-50/50 hover:bg-white"
-              onClick={() => setShowHeldOrdersDialog(true)}
-            >
-              <Clock className="h-4 w-4 text-amber-500" />
-              <span className="text-[10px] lg:text-xs font-bold text-slate-600">Held Orders</span>
-            </Button>
+           
 
             <Separator orientation="vertical" className="hidden sm:block h-6" />
 
@@ -134,13 +127,14 @@ const CreateOrderPage = () => {
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 32, stiffness: 300 }}
             className={`
+              overflow-auto
               fixed inset-0 z-50 flex flex-col bg-white dark:bg-slate-900
               lg:relative lg:inset-auto lg:z-10 lg:w-1/2 lg:border-l lg:border-slate-200 
               lg:shadow-[-40px_0_70px_rgba(0,0,0,0.03)]
             `}
           >
             {/* SIDEBAR HEADER */}
-            <div className="overflow-scroll h-16 px-6 flex items-center justify-between border-b bg-white dark:bg-slate-900 shrink-0">
+            <div className=" h-16 px-6 flex items-center justify-between border-b bg-white dark:bg-slate-900 shrink-0">
                <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg">
                      <ShoppingCart className="h-3.5 w-3.5 text-indigo-600" />
@@ -249,7 +243,10 @@ const CreateOrderPage = () => {
                 </div>
 
                 <div className="p-6 bg-white dark:bg-slate-900 border-t">
+                
+                
                   <CustomerPaymentSection 
+                  selectedBranchId={selectedBranchId} 
                     setShowCustomerDialog={setShowCustomerDialog}
                     setShowPaymentDialog={setShowPaymentDialog}
                   />
@@ -263,6 +260,8 @@ const CreateOrderPage = () => {
                  <CartSummary />
                </div>
                <CustomerPaymentSection 
+                                 selectedBranchId={selectedBranchId} 
+
                   setShowCustomerDialog={setShowCustomerDialog}
                   setShowPaymentDialog={setShowPaymentDialog}
                />
@@ -276,7 +275,7 @@ const CreateOrderPage = () => {
       <CustomerDialog showCustomerDialog={showCustomerDialog} setShowCustomerDialog={setShowCustomerDialog} customers={customers} loading={isLoading} refetchCustomers={refetch} />
       <PaymentDialog showPaymentDialog={showPaymentDialog} setShowPaymentDialog={setShowPaymentDialog} setShowReceiptDialog={setShowReceiptDialog} />
       <InvoiceDialog showInvoiceDialog={showReceiptDialog} setShowInvoiceDialog={setShowReceiptDialog} />
-      <HeldOrdersDialog showHeldOrdersDialog={showHeldOrdersDialog} setShowHeldOrdersDialog={setShowHeldOrdersDialog} />
+      <HeldOrdersDialog selectedBranchId={selectedBranchId} showHeldOrdersDialog={showHeldOrdersDialog} setShowHeldOrdersDialog={setShowHeldOrdersDialog} />
     </div>
   );
 };
