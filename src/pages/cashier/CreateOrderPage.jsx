@@ -56,6 +56,17 @@ const {selectedBranchId} = useSelector((state) => state.user);
   const selectedCustomer = useSelector((state) => state.cart?.selectedCustomer);
   const cartItems = useSelector((state) => state.cart?.items || []);
 
+
+  const [productRefreshKey, setProductRefreshKey] = useState(0);
+
+  // This function will be passed down to the PaymentDialog
+  const handleOrderSuccess = useCallback(() => {
+    // Incrementing a key is a foolproof way to trigger the useEffect in the child
+    setProductRefreshKey(prev => prev + 1); 
+    toast({ title: "Inventory Synced", description: "Product stock updated successfully." });
+  }, [toast]);
+
+
   // Keyboard Shortcut Logic
   const handleKeyDown = useCallback((e) => {
     if (e.key === "F2") { e.preventDefault(); setShowCustomerDialog(true); }
@@ -114,7 +125,11 @@ const {selectedBranchId} = useSelector((state) => state.user);
         </header>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/40 dark:bg-transparent ">
-          <ProductSection searchInputRef={searchInputRef} />
+
+<ProductSection 
+      searchInputRef={searchInputRef} 
+      refreshTrigger={productRefreshKey} // Pass the key here
+    />
         </div>
       </main>
 

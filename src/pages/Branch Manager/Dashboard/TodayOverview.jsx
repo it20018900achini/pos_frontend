@@ -7,9 +7,9 @@ import { getTodayOverview } from "@/Redux Toolkit/features/branchAnalytics/branc
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
-  DollarSign, Repeat, ShoppingBag, Users, 
+  DollarSign, Repeat, Users, 
   Package, ShieldCheck, TrendingUp, TrendingDown,
-  ArrowUpRight, Zap, Target
+  Zap, Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,57 +29,51 @@ const TodayOverview = ({ selectedBranchId, startDate, endDate }) => {
   const kpis = useMemo(() => [
     {
       title: "Gross Revenue",
-      value: todayOverview?.totalSales,
       formatted: todayOverview?.totalSales ? `LKR ${todayOverview.totalSales.toLocaleString()}` : "0.00",
       icon: DollarSign,
       color: "blue",
       growth: todayOverview?.salesGrowth,
-      subValue: "Daily Target: 85%"
+      status: "Live Sync"
     },
     {
       title: "Order Volume",
-      value: todayOverview?.ordersToday,
       formatted: todayOverview?.ordersToday?.toLocaleString() || "0",
       icon: Zap,
       color: "violet",
       growth: todayOverview?.orderGrowth,
-      subValue: "Avg. 12/hour"
+      status: "12/hr avg"
     },
     {
       title: "Refund Value",
-      value: todayOverview?.todayRefunds,
       formatted: todayOverview?.todayRefunds ? `LKR ${todayOverview.todayRefunds.toLocaleString()}` : "0.00",
       icon: Repeat,
       color: "rose",
       growth: todayOverview?.refundGrowth,
-      subValue: `${todayOverview?.todayRefundCount || 0} items returned`
+      status: `${todayOverview?.todayRefundCount || 0} items`
     },
     {
       title: "Team Status",
-      value: todayOverview?.activeCashiers,
       formatted: todayOverview?.activeCashiers || "0",
       icon: Users,
       color: "amber",
       growth: todayOverview?.cashierGrowth,
-      subValue: "Active Terminals"
+      status: "Terminals"
     },
     {
       title: "Stock Health",
-      value: todayOverview?.lowStockItems,
       formatted: todayOverview?.lowStockItems || "0",
       icon: Package,
       color: "emerald",
       growth: todayOverview?.lowStockGrowth,
-      subValue: "Action Required"
+      status: "Critical"
     },
     {
       title: "System Integrity",
-      value: 100,
       formatted: "Optimal",
       icon: ShieldCheck,
       color: "cyan",
       growth: 0,
-      subValue: "All Nodes Active"
+      status: "Active"
     },
   ], [todayOverview]);
 
@@ -96,86 +90,83 @@ const TodayOverview = ({ selectedBranchId, startDate, endDate }) => {
   );
 };
 
-/* ---------------- PRO MINIMALIST CARD ---------------- */
+/* ---------------- ULTRA MINIMALIST PRO CARD (NO BOTTOM) ---------------- */
 
 const KPICard = ({ kpi, index }) => {
   const Icon = kpi.icon;
   const isPositive = kpi.growth >= 0;
 
   const themes = {
-    blue: "from-blue-600 to-blue-400 bg-blue-500/10 text-blue-600 shadow-blue-500/5",
-    violet: "from-violet-600 to-indigo-400 bg-violet-500/10 text-violet-600 shadow-violet-500/5",
-    rose: "from-rose-600 to-pink-400 bg-rose-500/10 text-rose-600 shadow-rose-500/5",
-    amber: "from-amber-500 to-orange-400 bg-amber-500/10 text-amber-600 shadow-amber-500/5",
-    emerald: "from-emerald-600 to-teal-400 bg-emerald-500/10 text-emerald-600 shadow-emerald-500/5",
-    cyan: "from-cyan-600 to-blue-400 bg-cyan-500/10 text-cyan-600 shadow-cyan-500/5",
+    blue: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    violet: "bg-violet-500/10 text-violet-600 border-violet-500/20",
+    rose: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+    amber: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+    emerald: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+    cyan: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
   };
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ y: -4 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
     >
-      <Card className="group relative overflow-hidden rounded-[2.5rem] border border-slate-200/50 bg-white p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.08)] dark:border-white/5 dark:bg-neutral-950">
+      <Card className="group relative overflow-hidden rounded-[2rem] border border-slate-200/60 bg-white p-7 transition-all duration-300 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] dark:border-white/5 dark:bg-neutral-950">
         
-        {/* Top Section */}
-        <div className="flex items-center justify-between">
+        {/* Top Branding/Status Row */}
+        <div className="flex items-center justify-between mb-8">
           <div className={cn(
-            "flex h-12 w-12 items-center justify-center rounded-2xl transition-transform duration-500 group-hover:rotate-6",
-            themes[kpi.color].split(' shadow')[0]
+            "flex h-12 w-12 items-center justify-center rounded-2xl border transition-all duration-500 group-hover:scale-110",
+            themes[kpi.color]
           )}>
-            <Icon size={24} strokeWidth={2} />
+            <Icon size={24} strokeWidth={1.5} />
           </div>
 
-          <div className={cn(
-            "flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-black tracking-tight",
-            isPositive ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
-          )}>
-            {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-            {Math.abs(kpi.growth || 0).toFixed(1)}%
+          <div className="flex flex-col items-end">
+            <div className={cn(
+              "flex items-center gap-1 font-black text-[12px] tracking-tight",
+              isPositive ? "text-emerald-500" : "text-rose-500"
+            )}>
+              {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+              {Math.abs(kpi.growth || 0).toFixed(1)}%
+            </div>
+            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{kpi.status}</span>
           </div>
         </div>
 
-        {/* Center Content */}
-        <div className="mt-8">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+        {/* Content Section */}
+        <div className="space-y-1">
+          <p className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-400 group-hover:text-slate-500 transition-colors">
             {kpi.title}
-          </span>
-          <h3 className="mt-1 text-3xl font-black tracking-tighter text-slate-900 dark:text-white">
-            {kpi.formatted}
-          </h3>
-        </div>
-
-        {/* Footer Section - Replaced Live Feed with Data Details */}
-        <div className="mt-8 flex items-center justify-between border-t border-slate-50 pt-5 dark:border-white/5">
-          <div className="flex items-center gap-2 text-slate-400">
-            <Target size={14} className="text-slate-300" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">{kpi.subValue}</span>
+          </p>
+          <div className="flex items-center gap-3">
+             <h3 className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white">
+               {kpi.formatted}
+             </h3>
+             {isPositive && (
+               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+             )}
           </div>
-          
-          <button className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-400 transition-colors group-hover:bg-slate-900 group-hover:text-white dark:bg-white/5">
-             <ArrowUpRight size={16} />
-          </button>
         </div>
 
-        {/* Glass Glow effect */}
+        {/* Subtle Background Interaction Effect */}
         <div className={cn(
-          "absolute -right-4 -bottom-4 h-24 w-24 rounded-full opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-20",
-          themes[kpi.color].split(' shadow')[0]
+          "absolute inset-0 opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500 pointer-events-none",
+          themes[kpi.color].split(' ')[0]
         )} />
       </Card>
     </motion.div>
   );
 };
 
-/* ---------------- SKELETON LOADER ---------------- */
+/* ---------------- COMPACT SKELETON ---------------- */
 
 const LoadingGrid = () => (
   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
     {[...Array(6)].map((_, i) => (
-      <Card key={i} className="h-[240px] rounded-[2.5rem] border-none bg-slate-50 p-8 dark:bg-neutral-900">
+      <Card key={i} className="h-[180px] rounded-[2rem] border-none bg-slate-50 p-7 dark:bg-neutral-900">
         <div className="flex justify-between">
            <Skeleton className="h-12 w-12 rounded-2xl" />
            <Skeleton className="h-6 w-16 rounded-full" />

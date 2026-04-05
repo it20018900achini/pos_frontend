@@ -1,10 +1,12 @@
+"use client";
+
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
   Loader2, Search, X, LayoutGrid, List, Grid, 
-  PackageSearch, Command 
+  PackageSearch 
 } from "lucide-react";
 import {
   useGetProductVariantsByBranchQuery,
@@ -13,40 +15,61 @@ import {
 import ProductCard from "./ProductCard";
 import ProductSmallCard from "./ProductSmallCard";
 import ProductListRow from "./ProductListRow";
-import { useToast } from "@/components/ui/use-toast";
 
-const ProductSection = ({ searchInputRef }) => {
-  const { toast } = useToast();
+const ProductSection = ({ searchInputRef, refreshTrigger }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedTerm, setDebouncedTerm] = useState("");
   const [view, setView] = useState("card");
 
-  // Pulling IDs from your Redux User State
   const { selectedBranchId, userProfile } = useSelector((state) => state.user);
   const storeId = userProfile?.user?.store?.id; 
 
-  // 1. Debounce: Wait 300ms after user stops typing to trigger API
+  // --- DATA FETCHING ---
+  const { 
+    data: products = [], 
+    isLoading, 
+    refetch: refetchBranchProducts 
+  } = useGetProductVariantsByBranchQuery(selectedBranchId, { 
+    skip: !selectedBranchId,
+    refetchOnMountOrArgChange: true // Ensures fresh data on mount
+  });
+
+  const { 
+    data: searchResults = [], 
+    isFetching: isSearching, 
+    refetch: refetchSearch 
+  } = useSearchProductsQuery(
+    { storeId, query: debouncedTerm },
+    { skip: debouncedTerm.trim() === "" || !storeId }
+  );
+
+  // --- REFRESH LOGIC ---
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      // We use a small timeout to ensure the backend has finished the stock transaction
+      const timer = setTimeout(() => {
+        refetchBranchProducts();
+        if (debouncedTerm.trim()) {
+          refetchSearch();
+        }
+      }, 500); // 500ms delay is usually enough for DB consistency
+      
+      return () => clearTimeout(timer);
+    }
+  }, [refreshTrigger, refetchBranchProducts, refetchSearch, debouncedTerm]);
+
+  // --- DEBOUNCE SEARCH ---
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedTerm(searchTerm), 300);
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // 2. Data Fetching: Standard Branch Products
-  const { data: products = [], isLoading, isError } =
-    useGetProductVariantsByBranchQuery(selectedBranchId, { skip: !selectedBranchId });
-
-  // 3. Data Fetching: Store-wide Search
-  const { data: searchResults = [], isFetching: isSearching } = useSearchProductsQuery(
-    { storeId, query: debouncedTerm },
-    { skip: debouncedTerm.trim() === "" || !storeId }
-  );
-
-  // 4. Result Logic: Show search results if typing, otherwise show branch inventory
+  // --- DISPLAY LOGIC ---
   const displayProducts = useMemo(() => 
     debouncedTerm.trim() ? searchResults : products
   , [debouncedTerm, searchResults, products]);
 
-  // ---------------- POS Keyboard Support ----------------
+  // --- KEYBOARD SUPPORT ---
   const handleKeyDown = useCallback((e) => {
     if (e.key === "F1") {
       e.preventDefault();
@@ -68,9 +91,9 @@ const ProductSection = ({ searchInputRef }) => {
   }, [handleKeyDown]);
 
   return (
-    <div className="w-full  flex flex-col bg-neutral-50 dark:bg-[#09090b] border-r border-neutral-200 dark:border-neutral-800">
+    <div className="w-full flex flex-col bg-neutral-50 dark:bg-[#09090b] border-r border-neutral-200 dark:border-neutral-800">
       
-      {/* HEADER: Search & View Controls */}
+      {/* HEADER */}
       <div className="p-4 space-y-4 bg-white dark:bg-[#09090b] border-b border-neutral-200 dark:border-neutral-800 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -117,7 +140,7 @@ const ProductSection = ({ searchInputRef }) => {
         </div>
       </div>
 
-      {/* BODY: Product Canvas */}
+      {/* BODY */}
       <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
         {isLoading ? (
           <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4">
@@ -149,7 +172,6 @@ const ProductSection = ({ searchInputRef }) => {
   );
 };
 
-// Internal Pro Components
 const ViewBtn = ({ active, onClick, Icon }) => (
   <Button
     size="sm"
