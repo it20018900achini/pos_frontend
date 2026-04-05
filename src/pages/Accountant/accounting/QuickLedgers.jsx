@@ -4,7 +4,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useGetQuickLedgersByIdQuery } from "@/Redux Toolkit/features/accounting/accountingApi";
 
-import ContentLayout from '@/pages/dashboard/ContentLayout';
+import ContentLayout from '@/pages/Dashboard/ContentLayout';
 import CustomForm from './CustomForm';
 import ManageQuickLedgers from './ManageQuickLedger';
 import { Loader2, AlertCircle, Settings } from "lucide-react";
