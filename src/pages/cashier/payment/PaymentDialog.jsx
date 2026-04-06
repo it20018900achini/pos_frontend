@@ -40,6 +40,7 @@ const PaymentDialog = ({
   showPaymentDialog,
   setShowPaymentDialog,
   setShowReceiptDialog,
+  onSuccess, // <--- Destructure here
 }) => {
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -192,7 +193,9 @@ const PaymentDialog = ({
       };
 
       const created = await dispatch(createOrder(orderData)).unwrap();
-
+if (onSuccess) {
+        onSuccess(); 
+      }
       dispatch(setCurrentOrder(created));
       dispatch(resetOrder());
 
@@ -220,6 +223,7 @@ const PaymentDialog = ({
       setLoadingMain(false);
     }
   }, [
+    onSuccess,
     cart,
     selectedCustomer,
     payments,
@@ -238,7 +242,7 @@ const PaymentDialog = ({
       <DialogContent className="z-60 sm:max-w-[90%] w-[90%] max-h-[95vh] p-0 overflow-scroll rounded-3xl bg-gradient-to-br from-neutral-50 to-neutral-200 flex flex-col">
         <DialogHeader className="px-8 py-3 border-b bg-white/60">
           <DialogTitle className="text-xl font-bold">
-            🧾 Payment Summary
+            🧾 Payment Summary1
           </DialogTitle>
         </DialogHeader>
 

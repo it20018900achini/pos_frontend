@@ -57,14 +57,15 @@ const {selectedBranchId} = useSelector((state) => state.user);
   const cartItems = useSelector((state) => state.cart?.items || []);
 
 
-  const [productRefreshKey, setProductRefreshKey] = useState(0);
+  
+// 1. Create the state
+const [productRefreshKey, setProductRefreshKey] = useState(0);
 
-  // This function will be passed down to the PaymentDialog
-  const handleOrderSuccess = useCallback(() => {
-    // Incrementing a key is a foolproof way to trigger the useEffect in the child
-    setProductRefreshKey(prev => prev + 1); 
-    toast({ title: "Inventory Synced", description: "Product stock updated successfully." });
-  }, [toast]);
+// 2. Create the success handler
+const handleOrderSuccess = useCallback(() => {
+  setProductRefreshKey(prev => prev + 1); // This change triggers the refresh
+}, []);
+
 
 
   // Keyboard Shortcut Logic
@@ -128,7 +129,7 @@ const {selectedBranchId} = useSelector((state) => state.user);
 
 <ProductSection 
       searchInputRef={searchInputRef} 
-      refreshTrigger={productRefreshKey} // Pass the key here
+      refreshTrigger={productRefreshKey}
     />
         </div>
       </main>
@@ -294,7 +295,7 @@ const {selectedBranchId} = useSelector((state) => state.user);
 
       {/* DIALOGS */}
       <CustomerDialog showCustomerDialog={showCustomerDialog} setShowCustomerDialog={setShowCustomerDialog} customers={customers} loading={isLoading} refetchCustomers={refetch} />
-      <PaymentDialog showPaymentDialog={showPaymentDialog} setShowPaymentDialog={setShowPaymentDialog} setShowReceiptDialog={setShowReceiptDialog} />
+      <PaymentDialog showPaymentDialog={showPaymentDialog} setShowPaymentDialog={setShowPaymentDialog} setShowReceiptDialog={setShowReceiptDialog} onSuccess={handleOrderSuccess} />
       <InvoiceDialog showInvoiceDialog={showReceiptDialog} setShowInvoiceDialog={setShowReceiptDialog} />
       <HeldOrdersDialog selectedBranchId={selectedBranchId} showHeldOrdersDialog={showHeldOrdersDialog} setShowHeldOrdersDialog={setShowHeldOrdersDialog} />
     </div>
