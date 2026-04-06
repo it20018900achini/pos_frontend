@@ -44,7 +44,7 @@ const SalesTrend = () => {
         await dispatch(getDailySales(userProfile.user?.store.id)).unwrap();
       } else {
         await dispatch(
-          getSalesTrends({ storeAdminId: userProfile.user?.store.id, period })
+          getSalesTrends({ storeId: userProfile.user?.store.id, period })
         ).unwrap();
       }
     } catch (err) {

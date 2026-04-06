@@ -22,22 +22,22 @@ const getAuthHeaders = () => {
 // 🔹 Get Store Overview (KPI Summary)
 export const getStoreOverview = createAsyncThunk(
   "storeAnalytics/getStoreOverview",
-  async (storeAdminId, { rejectWithValue }) => {
+  async (storeId, { rejectWithValue }) => {
     try {
-      console.log('🔄 Fetching store overview...', { storeAdminId });
+      console.log('🔄 Fetching store overview...', { storeId });
       
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/store/analytics/${storeAdminId}/overview`, { headers });
+      const res = await api.get(`/api/store/analytics/${storeId}/overview`, { headers });
       
       console.log('✅ Store overview fetched successfully:', {
-        storeAdminId,
+        storeId,
         response: res.data
       });
       
       return res.data;
     } catch (err) {
       console.error('❌ Failed to fetch store overview:', {
-        storeAdminId,
+        storeId,
         error: err.response?.data || err.message,
         status: err.response?.status,
         statusText: err.response?.statusText
@@ -53,15 +53,15 @@ export const getStoreOverview = createAsyncThunk(
 // 🔹 Get Sales Trends by Time (daily/weekly/monthly)
 export const getSalesTrends = createAsyncThunk(
   "storeAnalytics/getSalesTrends",
-  async ({ storeAdminId, period }, { rejectWithValue }) => {
+  async ({ storeId, period }, { rejectWithValue }) => {
     try {
-      console.log('🔄 Fetching sales trends...', { storeAdminId, period });
+      console.log('🔄 Fetching sales trends...', { storeId, period });
       
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/store/analytics/${storeAdminId}/sales-trends?period=${period}`, { headers });
+      const res = await api.get(`/api/store/analytics/${storeId}/sales-trends?period=${period}`, { headers });
       
       console.log('✅ Sales trends fetched successfully:', {
-        storeAdminId,
+        storeId,
         period,
         response: res.data
       });
@@ -69,7 +69,7 @@ export const getSalesTrends = createAsyncThunk(
       return res.data;
     } catch (err) {
       console.error('❌ Failed to fetch sales trends:', {
-        storeAdminId,
+        storeId,
         period,
         error: err.response?.data || err.message,
         status: err.response?.status,
@@ -86,15 +86,15 @@ export const getSalesTrends = createAsyncThunk(
 // 🔹 Get Monthly Sales Chart (line)
 export const getMonthlySales = createAsyncThunk(
   "storeAnalytics/getMonthlySales",
-  async (storeAdminId, { rejectWithValue }) => {
+  async (storeId, { rejectWithValue }) => {
     try {
-      console.log('🔄 Fetching monthly sales...', { storeAdminId });
+      console.log('🔄 Fetching monthly sales...', { storeId });
       
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/store/analytics/${storeAdminId}/sales/monthly`, { headers });
+      const res = await api.get(`/api/store/analytics/${storeId}/sales/monthly`, { headers });
       
       console.log('✅ Monthly sales fetched successfully:', {
-        storeAdminId,
+        storeId,
         dataPoints: res.data.length,
         response: res.data
       });
@@ -102,7 +102,7 @@ export const getMonthlySales = createAsyncThunk(
       return res.data;
     } catch (err) {
       console.error('❌ Failed to fetch monthly sales:', {
-        storeAdminId,
+        storeId,
         error: err.response?.data || err.message,
         status: err.response?.status,
         statusText: err.response?.statusText
@@ -118,15 +118,15 @@ export const getMonthlySales = createAsyncThunk(
 // 🔹 Get Daily Sales Chart (line)
 export const getDailySales = createAsyncThunk(
   "storeAnalytics/getDailySales",
-  async (storeAdminId, { rejectWithValue }) => {
+  async (storeId, { rejectWithValue }) => {
     try {
-      console.log('🔄 Fetching daily sales...', { storeAdminId });
+      console.log('🔄 Fetching daily sales...', { storeId });
       
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/store/analytics/${storeAdminId}/sales/daily`, { headers });
+      const res = await api.get(`/api/store/analytics/${storeId}/sales/daily`, { headers });
       
       console.log('✅ Daily sales fetched successfully:', {
-        storeAdminId,
+        storeId,
         dataPoints: res.data.length,
         response: res.data
       });
@@ -134,7 +134,7 @@ export const getDailySales = createAsyncThunk(
       return res.data;
     } catch (err) {
       console.error('❌ Failed to fetch daily sales:', {
-        storeAdminId,
+        storeId,
         error: err.response?.data || err.message,
         status: err.response?.status,
         statusText: err.response?.statusText
@@ -150,15 +150,15 @@ export const getDailySales = createAsyncThunk(
 // 🔹 Get Sales by Product Category (pie/bar)
 export const getSalesByCategory = createAsyncThunk(
   "storeAnalytics/getSalesByCategory",
-  async (storeAdminId, { rejectWithValue }) => {
+  async (storeId, { rejectWithValue }) => {
     try {
-      console.log('🔄 Fetching sales by category...', { storeAdminId });
+      console.log('🔄 Fetching sales by category...', { storeId });
       
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/store/analytics/${storeAdminId}/sales/category`, { headers });
+      const res = await api.get(`/api/store/analytics/${storeId}/sales/category`, { headers });
       
       console.log('✅ Sales by category fetched successfully:', {
-        storeAdminId,
+        storeId,
         categories: res.data.length,
         response: res.data
       });
@@ -166,7 +166,7 @@ export const getSalesByCategory = createAsyncThunk(
       return res.data;
     } catch (err) {
       console.error('❌ Failed to fetch sales by category:', {
-        storeAdminId,
+        storeId,
         error: err.response?.data || err.message,
         status: err.response?.status,
         statusText: err.response?.statusText
@@ -182,15 +182,15 @@ export const getSalesByCategory = createAsyncThunk(
 // 🔹 Get Sales by Payment Method (pie)
 export const getSalesByPaymentMethod = createAsyncThunk(
   "storeAnalytics/getSalesByPaymentMethod",
-  async (storeAdminId, { rejectWithValue }) => {
+  async (storeId, { rejectWithValue }) => {
     try {
-      console.log('🔄 Fetching sales by payment method...', { storeAdminId });
+      console.log('🔄 Fetching sales by payment method...', { storeId });
       
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/store/analytics/${storeAdminId}/sales/payment-method`, { headers });
+      const res = await api.get(`/api/store/analytics/${storeId}/sales/payment-method`, { headers });
       
       console.log('✅ Sales by payment method fetched successfully:', {
-        storeAdminId,
+        storeId,
         paymentMethods: res.data.length,
         response: res.data
       });
@@ -198,7 +198,7 @@ export const getSalesByPaymentMethod = createAsyncThunk(
       return res.data;
     } catch (err) {
       console.error('❌ Failed to fetch sales by payment method:', {
-        storeAdminId,
+        storeId,
         error: err.response?.data || err.message,
         status: err.response?.status,
         statusText: err.response?.statusText
@@ -214,15 +214,15 @@ export const getSalesByPaymentMethod = createAsyncThunk(
 // 🔹 Get Sales by Branch (bar)
 export const getSalesByBranch = createAsyncThunk(
   "storeAnalytics/getSalesByBranch",
-  async (storeAdminId, { rejectWithValue }) => {
+  async (storeId, { rejectWithValue }) => {
     try {
-      console.log('🔄 Fetching sales by branch...', { storeAdminId });
+      console.log('🔄 Fetching sales by branch...', { storeId });
       
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/store/analytics/${storeAdminId}/sales/branch`, { headers });
+      const res = await api.get(`/api/store/analytics/${storeId}/sales/branch`, { headers });
       
       console.log('✅ Sales by branch fetched successfully:', {
-        storeAdminId,
+        storeId,
         branches: res.data.length,
         response: res.data
       });
@@ -230,7 +230,7 @@ export const getSalesByBranch = createAsyncThunk(
       return res.data;
     } catch (err) {
       console.error('❌ Failed to fetch sales by branch:', {
-        storeAdminId,
+        storeId,
         error: err.response?.data || err.message,
         status: err.response?.status,
         statusText: err.response?.statusText
@@ -246,15 +246,15 @@ export const getSalesByBranch = createAsyncThunk(
 // 🔹 Get Payment Breakdown (Cash, UPI, Card)
 export const getPaymentBreakdown = createAsyncThunk(
   "storeAnalytics/getPaymentBreakdown",
-  async (storeAdminId, { rejectWithValue }) => {
+  async (storeId, { rejectWithValue }) => {
     try {
-      console.log('🔄 Fetching payment breakdown...', { storeAdminId });
+      console.log('🔄 Fetching payment breakdown...', { storeId });
       
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/store/analytics/${storeAdminId}/payments`, { headers });
+      const res = await api.get(`/api/store/analytics/${storeId}/payments`, { headers });
       
       console.log('✅ Payment breakdown fetched successfully:', {
-        storeAdminId,
+        storeId,
         paymentTypes: res.data.length,
         response: res.data
       });
@@ -262,7 +262,7 @@ export const getPaymentBreakdown = createAsyncThunk(
       return res.data;
     } catch (err) {
       console.error('❌ Failed to fetch payment breakdown:', {
-        storeAdminId,
+        storeId,
         error: err.response?.data || err.message,
         status: err.response?.status,
         statusText: err.response?.statusText
@@ -278,22 +278,22 @@ export const getPaymentBreakdown = createAsyncThunk(
 // 🔹 Get Branch Performance
 export const getBranchPerformance = createAsyncThunk(
   "storeAnalytics/getBranchPerformance",
-  async (storeAdminId, { rejectWithValue }) => {
+  async (storeId, { rejectWithValue }) => {
     try {
-      console.log('🔄 Fetching branch performance...', { storeAdminId });
+      console.log('🔄 Fetching branch performance...', { storeId });
       
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/store/analytics/${storeAdminId}/branch-performance`, { headers });
+      const res = await api.get(`/api/store/analytics/${storeId}/branch-performance`, { headers });
       
       console.log('✅ Branch performance fetched successfully:', {
-        storeAdminId,
+        storeId,
         response: res.data
       });
       
       return res.data;
     } catch (err) {
       console.error('❌ Failed to fetch branch performance:', {
-        storeAdminId,
+        storeId,
         error: err.response?.data || err.message,
         status: err.response?.status,
         statusText: err.response?.statusText
@@ -309,22 +309,22 @@ export const getBranchPerformance = createAsyncThunk(
 // 🔹 Get Store Alerts and Health Monitoring
 export const getStoreAlerts = createAsyncThunk(
   "storeAnalytics/getStoreAlerts",
-  async (storeAdminId, { rejectWithValue }) => {
+  async (storeId, { rejectWithValue }) => {
     try {
-      console.log('🔄 Fetching store alerts...', { storeAdminId });
+      console.log('🔄 Fetching store alerts...', { storeId });
       
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/store/analytics/${storeAdminId}/alerts`, { headers });
+      const res = await api.get(`/api/store/analytics/${storeId}/alerts`, { headers });
       
       console.log('✅ Store alerts fetched successfully:', {
-        storeAdminId,
+        storeId,
         response: res.data
       });
       
       return res.data;
     } catch (err) {
       console.error('❌ Failed to fetch store alerts:', {
-        storeAdminId,
+        storeId,
         error: err.response?.data || err.message,
         status: err.response?.status,
         statusText: err.response?.statusText
