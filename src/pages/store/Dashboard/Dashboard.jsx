@@ -15,7 +15,7 @@ import { RefreshCcw } from "lucide-react";
 export default function DashboardStore() {
   const dispatch = useDispatch();
   // Replace with actual storeId from your auth selector
-  const storeId = 1; 
+  const storeId = useSelector((state) => state.user.userProfile?.user?.store?.id); 
 
   const { loading } = useSelector((state) => state.storeAnalytics);
 
