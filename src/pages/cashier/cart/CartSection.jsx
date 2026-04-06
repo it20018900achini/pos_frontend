@@ -40,7 +40,7 @@ const CartSection = ({ setShowHeldOrdersDialog }) => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-white dark:bg-slate-950">
+    <div className="flex flex-col h-full w-full min-h-[200px] bg-white dark:bg-slate-950">
       
       {/* 1. HEADER: ACTION BAR */}
       <div className="px-6 py-4 border-b bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between shrink-0">

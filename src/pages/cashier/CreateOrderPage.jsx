@@ -271,6 +271,12 @@ const {selectedBranchId} = useSelector((state) => state.user);
 
             {/* --- MOBILE/TABLET FOOTER (When 3-col 3rd-pane is hidden) --- */}
             <div className="xl:hidden flex flex-col border-t bg-white dark:bg-slate-900 p-4 shadow-[0_-20px_50px_rgba(0,0,0,0.05)]">
+             
+             <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800">
+                 <div className="flex-1 overflow-hidden">
+                    <CartSection setShowHeldOrdersDialog={setShowHeldOrdersDialog} />
+                 </div>
+              </div>
                <div className="mb-4">
                  <CartSummary />
                </div>

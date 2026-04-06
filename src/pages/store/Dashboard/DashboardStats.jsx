@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { motion } from "framer-motion";
 import { 
   DollarSign, 
@@ -10,28 +11,61 @@ import {
   TrendingDown,
   ArrowUpRight
 } from "lucide-react";
-import { getStoreOverview } from "@/Redux Toolkit/features/storeAnalytics/storeAnalyticsThunks";
-import { useToast } from "@/components/ui/use-toast";
+import api from "@/utils/api";
 
+// --- 1. REDUX THUNK (API) ---
+export const getStoreOverview = createAsyncThunk(
+  "storeAnalytics/getStoreOverview",
+  async (storeId, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('jwt');
+      const res = await api.get(`/api/store/analytics/${storeId}/overview`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Sync Failed");
+    }
+  }
+);
+
+// --- 2. REDUX SLICE (STATE) ---
+export const storeAnalyticsSlice = createSlice({
+  name: "storeAnalytics",
+  initialState: {
+    storeOverview: null, // Critical: Starting with null prevents LKR 0 flash
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(getStoreOverview.pending, (state) => { state.loading = true; })
+      .addCase(getStoreOverview.fulfilled, (state, action) => {
+        state.loading = false;
+        state.storeOverview = action.payload;
+      })
+      .addCase(getStoreOverview.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  },
+});
+
+// --- 3. COMPONENT ---
 const DashboardStats = () => {
   const dispatch = useDispatch();
-  const { toast } = useToast();
   const { storeOverview, loading } = useSelector((state) => state.storeAnalytics);
   const { userProfile } = useSelector((state) => state.user);
 
   useEffect(() => {
-    if (userProfile?.user?.store?.id) {
-      dispatch(getStoreOverview(userProfile.user.store.id)).unwrap().catch((err) => {
-        toast({
-          title: "Analytics Sync Failed",
-          description: err || "Check your internet connection",
-          variant: "destructive",
-        });
-      });
+    const storeId = userProfile?.user?.store?.id;
+    if (storeId) {
+      dispatch(getStoreOverview(storeId));
     }
-  }, [userProfile, dispatch]);
+  }, [userProfile?.user?.store?.id, dispatch]);
 
-  const formatCurrency = (amount) =>
+  const formatLKR = (amount) =>
     new Intl.NumberFormat("en-LK", {
       style: "currency",
       currency: "LKR",
@@ -47,38 +81,51 @@ const DashboardStats = () => {
     };
   };
 
+  // --- SKELETON LOADING STATE ---
+  // If storeOverview is null, we show the skeleton regardless of the 'loading' flag
+  // to ensure no "0" values are ever rendered.
+  if (!storeOverview || (loading && !storeOverview)) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-36 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse border border-slate-200 dark:border-slate-700" />
+        ))}
+      </div>
+    );
+  }
+
   const statsConfig = [
     {
       title: "Total Revenue",
-      value: formatCurrency(storeOverview?.totalSales),
-      prevValue: storeOverview?.previousPeriodSales,
+      display: formatLKR(storeOverview.totalSales),
+      raw: storeOverview.totalSales,
+      prev: storeOverview.previousPeriodSales,
       icon: DollarSign,
       color: "blue",
-      description: "Gross store earnings"
     },
     {
       title: "Active Branches",
-      value: storeOverview?.totalBranches || 0,
-      prevValue: storeOverview?.previousPeriodBranches,
+      display: storeOverview.totalBranches || 0,
+      raw: storeOverview.totalBranches,
+      prev: storeOverview.previousPeriodBranches,
       icon: Store,
       color: "emerald",
-      description: "Operational locations"
     },
     {
       title: "Inventory Size",
-      value: storeOverview?.totalProducts || 0,
-      prevValue: storeOverview?.previousPeriodProducts,
+      display: storeOverview.totalProducts || 0,
+      raw: storeOverview.totalProducts,
+      prev: storeOverview.previousPeriodProducts,
       icon: ShoppingCart,
       color: "violet",
-      description: "Total unique SKUs"
     },
     {
       title: "Workforce",
-      value: storeOverview?.totalEmployees || 0,
-      prevValue: storeOverview?.previousPeriodEmployees,
+      display: storeOverview.totalEmployees || 0,
+      raw: storeOverview.totalEmployees,
+      prev: storeOverview.previousPeriodEmployees,
       icon: Users,
       color: "amber",
-      description: "Staff across all branches"
     },
   ];
 
@@ -86,69 +133,47 @@ const DashboardStats = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
       {statsConfig.map((stat, index) => {
         const Icon = stat.icon;
-        const trend = getTrendData(
-          stat.title === "Total Revenue" ? storeOverview?.totalSales : parseInt(stat.value),
-          stat.prevValue
-        );
+        const trend = getTrendData(stat.raw, stat.prev);
 
         return (
           <motion.div
             key={index}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="group relative overflow-hidden p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all duration-300"
+            transition={{ delay: index * 0.05, ease: "easeOut" }}
+            className="group relative p-6 rounded-3xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
           >
-            {/* Background Accent Glow */}
-            <div className={`absolute -right-4 -top-4 w-24 h-24 blur-3xl opacity-10 rounded-full bg-${stat.color}-500 transition-opacity group-hover:opacity-20`} />
+            {/* Background Glow Effect */}
+            <div className={`absolute -right-2 -bottom-2 w-24 h-24 blur-3xl opacity-5 rounded-full bg-${stat.color}-500 transition-opacity group-hover:opacity-10`} />
 
-            <div className="flex flex-col h-full justify-between">
-              <div className="flex justify-between items-start mb-4">
-                <div className={`p-2.5 rounded-xl bg-${stat.color}-50 dark:bg-${stat.color}-500/10 text-${stat.color}-600 dark:text-${stat.color}-400`}>
+            <div className="flex flex-col h-full justify-between relative z-10">
+              <div className="flex justify-between items-start mb-6">
+                <div className={`p-2.5 rounded-2xl bg-${stat.color}-500/10 text-${stat.color}-600 dark:text-${stat.color}-400`}>
                   <Icon size={22} strokeWidth={2.5} />
                 </div>
                 
-                {/* Trend Badge */}
-                {!loading && (
-                  <div className={`flex items-center gap-1 text-xs font-bold ${
-                    trend.isPositive ? "text-emerald-500" : "text-rose-500"
-                  }`}>
-                    {trend.isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                    {trend.percent}%
-                  </div>
-                )}
+                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                  trend.isPositive ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
+                }`}>
+                  {trend.isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                  {trend.percent}%
+                </div>
               </div>
 
               <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] uppercase tracking-[0.15em] font-black text-slate-400 dark:text-slate-500">
                   {stat.title}
                 </p>
                 
-                <div className="mt-1 flex items-baseline gap-2">
-                  {loading ? (
-                    <div className="h-8 w-3/4 bg-slate-200 dark:bg-slate-800 animate-pulse rounded-lg" />
-                  ) : (
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-                      {stat.value}
-                    </h2>
-                  )}
-                </div>
+                <h2 className="text-2xl font-black text-slate-900 dark:text-white mt-1 tracking-tight">
+                  {stat.display}
+                </h2>
                 
-                <p className="mt-2 text-xs text-slate-400 flex items-center gap-1 italic">
-                  {stat.description}
-                  <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                </p>
+                <div className="mt-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0">
+                  <span className="text-[10px] text-slate-400 font-bold italic">Analytics Dashboard</span>
+                  <ArrowUpRight size={10} className="text-slate-400" />
+                </div>
               </div>
-            </div>
-
-            {/* Bottom Progress Bar Decor */}
-            <div className="absolute bottom-0 left-0 h-1 w-full bg-slate-100 dark:bg-slate-800">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
-                className={`h-full bg-${stat.color}-500/30`}
-              />
             </div>
           </motion.div>
         );
