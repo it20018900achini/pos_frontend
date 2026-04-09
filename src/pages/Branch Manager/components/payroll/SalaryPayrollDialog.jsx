@@ -1,21 +1,29 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { useGetSalaryByEmployeeQuery, useSaveSalaryMutation } from "@/Redux Toolkit/features/salary/salaryApi";
 import { useGeneratePayrollMutation } from "@/Redux Toolkit/features/payroll/payrollApi";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
+import { 
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter 
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { 
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { User, Calendar, Wallet, Percent, Loader2 } from "lucide-react";
+import ConfirmDialog from "./ConfirmDialog";
+import { toast } from "@/components/ui/use-toast";
 
-export default function SalaryPayrollDialog({ open, setOpen, employeeId }) {
+export default function SalaryPayrollDialog({ open, setOpen, employeeId: initialEmployeeId }) {
+  const { employees } = useSelector((state) => state.employee);
+  
+  // Sync the local state with the prop when the dialog opens
+  const [employeeId, setEmployeeId] = useState(initialEmployeeId || "");
   const [form, setForm] = useState({
     basicSalary: "",
     hra: "",
@@ -31,13 +39,24 @@ export default function SalaryPayrollDialog({ open, setOpen, employeeId }) {
   const [year, setYear] = useState(currentYear);
   const [month, setMonth] = useState(currentMonth);
 
-  const { data } = useGetSalaryByEmployeeQuery(Number(employeeId), { skip: !employeeId });
-  const [saveSalary] = useSaveSalaryMutation();
-  const [generatePayroll] = useGeneratePayrollMutation();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmData, setConfirmData] = useState({ action: null });
 
-  // Populate form when data changes
+  // Fetch salary data whenever the selected employeeId changes
+  const { data, isFetching } = useGetSalaryByEmployeeQuery(Number(employeeId), { skip: !employeeId });
+  const [saveSalary, { isLoading: isSaving }] = useSaveSalaryMutation();
+  const [generatePayroll, { isLoading: isGenerating }] = useGeneratePayrollMutation();
+
+  // Effect to handle external ID changes (e.g., clicking a different row in a table)
   useEffect(() => {
-    if (data?.employee) {
+    if (open) {
+      setEmployeeId(initialEmployeeId || "");
+    }
+  }, [initialEmployeeId, open]);
+
+  // Effect to populate form when API data returns
+  useEffect(() => {
+    if (data) {
       setForm({
         basicSalary: data.basicSalary ?? "",
         hra: data.hra ?? "",
@@ -48,99 +67,170 @@ export default function SalaryPayrollDialog({ open, setOpen, employeeId }) {
         etfPercentage: data.etfPercentage ?? "",
       });
     } else {
-      setForm({
-        basicSalary: "",
-        hra: "",
-        transport: "",
-        medical: "",
-        overtimeRate: "",
-        epfPercentage: "",
-        etfPercentage: "",
-      });
+        // Reset form if no data found for this employee
+        setForm({ basicSalary: "", hra: "", transport: "", medical: "", overtimeRate: "", epfPercentage: "", etfPercentage: "" });
     }
   }, [data]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSaveSalary = async () => {
-    if (!employeeId) return alert("Enter Employee ID");
-    try {
-      await saveSalary({
-        id: data?.id,
-        employee: { id: Number(employeeId) },
-        ...form,
-      }).unwrap();
-      alert("Salary saved successfully");
-    } catch (err) {
-      console.error(err);
-      alert("Error saving salary");
-    }
-  };
+  const handleConfirmAction = async () => {
+    if (!employeeId) return;
 
-  const handleGeneratePayroll = async () => {
-    if (!employeeId) return alert("Enter Employee ID");
     try {
-      await generatePayroll({ employeeId: Number(employeeId), year, month }).unwrap();
-      alert("Payroll generated successfully");
+      if (confirmData.action === "save") {
+        // FLAT PAYLOAD CONSTRUCTION (Matches your DTO)
+        const payload = {
+          id: data?.id || null,
+          employeeId: Number(employeeId), // Flattened ID
+          basicSalary: form.basicSalary === "" ? null : form.basicSalary,
+          hra: form.hra === "" ? null : form.hra,
+          transport: form.transport === "" ? null : form.transport,
+          medical: form.medical === "" ? null : form.medical,
+          overtimeRate: form.overtimeRate === "" ? null : form.overtimeRate,
+          epfPercentage: form.epfPercentage === "" ? null : form.epfPercentage,
+          etfPercentage: form.etfPercentage === "" ? null : form.etfPercentage,
+        };
+
+        await saveSalary(payload).unwrap();
+        toast({ title: "Success", description: "Salary configuration updated." });
+      } else if (confirmData.action === "generate") {
+        await generatePayroll({ employeeId: Number(employeeId), year, month }).unwrap();
+        toast({ title: "Success", description: `Payroll generated for ${month}/${year}` });
+      }
+      setConfirmOpen(false);
     } catch (err) {
-      console.error(err);
-      alert("Error generating payroll");
+      console.error("Operation failed:", err);
+      toast({ title: "Error", description: "Operation failed", variant: "destructive" });
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[80%] max-h-[99vh] overflow-y-auto z-60">
-        <DialogHeader>
-          <DialogTitle>Employee Salary & Payroll</DialogTitle>
-          <DialogDescription>
-            Add or edit employee salary and generate payroll for the selected month.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto p-0 border-none shadow-2xl">
+          {/* Header */}
+          <DialogHeader className="p-8 bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-white/5">
+            <DialogTitle className="text-xl font-black tracking-tight">Employee Remuneration</DialogTitle>
+            <DialogDescription>
+              Configure standard pay rates and process monthly payroll cycles.
+            </DialogDescription>
+          </DialogHeader>
 
-        {data?.employee ? (
-          <div className="p-3 border rounded bg-gray-50 text-sm space-y-1 mb-4">
-            <div><strong>Name:</strong> {data.employee.fullName}</div>
-            <div><strong>Phone:</strong> {data.employee.phone}</div>
-            <div><strong>Email:</strong> {data.employee.email}</div>
+          <div className="p-8 space-y-6">
+            {/* Selection Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Selected Staff</Label>
+                <Select value={String(employeeId)} onValueChange={(v) => setEmployeeId(v)}>
+                  <SelectTrigger className="rounded-xl border-slate-200 h-11">
+                    <SelectValue placeholder="Choose employee..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {employees?.map((emp) => (
+                      <SelectItem key={emp.id} value={String(emp.id)}>
+                        <div className="flex items-center gap-2 font-medium">
+                           <User className="w-3.5 h-3.5 opacity-50" /> {emp.fullName}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Target Period</Label>
+                <div className="flex gap-2">
+                  <Input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} className="rounded-xl h-11" />
+                  <Input type="number" value={month} onChange={(e) => setMonth(Number(e.target.value))} className="rounded-xl h-11" />
+                </div>
+              </div>
+            </div>
+
+            <Separator className="opacity-50" />
+
+            {/* Financial Inputs */}
+            <div className="space-y-4 relative">
+              {isFetching && (
+                <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/50 z-10 flex items-center justify-center backdrop-blur-[1px]">
+                  <Loader2 className="animate-spin text-indigo-600" />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1.5"><Wallet className="w-3 h-3"/> Base Salary (LKR)</Label>
+                <Input name="basicSalary" type="number" value={form.basicSalary} onChange={handleChange} className="rounded-xl h-12 font-mono font-bold text-lg text-indigo-600 bg-slate-50/50" placeholder="0.00" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">HRA Allowance</Label>
+                  <Input name="hra" type="number" value={form.hra} onChange={handleChange} className="rounded-xl h-11" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Transport</Label>
+                  <Input name="transport" type="number" value={form.transport} onChange={handleChange} className="rounded-xl h-11" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Medical</Label>
+                  <Input name="medical" type="number" value={form.medical} onChange={handleChange} className="rounded-xl h-11" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">OT Rate /Hr</Label>
+                  <Input name="overtimeRate" type="number" value={form.overtimeRate} onChange={handleChange} className="rounded-xl h-11" />
+                </div>
+              </div>
+
+              {/* Deductions Section */}
+              <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-white/[0.02] border border-slate-100 dark:border-white/5">
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1"><Percent className="w-3 h-3"/> EPF %</Label>
+                  <Input name="epfPercentage" type="number" value={form.epfPercentage} onChange={handleChange} className="rounded-xl h-11 bg-white dark:bg-slate-900" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1"><Percent className="w-3 h-3"/> ETF %</Label>
+                  <Input name="etfPercentage" type="number" value={form.etfPercentage} onChange={handleChange} className="rounded-xl h-11 bg-white dark:bg-slate-900" />
+                </div>
+              </div>
+            </div>
           </div>
-        ) : (
-          employeeId && <p className="text-sm text-red-500 mb-4">No employee found for ID {employeeId}</p>
-        )}
 
-        {/* Salary Form */}
-        <Input
-          type="number"
-          placeholder="Employee ID"
-          value={employeeId}
-          disabled
-          className="mb-2"
-        />
+          {/* Actions */}
+          <DialogFooter className="p-8 bg-slate-50 dark:bg-slate-950 flex gap-3 sm:justify-between items-center border-t border-slate-100 dark:border-white/5">
+            <Button variant="ghost" className="rounded-xl px-6 h-11 font-medium" onClick={() => setOpen(false)}>Close</Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                className="rounded-xl px-6 h-11 border-slate-300 font-medium" 
+                onClick={() => {setConfirmData({ action: "save" }); setConfirmOpen(true);}}
+                disabled={!employeeId || isSaving}
+              >
+                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Salary"}
+              </Button>
+              <Button 
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-6 h-11 shadow-lg shadow-indigo-500/20 font-medium" 
+                onClick={() => {setConfirmData({ action: "generate" }); setConfirmOpen(true);}}
+                disabled={!employeeId || isGenerating}
+              >
+                {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Process Payroll"}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        <Input name="basicSalary" type="number" placeholder="Basic Salary" value={form.basicSalary} onChange={handleChange} className="mb-2" />
-        <div className="grid grid-cols-2 gap-2 mb-2">
-          <Input name="hra" type="number" placeholder="HRA" value={form.hra} onChange={handleChange} />
-          <Input name="transport" type="number" placeholder="Transport" value={form.transport} onChange={handleChange} />
-        </div>
-        <div className="grid grid-cols-2 gap-2 mb-2">
-          <Input name="medical" type="number" placeholder="Medical" value={form.medical} onChange={handleChange} />
-          <Input name="overtimeRate" type="number" placeholder="Overtime Rate / Hour" value={form.overtimeRate} onChange={handleChange} />
-        </div>
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <Input name="epfPercentage" type="number" placeholder="EPF %" value={form.epfPercentage} onChange={handleChange} />
-          <Input name="etfPercentage" type="number" placeholder="ETF %" value={form.etfPercentage} onChange={handleChange} />
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <Input type="number" placeholder="Year" value={year} onChange={(e) => setYear(Number(e.target.value))} />
-          <Input type="number" placeholder="Month" value={month} onChange={(e) => setMonth(Number(e.target.value))} />
-        </div>
-
-        <DialogFooter className="flex flex-col gap-2">
-          <Button onClick={handleSaveSalary}>Save Salary</Button>
-          <Button variant="secondary" onClick={handleGeneratePayroll}>Generate Payroll</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <ConfirmDialog
+        open={confirmOpen}
+        setOpen={setConfirmOpen}
+        title={confirmData.action === "save" ? "Update Structure?" : "Run Payroll?"}
+        description={confirmData.action === "save"
+          ? "This will modify the standard recurring salary for this employee."
+          : `Generate the final payroll record for ${month}/${year}?`}
+        onConfirm={handleConfirmAction}
+      />
+    </>
   );
 }

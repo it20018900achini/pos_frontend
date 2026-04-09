@@ -19,30 +19,32 @@ const getAuthHeaders = () => {
   };
 };
 
-// 🔹 Get Store Overview (KPI Summary)
+// 🔹 Get Store Overview (KPI Summary) - Updated with Date Range Params
 export const getStoreOverview = createAsyncThunk(
   "storeAnalytics/getStoreOverview",
-  async (storeId, { rejectWithValue }) => {
+  async ({ storeId, start, end }, { rejectWithValue }) => {
+    // 1. Pre-flight check: Prevent "undefined" from reaching the URL
+    if (!storeId || storeId === "undefined") {
+      console.error("🚫 getStoreOverview aborted: storeId is missing.");
+      return rejectWithValue("Store ID is required to fetch analytics.");
+    }
+
     try {
-      console.log('🔄 Fetching store overview...', { storeId });
+      console.log('🔄 Fetching store overview...', { storeId, start, end });
       
       const headers = getAuthHeaders();
-      const res = await api.get(`/api/store/analytics/${storeId}/overview`, { headers });
       
-      console.log('✅ Store overview fetched successfully:', {
-        storeId,
-        response: res.data
+      // 2. Axios correctly maps { params } to query strings (?start=...&end=...)
+      const res = await api.get(`/api/store/analytics/${storeId}/overview`, { 
+        headers,
+        params: { start, end } 
       });
       
+      console.log('✅ Store overview fetched successfully:', res.data);
       return res.data;
-    } catch (err) {
-      console.error('❌ Failed to fetch store overview:', {
-        storeId,
-        error: err.response?.data || err.message,
-        status: err.response?.status,
-        statusText: err.response?.statusText
-      });
       
+    } catch (err) {
+      console.error('❌ Failed to fetch store overview:', err.response?.data || err.message);
       return rejectWithValue(
         err.response?.data?.message || "Failed to fetch store overview"
       );

@@ -11,6 +11,7 @@ import SalesTrendChart from "./SalesTrendChart";
 import CategoryDistribution from "./CategoryDistribution";
 import StoreAlertsList from "./StoreAlertsList";
 import { RefreshCcw } from "lucide-react";
+import DateRangeFilter from "./DateRangeFilter";
 
 export default function DashboardStore() {
   const dispatch = useDispatch();
@@ -27,7 +28,11 @@ export default function DashboardStore() {
       dispatch(getStoreAlerts(storeId));
     }
   }, [dispatch, storeId]);
-
+const handleDateChange = ({ start, end }) => {
+    if (storeId) {
+      dispatch(getStoreOverview({ storeId, start, end }));
+    }
+  };
   return (
     <div className="p-6 space-y-6 bg-slate-50 min-h-screen">
       <div className="flex justify-between items-center">
@@ -43,7 +48,10 @@ export default function DashboardStore() {
           Refresh
         </button>
       </div>
-
+<div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">Analytics</h1>
+        <DateRangeFilter onChange={handleDateChange} />
+      </div>
       {/* KPI Cards */}
       <DashboardStats />
 
