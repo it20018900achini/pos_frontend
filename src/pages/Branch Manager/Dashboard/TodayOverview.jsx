@@ -37,7 +37,7 @@ const TodayOverview = ({ selectedBranchId, startDate, endDate }) => {
     },
     {
       title: "Order Volume",
-      formatted: todayOverview?.ordersToday?.toLocaleString() || "0",
+      formatted: todayOverview?.rangeOrders?.toLocaleString() || "0",
       icon: Zap,
       color: "violet",
       growth: todayOverview?.orderGrowth,
@@ -49,7 +49,7 @@ const TodayOverview = ({ selectedBranchId, startDate, endDate }) => {
       icon: Repeat,
       color: "rose",
       growth: todayOverview?.refundGrowth,
-      status: `${todayOverview?.todayRefundCount || 0} items`
+      status: `${todayOverview?.refundCount || 0} items`
     },
     {
       title: "Team Status",

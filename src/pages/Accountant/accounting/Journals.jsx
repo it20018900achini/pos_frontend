@@ -15,7 +15,7 @@ function Journals() {
          
                   <JournalByAccount/> {/* */}
                   <hr/>
-                  <CustomForm/>
+                  {/* <CustomForm/> */}
     </ContentLayout>
   )
 }

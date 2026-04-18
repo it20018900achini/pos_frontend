@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useGetProfitLossQuery } from "@/Redux Toolkit/features/accounting/accountingApi";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
+import { format, formatDate } from "date-fns";
 import { 
-  TrendingUp, TrendingDown, Wallet, Calendar, 
+  TrendingUp, Calendar, 
   RefreshCw, ChevronRight, ListFilter,
   ArrowUpRight, Minus 
 } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import ContentLayout from "../../../Dashboard/ContentLayout";
 import { cn } from "@/lib/utils";
+import { getTodayOverview } from "@/Redux Toolkit/features/branchAnalytics/branchAnalyticsThunks";
 
 /* ===================== HELPERS ===================== */
 const computeTotal = (acc) => {
@@ -45,7 +45,6 @@ const AccountRow = ({ acc, level, expanded, toggle }) => {
         )}
       >
         <td className="py-3.5 px-4 relative" style={{ paddingLeft: `${level * 24 + 20}px` }}>
-          {/* Vertical Guide Line - Visible in both modes */}
           {level > 0 && (
             <div 
               className="absolute top-0 bottom-0 w-px bg-border/60" 
@@ -100,16 +99,32 @@ const AccountRow = ({ acc, level, expanded, toggle }) => {
 /* ===================== MAIN COMPONENT ===================== */
 export default function ProfitLossReport() {
   const { selectedBranchId } = useSelector((state) => state.user);
-  
+  const dispatch = useDispatch();
+  const { todayOverview } = useSelector((state) => state.branchAnalytics);
+
   const [start, setStart] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString());
   const [end, setEnd] = useState(new Date().toISOString());
   const [expanded, setExpanded] = useState(new Set());
 
   const { data: report, isLoading, refetch } = useGetProfitLossQuery({ branchId: selectedBranchId, start, end });
 
-  const incomes = report?.incomes || [];
+  // 1. Logic to Inject Operational Data into Financial Report
+  const operationalSales = {
+    id: "ops-sales-row",
+    accountName: "Direct Sales (Operational)",
+    accountCode: "SALES-OPS",
+    debit: 0,
+    credit: todayOverview?.totalSales || 0,
+    children: []
+  };
+
+  const incomes = report?.incomes 
+    ? [operationalSales, ...report.incomes] 
+    : [operationalSales];
+
   const expenses = report?.expenses || [];
   
+  // 2. Derive Totals
   const totalIncome = incomes.reduce((s, a) => s + computeTotal(a), 0);
   const totalExpense = Math.abs(expenses.reduce((s, a) => s + computeTotal(a), 0));
   const netProfit = totalIncome - totalExpense;
@@ -122,11 +137,22 @@ export default function ProfitLossReport() {
     });
   };
 
+  useEffect(() => {
+    if (!selectedBranchId || !start || !end) return;
+    dispatch(getTodayOverview({ 
+      branchId: selectedBranchId, 
+      start: formatDate(new Date(start), "yyyy-MM-dd"), 
+      end: formatDate(new Date(end), "yyyy-MM-dd") 
+    }));
+  }, [selectedBranchId, start, end, dispatch]);
+
   return (
     <ContentLayout loadingSpinner={isLoading} title="Profit & Loss" subTitle="Financial analytics engine">
       <div className="max-w-7xl mx-auto space-y-6 pb-12 px-4 md:px-0">
-        
-        {/* FILTER BAR - Dark Mode optimized */}
+       <pre className="text-xs text-muted-foreground">{
+          JSON.stringify(todayOverview, null, 2)
+        }</pre>
+        {/* FILTER BAR */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-card p-5 rounded-2xl border border-border shadow-sm">
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-xl border border-border/50">
@@ -137,14 +163,14 @@ export default function ProfitLossReport() {
                 type="date" 
                 value={format(new Date(start), "yyyy-MM-dd")} 
                 onChange={(e) => setStart(new Date(e.target.value).toISOString())}
-                className="bg-transparent text-sm border-none focus:ring-0 px-2 text-foreground font-medium"
+                className="bg-transparent text-sm border-none focus:ring-0 px-2 text-foreground font-medium outline-none"
               />
               <span className="text-muted-foreground/30">—</span>
               <input 
                 type="date" 
                 value={format(new Date(end), "yyyy-MM-dd")} 
                 onChange={(e) => setEnd(new Date(e.target.value).toISOString())}
-                className="bg-transparent text-sm border-none focus:ring-0 px-2 text-foreground font-medium"
+                className="bg-transparent text-sm border-none focus:ring-0 px-2 text-foreground font-medium outline-none"
               />
             </div>
           </div>
@@ -197,8 +223,8 @@ export default function ProfitLossReport() {
         {/* SECTION TABLES */}
         <div className="grid grid-cols-1 gap-10">
           {[
-            { title: "Income streams", data: incomes, color: "text-emerald-500" },
-            { title: "Operating Expenses", data: expenses, color: "text-rose-500" }
+            { title: "Income streams", data: incomes },
+            { title: "Operating Expenses", data: expenses }
           ].map((sec, i) => (
             <div key={i} className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
               <div className="px-6 py-5 border-b border-border flex items-center gap-3 bg-muted/20">

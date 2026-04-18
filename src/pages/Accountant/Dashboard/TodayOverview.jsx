@@ -124,8 +124,8 @@ const TodayOverview = () => {
     },
     {
       title: "Orders Today",
-      value: todayOverview?.ordersToday,
-      formatted: todayOverview?.ordersToday ?? "-",
+      value: todayOverview?.rangeOrders,
+      formatted: todayOverview?.rangeOrders ?? "-",
       icon: ShoppingBag,
       gradient: "bg-gradient-to-tr from-blue-400 to-indigo-400",
       change: formatPercent(todayOverview?.orderGrowth),
@@ -151,16 +151,16 @@ const TodayOverview = () => {
     },
     {
       title: "Refund Count",
-      value: todayOverview?.todayRefundCount,
-      formatted: todayOverview?.todayRefundCount ?? "-",
+      value: todayOverview?.refundCount,
+      formatted: todayOverview?.refundCount ?? "-",
       icon: ClipboardCheck,
       gradient: "bg-gradient-to-tr from-yellow-400 to-amber-400",
       change: formatPercent(
-        todayOverview?.todayRefundCount -
+        todayOverview?.refundCount -
           (todayOverview?.yesterdayRefundCount ?? 0)
       ),
       changeType: getChangeType(
-        todayOverview?.todayRefundCount -
+        todayOverview?.refundCount -
           (todayOverview?.yesterdayRefundCount ?? 0)
       ),
     },
