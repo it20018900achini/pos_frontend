@@ -63,7 +63,7 @@ const OrderTable = ({
                 {order.customer?.fullName || "Walk-in Customer"}
               </TableCell>
               <TableCell>
-                LKR {Number(order.totalAmount || 0).toFixed(2)}
+                LKR {Number(order.netAmount || 0).toFixed(2)}
               </TableCell>
               <TableCell>{order.paymentType || "CASH"}</TableCell>
               <TableCell>

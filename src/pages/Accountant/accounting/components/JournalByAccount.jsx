@@ -58,7 +58,10 @@ export default function JournalByAccount() {
         <div className="w-full">
           {lines.map((line, idx) => (
             <div key={idx} className="grid grid-cols-3 gap-4 py-1 border-b border-slate-50 last:border-0">
-              <span className="text-xs font-medium text-slate-600">#{line.account?.name || "N/A"}</span>
+              <span className="text-xs font-medium text-slate-600">#{line.account?.name || "N/A"}<br/>
+              <span className="text-neutral-400">{line?.account?.code}</span>
+              </span>
+              {/* <span className="text-xs font-medium text-slate-600">#{line.account?.code || "N/A"}</span> */}
               <span className="text-right text-xs text-emerald-600 font-semibold">
                 {line.debit > 0 ? line.debit.toLocaleString(undefined, { minimumFractionDigits: 2 }) : "-"}
               </span>

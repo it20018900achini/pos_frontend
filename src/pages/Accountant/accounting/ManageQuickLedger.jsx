@@ -11,7 +11,7 @@ import {
 } from "@/Redux Toolkit/features/accounting/accountingApi";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader } from "@/components/ui/card";
+import { Card, CardHeader,CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -137,24 +137,64 @@ export default function ManageQuickLedgers() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {templates?.map((t) => (
-          <Card key={t.id} className="rounded-[2rem] border-none shadow-lg bg-white dark:bg-neutral-900 group overflow-hidden border border-transparent hover:border-primary/20 transition-all">
-            <CardHeader className="p-6 flex flex-row justify-between items-center bg-neutral-50 dark:bg-neutral-800/50">
-               <span className="font-bold truncate max-w-[150px]">{t.title}</span>
-               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="ghost" size="icon" onClick={() => {
-                    setEditingId(t.id);
-                    setFormData({ title: t.title, rows: t.rows.map(r => ({ ...r, accountId: r.accountId.toString() })) });
-                    setIsOpen(true);
-                  }} className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary transition-colors">
-                    <Settings2 size={14} />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => setConfirmDeleteId(t.id)} className="h-8 w-8 rounded-full hover:bg-rose-500/10 hover:text-rose-500 transition-colors">
-                    <Trash2 size={14} />
-                  </Button>
-               </div>
-            </CardHeader>
-          </Card>
+  <Card key={t.id} className="rounded-[2rem] border-none shadow-lg bg-white dark:bg-neutral-900 group overflow-hidden border border-transparent hover:border-primary/20 transition-all duration-300">
+    <CardHeader className="p-6 flex flex-row justify-between items-center bg-neutral-50/50 dark:bg-neutral-800/30 border-b border-border/50">
+      <div className="flex flex-col gap-1">
+        <span className="font-bold text-lg tracking-tight text-foreground">{t.title}</span>
+        <span className="text-[10px] text-muted-foreground uppercase font-semibold tracking-widest">
+          {t.rows.length} Account Lines
+        </span>
+      </div>
+      
+      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+        <Button variant="outline" size="icon" onClick={() => {
+          setEditingId(t.id);
+          setFormData({ title: t.title, rows: t.rows.map(r => ({ ...r, accountId: r.accountId.toString() })) });
+          setIsOpen(true);
+        }} className="h-9 w-9 rounded-full bg-background hover:border-primary/50 hover:text-primary shadow-sm transition-all">
+          <Settings2 size={15} />
+        </Button>
+        <Button variant="outline" size="icon" onClick={() => setConfirmDeleteId(t.id)} className="h-9 w-9 rounded-full bg-background hover:border-rose-500/50 hover:text-rose-500 shadow-sm transition-all">
+          <Trash2 size={15} />
+        </Button>
+      </div>
+    </CardHeader>
+
+    <CardContent className="p-6">
+      <div className="space-y-3">
+        {t.rows.map((row, idx) => (
+          <div key={idx} className="flex items-center justify-between p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/40 border border-border/40">
+            <div className="flex items-center gap-3">
+              <div className={`w-2 h-8 rounded-full ${
+                "",
+                row.creditOrDebit === "DEBIT" ? "bg-indigo-500" : "bg-emerald-500"
+              }`} />
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-foreground">{row.label}</span>
+                <span className="text-[10px] font-mono text-muted-foreground uppercase">{row.accountName}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-end">
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter ${
+                row.creditOrDebit === "DEBIT" 
+                  ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400" 
+                  : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+              }`}>
+                {row.creditOrDebit}
+              </span>
+              {row.isInputTag && (
+                <span className="text-[9px] text-muted-foreground mt-1 italic flex items-center gap-1">
+                  <div className="w-1 h-1 rounded-full bg-muted-foreground" /> Manual Input
+                </span>
+              )}
+            </div>
+          </div>
         ))}
+      </div>
+    </CardContent>
+  </Card>
+))}
       </div>
 
       {/* CREATE / EDIT DIALOG */}
