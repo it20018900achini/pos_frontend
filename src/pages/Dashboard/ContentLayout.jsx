@@ -37,20 +37,20 @@ const ContentLayout = ({
                 title
               )}
               {subTitle && (
-                <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
-                  <span className="relative border border-green-300 px-2 py-0.5 rounded text-green-600 bg-green-100/50 font-medium">
-                    {branchLoading && (
-                      <span className="absolute -left-5 top-1">
-                        <Loader2 className="w-3 h-3 animate-spin text-green-600" />
-                      </span>
-                    )}
-                    {userProfile?.user?.roleBranchMap?.find(
-                      (b) => b.branchId === Number(selectedBranchId)
-                    )?.branchName}
-                  </span>{" "}
-                  {subTitle}
-                </p>
-              )}
+  <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+    <span className="relative border border-green-300 dark:border-green-800 px-2 py-0.5 rounded text-green-700 dark:text-green-400 bg-green-100/50 dark:bg-green-900/30 font-medium transition-colors">
+      {branchLoading && (
+        <span className="absolute -left-5 top-1">
+          <Loader2 className="w-3 h-3 animate-spin text-green-600 dark:text-green-400" />
+        </span>
+      )}
+      {userProfile?.user?.roleBranchMap?.find(
+        (b) => b.branchId === Number(selectedBranchId)
+      )?.branchName}
+    </span>{" "}
+    {subTitle}
+  </p>
+)}
             </div>
           )}
 

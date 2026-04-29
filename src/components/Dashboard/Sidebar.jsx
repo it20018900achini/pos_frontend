@@ -216,7 +216,7 @@ const isSuperAdmin = userProfile?.role === "SUPER_ADMIN";
       {templates.length}
     </span>
   </div>
-
+test
   <ul className="space-y-1">
     {templates.length > 0 ? (
       templates.map((t) => {

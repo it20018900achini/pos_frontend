@@ -81,6 +81,7 @@ export default function ManageQuickLedgers() {
       toast({ title: "Deleted", description: "Template removed successfully." });
       setConfirmDeleteId(null);
     } catch (err) {
+      console.log(err)
       toast({ title: "Error", description: "Could not delete template.", variant: "destructive" });
     }
   };
@@ -112,6 +113,7 @@ export default function ManageQuickLedgers() {
       toast({ title: "Success", description: "Template saved." });
       setIsOpen(false);
     } catch (err) {
+      console.log(err)
       toast({ title: "Error", description: "Failed to save.", variant: "destructive" });
     }
   };
